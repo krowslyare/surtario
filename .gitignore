@@ -1,0 +1,22 @@
+# Desarrollo local
+.DS_Store
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+*.log
+.local/
+tmp/
+
+# Secretos: solo se versionan ejemplos sin valores reales
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Documentos y exportaciones privados nunca van al repo público
+private/
+data/private/
+backups/
+
+# No ignorar convex/ ni fixtures/: contendrán código y datos sintéticos
