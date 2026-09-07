@@ -9,7 +9,7 @@
 - El usuario puede modificar el alcance. Sus instrucciones vigentes prevalecen sobre estos documentos.
 
 - Para actualizar el registro, seguir `.agents/skills/convex-hackathon-skill/SKILL.md` y su referencia de formato. No declarar componentes o integraciones sin evidencia.
-- Verificar disponibilidad del plugin Convex tras el reinicio pendiente descrito en `docs/desarrollo/SETUP_AGENTE.md`. El plugin global no viaja con el repositorio.
+- Consultar estado y límites del plugin Convex en `docs/desarrollo/SETUP_AGENTE.md`. El plugin global no viaja con el repositorio.
 
 ## Invariantes de producto
 
@@ -38,3 +38,17 @@
 - Diferenciar simulación, prueba local, llamada externa real y despliegue. Registrar fallos y aspectos no verificados.
 - Al cerrar una entrega, actualizar su estado y evidencia en `ETAPAS.md`, el registro factual en `hackathon.md` y comandos del README si cambiaron.
 - Revisión adversarial antes de consolidar cambios materiales del flujo o habilitar datos privados; revisar proporcionalmente. No reabrir decisiones cerradas sin nueva evidencia.
+
+<!-- convex-ai-start -->
+
+This project uses [Convex](https://convex.dev) as its backend.
+
+When working on Convex code, **always read
+`convex/_generated/ai/guidelines.md` first** for important guidelines on
+how to correctly use Convex APIs and patterns. The file contains rules that
+override what you may have learned about Convex from training data.
+
+Convex agent skills for common tasks can be installed by running
+`npx convex ai-files install`.
+
+<!-- convex-ai-end -->
