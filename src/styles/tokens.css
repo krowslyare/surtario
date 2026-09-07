@@ -1,6 +1,4 @@
-/* Referencia de diseño v0.1; aún no importada por una aplicación.
-   Al implementar, mover a src/styles/tokens.css y actualizar la guía.
-   No usar colores de estado para declarar una oferta ganadora. */
+/* Fuente única de tokens de UI. No usar estados para declarar un ganador global. */
 :root {
   color-scheme: light;
   --color-canvas: #f7f8fa;
@@ -22,8 +20,9 @@
   --color-control-border: #778880;
   --color-focus: #175cd3;
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
   --text-meta: 0.75rem;
   --text-label: 0.875rem;
   --text-body: 1rem;

@@ -7,8 +7,8 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | Etapa | Resultado | Estado | Evidencia actual |
 | --- | --- | --- | --- |
 | 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |
-| 1 | Base de desarrollo y caso de compra calculable | Pendiente | Ningún código ni dependencia instalada |
-| 2 | Viabilidad de integraciones externas | Pendiente | Solo documentación consultada |
+| 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
+| 2 | Viabilidad de integraciones externas | En curso | Consultas Convex locales probadas; persistencia/reactividad entre vistas y APIs de sponsors pendientes |
 | 3 | Primera comparación útil en la aplicación | Pendiente | — |
 | 4 | Solicitud, respuesta y decisión conectadas | Pendiente | — |
 | 5 | Demo pública aislada y robusta | Pendiente | — |
@@ -16,9 +16,9 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | 7 | Materiales y entrega del concurso | Pendiente | Requisitos documentados; nada publicado |
 | P | Habilitación y validación de piloto privado | Pendiente, vía comercial independiente | No hay restaurante disponible |
 
-Preparación del agente: skills locales y plugin Convex instalados; reinicio y disponibilidad MCP pendientes de verificar. Ver [SETUP_AGENTE.md](./SETUP_AGENTE.md). Esto no completa la etapa 1.
+Preparación del agente: skills cargados, MCP invocable pero status requiere autenticación. Backend local probado por CLI y HTTP; AI files instalados. Ver [SETUP_AGENTE.md](./SETUP_AGENTE.md). Esto no completa la etapa 1.
 
-Próximo trabajo: [Primera entrega](./PRIMERA_ENTREGA.md). Las etapas 1 y 2 deben resolverse al inicio antes de invertir en diseño completo. Si falta una credencial, completar el trabajo local y registrar el bloqueo específico; no inventar una integración exitosa.
+Próximo trabajo: cerrar la revisión del diff de la primera entrega y después implementar persistencia de casos con sesiones aisladas como un bloque separado. Las conexiones a OpenAI, Firecrawl y AgentMail quedan aplazadas por decisión de alcance; su ausencia no bloquea persistencia y flujo manual, pero la etapa 2 seguirá incompleta hasta probarlas. Ver [primera entrega implementada](./PRIMERA_ENTREGA.md). Si falta una credencial, completar el trabajo local y registrar el bloqueo específico; no inventar una integración exitosa.
 
 ## 1 · Base y caso de referencia
 

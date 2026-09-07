@@ -5,18 +5,15 @@ Verificado el 7 de septiembre de 2026 en Codex Desktop para macOS, con shell zsh
 ## Estado
 
 - Plugin global `convex@convex-codex-plugin` 1.10.0 instalado y habilitado. Marketplace oficial `get-convex/convex-codex-plugin` verificado mediante el listado de Codex.
-- Archivos del plugin inspeccionados: skills y configuración de los servidores `convex` y `convex-plugin`. Las herramientas todavía no están disponibles en la sesión de instalación: **reinicio y comprobación posterior pendientes**. MCP configurado no significa MCP activo.
-- Skills locales `frontend-design` y `convex-hackathon-skill` copiados, leídos y con origen y licencias conservados. El registro se inició siguiendo directamente el skill, sin afirmar que el alias `/hackathon` ya fue cargado.
-- `hackathon.md` adaptado al formato oficial. Hosting seleccionado: Convex static hosting (`convex.site`), sin desplegar.
-- No existe todavía `package.json` con Convex ni una aplicación Convex. Se omiten por ahora los AI files del proyecto y el componente Static Hosting.
-- No se instalaron dependencias de aplicación, iniciaron servidores, registraron cuentas, configuraron secretos ni ejecutaron APIs del producto.
+- Plugin y skills locales disponibles en la sesión de implementación. El MCP es invocable; su `status` devolvió autorización pendiente incluso con backend local. No se afirma acceso MCP al despliegue.
+- Backend anónimo local creado por `npx convex dev`, sin cuenta, en puerto 3210. Consultas reales verificadas por HTTP con `npm run test:backend`; UI calculada en navegador, sin persistencia.
+- `npx convex ai-files install` añadió su sección administrada conservando AGENTS, guías generadas, CLAUDE y skills de proyecto. `npx convex ai-files status` confirmó los archivos vigentes.
+- `frontend-design` aplicado a UI; skill del concurso aplicado al registro. Hosting seleccionado `convex.site`, componente y publicación aún pendientes.
+- No hay APIs de OpenAI, Firecrawl ni AgentMail configuradas ni probadas. No se crearon cuentas ni se registraron claves de esos servicios.
 
-## Continuar después del reinicio
+## Siguiente conexión
 
-1. Reiniciar Codex y volver a abrir este proyecto.
-2. Confirmar que el plugin Convex y los dos skills locales aparezcan disponibles. Comprobar las herramientas MCP mediante su listado o un diagnóstico de lectura cuando haya proyecto; no consultar datos de producción.
-3. Registrar el resultado real aquí y en `hackathon.md`. Si falta autenticación o carga de MCP, identificar el paso concreto; no reinstalar otra integración en paralelo.
-4. Comenzar `PRIMERA_ENTREGA.md`. Una vez creado el proyecto Convex, seguir las instrucciones oficiales para sus AI files. El componente de hosting se configura durante la construcción, no durante este setup.
+La conexión a un proyecto cloud y las credenciales de sponsors se configuran al comenzar sus pruebas de integración. No reutilizar credenciales o despliegues de otro proyecto. Mantener `.env.local` y `.convex/` fuera de Git. Antes de trabajar contra cloud, comprobar destino y autenticación; la prueba local no acredita una integración pública ni webhook.
 
 ## Reproducir en otro equipo con Codex
 

@@ -69,3 +69,10 @@ Verificación del agente principal: se recorrieron las dependencias del plan y s
 ## Aclaración posterior: pricing del SaaS
 
 Tras la observación del usuario se revisaron de nuevo las reglas oficiales. No se encontró requisito de tarifas, cobros o clientes pagos. Se definió demo sin pricing ni paywall y se retiró la cifra de precio no validada como hipótesis activa del plan. No hay una tarifa vigente. La validación comercial futura permanece pendiente. Los precios de insumos y ofertas siguen siendo parte del producto.
+
+
+## Implementación de etapa 1 · 7 de septiembre de 2026
+
+Revisión independiente con un subagente Sol sobre módulo de cálculo, parser y UI. Hallazgos corregidos: parser de entero generaba una expresión regular inválida al guardar; importes y conteos podían superar enteros seguros; diferencia entre tres o cuatro ofertas omitía indicar su referencia. Se añadieron comprobaciones y la comparación nombra la oferta de mayor desembolso cuando hay más de dos.
+
+La verificación de navegador detectó además el retorno de foco y etiquetas accesibles de campos/selectores; corregidos manteniendo las aserciones. Evidencia final: tests de dominio/entrada, navegador y consultas de Convex local en README. Esta revisión no cubre autenticación, persistencia, OCR ni servicios externos, aún sin implementar.

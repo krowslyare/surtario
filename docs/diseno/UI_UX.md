@@ -1,6 +1,6 @@
 # Guía de UI y UX
 
-Versión 0.2 · 7 de septiembre de 2026 · Base visual para desarrollar. Branding comercial fuera del alcance actual. Aún no se ha validado visualmente una interfaz ni probado con restaurantes.
+Versión 0.2 · 7 de septiembre de 2026 · Base visual para desarrollar. Branding comercial fuera del alcance actual. Primera comparación revisada visualmente en navegador; validación con restaurantes pendiente.
 
 Esta guía aplica a la aplicación y demo. Complementa el [plan de producto](../producto/PLAN_PRODUCTO.md); no crea otra etapa de investigación o diseño de marca.
 
@@ -14,7 +14,7 @@ Nombre provisional: **Compras para restaurantes**, como texto sencillo en el enc
 
 Superficies claras, espacio moderado y jerarquía fuerte. La comparación es el centro de atención. Verde reservado para acción principal y estados positivos explícitos; los precios conservan color de texto normal. Que un proveedor tenga menor precio por kg no vuelve verde toda su oferta.
 
-Tokens de referencia: [tokens.css](./tokens.css). No es una aplicación ni una dependencia instalada. Al implementar, trasladar el archivo a `src/styles/tokens.css`, actualizar esta referencia y mantener una sola fuente de valores.
+Tokens implementados: [tokens.css](../../src/styles/tokens.css), única fuente de valores de la UI.
 
 | Función | Token / valor inicial |
 | --- | --- |
@@ -126,10 +126,10 @@ Anchos de revisión de producto: 360, 390, 768 y 1280 px; revisar también reflu
 
 En la primera entrega implementar solo tokens, texto, botones, campos y comparación. Añadir el componente de documento al existir extracción; no fabricar un catálogo de componentes ajenos al flujo. Si se adopta una librería, adaptar sus controles a estas reglas en lugar de mezclar estilos.
 
-Antes de desarrollar más pantallas, revisar las tres vistas de referencia con datos sintéticos: primera comparación, documento ambiguo y resultado parcial. Esa revisión visual sigue pendiente; puede ajustar esta versión sin cambiar el alcance de producto.
+Antes de desarrollar más pantallas, revisar las tres vistas de referencia con datos sintéticos: primera comparación, documento ambiguo y resultado parcial. La primera comparación y el resultado parcial se revisaron en navegador; la vista de extracción documental sigue pendiente.
 
 Para aceptar una pantalla: el usuario reconoce cantidad y desembolso, identifica condiciones pendientes, encuentra la fuente y entiende la próxima acción. Verificarlo con teclado y en teléfono. Las imágenes o capturas de verificación deben corresponder a la UI implementada.
 
 Contrastes calculados de la paleta propuesta: texto principal/blanco 14.89:1; secundario/blanco 6.52:1; blanco/acción principal 6.47:1; pendiente 6.20:1; error 5.76:1; información 5.57:1. Son combinaciones sólidas concretas, no un certificado para cualquier mezcla de colores ni para la aplicación completa. Revalidar si se cambia color, fondo u opacidad.
 
-Pendiente para la interfaz: revisión visual de pantallas y pruebas con usuarios. Branding comercial aplazado; no condiciona desarrollo ni entrega del concurso.
+Primera entrega revisada en escritorio y móvil, con prueba de reflujo de 320 a 1280 px y cierre de diálogos por teclado. Pendientes: extracción documental, pruebas con usuarios y auditoría completa de accesibilidad. Branding comercial aplazado; no condiciona desarrollo ni entrega del concurso.

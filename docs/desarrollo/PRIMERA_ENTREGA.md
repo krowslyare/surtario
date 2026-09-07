@@ -1,6 +1,6 @@
 # Primera entrega: base y comparación de compra
 
-Este es el punto de entrada cuando se autorice comenzar a desarrollar. Por ahora solo se preparó el repositorio.
+Implementada localmente el 7 de septiembre de 2026. Este documento conserva el contrato de la primera entrega; estado y próximos hitos en `ETAPAS.md`. La UI es transitoria y no guarda compras; el backend expone consultas sin persistencia.
 
 ## Resultado esperado
 
