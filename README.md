@@ -1,8 +1,10 @@
 # restaurant-procurement
 
-Nombre de trabajo. Producto para comparar insumos y proveedores a partir de cotizaciones, listas y comprobantes. Primero ayuda a decidir una compra; después permite seguir precios y, opcionalmente, calcular el impacto en recetas.
+Nombre de trabajo. Producto para investigar precios y distribuidores de insumos, conservar estudios y preparar compras cuando haga falta. Los documentos propios, historial y recetas aportan contexto opcional.
 
-**Estado:** primera entrega local implementada. Permite editar hasta cuatro ofertas manuales, comparar presentaciones y desembolso y completar datos pendientes. Datos sintéticos; sin restaurante piloto, persistencia ni extracción automática. La UI calcula en el navegador; las consultas Convex reutilizan el mismo módulo y se verificaron por separado contra el backend local.
+**Estado:** exploración local implementada con ejemplos ficticios de arroz y abarrotes en Lima. Permite revisar precios y contactos sin precio, seleccionar opciones y continuar opcionalmente a una comparación por cantidad. No requiere documentos ni inventario. La captura manual sigue disponible como alternativa.
+
+Estudios guardados en Convex local con fuentes y selección recuperables, lista reactiva y aislamiento por sesión de navegador. La comparación manual continúa transitoria. Sin scraping real, extracción automática ni restaurante piloto; APIs externas aplazadas para una entrega posterior.
 
 ## Ejecutar
 
@@ -13,13 +15,15 @@ npm ci
 npm run dev
 ```
 
-Abrir la URL local indicada por Vite (por defecto `http://127.0.0.1:5173`). La comparación funciona sin credenciales y los cambios duran mientras la vista esté abierta.
+Abrir la URL local indicada por Vite (por defecto `http://127.0.0.1:5173`). El ejemplo funciona sin credenciales. El estudio conserva selección al volver desde la compra. Con el backend configurado, «Guardar estudio» permite recuperarlo desde «Guardados» tras recargar; los cambios sin guardar se pierden. Los cambios de la comparación duran solo mientras esa vista esté abierta.
 
-Para ejecutar las consultas del backend local en una terminal adicional:
+Para habilitar persistencia y consultas, ejecutar el backend local en una terminal adicional:
 
 ```sh
 npm run dev:backend
 ```
+
+Configurar `VITE_CONVEX_URL=http://127.0.0.1:3210` en `.env.local` si la CLI no lo hizo, siguiendo [.env.example](.env.example), y reiniciar Vite. Sin URL, la exploración sigue disponible y el guardado aparece explícitamente sin configurar.
 
 En un checkout sin despliegue configurado, la CLI actual puede crear un backend local sin cuenta. Confirmar siempre el destino antes de reutilizar una configuración existente. No se requiere ni se ejecuta `convex deploy` para esta entrega.
 
@@ -30,6 +34,7 @@ npm test
 npm run build
 npx playwright install chromium
 npm run test:e2e
+npm run test:demo
 ```
 
 Con el backend local del proyecto ejecutándose en el puerto 3210:
@@ -38,12 +43,16 @@ Con el backend local del proyecto ejecutándose en el puerto 3210:
 npm run test:backend
 ```
 
-Verificado: 27 pruebas de dominio/entrada, 7 pruebas de navegador (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. No se han probado dispositivos físicos ni accesibilidad completa.
+Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
+
+Verificado: 36 pruebas de dominio/backend y 19 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Pulido visual con Manrope alojada localmente e ilustración SVG propia; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
+
+El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido reproducible y las partes del video aún pendientes. No se ha grabado un video de entrega.
 
 ## Por dónde empezar
 
 1. Leer las [etapas de desarrollo y su estado](docs/desarrollo/ETAPAS.md).
-2. Revisar la [primera entrega implementada](docs/desarrollo/PRIMERA_ENTREGA.md). El próximo bloque es persistencia con sesiones aisladas; las APIs externas se conectarán después.
+2. Revisar la [exploración implementada](docs/desarrollo/EXPLORACION_MERCADO.md) y la [primera comparación](docs/desarrollo/PRIMERA_ENTREGA.md). Ver también [persistencia de estudios](docs/desarrollo/PERSISTENCIA_ESTUDIOS.md). APIs externas y captura documental son los siguientes hitos pendientes.
 3. Consultar el [plan de producto](docs/producto/PLAN_PRODUCTO.md) para decisiones y límites, y la [revisión adversarial](docs/producto/REVISION_ADVERSARIAL.md) para sus motivos.
 4. Aplicar la [guía de UI/UX](docs/diseno/UI_UX.md) y sus tokens de referencia al construir las pantallas.
 
@@ -51,9 +60,11 @@ Las instrucciones para trabajar en este repositorio están en [AGENTS.md](AGENTS
 
 ## Recorrido que vamos a construir
 
-Documento de proveedor → revisión de insumo y presentación → cantidad requerida → comparación de ofertas → solicitud de alternativa → respuesta → decisión.
+Insumo/categoría y zona → precios, fuentes y distribuidores → estudio de mercado.
 
-El recorrido debe funcionar **sin recetas y sin compras históricas**. Registrar compras habilita seguimiento de precios. Vincular recetas habilita impacto por plato. Las ofertas, compras realizadas y referencias de mercado se mantienen separadas.
+Continuación opcional: equivalencias → cantidad y condiciones → cotización/comparación → decisión. Listas, fotos, comprobantes y recetas podrán enriquecer el recorrido sin ser requisitos de entrada.
+
+El estudio funciona **sin documentos propios, cantidad ni intención de compra**. La comparación funciona sin recetas y sin compras históricas. Registrar compras habilita seguimiento de precios. Vincular recetas habilita impacto por plato. Las ofertas, compras realizadas y referencias de mercado se mantienen separadas.
 
 ## Organización actual
 
@@ -63,7 +74,7 @@ convexhackaton/
 │   ├── domain/                # Cálculo puro y sus pruebas
 │   └── styles/                # Tokens y estilos de la aplicación
 ├── fixtures/                  # Datos sintéticos de referencia
-├── convex/                    # Consultas de ejemplo y comparación
+├── convex/                    # Consultas, estudios persistentes y validadores
 │   └── _generated/            # Tipos y guías administrados por Convex
 ├── tests/                     # Recorridos de navegador con Playwright
 ├── scripts/                   # Verificación del backend local
@@ -78,12 +89,12 @@ convexhackaton/
 └── skills-lock.json           # Origen de los skills instalados
 ```
 
-Código actual: `src/App.tsx` (UI), `src/domain/` (reglas y tests), `src/styles/tokens.css` (única fuente de tokens), `fixtures/` (ejemplo sintético), `convex/` (consultas de ejemplo y comparación), `tests/` (navegador). Stack: React, TypeScript, Vite y Convex.
+Código actual: `src/App.tsx` (navegación), `src/MarketStudy.tsx` (exploración), `src/Comparison.tsx` (compra opcional), `src/domain/` (reglas y tests), `src/styles/tokens.css` (única fuente de tokens), `fixtures/` (ejemplo sintético), `convex/` (cálculo y persistencia de estudios), `tests/` (navegador). Stack: React, TypeScript, Vite y Convex.
 
 ## Dos resultados distintos
 
 - **Hackatón:** demo pública con datos sintéticos, integraciones reales, flujo completo y entrega verificable. Requisitos y guion en la sección 11 del plan.
-- **Producto comercial:** validar después con documentos y uso real de un restaurante. La primera comparación no exige recetas; privacidad, soporte y recuperación se verifican antes de admitir datos del cliente.
+- **Producto comercial:** validar utilidad y segundo uso de estudios con un restaurante. Documentos y compras son contexto opcional; privacidad, soporte y recuperación se verifican antes de admitir datos del cliente.
 
 Remoto: [krowslyare/restaurant-procurement](https://github.com/krowslyare/restaurant-procurement). Durante esta preparación mantiene visibilidad privada; la entrega del concurso requerirá hacerlo público. No hay aplicación desplegada.
 

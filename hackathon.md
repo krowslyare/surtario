@@ -2,17 +2,17 @@
 
 - **Project:** restaurant-procurement
 - **Event:** Convex All Gas Hackathon
-- **What it does:** Compara ofertas manuales por presentación, cantidad y desembolso, con datos pendientes explícitos y sin exigir recetas.
+- **What it does:** Explora ejemplos de precios y distribuidores sin exigir documentos ni cantidad; guarda estudios sintéticos por sesión de navegador y permite preparar una comparación opcional.
 - **Live app:** not deployed
 - **Repo:** private
-- **Frontend:** Convex static hosting
+- **Frontend:** not deployed
 - **Convex deployment:** not deployed
 - **Components:** none
-- **Convex features:** queries (local, sin persistencia)
-- **Auth:** none
+- **Convex features:** schema, indexes, queries, mutations, realtime queries (local)
+- **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-07T22:05:27Z
+- **Last updated:** 2026-09-08T03:32:56Z
 
 ## Log
 
@@ -36,3 +36,30 @@ Pasaron 27 pruebas de dominio/entrada, 7 de navegador, build/tipos y prueba de c
 Persistencia, sincronización entre vistas, extracción, correo y hosting pendientes. No hay despliegue cloud ni entrega al concurso de esta implementación.
 
 Preparación para Git: formato consistente en código y pruebas, licencias de skills administrados conservadas en `third_party/`, configuración de desarrollo separada en el commit `bad7b76`. Se repitieron las 27 pruebas de dominio/entrada y build/tipos después del formato, con resultado satisfactorio.
+
+
+### 2026-09-07 - working tree · exploración autónoma
+La entrada permite investigar un insumo/categoría y zona sin documentos ni cantidad, revisar precios de catálogo y distribuidores sin precio y conservar selección temporal. `src/MarketStudy.tsx` y `fixtures/market.ts` filtran exclusivamente datos ficticios; no hay scraping real.
+La continuación a compra exige equivalencia, comienza sin cantidad y conserva condiciones desconocidas y fuente original. Borrador de consulta editable y copiable, sin envío; captura manual como alternativa secundaria. Persistencia y APIs siguen pendientes.
+Plan v1.2 y guía de desarrollo alineados tras revisión adversarial independiente; una segunda pasada estática no detectó nuevos errores materiales dentro de este alcance. Pasaron 32 pruebas de dominio/entrada, 15 de navegador y build/tipos; se revisaron escritorio y móvil. Evidencia en `docs/desarrollo/EXPLORACION_MERCADO.md`.
+Se corrigió Frontend a `not deployed`: Convex static hosting es la elección futura y aún no está configurado. Este bloque no se ha comprometido en Git, publicado ni desplegado; la primera comparación anterior sí quedó en el remoto privado en `9b420f6`. Próximo bloque: estudios persistentes con sesiones aisladas.
+
+
+### 2026-09-08 - working tree · estudios persistentes
+Implementado guardado y recuperación de estudios sintéticos en Convex local: tabla e índices en `convex/schema.ts`, funciones validadas en `convex/studies.ts` y lista reactiva en `src/components/SavedStudies.tsx`. Precios, contactos y fuentes proceden de fixtures del servidor; no se admiten documentos privados.
+Sesión anónima por capacidad aleatoria, almacenada como hash en servidor; límite de 10 estudios por sesión y 500 en esta demo local. Otra sesión no lista ni modifica estudios ajenos. Revisión requerida para actualizar; reintento idéntico de creación no duplica registros. Esto no implementa cuentas de restaurantes ni prepara por sí solo una publicación pública.
+Pasaron 36 pruebas de dominio/backend, 18 de navegador y build/tipos. E2E contra Convex local comprobó recarga, dos pestañas, otra sesión, conflicto y desconexión. Revisión visual de escritorio y móvil. El proceso existente de desarrollo confirmó funciones e índices; el arranque adicional fue rechazado por puerto ocupado y no se cambió de destino.
+Revisión adversarial independiente cerró dos P2 con regresiones: reintento de contenido distinto y pérdida de selección al volver al ejemplo. La sección de guardado contiene errores para conservar la exploración. Evidencia, comandos y límites actualizados en README y `docs/desarrollo/PERSISTENCIA_ESTUDIOS.md`.
+Sin APIs externas, envío de mensajes, carga privada, despliegue cloud, commit ni push de este bloque. Autenticación comercial, controles públicos completos y fuentes reales permanecen pendientes.
+
+
+### 2026-09-08 - working tree · pulido visual
+Nueva dirección visual aplicada a portada, resultados, guardados, comparación y diálogos: tokens índigo/lavanda, tipografía Manrope variable empaquetada localmente e ilustración SVG decorativa de despensa. La portada se compacta al explorar; no se alteraron cálculos, persistencia ni integraciones.
+Se revisaron escritorio y móvil, nombres accesibles y contrastes principales; 15 pruebas de exploración/comparación y build/tipos satisfactorios. Las pruebas de reflujo verifican portada y resultados a 320/390/768/1280 px. Movimiento reducido respetado; sin nuevas solicitudes a servicios externos de fuentes.
+Guía visual y etapas actualizadas. Se corrigió la ruta de importación de la fuente durante el build y un nombre accesible de ayuda en móvil. No hay premio de diseño, auditoría integral de accesibilidad, commit/push ni despliegue de este bloque.
+
+
+### 2026-09-08 - working tree · verificación antes de Git
+Se ejecutaron las 36 pruebas de dominio/backend, build/tipos, 18 E2E existentes y smoke de cálculo contra Convex local. Se añadió y ejecutó un ensayo E2E continuo en `tests/studies.spec.ts`: explorar, revisar fuentes/contacto, guardar/recuperar, preparar consulta sin envío, confirmar equivalencia y completar condiciones sintéticas para verificar 10 y 20 kg. Total: 19 recorridos de navegador verificados.
+`npm run test:demo` reproduce el ensayo. Guion objetivo y brechas registrados en `docs/desarrollo/ENSAYO_DEMO.md`; no se grabó video ni se ejecutaron sponsors externos. Reglas oficiales consultadas de nuevo: siguen pendientes integraciones reales, demo pública y materiales de entrega.
+Se prepara commit y push de exploración, persistencia y pulido en la rama de desarrollo. Remoto y visibilidad privada comprobados; el push no cambia visibilidad ni despliega la app.

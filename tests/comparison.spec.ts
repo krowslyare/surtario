@@ -5,7 +5,7 @@ test("compara, cambia cantidad y completa un dato faltante sin recetas", async (
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/");
+  await page.goto("/?view=comparison");
   await expect(page.getByTestId("total-0")).toHaveText("S/ 95.00");
   await expect(page.getByTestId("total-1")).toHaveText("S/ 50.00");
   await page.getByLabel("Cantidad necesaria").fill("20");
@@ -27,7 +27,7 @@ test("compara, cambia cantidad y completa un dato faltante sin recetas", async (
 test("edición manual distingue dato desconocido, entrega incluida y moneda diferente", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?view=comparison");
   await page.getByRole("button", { name: "Falta la entrega" }).click();
   await expect(page.getByTestId("total-0")).toHaveText("Pendiente");
   await page.getByRole("button", { name: "Editar Proveedor A" }).click();
@@ -51,7 +51,7 @@ test("edición manual distingue dato desconocido, entrega incluida y moneda dife
 test("vacío, oferta única y nueva oferta manual se pueden recorrer", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?view=comparison");
   for (let i = 0; i < 2; i++) {
     await page
       .getByRole("button", { name: "Quitar oferta", exact: true })
@@ -78,7 +78,7 @@ test("vacío, oferta única y nueva oferta manual se pueden recorrer", async ({
 for (const width of [320, 390, 768, 1280]) {
   test(`reflujo y edición por teclado a ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+    await page.goto("/?view=comparison");
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
     expect(
       await page.evaluate(

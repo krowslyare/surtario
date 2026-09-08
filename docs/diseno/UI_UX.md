@@ -1,44 +1,46 @@
 # Guía de UI y UX
 
-Versión 0.2 · 7 de septiembre de 2026 · Base visual para desarrollar. Branding comercial fuera del alcance actual. Primera comparación revisada visualmente en navegador; validación con restaurantes pendiente.
+Versión 0.4 · Pulido visual solicitado por el usuario. Branding comercial fuera del alcance actual. Primera comparación revisada visualmente en navegador; validación con restaurantes pendiente.
 
 Esta guía aplica a la aplicación y demo. Complementa el [plan de producto](../producto/PLAN_PRODUCTO.md); no crea otra etapa de investigación o diseño de marca.
 
 ## 1. Alcance
 
-Mantener colores, tipografía, espacios y componentes consistentes. La interfaz debe ayudar al encargado a comparar compras y entender qué está pagando.
+Mantener colores, tipografía, espacios y componentes consistentes. La interfaz debe ayudar al encargado a conocer alternativas de mercado y, cuando decida comprar, entender qué pagaría.
 
 Nombre provisional: **Compras para restaurantes**, como texto sencillo en el encabezado. Nombre comercial, logo, eslogan, posicionamiento, dominio y activos de marca se trabajarán al abordar la versión comercial. No dedicarles tareas durante este corte ni incrustar el nombre provisional en lógica de negocio.
 
 ## 2. Dirección visual
 
-Superficies claras, espacio moderado y jerarquía fuerte. La comparación es el centro de atención. Verde reservado para acción principal y estados positivos explícitos; los precios conservan color de texto normal. Que un proveedor tenga menor precio por kg no vuelve verde toda su oferta.
+Dirección: mesa de compras contemporánea, con tinta índigo, lavanda suave y una ilustración de despensa. La portada tiene una composición amplia y se compacta al explorar. Los resultados priorizan proveedor/fuente y presentación/precio; selección marcada con borde y texto, sin declarar un ganador. Cálculos y pendientes conservan su jerarquía.
 
 Tokens implementados: [tokens.css](../../src/styles/tokens.css), única fuente de valores de la UI.
 
 | Función | Token / valor inicial |
 | --- | --- |
-| Fondo de aplicación | `--color-canvas`: `#F7F8FA` |
+| Fondo de aplicación | `--color-canvas`: `#F6F6FA` |
 | Superficies | `--color-surface`: `#FFFFFF` |
-| Texto principal | `--color-text`: `#172B26` |
-| Texto secundario | `--color-text-muted`: `#52615C` |
-| Acción principal | `--color-primary`: `#126B50`, texto blanco |
+| Texto principal | `--color-text`: `#292943` |
+| Texto secundario | `--color-text-muted`: `#626278` |
+| Acción principal | `--color-primary`: `#42416F`, texto blanco |
 | Pendiente | Texto `#8A4B08` sobre `#FFF4D6` |
 | Error | Texto `#B42318` sobre `#FEECE9` |
 | Información | Texto `#175CD3` sobre `#EFF8FF` |
-| Bordes | Decorativos `#DCE3DF`; controles `#778880` |
+| Bordes | Decorativos `#DDDDE8`; controles `#8B8B9E` |
 
-Tipografía: pila de sistema sans serif; una familia para toda la aplicación, sin descarga de fuente obligatoria. Texto base e inputs 16 px; tablas y etiquetas 14 px; metadatos 12 px solo si no son decisivos. Título de pantalla 28 px y cifra destacada 32 px. Pesos 400/500/600/700; evitar texto fino. Cifras con dígitos tabulares y alineadas a la derecha en columnas numéricas.
+Tipografía: Manrope variable, subconjunto latino WOFF2 de 24.83 kB empaquetado localmente, con fallback de sistema y font-display swap. No consulta servicios de fuentes externos. Licencia OFL-1.1 conservada en la dependencia `@fontsource-variable/manrope`. Texto base e inputs 16 px; tablas y etiquetas 14 px; metadatos no decisivos 11–12 px. Portada hasta 76 px, reducida a 32–40 px al explorar; cifras 32–36 px. Pesos 400/500/600/650/800; evitar texto fino. Cifras con dígitos tabulares y alineadas a la derecha en columnas numéricas.
 
-Escala de espacios: 4, 8, 12, 16, 24, 32, 48 px. Controles de 44 px de alto como objetivo propio; radio de 8 px en controles y 12 px en paneles. Bordes suaves entre secciones, sombras solo para elementos elevados. No convertir cada cifra en una tarjeta.
+Escala de espacios: 4, 8, 12, 16, 24, 32, 48 px. Controles de 44 px de alto como objetivo propio; radio base de 12 px en controles y 20 px en paneles; portada de 28 px. Bordes entre secciones, sombra sutil en superficies de trabajo y más fuerte en diálogos. No convertir cada cifra en una tarjeta.
 
-La versión inicial es clara. Modo oscuro e ilustraciones propias quedan fuera de este corte. El branding se retoma para la versión comercial.
+La versión inicial es clara. `MarketIllustration.tsx` aporta una ilustración SVG decorativa de insumos, sin marcas reales ni fuentes comerciales. Se oculta a lectores de pantalla y pierde protagonismo al explorar. Animación de entrada breve, desactivada con movimiento reducido. Modo oscuro y branding comercial definitivo siguen aplazados.
 
 Para la entrega del concurso no diseñar sección de pricing, tarjetas de planes, checkout ni paywall. El acceso público se presenta con «Probar ejemplo». Esto se refiere a la tarifa del SaaS: precios de insumos, cotizaciones y totales permanecen visibles. La tarifa comercial está pendiente de validación.
 
 ## 3. Jerarquía de información
 
-En una comparación mostrar, en este orden:
+En exploración: insumo/categoría y zona → tipo de resultado → presentación/precio o contacto disponible → fuente/fecha → añadir al estudio o preparar consulta. No pedir cantidad ni documentos para conocer alternativas. Distinguir un estudio sin resultados de una búsqueda todavía no realizada y de falta de cobertura del ejemplo.
+
+Al preparar una compra mostrar, en este orden:
 
 1. **Necesidad:** ingrediente/especificación, cantidad y entrega requerida.
 2. **Resultado por proveedor:** cuánto se desembolsa, cuánto se recibe y qué excedente queda.
@@ -50,11 +52,11 @@ Mostrar el precio por kg junto a su etiqueta. No permitir que una cifra grande s
 
 ## 4. Tres pantallas de referencia
 
-### A. Insumos y proveedores
+### A. Explorar mercado y mi estudio
 
-Encabezado con título y acción «Cargar documento». Lista de insumos identificados con presentación, proveedor, fecha y estado de revisión. Filtrar por proveedor/pendientes cuando exista suficiente información para necesitarlo; sin filtros vacíos decorativos.
+Entrada por insumo/categoría y zona. Separar precios de catálogo, distribuidores sin precio y referencias generales. Cada resultado muestra origen/fecha, ubicación declarada y contacto cuando exista evidencia; sin precio no significa precio cero. Seleccionar opciones permite construir un estudio sin preparar una compra. «Cargar documento» es contexto opcional cuando esté implementado.
 
-Estado inicial del producto privado: «Agrega una lista o cotización para empezar». La demo pública ofrece «Probar ejemplo» con documentos sintéticos; no pide archivos privados ni obliga a iniciar sesión para explorar el ejemplo.
+El prototipo local ofrece «Explorar ejemplo» y avisa que filtra datos ficticios; no simula una búsqueda real. La demo conectada ofrecerá «Probar ejemplo» con fuentes y contactos identificados. No exige archivos privados ni cantidad. Las condiciones no verificadas permanecen pendientes al continuar a compra.
 
 No abrir con indicadores de ganancias, ahorro o platos que todavía no podemos calcular.
 
@@ -110,7 +112,7 @@ Español claro y directo, con «tú». Familiaridad sin jerga de chat en la inte
 
 Fechas legibles y sin ambigüedad. Moneda y unidades consistentes; no mezclar separadores decimales dentro de la misma pantalla. En inputs, interpretar separadores con reglas explícitas y mostrar el valor entendido antes de confirmar. No convertir automáticamente una coma ambigua en un importe distinto.
 
-En la demo, mostrar un antes/después observable: documento difícil de comparar → condiciones ordenadas → decisión explicada. No inventar testimonios, porcentajes de ahorro ni adopción. Los logos de sponsors, cuando correspondan, van en créditos o información del proyecto, no entre precios.
+En la demo, mostrar un recorrido observable: pregunta de mercado → fuentes y alternativas → estudio útil. Continuación opcional: condiciones ordenadas → decisión de compra explicada. No inventar testimonios, porcentajes de ahorro ni adopción. Los logos de sponsors, cuando correspondan, van en créditos o información del proyecto, no entre precios.
 
 ## 7. Accesibilidad y teléfono
 
@@ -124,12 +126,24 @@ Anchos de revisión de producto: 360, 390, 768 y 1280 px; revisar también reflu
 
 ## 8. Cómo aplicar y verificar
 
-En la primera entrega implementar solo tokens, texto, botones, campos y comparación. Añadir el componente de documento al existir extracción; no fabricar un catálogo de componentes ajenos al flujo. Si se adopta una librería, adaptar sus controles a estas reglas en lugar de mezclar estilos.
+Construir componentes conforme aparezcan en el recorrido de exploración y comparación. Añadir el componente de documento al existir extracción; no fabricar un catálogo de componentes ajenos al flujo. Si se adopta una librería, adaptar sus controles a estas reglas en lugar de mezclar estilos.
 
-Antes de desarrollar más pantallas, revisar las tres vistas de referencia con datos sintéticos: primera comparación, documento ambiguo y resultado parcial. La primera comparación y el resultado parcial se revisaron en navegador; la vista de extracción documental sigue pendiente.
+Revisar entrada de exploración, resultados con/sin precio, estudio, compra opcional y estados parciales con datos sintéticos. La extracción documental tendrá su propia revisión cuando exista.
 
-Para aceptar una pantalla: el usuario reconoce cantidad y desembolso, identifica condiciones pendientes, encuentra la fuente y entiende la próxima acción. Verificarlo con teclado y en teléfono. Las imágenes o capturas de verificación deben corresponder a la UI implementada.
+Para aceptar exploración: el usuario distingue precio, contacto y referencia, encuentra la fuente y conserva opciones sin cantidad ni documentos. Para aceptar compra: reconoce cantidad y desembolso e identifica condiciones pendientes. En ambas entiende la próxima acción. Verificarlo con teclado y en teléfono. Las imágenes o capturas de verificación deben corresponder a la UI implementada.
 
-Contrastes calculados de la paleta propuesta: texto principal/blanco 14.89:1; secundario/blanco 6.52:1; blanco/acción principal 6.47:1; pendiente 6.20:1; error 5.76:1; información 5.57:1. Son combinaciones sólidas concretas, no un certificado para cualquier mezcla de colores ni para la aplicación completa. Revalidar si se cambia color, fondo u opacidad.
+Contrastes calculados de la paleta propuesta: texto principal/blanco 14.07:1; secundario/blanco 5.94:1; blanco/acción principal 9.47:1; secundario/lavanda 4.93:1; borde de control/blanco 3.34:1; pendiente 6.20:1; error 5.76:1; información 5.57:1. Son combinaciones sólidas concretas, no un certificado para cualquier mezcla de colores ni para la aplicación completa. Revalidar si se cambia color, fondo u opacidad.
 
 Primera entrega revisada en escritorio y móvil, con prueba de reflujo de 320 a 1280 px y cierre de diálogos por teclado. Pendientes: extracción documental, pruebas con usuarios y auditoría completa de accesibilidad. Branding comercial aplazado; no condiciona desarrollo ni entrega del concurso.
+
+
+## Guardado de estudios · entrega local
+
+«Guardar estudio» confirma solo tras respuesta de Convex. «Guardados» muestra carga, vacío o lista reactiva; nunca sustituir carga por cero. Recuperar conserva fuentes y selección; actualizar desde una revisión antigua muestra conflicto y exige recuperar la versión actual. Un cambio en otra pestaña actualiza la lista y conserva el borrador abierto.
+
+Sin conexión se informa guardado no confirmado y se conserva el borrador. Un error de consulta no debe derribar exploración. La sesión pertenece a este navegador; avisar que borrar almacenamiento pierde acceso y que compras/borradores de mensajes siguen transitorios. Sin backend configurado no mostrar éxito de persistencia. Revisión visual realizada en escritorio y móvil sobre la UI implementada.
+
+
+## Evidencia del pulido visual
+
+Aplicado a portada, resultados, guardados, comparación y diálogos, conservando cálculos y persistencia. Revisión en navegador de escritorio y móvil; 15 pruebas de exploración/comparación, incluidas fuentes, teclado y reflujo a 320/390/768/1280 px, y build/tipos satisfactorios. Se comprobó también la portada antes de buscar y se corrigió el nombre accesible de ayuda al ocultarse su texto en móvil. No acredita un premio de diseño ni auditoría completa de accesibilidad.

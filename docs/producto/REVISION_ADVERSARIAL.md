@@ -76,3 +76,19 @@ Tras la observación del usuario se revisaron de nuevo las reglas oficiales. No 
 Revisión independiente con un subagente Sol sobre módulo de cálculo, parser y UI. Hallazgos corregidos: parser de entero generaba una expresión regular inválida al guardar; importes y conteos podían superar enteros seguros; diferencia entre tres o cuatro ofertas omitía indicar su referencia. Se añadieron comprobaciones y la comparación nombra la oferta de mayor desembolso cuando hay más de dos.
 
 La verificación de navegador detectó además el retorno de foco y etiquetas accesibles de campos/selectores; corregidos manteniendo las aserciones. Evidencia final: tests de dominio/entrada, navegador y consultas de Convex local en README. Esta revisión no cubre autenticación, persistencia, OCR ni servicios externos, aún sin implementar.
+
+
+## Entrada autónoma v1.2 · 7 de septiembre de 2026
+
+Revisión independiente de plan y flujo con subagente. Se encontraron cuatro contradicciones: activación comercial obligaba a comprar, guía visual abría por documentos, secuencia exigía APIs antes de ampliar UI pese al aplazamiento autorizado, y el criterio E2E omitía el estudio autónomo. Se corrigieron en plan, UI/UX, primera entrega, etapas, README y guía del repositorio.
+
+La segunda pasada estática cubrió `MarketStudy`, dominio de mercado, navegación y continuidad a `Comparison`. No encontró nuevos errores materiales dentro del alcance de ejemplos: no exige cantidad/documentos, mantiene tipos de resultado separados, confirma equivalencias y conserva pendientes al preparar compra. El agente principal completó pruebas y revisión visual; el revisor no ejecutó tests ni verificó integraciones externas.
+
+Persistencia y datos reales siguen pendientes. Esta revisión no valida demanda comercial, cobertura de proveedores ni preparación para el concurso. Evidencia local y siguiente bloque en `docs/desarrollo/EXPLORACION_MERCADO.md`.
+
+
+## Persistencia sintética · 7 de septiembre de 2026
+
+Revisión independiente de esquema, funciones, UI y pruebas. Dos P2 corregidos: reintento de creación con selección distinta devolvía el guardado anterior, y volver desde una búsqueda sin ejemplos descartaba el borrador. Ahora el servidor rechaza reutilizar la solicitud con otro contenido, y volver al ejemplo conserva selección/identidad/fuentes. Pruebas de regresión añadidas.
+
+Se añadió límite de errores a la sección de guardado para preservar la exploración ante fallos de consulta. E2E detectó demora al identificar desconexión: el botón combina estado del navegador y de Convex. Verificados permisos entre capacidades distintas, recarga, sincronización, conflictos y ausencia de éxito falso. No se revisaron autenticación de restaurantes ni despliegue público: no están habilitados. El límite de 500 estudios es una cota de almacenamiento local, no protección completa ante abuso público.

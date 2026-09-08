@@ -13,7 +13,7 @@
 
 ## Invariantes de producto
 
-- La comparación de insumos y proveedores funciona con cero recetas y sin historial de compras. Ninguna operación de compra exige `recipeId`.
+- El estudio de mercado funciona sin documentos propios, cantidad ni intención de compra. La comparación de insumos y proveedores funciona con cero recetas y sin historial de compras. Ninguna operación de compra exige `recipeId`.
 - Compra realizada, oferta de proveedor y referencia de mercado son hechos distintos. Confirmar extracción o elegir una oferta no registra una compra.
 - No inventar peso de empaque, equivalencia, rendimiento, stock, condición tributaria ni entrega. Datos críticos ausentes quedan pendientes.
 - Comparar inicialmente un ingrediente/especificación por solicitud. Mostrar presentación, mínimo, excedente y desembolso, además de precio por unidad.
@@ -34,7 +34,7 @@
 ## Verificación y cierre
 
 - Probar reglas de negocio con resultados esperados independientes de la implementación; probar permisos e integraciones en sus límites relevantes.
-- Un flujo E2E de compras sin recetas es el criterio central. No duplicar todas las pruebas entre capas ni crear pruebas que solo reflejan implementación.
+- El E2E central es explorar → fuentes/precios/contactos → estudio, incluyendo distribuidor sin precio y búsqueda vacía. La continuación opcional a compra funciona sin recetas. No duplicar todas las pruebas entre capas ni crear pruebas que solo reflejan implementación.
 - Diferenciar simulación, prueba local, llamada externa real y despliegue. Registrar fallos y aspectos no verificados.
 - Al cerrar una entrega, actualizar su estado y evidencia en `ETAPAS.md`, el registro factual en `hackathon.md` y comandos del README si cambiaron.
 - Revisión adversarial antes de consolidar cambios materiales del flujo o habilitar datos privados; revisar proporcionalmente. No reabrir decisiones cerradas sin nueva evidencia.
