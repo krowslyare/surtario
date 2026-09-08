@@ -9,6 +9,8 @@
  */
 
 import type * as comparison from "../comparison.js";
+import type * as discovery from "../discovery.js";
+import type * as lib_firecrawl from "../lib/firecrawl.js";
 import type * as studies from "../studies.js";
 import type * as studyValidators from "../studyValidators.js";
 import type * as validators from "../validators.js";
@@ -21,6 +23,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   comparison: typeof comparison;
+  discovery: typeof discovery;
+  "lib/firecrawl": typeof lib_firecrawl;
   studies: typeof studies;
   studyValidators: typeof studyValidators;
   validators: typeof validators;

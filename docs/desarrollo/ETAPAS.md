@@ -8,7 +8,7 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | --- | --- | --- | --- |
 | 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |
 | 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
-| 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; APIs de sponsors pendientes |
+| 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; Prueba interna Firecrawl preparada; llamadas reales de sponsors pendientes |
 | 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF con transcripción local; fuentes reales y extracción automática pendientes |
 | 4 | Solicitud, respuesta y decisión conectadas | Pendiente | — |
 | 5 | Demo pública aislada y robusta | Pendiente | — |
@@ -110,3 +110,7 @@ En la fila correspondiente, registrar estado y enlace a evidencia breve: archivo
 ## Entrada de listas · evidencia local
 
 Entrada manual, XLSX/CSV con elección de hoja/columna y revisión de nombres implementados. Fotos/PDF conservan origen y permiten transcripción manual; OCR pendiente. Archivo/lista transitorios en navegador, sin uploads ni ofertas creadas automáticamente. 41 pruebas de dominio/backend, 24 E2E y build satisfactorios. [Alcance, límites y evidencia](./ENTRADA_INSUMOS.md). Etapas 2–4 continúan abiertas hasta ejecutar las integraciones reales.
+
+## Preparación de Firecrawl · evidencia local
+
+Action interna y adaptador de búsqueda acotada implementados. 47 tests y build satisfactorios; action cargada en Convex local, bloqueada sin clave y no invocable por cliente público. Sin petición real ni conexión a la UI/persistencia. [Configuración y secuencia de integraciones](./INTEGRACIONES.md). La etapa 2 sigue abierta.

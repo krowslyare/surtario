@@ -45,7 +45,7 @@ npm run test:backend
 
 Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
 
-Verificado: 41 pruebas de dominio/backend y 24 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
+Verificado: 47 pruebas de dominio/backend y 24 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
 
 El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido reproducible y las partes del video aún pendientes. No se ha grabado un video de entrega.
 
@@ -58,7 +58,7 @@ Usa archivos de ejemplo. Hasta 3 MB y 100 insumos; formatos y límites en [entra
 ## Por dónde empezar
 
 1. Leer las [etapas de desarrollo y su estado](docs/desarrollo/ETAPAS.md).
-2. Revisar la [exploración implementada](docs/desarrollo/EXPLORACION_MERCADO.md) y la [primera comparación](docs/desarrollo/PRIMERA_ENTREGA.md). Ver también [persistencia de estudios](docs/desarrollo/PERSISTENCIA_ESTUDIOS.md). Ver [entrada de insumos](docs/desarrollo/ENTRADA_INSUMOS.md). APIs externas y extracción automática son los siguientes hitos pendientes.
+2. Revisar la [exploración implementada](docs/desarrollo/EXPLORACION_MERCADO.md) y la [primera comparación](docs/desarrollo/PRIMERA_ENTREGA.md). Ver también [persistencia de estudios](docs/desarrollo/PERSISTENCIA_ESTUDIOS.md). Ver [entrada de insumos](docs/desarrollo/ENTRADA_INSUMOS.md). La [preparación de integraciones](docs/desarrollo/INTEGRACIONES.md) deja una prueba interna Firecrawl lista para configurar; llamada real y extracción automática pendientes.
 3. Consultar el [plan de producto](docs/producto/PLAN_PRODUCTO.md) para decisiones y límites, y la [revisión adversarial](docs/producto/REVISION_ADVERSARIAL.md) para sus motivos.
 4. Aplicar la [guía de UI/UX](docs/diseno/UI_UX.md) y sus tokens de referencia al construir las pantallas.
 

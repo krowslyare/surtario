@@ -8,11 +8,11 @@
 - **Frontend:** not deployed
 - **Convex deployment:** not deployed
 - **Components:** none
-- **Convex features:** schema, indexes, queries, mutations, realtime queries (local)
+- **Convex features:** schema, indexes, queries, mutations, internal action, realtime queries (local)
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-08T05:26:45Z
+- **Last updated:** 2026-09-08T06:11:57Z
 
 ## Log
 
@@ -71,3 +71,7 @@ Build/tipos y 19 pruebas E2E satisfactorios, incluido el ensayo completo de demo
 ### 2026-09-08 - working tree · entrada local de insumos
 Se implementó `IngredientIntake` con listas manuales, XLSX/CSV, selección de hoja/columna y revisión editable. Fotos/PDF permiten transcripción manual con origen local; OpenAI sigue pendiente. El parser de `src/intake/` corre en Worker cancelable. Se conservan archivo, hoja, columna y fila; no se suben archivos ni se convierten celdas en ofertas. Cambiar de insumo desde una selección existente exige iniciar otro estudio para evitar mezclas.
 41 pruebas de dominio/backend, 24 E2E y build satisfactorios. Pruebas nuevas con XLSX sintético de dos hojas, CSV, foto manual, cancelación, archivo inválido y separación de estudio. Revisión visual en escritorio/móvil y adversarial de procedencia y cambio de insumo. Los fallos iniciales de selectores accesibles se corrigieron sin relajar aserciones. Lista y documento permanecen transitorios en navegador; sin nuevas funciones Convex, sponsors reales, commit, push ni despliegue. Alcance en `docs/desarrollo/ENTRADA_INSUMOS.md`.
+
+### 2026-09-08 - working tree · preparación interna de descubrimiento
+El bloque de entrada/UI fue subido en `6402ef5` y se abrió el PR 1 en borrador, sin merge ni cambio de visibilidad. Se implementaron `convex/discovery.ts` y el adaptador Firecrawl en `convex/lib/`: búsqueda de hasta tres fuentes con texto acotado, validación de respuesta, timeout y sin reintentos automáticos. La action es interna, no persiste resultados ni se expone a visitantes.
+47 tests y build satisfactorios. Convex local cargó la action; una invocación sin clave se detuvo antes de llamar al proveedor, y el cliente público no pudo invocarla. No hay llamada real Firecrawl ni claves configuradas. La UI y persistencia siguen usando ejemplos. Configuración del backend y pasos para OpenAI/AgentMail documentados en `docs/desarrollo/INTEGRACIONES.md`; estos dos conectores siguen pendientes. Sin despliegue público.
