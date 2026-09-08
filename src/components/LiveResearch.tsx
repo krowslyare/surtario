@@ -351,7 +351,17 @@ export function ResearchWorkspace({
                           wasReviewed ? "Editar revisión" : "Revisar extracción"
                         }
                         confirmLabel="Añadir al estudio"
-                        onPrepare={(seed) => saveReview(sourceId, seed)}
+                        onPrepare={(seed) => {
+                          const entry = seed.sources[sourceId];
+                          if (entry.extraction)
+                            entry.webReview = {
+                              runId: active.id,
+                              sourceIndex: index,
+                              values: { ...entry.extraction.reviewed },
+                              confirmed: true,
+                            };
+                          saveReview(sourceId, seed);
+                        }}
                       />
                     ) : (
                       <button
@@ -396,8 +406,9 @@ export function ResearchWorkspace({
             {reviewed.length === 1 ? "oferta revisada" : "ofertas revisadas"}
           </strong>
           <p>
-            Las correcciones de esta selección son temporales. Las fuentes y
-            extracciones guardadas permanecen en la investigación.
+            Las correcciones de esta selección se conservan al guardar la
+            comparación. Las fuentes y extracciones ya permanecen en la
+            investigación.
           </p>
           {reviewed.length > 1 && (
             <label className="checkbox">

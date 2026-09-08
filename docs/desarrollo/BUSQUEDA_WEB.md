@@ -19,7 +19,7 @@ Sin configuración, la interfaz explica la indisponibilidad; no presenta fixture
 
 ## Límites de esta entrega
 
-Las búsquedas almacenan fuentes públicas por sesión de navegador. La capacidad anónima no sustituye cuentas ni habilita documentos privados. Correcciones y selección de ofertas reales siguen en la pestaña; el guardado de comparaciones permanece limitado a los fixtures hasta implementar el contrato de persistencia de revisión real.
+Las búsquedas almacenan fuentes públicas por sesión de navegador. La capacidad anónima no sustituye cuentas ni habilita documentos privados. Correcciones y selección permanecen en la pestaña hasta guardar la comparación. El [contrato de revisión web guardada](./REVISION_WEB_GUARDADA.md) permite conservarlas vinculadas a las fuentes y propuestas originales.
 
 Búsqueda y extracción son acciones explícitas separadas. No se envían correos, no se siguen enlaces sugeridos por documentos y no se decide una compra automáticamente. Las páginas se tratan como texto no confiable, con evidencia literal y confirmación humana.
 

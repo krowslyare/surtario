@@ -130,3 +130,7 @@ Verificación de este corte: 58 pruebas de dominio/backend; 30 E2E completos y u
 ## Búsqueda web conectada · entrega independiente
 
 Implementado recorrido Firecrawl → fuentes persistentes → extracción explícita OpenAI → revisión y comparación. Habilitación y credenciales ausentes en local: llamadas reales y pertinencia pendientes. 65 pruebas de dominio/backend, 33 E2E y build; caso positivo con proveedores/transporte simulados, separado de consultas locales reales. Revisión adversarial corregida y límites de consumo probados. [Contrato y evidencia](./BUSQUEDA_WEB.md). No completa etapas 2–4; AgentMail y persistencia de correcciones web siguen pendientes.
+
+## Revisión web guardada · entrega independiente
+
+Correcciones confirmadas, condiciones y elección de fuentes web recuperables mediante referencias a investigaciones de la misma sesión. Evidencia y propuesta originales reconstruidas por servidor; sin documentos privados. 68 pruebas de dominio/backend, 34 E2E y build satisfactorios; recorrido de revisión/guardado/recarga ejecutado en Convex local con fuente sintética. [Contrato](./REVISION_WEB_GUARDADA.md). Llamadas de sponsors y AgentMail siguen pendientes.

@@ -4,7 +4,7 @@ Nombre de trabajo. Producto para investigar precios y distribuidores de insumos,
 
 **Estado:** exploración local implementada con ejemplos ficticios de arroz y abarrotes en Lima. Permite revisar precios y contactos sin precio, seleccionar opciones y continuar opcionalmente a una comparación por cantidad. No requiere documentos ni inventario. La captura manual sigue disponible como alternativa.
 
-Estudios guardados en Convex local con fuentes y selección recuperables, lista reactiva y aislamiento por sesión de navegador. Las comparaciones de los ejemplos también admiten guardado de condiciones y opción elegida; las ofertas manuales nuevas y documentos revisados siguen transitorios. Entrada local de listas manuales, XLSX y CSV con revisión. Fotos/PDF admiten transcripción manual conservando el archivo en la pestaña. Búsqueda Firecrawl y extracción OpenAI conectadas al recorrido mediante habilitación de servidor; llamadas reales aún no verificadas. Sin OCR ni restaurante piloto.
+Estudios guardados en Convex local con fuentes y selección recuperables, lista reactiva y aislamiento por sesión de navegador. Las comparaciones de los ejemplos también admiten guardado de condiciones y opción elegida; las ofertas manuales nuevas y archivos propios siguen transitorios. Las revisiones de fuentes web guardadas también admiten persistencia. Entrada local de listas manuales, XLSX y CSV con revisión. Fotos/PDF admiten transcripción manual conservando el archivo en la pestaña. Búsqueda Firecrawl y extracción OpenAI conectadas al recorrido mediante habilitación de servidor; llamadas reales aún no verificadas. Sin OCR ni restaurante piloto.
 
 ## Ejecutar
 
@@ -45,7 +45,7 @@ npm run test:backend
 
 Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
 
-Verificado: 65 pruebas de dominio/backend y 33 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
+Verificado: 68 pruebas de dominio/backend y 34 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
 
 El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido reproducible y las partes del video aún pendientes. No se ha grabado un video de entrega.
 
@@ -116,10 +116,10 @@ Estado verificable y pasos para otro colaborador: [setup del agente](docs/desarr
 
 ## Revisión de cotizaciones
 
-«Revisar ejemplo de cotización» permite revisar campos con evidencia y preparar una comparación sin inventar el peso del saco. La UI usa un resultado sintético; la prueba OpenAI es una action interna separada, preparada para configurar clave y modelo. [Alcance, configuración y evidencia](docs/desarrollo/EXTRACCION_REVISION.md). Archivos reales, OCR y correo aún no están conectados. El [guardado de comparaciones y elección](docs/desarrollo/PERSISTENCIA_COMPARACIONES.md) está limitado a los ejemplos de arroz.
+«Revisar ejemplo de cotización» permite revisar campos con evidencia y preparar una comparación sin inventar el peso del saco. La UI usa un resultado sintético; la prueba OpenAI es una action interna separada, preparada para configurar clave y modelo. [Alcance, configuración y evidencia](docs/desarrollo/EXTRACCION_REVISION.md). Archivos reales, OCR y correo aún no están conectados. El [guardado de comparaciones y elección](docs/desarrollo/PERSISTENCIA_COMPARACIONES.md) admite los ejemplos de arroz y [revisiones de fuentes web guardadas](docs/desarrollo/REVISION_WEB_GUARDADA.md).
 
 ## Investigación web
 
 «Buscar en la web» utiliza Firecrawl cuando está configurado y habilitado en servidor. Guarda hasta tres fuentes por búsqueda, permite solicitar extracción OpenAI por fuente y revisar campos/citas antes de comparar. Sin configuración permanece deshabilitado; los ejemplos siguen separados. [Recorrido, límites y configuración](docs/desarrollo/BUSQUEDA_WEB.md).
 
-Las llamadas reales no se han ejecutado. Backend probado con proveedores simulados y UI positiva con un transporte de prueba. Fuentes y propuestas se guardan; las correcciones y comparaciones de fuentes web siguen transitorias. No se admiten documentos privados ni se envían correos.
+Las llamadas reales no se han ejecutado. Backend probado con proveedores simulados y UI positiva con un transporte de prueba. Fuentes y propuestas se guardan automáticamente; las correcciones y condiciones web se conservan al pulsar «Guardar comparación». No se admiten documentos privados ni se envían correos.

@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-08T19:56:39Z
+- **Last updated:** 2026-09-08T20:58:27Z
 
 ## Log
 
@@ -90,3 +90,7 @@ Pasaron 58 pruebas de dominio/backend, 30 E2E del conjunto completo y una regres
 Conectados búsqueda Firecrawl y extracción explícita OpenAI con revisión UI; fuentes y propuestas guardadas en `researchRuns`, con URL/fecha, aislamiento por capacidad, reservas idempotentes y límites de consumo (`convex/research.ts`, `src/components/LiveResearch.tsx`). Habilitación de servidor separada de claves; sin llamadas externas ejecutadas.
 Las ofertas revisadas pasan a comparación tras validar equivalencia; originales y correcciones quedan diferenciados. Las correcciones web siguen transitorias y no se habilitan documentos privados ni correo. Revisión adversarial independiente llevó a corregir guardado incierto del modelo y estados reactivos atrasados.
 65 pruebas de dominio/backend, 33 E2E y build satisfactorios; flujo positivo con respuestas simuladas, consulta de estado real en Convex local y revisión visual móvil. Sin publicación ni despliegue remoto.
+
+### 2026-09-08 - working tree · persistencia de revisión web
+Extendido el guardado de comparaciones a revisiones vinculadas a investigaciones de la sesión (`convex/comparisons.ts`). El servidor reconstruye texto, URL, propuesta original y revisión desde referencias verificadas. Condiciones y elección se recuperan sin registrar compra; archivos privados siguen excluidos.
+Corregidas igualdad de evidencia en reintentos y validación de condiciones editables. Revisión adversarial independiente completada sin hallazgos materiales pendientes. 68 pruebas de dominio/backend, 34 E2E y build correctos; recorrido de corrección, guardado y recarga ejecutado en Convex local con fuente sintética. Sin llamadas externas ni despliegue público.
