@@ -22,6 +22,10 @@ import {
 } from "./domain/market";
 import { money, numberLabel } from "./numbers";
 import { Dialog } from "./components/Dialog";
+import LiveResearch, {
+  type ResearchStatus,
+  type WebSearchRequest,
+} from "./components/LiveResearch";
 import ExtractionReview from "./components/ExtractionReview";
 import IngredientIntake from "./components/IngredientIntake";
 import SavedStudies, { type SavedStudy } from "./components/SavedStudies";
@@ -55,6 +59,8 @@ export default function MarketStudy({
     revision: number;
     clientId: string;
   }>(() => ({ id: null, revision: 0, clientId: crypto.randomUUID() }));
+  const [webStatus, setWebStatus] = useState<ResearchStatus | undefined>();
+  const [webRequest, setWebRequest] = useState<WebSearchRequest | null>(null);
   const [catalog, setCatalog] = useState<MarketResult[]>(marketExamples);
   const [term, setTerm] = useState("");
   const [region, setRegion] = useState("Lima");
@@ -193,7 +199,7 @@ export default function MarketStudy({
             <Search size={16} />
             Explorar mercado
           </span>
-          <span className="demo-badge">Prototipo con datos sintéticos</span>
+          <span className="demo-badge">Prototipo de investigación</span>
         </div>
         <div className="market-intro">
           <h1>Investiga tus insumos.</h1>
@@ -232,12 +238,34 @@ export default function MarketStudy({
             <Search size={18} />
             Explorar ejemplo
           </button>
+          <button
+            type="button"
+            className="button secondary"
+            disabled={!webStatus?.searchEnabled || !term.trim()}
+            onClick={() =>
+              setWebRequest((current) => ({
+                id: (current?.id ?? 0) + 1,
+                ingredient: term.trim(),
+                region,
+              }))
+            }
+          >
+            Buscar en la web
+          </button>
           <p className="market-search-note">
             <Info size={16} />
-            Este prototipo filtra ejemplos de arroz y abarrotes en Lima. Todavía
-            no consulta la web.
+            «Explorar ejemplo» filtra datos sintéticos de arroz y abarrotes en
+            Lima. La búsqueda web se ejecuta por separado cuando está
+            habilitada.
           </p>
         </form>
+        {persistenceEnabled && (
+          <LiveResearch
+            request={webRequest}
+            onStatus={setWebStatus}
+            onPrepare={onPrepare}
+          />
+        )}
         <IngredientIntake
           activeIngredient={search?.term ?? null}
           onExplore={(ingredient) => {
@@ -547,7 +575,8 @@ export default function MarketStudy({
         <footer>
           <span>
             Prototipo con ejemplos. Guarda el estudio para recuperar su
-            selección; los cambios de la comparación son temporales.
+            selección. Las comparaciones de ejemplo tienen guardado
+            independiente.
           </span>
           <span>
             Fuentes y contactos ficticios. No se han enviado consultas.

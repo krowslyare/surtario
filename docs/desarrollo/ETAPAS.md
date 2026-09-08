@@ -126,3 +126,7 @@ PRs por entrega: extracción/revisión se revisa contra la rama base del PR 1; c
 Comparaciones de arroz/catálogos sintéticos recuperables con cantidad, condiciones, evidencia original y opción elegida. Elegir no registra compra. Fuente histórica conservada al retirar ofertas; revisión adversarial encontró y verificó esa corrección. Aislamiento por sesión, conflictos de revisión, límites y decisiones incompletas probados. [Contrato y límites](./PERSISTENCIA_COMPARACIONES.md). APIs externas y despliegue siguen pendientes; esta entrega no completa la etapa 4.
 
 Verificación de este corte: 58 pruebas de dominio/backend; 30 E2E completos y una regresión adicional de confirmación tardía (31 casos en total), build y query local de la nueva tabla correctos. Revisión visual de comparación en 390/1280 px y pruebas de reflujo existentes satisfactorias.
+
+## Búsqueda web conectada · entrega independiente
+
+Implementado recorrido Firecrawl → fuentes persistentes → extracción explícita OpenAI → revisión y comparación. Habilitación y credenciales ausentes en local: llamadas reales y pertinencia pendientes. 65 pruebas de dominio/backend, 33 E2E y build; caso positivo con proveedores/transporte simulados, separado de consultas locales reales. Revisión adversarial corregida y límites de consumo probados. [Contrato y evidencia](./BUSQUEDA_WEB.md). No completa etapas 2–4; AgentMail y persistencia de correcciones web siguen pendientes.

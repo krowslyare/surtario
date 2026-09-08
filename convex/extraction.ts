@@ -1,14 +1,7 @@
-import { Agent } from "@convex-dev/agent";
-import { createOpenAI } from "@ai-sdk/openai";
 import { v } from "convex/values";
 import { env, internalAction } from "./_generated/server";
-import { components } from "./_generated/api";
 import { extractionSource } from "../fixtures/extraction";
-import {
-  extractedOfferSchema,
-  extractionInstructions,
-  validateExtraction,
-} from "./lib/extraction";
+import { extractOfferWithAgent } from "./lib/agentExtraction";
 
 const field = v.object({
   value: v.union(v.string(), v.null()),
@@ -41,28 +34,11 @@ export const probe = internalAction({
       example === "ambiguous"
         ? extractionSource.text
         : "Distribuidora de ejemplo\nArroz blanco extra\nSaco de 18 kg: PEN 80.00";
-    const extractor = new Agent(components.agent, {
-      name: "Procurement document extraction",
-      languageModel: createOpenAI({ apiKey: key })(model),
-      instructions: extractionInstructions,
-      storageOptions: { saveMessages: "none" },
-    });
     try {
-      const result = await extractor.generateObject(
-        ctx,
-        {},
-        {
-          prompt: `Documento de ejemplo para extraer:\n${JSON.stringify(sourceText)}`,
-          schema: extractedOfferSchema,
-          maxRetries: 0,
-          maxOutputTokens: 2000,
-          abortSignal: AbortSignal.timeout(30000),
-        },
-      );
       return {
         sourceText,
         model,
-        offer: validateExtraction(result.object, sourceText),
+        offer: await extractOfferWithAgent(ctx, sourceText, key, model),
       };
     } catch {
       throw new Error(

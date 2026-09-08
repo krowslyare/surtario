@@ -313,6 +313,9 @@ export default function Comparison({
   const source = sourceId ? sources[sourceId] : null;
   const editingOffer = offers.find((offer) => offer.id === editing);
   const unit = unitName(request.unit);
+  const hasWebSources = offers.some(
+    (offer) => sources[offer.id]?.marketSource?.simulated === false,
+  );
   const fingerprint = JSON.stringify({ request: effectiveRequest, offers });
   const activeSelection =
     selectionFingerprint === fingerprint ? selectedOfferId : null;
@@ -470,7 +473,11 @@ export default function Comparison({
             <Scale size={16} /> Comparación de insumos
           </span>
           <span className="demo-badge">
-            {seed ? "Desde tu estudio de ejemplo" : "Ejemplo sintético"}
+            {hasWebSources
+              ? "Fuentes web revisadas"
+              : seed
+                ? "Desde tu estudio de ejemplo"
+                : "Ejemplo sintético"}
           </span>
         </div>
         <div className="page-title">
@@ -596,7 +603,9 @@ export default function Comparison({
                 {offers.length === 1
                   ? "oferta para revisar"
                   : "ofertas para revisar"}{" "}
-                · Precios de ejemplo, no cotizaciones reales
+                {hasWebSources
+                  ? "· Datos revisados de páginas públicas; condiciones por confirmar"
+                  : "· Precios de ejemplo, no cotizaciones reales"}
               </p>
             </div>
             <button
@@ -913,7 +922,11 @@ export default function Comparison({
           </div>
         </section>
         <footer>
-          <span>Datos de prueba · Guarda la comparación para recuperarla.</span>
+          <span>
+            {hasWebSources
+              ? "Revisión web temporal: estas correcciones no se guardan todavía."
+              : "Datos de prueba · Guarda la comparación para recuperarla."}
+          </span>
           <span>Sin recetas ni historial de compras.</span>
         </footer>
         <p role="status" className="sr-only">
@@ -1043,10 +1056,22 @@ export default function Comparison({
               </div>
             </dl>
           </div>
+          {source.marketSource?.url && (
+            <a
+              href={source.marketSource.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="button text-button"
+            >
+              Abrir fuente web original
+            </a>
+          )}
           <p className="muted">
             {source.edited
               ? "La comparación usa tus cambios manuales. Aquí conservamos los valores de entrada."
-              : "Registro de datos sintéticos para probar la comparación. No es un documento de un proveedor real."}
+              : source.marketSource?.simulated === false
+                ? "Valores revisados desde una página pública; no equivalen a una cotización confirmada por el proveedor."
+                : "Registro de datos sintéticos para probar la comparación. No es un documento de un proveedor real."}
           </p>
         </Dialog>
       )}

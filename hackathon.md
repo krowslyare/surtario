@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-08T16:04:41Z
+- **Last updated:** 2026-09-08T19:56:39Z
 
 ## Log
 
@@ -85,3 +85,8 @@ La UI muestra una revisión simulada: texto original, propuesta, evidencia, corr
 Implementados guardado/recuperación de comparaciones sintéticas, condiciones y opción elegida en Convex local (`convex/comparisons.ts`, `src/components/SavedComparisons.tsx`). Elegir no registra compra. Se conserva evidencia original, aislamiento por capacidad y revisión optimista; carga privada continúa deshabilitada.
 Revisión adversarial independiente detectó y verificó correcciones de conservación de fuentes y validación contra snapshots históricos. UI conserva el borrador ante confirmación tardía y exige nueva elección al cambiar condiciones.
 Pasaron 58 pruebas de dominio/backend, 30 E2E del conjunto completo y una regresión adicional de confirmación tardía; build correcto. Query local ejecutada y revisión visual de escritorio/móvil realizada. Entrega en rama independiente sobre extracción/revisión; sin APIs externas reales, publicación ni despliegue remoto.
+
+### 2026-09-08 - working tree · investigación web conectada
+Conectados búsqueda Firecrawl y extracción explícita OpenAI con revisión UI; fuentes y propuestas guardadas en `researchRuns`, con URL/fecha, aislamiento por capacidad, reservas idempotentes y límites de consumo (`convex/research.ts`, `src/components/LiveResearch.tsx`). Habilitación de servidor separada de claves; sin llamadas externas ejecutadas.
+Las ofertas revisadas pasan a comparación tras validar equivalencia; originales y correcciones quedan diferenciados. Las correcciones web siguen transitorias y no se habilitan documentos privados ni correo. Revisión adversarial independiente llevó a corregir guardado incierto del modelo y estados reactivos atrasados.
+65 pruebas de dominio/backend, 33 E2E y build satisfactorios; flujo positivo con respuestas simuladas, consulta de estado real en Convex local y revisión visual móvil. Sin publicación ni despliegue remoto.
