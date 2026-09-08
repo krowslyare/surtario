@@ -10,7 +10,7 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
 | 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; Pruebas internas Firecrawl/OpenAI preparadas; llamadas reales de sponsors pendientes |
 | 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF con transcripción local; fuentes reales y extracción automática pendientes |
-| 4 | Solicitud, respuesta y decisión conectadas | Pendiente | — |
+| 4 | Solicitud, respuesta y decisión conectadas | En curso | Comparaciones y elección sintéticas recuperables; solicitud, respuesta y correo real pendientes |
 | 5 | Demo pública aislada y robusta | Pendiente | — |
 | 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
 | 7 | Materiales y entrega del concurso | Pendiente | Requisitos documentados; nada publicado |
@@ -120,3 +120,9 @@ Action interna y adaptador de búsqueda acotada implementados. 47 tests y build 
 Prueba interna OpenAI con dos textos sintéticos y revisión UI de propuesta/evidencia/corrección implementadas por separado. Componente Agent registrado localmente; sin llamada de modelo verificada ni OCR. Revisión permite pasar a comparación conservando originales y pendientes. 53 tests, 26 E2E y build satisfactorios; [evidencia y límites](./EXTRACCION_REVISION.md). No completa etapas 2–4.
 
 PRs por entrega: extracción/revisión se revisa contra la rama base del PR 1; condiciones/decisión y correo irán en cortes posteriores. Ningún PR se fusiona por el solo hecho de tener pruebas locales correctas.
+
+## Condiciones y elección · entrega independiente
+
+Comparaciones de arroz/catálogos sintéticos recuperables con cantidad, condiciones, evidencia original y opción elegida. Elegir no registra compra. Fuente histórica conservada al retirar ofertas; revisión adversarial encontró y verificó esa corrección. Aislamiento por sesión, conflictos de revisión, límites y decisiones incompletas probados. [Contrato y límites](./PERSISTENCIA_COMPARACIONES.md). APIs externas y despliegue siguen pendientes; esta entrega no completa la etapa 4.
+
+Verificación de este corte: 58 pruebas de dominio/backend; 30 E2E completos y una regresión adicional de confirmación tardía (31 casos en total), build y query local de la nueva tabla correctos. Revisión visual de comparación en 390/1280 px y pruebas de reflujo existentes satisfactorias.

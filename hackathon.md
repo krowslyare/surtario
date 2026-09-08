@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-08T14:57:05Z
+- **Last updated:** 2026-09-08T16:04:41Z
 
 ## Log
 
@@ -80,3 +80,8 @@ El bloque de entrada/UI fue subido en `6402ef5` y se abrió el PR 1 en borrador,
 En `codex/extraction-review`, se agregó una prueba interna OpenAI usando Agent con dos textos sintéticos, sin herramientas, threads ni mensajes guardados. Clave y modelo se leen del entorno tipado de Convex; no hay modelo configurado ni llamada real. El esquema cerrado requiere evidencia literal y conserva datos ausentes. Convex local cargó el componente/action, rechazó la prueba sin credenciales y negó su invocación por cliente público.
 La UI muestra una revisión simulada: texto original, propuesta, evidencia, correcciones y confirmación. Permite continuar a comparación con cantidad vacía y condiciones pendientes. Se separaron propuesta extraída y baseline confirmado tras revisión adversarial; prueba de corrección 80 a 85 y etiquetas específicas evitan presentar la corrección como original del documento. No conecta archivos reales ni implementa OCR.
 53 tests de dominio/backend, 26 E2E y build satisfactorios. Revisión visual de escritorio/móvil; se corrigió el ancho de diálogo y se añadió comprobación de reflujo. Alcance y comandos en `docs/desarrollo/EXTRACCION_REVISION.md`. Se prepara un PR dependiente del PR 1, sin sumar este corte a su rama ni fusionarlo. Sin despliegue público; persistencia de decisiones y correo permanecen para entregas posteriores.
+
+### 2026-09-08 - working tree · comparaciones y elección
+Implementados guardado/recuperación de comparaciones sintéticas, condiciones y opción elegida en Convex local (`convex/comparisons.ts`, `src/components/SavedComparisons.tsx`). Elegir no registra compra. Se conserva evidencia original, aislamiento por capacidad y revisión optimista; carga privada continúa deshabilitada.
+Revisión adversarial independiente detectó y verificó correcciones de conservación de fuentes y validación contra snapshots históricos. UI conserva el borrador ante confirmación tardía y exige nueva elección al cambiar condiciones.
+Pasaron 58 pruebas de dominio/backend, 30 E2E del conjunto completo y una regresión adicional de confirmación tardía; build correcto. Query local ejecutada y revisión visual de escritorio/móvil realizada. Entrega en rama independiente sobre extracción/revisión; sin APIs externas reales, publicación ni despliegue remoto.
