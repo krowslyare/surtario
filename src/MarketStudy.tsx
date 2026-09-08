@@ -22,7 +22,7 @@ import {
 } from "./domain/market";
 import { money, numberLabel } from "./numbers";
 import { Dialog } from "./components/Dialog";
-import MarketIllustration from "./components/MarketIllustration";
+import IngredientIntake from "./components/IngredientIntake";
 import SavedStudies, { type SavedStudy } from "./components/SavedStudies";
 import type { Id } from "../convex/_generated/dataModel";
 
@@ -72,6 +72,7 @@ export default function MarketStudy({
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [showStudy, setShowStudy] = useState(false);
+  const [nextIngredient, setNextIngredient] = useState<string | null>(null);
   const results = search
     ? filterMarketExamples(catalog, search.term, search.region)
     : [];
@@ -85,6 +86,18 @@ export default function MarketStudy({
   const sourceTitle = search
     ? `${search.term} en ${search.region}`
     : "Tu estudio";
+
+  function beginIngredientStudy(ingredient: string) {
+    setCatalog(marketExamples);
+    setSelectedIds([]);
+    setStudy({ id: null, revision: 0, clientId: crypto.randomUUID() });
+    setTerm(ingredient);
+    setSearch({ term: ingredient, region });
+    setShowStudy(false);
+    setFilter("all");
+    setError("");
+    setNextIngredient(null);
+  }
 
   function explore(event?: FormEvent) {
     event?.preventDefault();
@@ -148,7 +161,7 @@ export default function MarketStudy({
       <a href="#market-results" className="skip-link">
         Ir a los resultados
       </a>
-      <header className="topbar">
+      <header className="topbar market-topbar">
         <div className="brand">
           <span className="brand-icon">
             <ClipboardList size={22} />
@@ -181,20 +194,12 @@ export default function MarketStudy({
           </span>
           <span className="demo-badge">Prototipo con datos sintéticos</span>
         </div>
-        <div className="market-hero">
-          <div className="market-intro">
-            <p className="hero-context">
-              La próxima buena decisión empieza aquí.
-            </p>
-            <h1>
-              El mercado, <br />a tu mesa.
-            </h1>
-            <p>
-              Explora precios y distribuidores de los insumos que usas o quieres
-              incorporar. Sin cargar tu inventario ni definir una compra.
-            </p>
-          </div>
-          <MarketIllustration />
+        <div className="market-intro">
+          <h1>Investiga tus insumos.</h1>
+          <p>
+            Precios por unidad, presentaciones y proveedores. Guarda las
+            opciones que quieras revisar.
+          </p>
         </div>
         <form className="market-search" onSubmit={explore}>
           <label className="field">
@@ -232,6 +237,15 @@ export default function MarketStudy({
             no consulta la web.
           </p>
         </form>
+        <IngredientIntake
+          activeIngredient={search?.term ?? null}
+          onExplore={(ingredient) => {
+            if (ingredient === search?.term) return;
+            if (selectedIds.length > 0 || study.id)
+              setNextIngredient(ingredient);
+            else beginIngredientStudy(ingredient);
+          }}
+        />
         {error && !prepareOpen && (
           <p className="notice error" role="alert">
             {error}
@@ -266,43 +280,39 @@ export default function MarketStudy({
         {!search && !showStudy ? (
           <section className="market-start" aria-labelledby="start-title">
             <div>
-              <span className="section-caption">Tu estudio de mercado</span>
-              <h2 id="start-title">Buenas compras. Mejores preguntas.</h2>
+              <h2 id="start-title">Empieza con arroz en Lima</h2>
               <p>
-                Revisa un precio con presentación, encuentra un distribuidor sin
-                tarifa publicada y conserva las fuentes que te interesan.
+                Un saco de 18 kg, una bolsa de 1 kg y un distribuidor sin precio
+                publicado. Revisa qué puedes comparar y qué falta consultar.
               </p>
               <button className="button secondary" onClick={startExample}>
                 Explorar ejemplo de arroz <ArrowRight size={17} />
               </button>
             </div>
-            <ol>
-              <li>
-                <FileText size={20} />
-                <div>
-                  <strong>Precios con contexto</strong>
-                  <span>Presentación, fecha y condiciones de la fuente.</span>
-                </div>
-              </li>
-              <li>
-                <MapPin size={20} />
-                <div>
-                  <strong>Distribuidores por conocer</strong>
-                  <span>
-                    Productos y contactos, aunque no publiquen precios.
-                  </span>
-                </div>
-              </li>
-              <li>
-                <Bookmark size={20} />
-                <div>
-                  <strong>Tu selección, sin compromiso de compra</strong>
-                  <span>
-                    Compara, investiga o consulta cuando lo necesites.
-                  </span>
-                </div>
-              </li>
-            </ol>
+            <dl className="example-preview">
+              {marketExamples
+                .filter(
+                  (item): item is CatalogResult => item.kind === "catalog",
+                )
+                .map((item) => (
+                  <div key={item.id}>
+                    <dt>
+                      Presentación de{" "}
+                      {item.packageContent === null
+                        ? "peso pendiente"
+                        : `${numberLabel(item.packageContent)} ${item.packageUnit}`}
+                    </dt>
+                    <dd>
+                      {money(publishedUnitPrice(item), item.currency)}{" "}
+                      <span>/ {item.packageUnit}</span>
+                    </dd>
+                  </div>
+                ))}
+              <div>
+                <dt>Otro distribuidor</dt>
+                <dd>Por consultar</dd>
+              </div>
+            </dl>
           </section>
         ) : (
           <section id="market-results" aria-labelledby="results-title">
@@ -384,7 +394,7 @@ export default function MarketStudy({
                         <MapPin size={14} />
                         {result.kind === "reference"
                           ? `Zona de referencia: ${result.region}.`
-                          : `Ubicación declarada: ${result.region}. Cobertura de reparto por confirmar.`}
+                          : `${result.region} · Reparto por confirmar`}
                       </div>
                       <button
                         className="button text-button source-button"
@@ -398,20 +408,26 @@ export default function MarketStudy({
                     <div className="result-value">
                       {result.kind === "catalog" ? (
                         <>
-                          <span>Precio publicado de ejemplo</span>
-                          <strong>
-                            {money(result.priceCents, result.currency)}
+                          <span>Precio por unidad · ejemplo</span>
+                          <strong className="normalized-price">
+                            {publishedUnitPrice(result) === null ? (
+                              "Por confirmar"
+                            ) : (
+                              <>
+                                {money(
+                                  publishedUnitPrice(result),
+                                  result.currency,
+                                )}{" "}
+                                <span>/ {result.packageUnit}</span>
+                              </>
+                            )}
                           </strong>
-                          <p>
-                            Por{" "}
+                          <p className="package-price">
+                            {money(result.priceCents, result.currency)} por{" "}
                             {result.packageContent === null
                               ? "presentación por confirmar"
                               : `${numberLabel(result.packageContent)} ${result.packageUnit}`}
                           </p>
-                          <span className="unit-price">
-                            {money(publishedUnitPrice(result), result.currency)}{" "}
-                            / {result.packageUnit}
-                          </span>
                           <small>
                             No confirma stock, impuestos ni entrega.
                           </small>
@@ -481,10 +497,7 @@ export default function MarketStudy({
                     {selected.length === 1 ? "opción" : "opciones"} en tu
                     estudio
                   </h3>
-                  <p>
-                    Puedes seguir investigando. La cantidad solo es necesaria si
-                    decides preparar una compra.
-                  </p>
+                  <p>Preparar una compra es opcional.</p>
                 </div>
                 <div className="study-next-actions">
                   <button
@@ -519,11 +532,11 @@ export default function MarketStudy({
           </section>
         )}
         <aside className="market-context">
-          <h3>Tus datos pueden darle más contexto</h3>
+          <h3>¿Ya tienes una cotización?</h3>
           <p>
-            Listas, comprobantes o precios propios podrán enriquecer el estudio.
-            Son opcionales; la captura documental se conectará en una próxima
-            entrega.
+            Puedes introducir precios y condiciones en la comparación manual.
+            Añadir un archivo permite revisar insumos; la extracción automática
+            de precios todavía está pendiente.
           </p>
           <button className="button text-button" onClick={onManualExample}>
             Abrir alternativa de comparación manual <ArrowRight size={16} />
@@ -539,6 +552,32 @@ export default function MarketStudy({
           </span>
         </footer>
       </main>
+      {nextIngredient && (
+        <Dialog
+          title="Investigar otro insumo"
+          onClose={() => setNextIngredient(null)}
+        >
+          <p>
+            Vas a iniciar un estudio de {nextIngredient}. La selección actual no
+            se trasladará. Si no la guardaste, vuelve al estudio y guárdala
+            antes de continuar.
+          </p>
+          <div className="dialog-actions">
+            <button
+              className="button secondary"
+              onClick={() => setNextIngredient(null)}
+            >
+              Volver al estudio
+            </button>
+            <button
+              className="button primary"
+              onClick={() => beginIngredientStudy(nextIngredient)}
+            >
+              Iniciar otro estudio
+            </button>
+          </div>
+        </Dialog>
+      )}
       {source && (
         <Dialog
           title={

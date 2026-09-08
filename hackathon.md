@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-08T03:32:56Z
+- **Last updated:** 2026-09-08T05:26:45Z
 
 ## Log
 
@@ -63,3 +63,11 @@ Guía visual y etapas actualizadas. Se corrigió la ruta de importación de la f
 Se ejecutaron las 36 pruebas de dominio/backend, build/tipos, 18 E2E existentes y smoke de cálculo contra Convex local. Se añadió y ejecutó un ensayo E2E continuo en `tests/studies.spec.ts`: explorar, revisar fuentes/contacto, guardar/recuperar, preparar consulta sin envío, confirmar equivalencia y completar condiciones sintéticas para verificar 10 y 20 kg. Total: 19 recorridos de navegador verificados.
 `npm run test:demo` reproduce el ensayo. Guion objetivo y brechas registrados en `docs/desarrollo/ENSAYO_DEMO.md`; no se grabó video ni se ejecutaron sponsors externos. Reglas oficiales consultadas de nuevo: siguen pendientes integraciones reales, demo pública y materiales de entrega.
 Se prepara commit y push de exploración, persistencia y pulido en la rama de desarrollo. Remoto y visibilidad privada comprobados; el push no cambia visibilidad ni despliega la app.
+
+### 2026-09-08 - working tree · revisión de composición
+La exploración ahora abre con el buscador y un ejemplo concreto, sin eslóganes ni ilustración grande. `src/MarketStudy.tsx` destaca el precio normalizado junto al importe y contenido del empaque; conserva fuentes, fechas y datos pendientes. `src/styles/app.css` reúne los resultados en una lista compacta y mantiene accesible el estudio al desplazarse. Se actualizaron la guía visual, README y etapas.
+Build/tipos y 19 pruebas E2E satisfactorios, incluido el ensayo completo de demo. Revisión visual en escritorio y móvil; reflujo automatizado de 320 a 1280 px. Solo cambios locales de presentación: sin cambios de backend, llamadas a sponsors, commit, push ni despliegue en este bloque.
+
+### 2026-09-08 - working tree · entrada local de insumos
+Se implementó `IngredientIntake` con listas manuales, XLSX/CSV, selección de hoja/columna y revisión editable. Fotos/PDF permiten transcripción manual con origen local; OpenAI sigue pendiente. El parser de `src/intake/` corre en Worker cancelable. Se conservan archivo, hoja, columna y fila; no se suben archivos ni se convierten celdas en ofertas. Cambiar de insumo desde una selección existente exige iniciar otro estudio para evitar mezclas.
+41 pruebas de dominio/backend, 24 E2E y build satisfactorios. Pruebas nuevas con XLSX sintético de dos hojas, CSV, foto manual, cancelación, archivo inválido y separación de estudio. Revisión visual en escritorio/móvil y adversarial de procedencia y cambio de insumo. Los fallos iniciales de selectores accesibles se corrigieron sin relajar aserciones. Lista y documento permanecen transitorios en navegador; sin nuevas funciones Convex, sponsors reales, commit, push ni despliegue. Alcance en `docs/desarrollo/ENTRADA_INSUMOS.md`.

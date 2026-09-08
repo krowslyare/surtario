@@ -4,7 +4,7 @@ Nombre de trabajo. Producto para investigar precios y distribuidores de insumos,
 
 **Estado:** exploración local implementada con ejemplos ficticios de arroz y abarrotes en Lima. Permite revisar precios y contactos sin precio, seleccionar opciones y continuar opcionalmente a una comparación por cantidad. No requiere documentos ni inventario. La captura manual sigue disponible como alternativa.
 
-Estudios guardados en Convex local con fuentes y selección recuperables, lista reactiva y aislamiento por sesión de navegador. La comparación manual continúa transitoria. Sin scraping real, extracción automática ni restaurante piloto; APIs externas aplazadas para una entrega posterior.
+Estudios guardados en Convex local con fuentes y selección recuperables, lista reactiva y aislamiento por sesión de navegador. La comparación manual continúa transitoria. Entrada local de listas manuales, XLSX y CSV con revisión. Fotos/PDF admiten transcripción manual conservando el archivo en la pestaña. Sin scraping real, OCR ni restaurante piloto; APIs externas pendientes.
 
 ## Ejecutar
 
@@ -45,14 +45,20 @@ npm run test:backend
 
 Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
 
-Verificado: 36 pruebas de dominio/backend y 19 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Pulido visual con Manrope alojada localmente e ilustración SVG propia; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
+Verificado: 41 pruebas de dominio/backend y 24 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
 
 El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido reproducible y las partes del video aún pendientes. No se ha grabado un video de entrega.
+
+## Añadir insumos
+
+Desde «Añadir lista o archivo», escribe un nombre por línea o elige un XLSX/CSV. Selecciona hoja, columna y encabezado; revisa los nombres antes de confirmar. Para fotos y PDF, transcribe manualmente: la extracción automática todavía no está conectada. Los precios de otras columnas se conservan como contexto, sin incorporarse automáticamente a ofertas.
+
+Usa archivos de ejemplo. Hasta 3 MB y 100 insumos; formatos y límites en [entrada de insumos](docs/desarrollo/ENTRADA_INSUMOS.md). La lista y el archivo permanecen solo en memoria de esta pestaña: se pierden al recargar y «Guardar estudio» no los guarda.
 
 ## Por dónde empezar
 
 1. Leer las [etapas de desarrollo y su estado](docs/desarrollo/ETAPAS.md).
-2. Revisar la [exploración implementada](docs/desarrollo/EXPLORACION_MERCADO.md) y la [primera comparación](docs/desarrollo/PRIMERA_ENTREGA.md). Ver también [persistencia de estudios](docs/desarrollo/PERSISTENCIA_ESTUDIOS.md). APIs externas y captura documental son los siguientes hitos pendientes.
+2. Revisar la [exploración implementada](docs/desarrollo/EXPLORACION_MERCADO.md) y la [primera comparación](docs/desarrollo/PRIMERA_ENTREGA.md). Ver también [persistencia de estudios](docs/desarrollo/PERSISTENCIA_ESTUDIOS.md). Ver [entrada de insumos](docs/desarrollo/ENTRADA_INSUMOS.md). APIs externas y extracción automática son los siguientes hitos pendientes.
 3. Consultar el [plan de producto](docs/producto/PLAN_PRODUCTO.md) para decisiones y límites, y la [revisión adversarial](docs/producto/REVISION_ADVERSARIAL.md) para sus motivos.
 4. Aplicar la [guía de UI/UX](docs/diseno/UI_UX.md) y sus tokens de referencia al construir las pantallas.
 

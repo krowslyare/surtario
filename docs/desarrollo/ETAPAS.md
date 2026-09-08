@@ -9,7 +9,7 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |
 | 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
 | 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; APIs de sponsors pendientes |
-| 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes y recuperables; fuentes reales y documentos pendientes |
+| 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF con transcripción local; fuentes reales y extracción automática pendientes |
 | 4 | Solicitud, respuesta y decisión conectadas | Pendiente | — |
 | 5 | Demo pública aislada y robusta | Pendiente | — |
 | 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
@@ -20,9 +20,9 @@ Preparación del agente: skills cargados, MCP invocable pero status requiere aut
 
 Bloque de persistencia completado localmente: selección y fuentes recuperables, biblioteca reactiva, aislamiento de sesión y control de revisiones. Ver [evidencia y límites](./PERSISTENCIA_ESTUDIOS.md). No habilita datos privados ni completa la demo pública.
 
-Siguientes hitos: descubrimiento/extracción de fuentes reales y captura documental revisable; correo después en su recorrido autorizado. OpenAI, Firecrawl y AgentMail siguen aplazados por decisión del usuario. Se puede preparar el código sin claves, pero etapas 2–4 no se completan sin ejecutar las integraciones. Ver [exploración](./EXPLORACION_MERCADO.md) y [primera comparación](./PRIMERA_ENTREGA.md).
+Siguientes hitos: descubrimiento/extracción de fuentes reales y revisión estructurada de precios/presentaciones; correo después en su recorrido autorizado. OpenAI, Firecrawl y AgentMail siguen aplazados por decisión del usuario. Se puede preparar el código sin claves, pero etapas 2–4 no se completan sin ejecutar las integraciones. Ver [exploración](./EXPLORACION_MERCADO.md) y [primera comparación](./PRIMERA_ENTREGA.md).
 
-Pulido visual aplicado a las vistas actuales: Manrope local, tokens índigo/lavanda, ilustración decorativa y portada que se compacta al explorar. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
+Revisión visual aplicada: Manrope local y tokens índigo/lavanda; búsqueda protagonista, resultados compactos, precio normalizado destacado y acceso persistente al estudio. La portada ilustrada fue retirada. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
 
 Ensayo del guion actual completado en navegador: explorar → guardar/recuperar → consulta sin envío → compra opcional → totales comprobados. 36 pruebas de dominio/backend y 19 de navegador, build y smoke de cálculo local satisfactorios. [Guion y brechas de concurso](./ENSAYO_DEMO.md); video no grabado, integraciones y publicación pendientes.
 
@@ -106,3 +106,7 @@ Salida comercial inicial: uso real y continuidad medidos, con resultados y recha
 ## Cómo cerrar cada etapa
 
 En la fila correspondiente, registrar estado y enlace a evidencia breve: archivos, prueba/comando y resultado, entorno y limitaciones. En `hackathon.md`, añadir lo realizado ese día. No mantener otros checklists de estado duplicados ni abrir infraestructura de tareas antes de necesitarla.
+
+## Entrada de listas · evidencia local
+
+Entrada manual, XLSX/CSV con elección de hoja/columna y revisión de nombres implementados. Fotos/PDF conservan origen y permiten transcripción manual; OCR pendiente. Archivo/lista transitorios en navegador, sin uploads ni ofertas creadas automáticamente. 41 pruebas de dominio/backend, 24 E2E y build satisfactorios. [Alcance, límites y evidencia](./ENTRADA_INSUMOS.md). Etapas 2–4 continúan abiertas hasta ejecutar las integraciones reales.

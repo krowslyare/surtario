@@ -1,6 +1,6 @@
 # Guía de UI y UX
 
-Versión 0.4 · Pulido visual solicitado por el usuario. Branding comercial fuera del alcance actual. Primera comparación revisada visualmente en navegador; validación con restaurantes pendiente.
+Versión 0.5 · Pulido visual solicitado por el usuario. Branding comercial fuera del alcance actual. Primera comparación revisada visualmente en navegador; validación con restaurantes pendiente.
 
 Esta guía aplica a la aplicación y demo. Complementa el [plan de producto](../producto/PLAN_PRODUCTO.md); no crea otra etapa de investigación o diseño de marca.
 
@@ -12,7 +12,7 @@ Nombre provisional: **Compras para restaurantes**, como texto sencillo en el enc
 
 ## 2. Dirección visual
 
-Dirección: mesa de compras contemporánea, con tinta índigo, lavanda suave y una ilustración de despensa. La portada tiene una composición amplia y se compacta al explorar. Los resultados priorizan proveedor/fuente y presentación/precio; selección marcada con borde y texto, sin declarar un ganador. Cálculos y pendientes conservan su jerarquía.
+Dirección: mesa de trabajo para investigar insumos, con tinta índigo y fondo lavanda suave. Búsqueda protagonista, sin hero ilustrado ni eslóganes. Los resultados comparten una lista compacta: proveedor y fuente a la izquierda, precio normalizado y presentación a la derecha; en móvil se apilan. Selección con acento lateral y texto, sin declarar ganador. «Mi estudio» permanece accesible en el encabezado al desplazarse.
 
 Tokens implementados: [tokens.css](../../src/styles/tokens.css), única fuente de valores de la UI.
 
@@ -28,11 +28,11 @@ Tokens implementados: [tokens.css](../../src/styles/tokens.css), única fuente d
 | Información | Texto `#175CD3` sobre `#EFF8FF` |
 | Bordes | Decorativos `#DDDDE8`; controles `#8B8B9E` |
 
-Tipografía: Manrope variable, subconjunto latino WOFF2 de 24.83 kB empaquetado localmente, con fallback de sistema y font-display swap. No consulta servicios de fuentes externos. Licencia OFL-1.1 conservada en la dependencia `@fontsource-variable/manrope`. Texto base e inputs 16 px; tablas y etiquetas 14 px; metadatos no decisivos 11–12 px. Portada hasta 76 px, reducida a 32–40 px al explorar; cifras 32–36 px. Pesos 400/500/600/650/800; evitar texto fino. Cifras con dígitos tabulares y alineadas a la derecha en columnas numéricas.
+Tipografía: Manrope variable, subconjunto latino WOFF2 de 24.83 kB empaquetado localmente, con fallback de sistema y font-display swap. No consulta servicios de fuentes externos. Licencia OFL-1.1 conservada en la dependencia `@fontsource-variable/manrope`. Texto base e inputs 16 px; tablas y etiquetas 14 px; metadatos no decisivos 11–12 px. Título inicial de 32–50 px, reducido a 28 px al explorar; cifras de mercado de 28–30 px. Pesos 400/500/600/650/800; evitar texto fino. Cifras con dígitos tabulares y alineadas a la derecha en columnas numéricas.
 
-Escala de espacios: 4, 8, 12, 16, 24, 32, 48 px. Controles de 44 px de alto como objetivo propio; radio base de 12 px en controles y 20 px en paneles; portada de 28 px. Bordes entre secciones, sombra sutil en superficies de trabajo y más fuerte en diálogos. No convertir cada cifra en una tarjeta.
+Escala de espacios: 4, 8, 12, 16, 24, 32, 48 px. Controles de al menos 44 px de alto. Los resultados comparten un contenedor de radio 10 px con separadores internos, sin sombras ni una tarjeta dentro de otra. Las superficies de comparación y diálogos mantienen sus estilos.
 
-La versión inicial es clara. `MarketIllustration.tsx` aporta una ilustración SVG decorativa de insumos, sin marcas reales ni fuentes comerciales. Se oculta a lectores de pantalla y pierde protagonismo al explorar. Animación de entrada breve, desactivada con movimiento reducido. Modo oscuro y branding comercial definitivo siguen aplazados.
+La versión es clara. La ilustración de despensa deja de mostrarse; la entrada presenta datos del ejemplo calculados desde los fixtures. No hay animación de entrada. Modo oscuro y branding comercial definitivo siguen aplazados.
 
 Para la entrega del concurso no diseñar sección de pricing, tarjetas de planes, checkout ni paywall. El acceso público se presenta con «Probar ejemplo». Esto se refiere a la tarifa del SaaS: precios de insumos, cotizaciones y totales permanecen visibles. La tarifa comercial está pendiente de validación.
 
@@ -147,3 +147,13 @@ Sin conexión se informa guardado no confirmado y se conserva el borrador. Un er
 ## Evidencia del pulido visual
 
 Aplicado a portada, resultados, guardados, comparación y diálogos, conservando cálculos y persistencia. Revisión en navegador de escritorio y móvil; 15 pruebas de exploración/comparación, incluidas fuentes, teclado y reflujo a 320/390/768/1280 px, y build/tipos satisfactorios. Se comprobó también la portada antes de buscar y se corrigió el nombre accesible de ayuda al ocultarse su texto en móvil. No acredita un premio de diseño ni auditoría completa de accesibilidad.
+
+
+## Revisión de composición · versión 0.5
+
+Se retiraron eslóganes e ilustración del flujo principal. La búsqueda ocupa el primer bloque; el precio por unidad destaca sobre el importe del empaque, que permanece visible. Fuentes, fechas y condiciones pendientes se conservan. Resultados compactos y encabezado de estudio persistente revisados en escritorio y móvil. Build y 19 E2E satisfactorios, incluido el ensayo de demo y reflujo de 320 a 1280 px. Sin cambios de backend, integraciones ni despliegue.
+
+
+## Entrada local de listas
+
+Acceso secundario «Añadir lista o archivo» debajo de la búsqueda. Diálogo con entrada manual/archivo, elección explícita de hoja y columna, vista previa y revisión editable antes de confirmar. El selector de archivo tiene etiqueta propia en español; no depende del texto del navegador. La cola permite investigar uno por uno y conserva el origen. Archivo y lista transitorios se explican junto a sus controles; fotos/PDF muestran extracción pendiente y alternativa manual. No se presenta carga local como extracción de IA. Revisión en escritorio y móvil; [evidencia de entrada](../desarrollo/ENTRADA_INSUMOS.md).
