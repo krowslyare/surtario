@@ -157,3 +157,8 @@ Se retiraron eslóganes e ilustración del flujo principal. La búsqueda ocupa e
 ## Entrada local de listas
 
 Acceso secundario «Añadir lista o archivo» debajo de la búsqueda. Diálogo con entrada manual/archivo, elección explícita de hoja y columna, vista previa y revisión editable antes de confirmar. El selector de archivo tiene etiqueta propia en español; no depende del texto del navegador. La cola permite investigar uno por uno y conserva el origen. Archivo y lista transitorios se explican junto a sus controles; fotos/PDF muestran extracción pendiente y alternativa manual. No se presenta carga local como extracción de IA. Revisión en escritorio y móvil; [evidencia de entrada](../desarrollo/ENTRADA_INSUMOS.md).
+
+
+## Revisión de cotización · ejemplo local
+
+Documento y campos con evidencia en dos columnas en escritorio; una columna en móvil. Pendientes vacíos, correcciones señaladas y checkbox invalidado tras editar. Borrador conservado al cerrar, no al recargar. La UI identifica la simulación y no afirma haber llamado a IA. En comparación, los valores confirmados se distinguen de la propuesta extraída. [Evidencia](../desarrollo/EXTRACCION_REVISION.md).

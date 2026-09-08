@@ -1,3 +1,4 @@
+import type { ExtractedOffer, ReviewedValues } from "./extraction";
 import type {
   BaseUnit,
   Currency,
@@ -44,9 +45,12 @@ export type ReferenceResult = MarketBase & {
 };
 export type MarketResult = CatalogResult | DistributorResult | ReferenceResult;
 export type ComparisonSource = {
+  /** Optional extraction proposal, separate from the accepted comparison baseline. */
+  extraction?: { proposed: ExtractedOffer; reviewed: ReviewedValues };
   marketSource?: MarketSource;
   label: string;
   date: string;
+  /** Immutable values when this offer entered comparison; extraction proposals live above. */
   original: SupplierOffer;
   edited: boolean;
 };

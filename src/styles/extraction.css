@@ -1,0 +1,164 @@
+.dialog.wide:has(.extraction-layout) {
+  width: min(1040px, calc(100vw - 32px));
+}
+.extraction-entry {
+  margin-top: var(--space-3);
+}
+
+.extraction-intro {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+
+.extraction-simulation {
+  flex: none;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid var(--color-primary);
+  border-radius: 999px;
+  color: var(--color-primary);
+  background: var(--color-success-surface);
+  font-size: var(--text-meta);
+  font-weight: 700;
+}
+
+.extraction-layout {
+  display: grid;
+  grid-template-columns: minmax(15rem, 0.8fr) minmax(24rem, 1.4fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.extraction-source {
+  position: sticky;
+  top: 0;
+  min-width: 0;
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-primary);
+  border-radius: var(--radius-control);
+  background: var(--color-canvas);
+}
+
+.extraction-source > div p,
+.extraction-source time,
+.extraction-section-heading p,
+.extraction-boundary {
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+}
+
+.extraction-source pre {
+  margin: var(--space-4) 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  font-size: var(--text-label);
+}
+
+.extraction-review-fields {
+  min-width: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.extraction-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+}
+
+.extraction-field {
+  display: grid;
+  grid-template-columns: minmax(11rem, 0.9fr) minmax(13rem, 1.1fr);
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.extraction-field.is-edited {
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--color-info);
+}
+
+.extraction-evidence {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  overflow-wrap: anywhere;
+}
+
+.extraction-evidence strong {
+  color: var(--color-text);
+}
+
+.extraction-edited {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--color-info);
+  font-weight: 700;
+}
+
+.extraction-pending {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-warning);
+  background: var(--color-warning-surface);
+  font-size: var(--text-label);
+}
+
+.extraction-confirmation {
+  margin-top: var(--space-4);
+}
+
+.extraction-boundary {
+  margin: var(--space-2) 0 0 calc(1rem + var(--space-2));
+}
+
+.extraction-actions {
+  margin-top: var(--space-4);
+}
+
+@media (max-width: 900px) {
+  .extraction-intro,
+  .extraction-section-heading {
+    flex-direction: column;
+  }
+
+  .extraction-layout,
+  .extraction-field {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .extraction-layout {
+    gap: var(--space-3);
+  }
+
+  .extraction-source {
+    position: static;
+  }
+
+  .extraction-field {
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 380px) {
+  .extraction-actions {
+    align-items: stretch;
+  }
+
+  .extraction-actions .button {
+    width: 100%;
+  }
+}
