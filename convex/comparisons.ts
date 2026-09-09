@@ -5,6 +5,7 @@ import type { MutationCtx } from "./_generated/server";
 import {
   savedComparisonValidator,
   webReviewInputValidator,
+  documentReviewInputValidator,
 } from "./comparisonValidators";
 import {
   procurementRequestValidator,
@@ -120,6 +121,49 @@ async function reconstructWebReviews(
   } catch (error) {
     throw new ConvexError(
       error instanceof Error ? error.message : "Revisión web no válida.",
+    );
+  }
+}
+
+async function reconstructDocumentReview(
+  ctx: MutationCtx,
+  owner: string,
+  review: {
+    runId: Doc<"documentRuns">["_id"];
+    values: ReviewedValues;
+    confirmed: true;
+  },
+): Promise<PurchaseSeed> {
+  if (extractionFields.some((key) => review.values[key].length > 120))
+    throw new ConvexError("Revisión documental no válida.");
+  const run = await ctx.db.get("documentRuns", review.runId);
+  if (!run || run.ownerHash !== owner)
+    throw new ConvexError("Documento no disponible en esta sesión.");
+  if (
+    run.status !== "complete" ||
+    !run.result ||
+    run.result.documentType !== "quotation"
+  )
+    throw new ConvexError("Se necesita una lectura completa de cotización.");
+  try {
+    const seed = extractionToPurchase(
+      {
+        id: run._id,
+        title: `Transcripción automática · cotización sintética · ${run.kind}`,
+        text: run.result.transcript,
+        observedAt: new Date(run.createdAt).toISOString().slice(0, 10),
+        simulated: false,
+        url: `/examples/cotizacion-demo.${run.kind === "pdf" ? "pdf" : "png"}`,
+      },
+      run.result.offer,
+      review.values,
+      review.confirmed,
+    );
+    seed.sources[run._id].documentReview = { ...review };
+    return seed;
+  } catch (error) {
+    throw new ConvexError(
+      error instanceof Error ? error.message : "Revisión documental no válida.",
     );
   }
 }
@@ -259,6 +303,7 @@ export const save = mutation({
     offers: v.array(supplierOfferValidator),
     selectedOfferId: v.union(v.string(), v.null()),
     webReviews: v.optional(v.array(webReviewInputValidator)),
+    documentReview: v.optional(documentReviewInputValidator),
   },
   returns: savedComparisonValidator,
   handler: async (ctx, args) => {
@@ -278,10 +323,16 @@ export const save = mutation({
       throw new ConvexError(
         "La comparación cambió en otra vista. Ábrela desde Comparaciones guardadas antes de actualizar.",
       );
+    if (args.documentReview && args.webReviews)
+      throw new ConvexError(
+        "No mezcles referencias web y documentales en esta solicitud.",
+      );
     const createdBaseline =
       !previous && args.webReviews
         ? await reconstructWebReviews(ctx, hash, args.webReviews)
-        : undefined;
+        : !previous && args.documentReview
+          ? await reconstructDocumentReview(ctx, hash, args.documentReview)
+          : undefined;
     const sources = validateScenario(
       args.request,
       args.offers,
@@ -327,7 +378,8 @@ export const save = mutation({
         content.offers.some(
           (offer, index) => !sameFields(offer, existing.offers[index]),
         ) ||
-        (args.webReviews !== undefined && !sameValue(sources, existing.sources))
+        ((args.webReviews !== undefined || args.documentReview !== undefined) &&
+          !sameValue(sources, existing.sources))
       )
         throw new ConvexError(
           "La solicitud ya se guardó con otros datos. Abre la comparación guardada antes de actualizar.",

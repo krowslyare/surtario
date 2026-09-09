@@ -332,7 +332,9 @@ export default function Comparison({
       const entry = sources[offer.id];
       return (
         entry !== undefined &&
-        (entry.extraction === undefined || entry.webReview !== undefined) &&
+        (entry.extraction === undefined ||
+          entry.webReview !== undefined ||
+          entry.documentReview !== undefined) &&
         entry.label !== "Entrada manual" &&
         offer.supplier === entry.original.supplier &&
         offer.ingredient === entry.original.ingredient &&
@@ -342,7 +344,7 @@ export default function Comparison({
   const pendingQuantity = quantity.trim() === "";
   const persistable = persistableScenario && (pendingQuantity || validQuantity);
   const blockedReason = !persistableScenario
-    ? "Esta demo solo guarda las ofertas originales del ejemplo de arroz o del catálogo, y revisiones vinculadas a fuentes web guardadas. Las ofertas agregadas manualmente siguen disponibles en esta vista."
+    ? "Esta demo solo guarda las ofertas originales del ejemplo de arroz o del catálogo, y revisiones vinculadas a fuentes web o documentos de ejemplo guardados. Las ofertas agregadas manualmente siguen disponibles en esta vista."
     : !pendingQuantity && !validQuantity
       ? "Corrige la cantidad antes de guardar. Déjala vacía si todavía está pendiente."
       : null;
@@ -1079,7 +1081,9 @@ export default function Comparison({
               rel="noopener noreferrer"
               className="button text-button"
             >
-              Abrir fuente original
+              {source.documentReview
+                ? "Abrir documento original"
+                : "Abrir fuente original"}
             </a>
           )}
           <p className="muted">

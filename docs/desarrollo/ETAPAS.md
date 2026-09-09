@@ -135,7 +135,8 @@ Implementado recorrido Firecrawl → fuentes persistentes → extracción explí
 
 Correcciones confirmadas, condiciones y elección de fuentes web recuperables mediante referencias a investigaciones de la misma sesión. Evidencia y propuesta originales reconstruidas por servidor; sin documentos privados. 68 pruebas de dominio/backend, 34 E2E y build satisfactorios; recorrido de revisión/guardado/recarga ejecutado en Convex local con fuente sintética. [Contrato](./REVISION_WEB_GUARDADA.md). Llamadas de sponsors y AgentMail siguen pendientes.
 
-Lectura de PNG/PDF sintéticos preparada con revisión visual y clasificación documental. Resultados del modelo persistentes; correcciones derivadas todavía transitorias. Ver [alcance y evidencia](LECTURA_DOCUMENTOS.md). No completa la extracción real ni habilita archivos privados.
+Lectura de PNG/PDF sintéticos preparada con revisión visual y clasificación documental. Resultados del modelo, correcciones confirmadas, condiciones y elección persistentes; recuperación documental probada en Convex local. Ver [alcance y evidencia](LECTURA_DOCUMENTOS.md). No completa la extracción real ni habilita archivos privados.
+
 
 Revisión del PR 1: corregidos valores supuestos de unidad/mínimo y resumen entre ofertas compatibles. 47 tests, build y 8 E2E de comparación pasan en el checkout aislado del PR; integraciones externas y entrega pública siguen pendientes.
 
@@ -155,3 +156,6 @@ Reviewed main integrated. Fixed signed long replies returning a persistent serve
 
 
 PR 8 local review: Integrated reviewed main into synthetic image/PDF extraction. Corrected comparison labels that misrepresented documents as public web pages. The PNG preview represents the same PDF content, verified against the fixture. Human review and server-owned file limits remain enforced. 85 tests/build and 2 focused browser checks passed. Real provider verification and deployment remain pending.
+
+
+PR 9 local review: Integrated reviewed document extraction into persisted document comparisons. Sol review and parent adjudication found no additional material issues. The browser seed command temporarily used the original local checkout configuration; that test-only adjustment was removed. 88 tests/build and 1 focused browser checks passed. Real provider verification and deployment remain pending.
