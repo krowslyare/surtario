@@ -1,3 +1,4 @@
+import PurchasingAdvisor from "./components/PurchasingAdvisor";
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
@@ -966,6 +967,7 @@ export default function Comparison({
             }
           />
         )}
+        {persistenceEnabled && <PurchasingAdvisor comparisonId={savedId} revision={savedRevision} request={effectiveRequest} offers={offers} />}
         <footer>
           <span>
             {hasReviewedSources

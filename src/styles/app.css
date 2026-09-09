@@ -1547,3 +1547,72 @@ footer {
   border-radius: var(--radius-control);
   margin-block: 16px;
 }
+
+.advisor-panel {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-top: 3px solid var(--color-primary, #494578);
+  background: var(--color-surface, #fff);
+  border-radius: 12px;
+}
+.advisor-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+.advisor-heading h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+.advisor-context {
+  margin: 1rem 0;
+}
+.advisor-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin: 1rem 0;
+}
+.advisor-mode {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+.advisor-verdict {
+  max-width: 70ch;
+}
+.advisor-recommendation {
+  font-size: 1.2rem;
+  font-weight: 650;
+  line-height: 1.5;
+}
+.advisor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.advisor-saved {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border, #ddd);
+}
+.advisor-panel summary {
+  cursor: pointer;
+  padding: 0.6rem 0;
+}
+@media (max-width: 600px) {
+  .advisor-panel {
+    padding: 1rem;
+  }
+  .advisor-heading {
+    display: block;
+  }
+  .advisor-heading .demo-badge {
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+  .advisor-fields {
+    grid-template-columns: 1fr;
+  }
+}

@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as advisor from "../advisor.js";
+import type * as advisorValidators from "../advisorValidators.js";
 import type * as comparison from "../comparison.js";
 import type * as comparisonValidators from "../comparisonValidators.js";
 import type * as comparisons from "../comparisons.js";
@@ -18,6 +20,7 @@ import type * as extraction from "../extraction.js";
 import type * as http from "../http.js";
 import type * as ingredientLists from "../ingredientLists.js";
 import type * as ingredientListValidators from "../ingredientListValidators.js";
+import type * as lib_advisorAgent from "../lib/advisorAgent.js";
 import type * as lib_agentExtraction from "../lib/agentExtraction.js";
 import type * as lib_demoSession from "../lib/demoSession.js";
 import type * as lib_documentExtraction from "../lib/documentExtraction.js";
@@ -40,6 +43,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  advisor: typeof advisor;
+  advisorValidators: typeof advisorValidators;
   comparison: typeof comparison;
   comparisonValidators: typeof comparisonValidators;
   comparisons: typeof comparisons;
@@ -50,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   ingredientLists: typeof ingredientLists;
   ingredientListValidators: typeof ingredientListValidators;
+  "lib/advisorAgent": typeof lib_advisorAgent;
   "lib/agentExtraction": typeof lib_agentExtraction;
   "lib/demoSession": typeof lib_demoSession;
   "lib/documentExtraction": typeof lib_documentExtraction;

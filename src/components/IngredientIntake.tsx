@@ -461,7 +461,7 @@ function IntakeDialog({
               Volver a la entrada
             </button>
             <button className="button primary" onClick={confirm}>
-              Confirmar {rows.length} insumos
+              Confirmar {rows.length} {rows.length === 1 ? "insumo" : "insumos"}
             </button>
           </div>
         </>
