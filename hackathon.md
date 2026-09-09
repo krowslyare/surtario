@@ -2,17 +2,17 @@
 
 - **Project:** restaurant-procurement
 - **Event:** Convex All Gas Hackathon
-- **What it does:** Explora ejemplos de precios y distribuidores sin exigir documentos ni cantidad; guarda estudios sintéticos por sesión de navegador y permite preparar una comparación opcional.
+- **What it does:** Researches ingredient suppliers, preserves reviewed evidence and compares purchasing scenarios with optional cash/coverage advice.
 - **Live app:** not deployed
 - **Repo:** private
 - **Frontend:** Convex static hosting (prepared, not deployed)
 - **Convex deployment:** not deployed
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting
-- **Convex features:** schema, indexes, queries, mutations, internal action, realtime queries (local)
+- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, realtime queries (local)
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T20:44:40Z
+- **Last updated:** 2026-09-09T20:50:37Z
 
 ## Log
 
@@ -232,3 +232,9 @@ Parent review caught a late-save confirmation affecting a replacement queue; a b
 ### 2026-09-09 - working tree · hosting preparation
 Registered the official static-hosting component while preserving the exact AgentMail webhook route. The local readiness command builds Vite, resolves referenced assets and checks for backend secret variable names in the bundle; a router test verifies the disabled webhook response alongside the static GET fallback.
 Preparation only: no cloud deployment or asset upload occurred. Provider capabilities remain disabled by default. Hosting and provider execution procedures are documented separately.
+
+
+### 2026-09-09 - working tree · complete local demo verification
+Integrated the advisor, mail recovery, saved lists and hosting preparation. Fixed an initial-save race that reset purchasing context, with a browser regression covering context entered before the comparison is saved. Local E2E configuration now pins the selected anonymous backend and permits the separate Vite socket; shared snapshot imports run sequentially.
+122 domain/backend tests, frontend/backend typechecks, the hosting build/asset check and all 49 browser journeys passed. The full flow includes source review, stored comparisons, synthetic documents/replies, purchasing scenarios, session isolation and the demo rehearsal.
+README and provider acceptance instructions were refreshed in English. No real provider request, email delivery, cloud deployment, public repository change or video submission occurred. Those checks remain the next stage after credentials are configured.

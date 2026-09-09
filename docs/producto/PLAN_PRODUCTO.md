@@ -294,3 +294,10 @@ Consultadas o identificadas el 7/9/2026. Fuentes comerciales describen oferta, n
 - [S12 · Firecrawl, extracción de documentos](https://docs.firecrawl.dev/features/document-parsing)
 - [S13 · Fudo, oferta de producto en Perú](https://fu.do/es-pe/precios/)
 - [S14 · MarketMan, captura y procesamiento de facturas](https://www.marketman.com/platform/marketman-accounts-payable-automation)
+
+
+## Scope update · purchasing decision support (September 9, 2026)
+
+The hackathon decision flow includes an optional purchasing advisor after a comparison is reviewed. It considers stated cash priorities, budget, confirmed daily usage and stock, maximum coverage, and the current supplier. Deterministic scenarios provide order outlay and excess; a bounded Agent interpretation explains tradeoffs using the owned source snapshot. Negotiation drafts use comparable evidence and require human review before any external communication.
+
+This addition does not infer financial history, demand, credit terms, market trends, quality or realized savings. Unknown conditions remain pending. An analysis retains its inputs and comparison revision so changed evidence cannot silently rewrite a prior verdict. Research still works without any purchasing context. See the [advisor contract](../desarrollo/ASESOR_COMPRAS.md) and the [provider verification procedure](../desarrollo/CREDENTIALS_AND_E2E.md); implementation status remains in ETAPAS.md.

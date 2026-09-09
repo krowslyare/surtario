@@ -102,13 +102,17 @@ export function runLocalConvex(args: string[]) {
 
 export async function connectOnlyToLocalBackend(context: BrowserContext) {
   const { backend } = localBackendTarget();
+  const frontend = new URL(localFrontendTarget().url);
   await context.routeWebSocket(/.*/, (socket) => {
     const url = new URL(socket.url());
-    if (
-      url.protocol !== "ws:" ||
-      url.hostname !== backend.hostname ||
-      url.port !== backend.port
-    )
+    const isBackend =
+      url.hostname === backend.hostname && url.port === backend.port;
+    // Vite uses a separate local socket for hot reload, never for Convex data.
+    const isVite =
+      url.hostname === frontend.hostname &&
+      url.port === frontend.port &&
+      url.pathname === "/";
+    if (url.protocol !== "ws:" || (!isBackend && !isVite))
       throw new Error(
         "Browser WebSocket does not match the verified local backend host and port.",
       );
