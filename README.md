@@ -55,7 +55,7 @@ Una comparación guardada permite preparar una solicitud, revisar su texto y cop
 
 ## Verificación de pull requests
 
-GitHub Actions ejecuta `npm ci`, `npm test` y `npm run build` en cada PR y al actualizar `main`, sin claves de sponsors ni despliegues. Incluye tests de Convex en memoria y transporte simulado. Los 35 E2E y el smoke del backend continúan como verificación local explícita: requieren un backend Convex local y no forman parte de ese check. Un check verde no acredita llamadas reales ni publicación.
+GitHub Actions ejecuta `npm ci`, `npm test` y `npm run build` en cada PR y al actualizar `main`, sin claves de sponsors ni despliegues. Incluye tests de Convex en memoria y transporte simulado. Los E2E y el smoke del backend continúan como verificación local explícita: requieren un backend Convex local y no forman parte de ese check. Un check verde no acredita llamadas reales ni publicación.
 
 ## Añadir insumos
 
