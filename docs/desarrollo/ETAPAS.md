@@ -9,7 +9,7 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |
 | 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
 | 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; Pruebas internas Firecrawl/OpenAI preparadas; llamadas reales de sponsors pendientes |
-| 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF con transcripción local; fuentes reales y extracción automática pendientes |
+| 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF propios con transcripción local y lectura multimodal de ejemplos implementada; llamadas reales pendientes |
 | 4 | Solicitud, respuesta y decisión conectadas | En curso | Comparaciones y elección sintéticas recuperables; borrador persistente y recepción firmada implementados; correo real pendiente |
 | 5 | Demo pública aislada y robusta | En preparación | CI de tests/build añadido; E2E locales y correo restringido probados. Hosting y verificación pública pendientes |
 | 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
@@ -135,6 +135,8 @@ Implementado recorrido Firecrawl → fuentes persistentes → extracción explí
 
 Correcciones confirmadas, condiciones y elección de fuentes web recuperables mediante referencias a investigaciones de la misma sesión. Evidencia y propuesta originales reconstruidas por servidor; sin documentos privados. 68 pruebas de dominio/backend, 34 E2E y build satisfactorios; recorrido de revisión/guardado/recarga ejecutado en Convex local con fuente sintética. [Contrato](./REVISION_WEB_GUARDADA.md). Llamadas de sponsors y AgentMail siguen pendientes.
 
+Lectura de PNG/PDF sintéticos preparada con revisión visual y clasificación documental. Resultados del modelo persistentes; correcciones derivadas todavía transitorias. Ver [alcance y evidencia](LECTURA_DOCUMENTOS.md). No completa la extracción real ni habilita archivos privados.
+
 Revisión del PR 1: corregidos valores supuestos de unidad/mínimo y resumen entre ofertas compatibles. 47 tests, build y 8 E2E de comparación pasan en el checkout aislado del PR; integraciones externas y entrega pública siguen pendientes.
 
 Segunda ronda del PR 1: diálogo conserva entradas al pulsar dentro; procedencia manual fechada según calendario local. 47 tests, build y 9 E2E de comparación aprobados; no modifica el estado de las etapas externas.
@@ -150,3 +152,6 @@ PR 5 local review: integrated main; Sol 5.6 review adjudicated by Astra found no
 
 ## PR 6 · local review
 Reviewed main integrated. Fixed signed long replies returning a persistent server error by retaining bounded text with a visible truncation notice. Validation: 78 domain/backend tests, build and six focused browser checks passed; browser persistence used the existing local backend with later code. Mail transport remained simulated. External integration stages remain open.
+
+
+PR 8 local review: Integrated reviewed main into synthetic image/PDF extraction. Corrected comparison labels that misrepresented documents as public web pages. The PNG preview represents the same PDF content, verified against the fixture. Human review and server-owned file limits remain enforced. 85 tests/build and 2 focused browser checks passed. Real provider verification and deployment remain pending.

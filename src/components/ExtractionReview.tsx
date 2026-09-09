@@ -1,4 +1,4 @@
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ReactNode, type ChangeEvent } from "react";
 import { FileSearch, PencilLine } from "lucide-react";
 import {
   draftValues,
@@ -52,7 +52,11 @@ export default function ExtractionReview({
   triggerLabel = "Revisar ejemplo de cotización",
   onPrepare,
   confirmLabel = "Continuar a comparación",
+  originalPreview,
+  sourceTextLabel = "Texto original",
 }: {
+  originalPreview?: ReactNode;
+  sourceTextLabel?: string;
   source?: ExtractionSource;
   proposal?: ExtractedOffer;
   triggerLabel?: string;
@@ -126,11 +130,12 @@ export default function ExtractionReview({
           </div>
 
           <div className="extraction-layout">
-            <article className="extraction-source" aria-label="Texto original">
+            <article className="extraction-source" aria-label={sourceTextLabel}>
               <div>
-                <h3>Texto original</h3>
+                <h3>{sourceTextLabel}</h3>
                 <p>{source.title}</p>
               </div>
+              {originalPreview}
               <pre>{source.text}</pre>
               {source.url && (
                 <a href={source.url} target="_blank" rel="noopener noreferrer">

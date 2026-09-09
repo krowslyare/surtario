@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T18:24:40Z
+- **Last updated:** 2026-09-09T18:29:14Z
 
 ## Log
 
@@ -106,6 +106,12 @@ Estado local confirmó correo deshabilitado. Sin credenciales, envíos reales, r
 Añadido workflow GitHub Actions de instalación reproducible, 77 tests de dominio/backend y build/tipos, sin secretos ni despliegue. Las actions quedan fijadas por SHA y el token solo tiene lectura. E2E con Convex local siguen separados del check automatizado.
 Actualizadas las guías de integraciones, README, etapas y guion del video para reflejar búsqueda, revisión persistente y correo ya implementados. Las llamadas reales, hosting y grabación siguen pendientes. Tests y build comprobados localmente; ejecución remota del workflow se verifica en el PR.
 
+
+### 2026-09-08 - working tree · lectura multimodal de ejemplos
+Añadida lectura de imagen/PDF sintéticos mediante Agent/OpenAI en `convex/documents.ts` y `convex/lib/documentExtraction.ts`. El servidor envía los bytes del archivo, clasifica el documento y conserva transcripción/propuesta por sesión. Revisión con original visible, correcciones y confirmación antes de comparar; una compra/lista no se convierte en oferta.
+Revisión adversarial local de acceso, consumo y procedencia: API limitada a archivos sintéticos del servidor, reservas idempotentes, cuotas y errores sin reintento automático. Las citas contra transcripción generada no se presentan como verificación visual. 84 tests y build correctos; 36 E2E completos más un caso positivo adicional de lectura simulada. Original y revisión móvil inspeccionados.
+Sin llamadas reales a OpenAI ni carga privada. Resultado del modelo persistente; correcciones y comparación derivada de documentos todavía transitorias. Alcance y límites en `docs/desarrollo/LECTURA_DOCUMENTOS.md`. Sin despliegue público.
+
 ### 2026-09-09 - working tree · correcciones de revisión del PR 1
 Corregidos tres hallazgos de Codex: unidad de empaque desconocida conservada como pendiente, mínimo sin valor supuesto al crear una oferta y resumen por grupos completos de la misma moneda. Una oferta incompleta o en otra moneda no oculta la comparación válida de las demás.
 47 tests y build aprobados en el checkout del PR 1; 8 E2E de comparación aprobados en un servidor frontal aislado, incluida regresión de campos pendientes y tercera oferta. Sin cambios de backend ni llamadas externas. Nueva ronda de revisión solicitada tras publicar el commit; merge todavía pendiente.
@@ -147,3 +153,8 @@ No GitHub review bot, actual mail send, external webhook registration or deploym
 ### 2026-09-09 - working tree · PR 7 review preparation
 Integrated reviewed main into CI and integration handoff documentation, preserving the quotation webhook fix. The workflow runs dependency installation, in-memory tests and build with read-only permissions and pinned actions; no provider secrets or deployment steps.
 78 domain/backend tests and build passed locally. Removed a stale browser-test count from the new README guidance. CI for the integrated head remains to be verified; local tests do not establish hosted or external-provider behavior.
+
+
+### 2026-09-09 - working tree · PR 8 local review
+Integrated reviewed main into synthetic image/PDF extraction. Sol review and parent adjudication corrected comparison labels that misrepresented documents as public web pages; labels now refer to their recorded source. The PNG preview represents the same PDF content, verified against the fixture. Human review and server-owned file limits remain enforced.
+85 domain/backend tests and build passed. 2 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.

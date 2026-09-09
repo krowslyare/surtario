@@ -8,7 +8,19 @@ import {
   researchStatusValidator,
 } from "./researchValidators";
 
+import { documentKind, documentResult } from "./documentValidators";
 export default defineSchema({
+  documentRuns: defineTable({
+    ownerHash: v.string(),
+    clientId: v.string(),
+    kind: documentKind,
+    createdAt: v.number(),
+    status: researchStatusValidator,
+    result: v.union(documentResult, v.null()),
+    error: v.union(v.string(), v.null()),
+  })
+    .index("by_ownerHash", ["ownerHash"])
+    .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
   comparisons: defineTable({
     ownerHash: v.string(),
     clientId: v.string(),
