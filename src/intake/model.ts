@@ -16,6 +16,7 @@ export type IntakeBatch = {
   column: number | null;
   hasHeader: boolean;
   method: "manual" | "spreadsheet" | "transcription";
+  sourceLabel?: string;
 };
 export function fileKind(file: Pick<File, "name" | "size">) {
   if (!file.size) throw new Error("El archivo está vacío.");

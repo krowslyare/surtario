@@ -16,6 +16,8 @@ import type * as documentValidators from "../documentValidators.js";
 import type * as documents from "../documents.js";
 import type * as extraction from "../extraction.js";
 import type * as http from "../http.js";
+import type * as ingredientLists from "../ingredientLists.js";
+import type * as ingredientListValidators from "../ingredientListValidators.js";
 import type * as lib_agentExtraction from "../lib/agentExtraction.js";
 import type * as lib_demoSession from "../lib/demoSession.js";
 import type * as lib_documentExtraction from "../lib/documentExtraction.js";
@@ -46,6 +48,8 @@ declare const fullApi: ApiFromModules<{
   documents: typeof documents;
   extraction: typeof extraction;
   http: typeof http;
+  ingredientLists: typeof ingredientLists;
+  ingredientListValidators: typeof ingredientListValidators;
   "lib/agentExtraction": typeof lib_agentExtraction;
   "lib/demoSession": typeof lib_demoSession;
   "lib/documentExtraction": typeof lib_documentExtraction;

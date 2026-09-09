@@ -269,6 +269,7 @@ export default function MarketStudy({
           />
         )}
         <IngredientIntake
+          persistenceEnabled={persistenceEnabled}
           activeIngredient={search?.term ?? null}
           onExplore={(ingredient) => {
             if (ingredient === search?.term) return;
