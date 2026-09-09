@@ -51,7 +51,8 @@ async function publicRequest(
     .take(MAX_REPLIES);
   return {
     id: doc._id,
-    comparisonId: doc.comparisonId,
+    ...(doc.comparisonId ? { comparisonId: doc.comparisonId } : {}),
+    ...(doc.studyId ? { studyId: doc.studyId, resultId: doc.resultId } : {}),
     subject: doc.subject,
     text: doc.text,
     recipient: doc.recipient,
@@ -97,7 +98,9 @@ export const list = query({
 export const create = mutation({
   args: {
     token: v.string(),
-    comparisonId: v.id("comparisons"),
+    comparisonId: v.optional(v.id("comparisons")),
+    studyId: v.optional(v.id("studies")),
+    resultId: v.optional(v.string()),
     clientId: v.string(),
   },
   returns: savedQuotationValidator,
@@ -105,9 +108,26 @@ export const create = mutation({
     const hash = await ownerHash(args.token);
     if (!UUID.test(args.clientId))
       throw new ConvexError("Solicitud no válida.");
-    const comparison = await ctx.db.get(args.comparisonId);
-    if (!comparison || comparison.ownerHash !== hash)
+    if (
+      !!args.comparisonId === !!args.studyId ||
+      (args.comparisonId && args.resultId !== undefined)
+    )
+      throw new ConvexError("Indica una comparación o un estudio, no ambos.");
+    const comparison = args.comparisonId
+      ? await ctx.db.get(args.comparisonId)
+      : null;
+    const study = args.studyId ? await ctx.db.get(args.studyId) : null;
+    if (args.comparisonId && (!comparison || comparison.ownerHash !== hash))
       throw new ConvexError("Comparación no disponible en esta sesión.");
+    if (args.studyId && (!study || study.ownerHash !== hash))
+      throw new ConvexError("Estudio no disponible en esta sesión.");
+    const distributor = study?.results.find(
+      (result) => result.id === args.resultId && result.kind === "distributor",
+    );
+    if (study && !distributor)
+      throw new ConvexError(
+        "El distribuidor debe pertenecer al estudio guardado.",
+      );
     const existing = await ctx.db
       .query("quotationRequests")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -115,7 +135,11 @@ export const create = mutation({
       )
       .unique();
     if (existing) {
-      if (existing.comparisonId !== args.comparisonId)
+      if (
+        existing.comparisonId !== args.comparisonId ||
+        existing.studyId !== args.studyId ||
+        existing.resultId !== args.resultId
+      )
         throw new ConvexError("La solicitud ya existe con otros datos.");
       return await publicRequest(ctx, existing);
     }
@@ -142,25 +166,38 @@ export const create = mutation({
       );
     const cfg = configured();
     const quantity =
-      comparison.request.quantity > 0
+      comparison && comparison.request.quantity > 0
         ? `${comparison.request.quantity} ${comparison.request.unit}`
         : "una cantidad por definir";
-    const subject = `Solicitud de cotización: ${comparison.request.ingredient}`;
-    const text = [
-      "Hola,",
-      "",
-      `Quisiera solicitar una cotización para ${quantity} de ${comparison.request.ingredient}.`,
-      `Especificación: ${comparison.request.specification}.`,
-      "",
-      "Por favor, indicar presentación, precio, mínimo de compra y condiciones de entrega.",
-      "",
-      "Gracias.",
-    ].join("\n");
+    const ingredient =
+      comparison?.request.ingredient ?? distributor!.ingredient;
+    const subject = `Solicitud de cotización: ${ingredient}`;
+    const text = study
+      ? [
+          "Hola,",
+          "",
+          `Consulta de catálogo para ${distributor!.supplier}: ${ingredient} en ${study.region}.`,
+          "La cantidad todavía está por definir. No es una orden de compra.",
+          "Indicar presentaciones, precios, impuestos, mínimo y cobertura de entrega.",
+          "Gracias.",
+        ].join("\n")
+      : [
+          "Hola,",
+          "",
+          `Quisiera solicitar una cotización para ${quantity} de ${comparison!.request.ingredient}.`,
+          `Especificación: ${comparison!.request.specification}.`,
+          "",
+          "Por favor, indicar presentación, precio, mínimo de compra y condiciones de entrega.",
+          "",
+          "Gracias.",
+        ].join("\n");
     const now = Date.now();
     const id = await ctx.db.insert("quotationRequests", {
       ownerHash: hash,
       clientId: args.clientId,
-      comparisonId: args.comparisonId,
+      ...(args.comparisonId
+        ? { comparisonId: args.comparisonId }
+        : { studyId: args.studyId!, resultId: args.resultId! }),
       recipient: cfg.recipient,
       inboxId: cfg.inboxId,
       subject,

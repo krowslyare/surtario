@@ -66,7 +66,9 @@ export default defineSchema({
   quotationRequests: defineTable({
     ownerHash: v.string(),
     clientId: v.string(),
-    comparisonId: v.id("comparisons"),
+    comparisonId: v.optional(v.id("comparisons")),
+    studyId: v.optional(v.id("studies")),
+    resultId: v.optional(v.string()),
     recipient: v.union(v.string(), v.null()),
     inboxId: v.union(v.string(), v.null()),
     subject: v.string(),

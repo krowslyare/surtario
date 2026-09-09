@@ -122,7 +122,7 @@ test("prepara una consulta de mercado editable sin enviar mensajes", async ({
     .getByLabel("Mensaje editable")
     .fill("Consulta de catálogo de ejemplo");
   await expect(page.getByRole("dialog")).toContainText(
-    "No se enviará desde este prototipo",
+    "Este texto solo se copia; no envía correo.",
   );
   await expect(
     page.getByRole("button", { name: "Copiar texto" }),
