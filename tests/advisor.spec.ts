@@ -1,14 +1,9 @@
 import { expect, test } from "@playwright/test";
+import { connectOnlyToLocalBackend } from "./e2e-local";
 
 // Writes synthetic scenarios only. Provider calls remain disabled.
 test.beforeEach(async ({ context }) => {
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname)) {
-      socket.close();
-      throw new Error("Advisor E2E requires a local backend.");
-    }
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
 });
 
 test("recovers an owned scenario and marks changed inputs stale", async ({

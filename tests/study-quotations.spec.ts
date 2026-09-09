@@ -1,13 +1,10 @@
 import { expect, test } from "@playwright/test";
+import { connectOnlyToLocalBackend } from "./e2e-local";
 test("consulta de estudio se prepara y recupera sin crear una comparación ni enviar correo", async ({
   page,
   context,
 }) => {
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["localhost", "127.0.0.1"].includes(new URL(socket.url()).hostname))
-      throw new Error("Local backend only");
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
   await page.goto("/");
   await page.getByRole("button", { name: "Explorar ejemplo de arroz" }).click();
   await page

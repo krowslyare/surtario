@@ -14,6 +14,8 @@ export default defineConfig({
     command: `npm run dev -- --host ${frontend.hostname} --port ${frontend.port} --strictPort`,
     url: frontend.url,
     env: { VITE_CONVEX_URL: backend.backendUrl },
-    reuseExistingServer: !process.env.CI,
+    // Refuse an occupied frontend port: an existing Vite process may have been
+    // compiled with another local project's VITE_CONVEX_URL.
+    reuseExistingServer: false,
   },
 });

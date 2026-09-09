@@ -1,24 +1,14 @@
-import { expect, test, type BrowserContext } from "@playwright/test";
-
-async function restrictToLocalBackend(context: BrowserContext) {
-  if (process.env.CONVEX_DEPLOY_KEY)
-    throw new Error("Saved-list E2E does not accept a deployment key.");
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname)) {
-      socket.close();
-      throw new Error(
-        "Saved ingredient list E2E only allows local WebSockets.",
-      );
-    }
-    socket.connectToServer();
-  });
-}
+import { expect, test } from "@playwright/test";
+import {
+  assertLocalWebSocketUrl,
+  connectOnlyToLocalBackend,
+} from "./e2e-local";
 
 test("guarda nombres revisados y recupera la cola después de recargar", async ({
   page,
   context,
 }) => {
-  await restrictToLocalBackend(context);
+  await connectOnlyToLocalBackend(context);
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
     byte.toString(16).padStart(2, "0"),
   ).join("");
@@ -62,12 +52,11 @@ test("a late confirmation does not mark a replacement list as saved", async ({
   page,
   context,
 }) => {
-  await restrictToLocalBackend(context);
+  await connectOnlyToLocalBackend(context);
   let hold = false;
   const pending: Array<() => void> = [];
   await context.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname))
-      throw new Error("Only local WebSockets allowed.");
+    assertLocalWebSocketUrl(socket.url());
     const server = socket.connectToServer();
     server.onMessage((message) => {
       if (hold) pending.push(() => socket.send(message));
