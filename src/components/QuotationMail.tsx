@@ -1,3 +1,5 @@
+import ReplyOfferReview from "./ReplyOfferReview";
+import type { PurchaseSeed } from "../domain/market";
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { ConvexError, type Infer } from "convex/values";
@@ -26,6 +28,7 @@ export default function QuotationMail(props: {
   resultId?: string;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
+  onPrepare?: (seed: PurchaseSeed) => void;
 }) {
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
@@ -56,6 +59,7 @@ function Connected({
   resultId,
   offers,
   onEditOffer,
+  onPrepare,
 }: {
   token: string;
   comparisonId: Id<"comparisons"> | null;
@@ -64,11 +68,18 @@ function Connected({
   resultId?: string;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
+  onPrepare?: (seed: PurchaseSeed) => void;
 }) {
   const status = useQuery(api.quotationMail.status, {});
   const requests = useQuery(api.quotationMail.list, { token });
   const create = useMutation(api.quotationMail.create);
   const send = useAction(api.quotationMail.send);
+  const [reviewReply, setReviewReply] = useState<{
+    requestId: string;
+    messageId: string;
+    text: string;
+    receivedAt: string;
+  } | null>(null);
   const [activeId, setActiveId] = useState<Quotation["id"] | null>(null);
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -96,6 +107,7 @@ function Connected({
       : (persisted ?? localActive);
   useEffect(() => {
     setActiveId(null);
+    setReviewReply(null);
     setLocal(null);
     setConfirmed(false);
     setError("");
@@ -284,6 +296,18 @@ function Connected({
                 <p>
                   Revisa la respuesta antes de modificar precios o condiciones.
                 </p>
+                {onPrepare && (
+                  <button
+                    className="button secondary"
+                    onClick={() => {
+                      setReviewReply({ requestId: active.id, ...reply });
+                      setActiveId(null);
+                      setConfirmed(false);
+                    }}
+                  >
+                    Revisar como nueva oferta
+                  </button>
+                )}
                 {offers.map((offer) => (
                   <button
                     className="button text-button"
@@ -300,6 +324,13 @@ function Connected({
             ))
           )}
         </Dialog>
+      )}
+      {reviewReply && onPrepare && (
+        <ReplyOfferReview
+          reply={reviewReply}
+          onClose={() => setReviewReply(null)}
+          onPrepare={onPrepare}
+        />
       )}
     </section>
   );

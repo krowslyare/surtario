@@ -1,3 +1,4 @@
+import { prepareReplyOffer } from "../src/domain/replyReview";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
@@ -6,6 +7,7 @@ import {
   savedComparisonValidator,
   webReviewInputValidator,
   documentReviewInputValidator,
+  replyReviewInputValidator,
 } from "./comparisonValidators";
 import {
   procurementRequestValidator,
@@ -168,6 +170,51 @@ async function reconstructDocumentReview(
   }
 }
 
+async function reconstructReply(
+  ctx: MutationCtx,
+  owner: string,
+  review: {
+    requestId: Doc<"quotationRequests">["_id"];
+    messageId: string;
+    values: ReviewedValues;
+    confirmed: true;
+  },
+): Promise<PurchaseSeed> {
+  if (
+    !review.messageId ||
+    review.messageId.length > 500 ||
+    extractionFields.some((key) => review.values[key].length > 120)
+  )
+    throw new ConvexError("Revisión de respuesta no válida.");
+  const request = await ctx.db.get(review.requestId);
+  if (!request || request.ownerHash !== owner)
+    throw new ConvexError("Solicitud no disponible en esta sesión.");
+  const reply = await ctx.db
+    .query("quotationReplies")
+    .withIndex("by_messageId", (q) => q.eq("messageId", review.messageId))
+    .unique();
+  if (!reply || reply.requestId !== request._id)
+    throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+  try {
+    return prepareReplyOffer(
+      {
+        requestId: request._id,
+        messageId: reply.messageId,
+        text: reply.text,
+        receivedAt: reply.receivedAt,
+      },
+      review.values,
+      review.confirmed,
+    );
+  } catch (error) {
+    throw new ConvexError(
+      error instanceof Error
+        ? error.message
+        : "Revisión de respuesta no válida.",
+    );
+  }
+}
+
 function publicComparison(doc: Doc<"comparisons">) {
   const {
     _id: id,
@@ -304,6 +351,7 @@ export const save = mutation({
     selectedOfferId: v.union(v.string(), v.null()),
     webReviews: v.optional(v.array(webReviewInputValidator)),
     documentReview: v.optional(documentReviewInputValidator),
+    replyReview: v.optional(replyReviewInputValidator),
   },
   returns: savedComparisonValidator,
   handler: async (ctx, args) => {
@@ -323,16 +371,21 @@ export const save = mutation({
       throw new ConvexError(
         "La comparación cambió en otra vista. Ábrela desde Comparaciones guardadas antes de actualizar.",
       );
-    if (args.documentReview && args.webReviews)
+    if (
+      [args.documentReview, args.webReviews, args.replyReview].filter(Boolean)
+        .length > 1
+    )
       throw new ConvexError(
-        "No mezcles referencias web y documentales en esta solicitud.",
+        "No mezcles referencias web, documentales y de respuesta en esta solicitud.",
       );
     const createdBaseline =
       !previous && args.webReviews
         ? await reconstructWebReviews(ctx, hash, args.webReviews)
         : !previous && args.documentReview
           ? await reconstructDocumentReview(ctx, hash, args.documentReview)
-          : undefined;
+          : !previous && args.replyReview
+            ? await reconstructReply(ctx, hash, args.replyReview)
+            : undefined;
     const sources = validateScenario(
       args.request,
       args.offers,
@@ -378,7 +431,9 @@ export const save = mutation({
         content.offers.some(
           (offer, index) => !sameFields(offer, existing.offers[index]),
         ) ||
-        ((args.webReviews !== undefined || args.documentReview !== undefined) &&
+        ((args.webReviews !== undefined ||
+          args.documentReview !== undefined ||
+          args.replyReview !== undefined) &&
           !sameValue(sources, existing.sources))
       )
         throw new ConvexError(

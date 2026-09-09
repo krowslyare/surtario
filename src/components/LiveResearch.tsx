@@ -526,7 +526,7 @@ function ConnectedResearch({
           extract({ token, runId: runId as Id<"researchRuns">, sourceIndex })
         }
       />
-      <WebProspectLibrary token={token} />
+      <WebProspectLibrary token={token} onPrepare={props.onPrepare} />
     </>
   );
 }

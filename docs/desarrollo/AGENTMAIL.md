@@ -39,3 +39,7 @@ Un estudio guardado muestra «Consultar a» para sus distribuidores de ejemplo. 
 El contacto encontrado no se convierte en destinatario autorizado: la demo usa exclusivamente el destinatario de prueba fijado en servidor. La UI lo muestra con el texto antes de requerir confirmación explícita. Guardar el estudio, preparar el borrador o recibir una respuesta no envía otro mensaje ni registra compra. Las respuestas se recuperan junto a la solicitud, sin extracción automática de precios.
 
 El borrador editable para copiar sigue separado: sus cambios no se envían al correo. La UI explica cómo acceder al borrador de correo revisable. Además, las fuentes de investigaciones web completadas pueden revisarse y guardarse como candidatos, con consulta propia. Ver [distribuidores web](DISTRIBUIDORES_WEB.md). El contacto anotado sigue sin autorizar envíos.
+
+## Oferta desde respuesta
+
+«Revisar como nueva oferta» permite transcribir y confirmar una oferta del correo y abrir una comparación nueva guardable. El servidor vincula la procedencia por solicitud/mensaje; no sobrescribe ofertas anteriores ni registra compra. [Contrato y límites](RESPUESTA_A_OFERTA.md). La extracción de precios del correo sigue siendo manual.

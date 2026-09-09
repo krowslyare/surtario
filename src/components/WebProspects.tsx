@@ -1,3 +1,4 @@
+import type { PurchaseSeed } from "../domain/market";
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -127,7 +128,13 @@ export function SaveWebProspect({
     </>
   );
 }
-export function WebProspectLibrary({ token }: { token: string }) {
+export function WebProspectLibrary({
+  token,
+  onPrepare,
+}: {
+  token: string;
+  onPrepare: (seed: PurchaseSeed) => void;
+}) {
   const prospects = useQuery(api.prospects.list, { token });
   if (!prospects?.length) return null;
   return (
@@ -163,6 +170,7 @@ export function WebProspectLibrary({ token }: { token: string }) {
             prospectId={item.id}
             offers={[]}
             onEditOffer={() => {}}
+            onPrepare={onPrepare}
           />
         </article>
       ))}

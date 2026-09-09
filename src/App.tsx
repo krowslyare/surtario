@@ -13,9 +13,11 @@ export default function App({
       ? "comparison"
       : "market",
   );
+  const [comparisonKey, setComparisonKey] = useState(0);
   const [seed, setSeed] = useState<PurchaseSeed | undefined>();
   function openComparison(nextSeed?: PurchaseSeed) {
     setSeed(nextSeed);
+    setComparisonKey((key) => key + 1);
     setView("comparison");
     const url = new URL(window.location.href);
     url.searchParams.set("view", "comparison");
@@ -33,6 +35,8 @@ export default function App({
       </div>
       {view === "comparison" && (
         <Comparison
+          key={comparisonKey}
+          onPrepare={openComparison}
           seed={seed}
           persistenceEnabled={persistenceEnabled}
           onBack={() => {

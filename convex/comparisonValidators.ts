@@ -39,6 +39,18 @@ export const documentReviewValidator = v.object({
   values: reviewedValuesValidator,
   confirmed: v.literal(true),
 });
+export const replyReviewInputValidator = v.object({
+  requestId: v.id("quotationRequests"),
+  messageId: v.string(),
+  values: reviewedValuesValidator,
+  confirmed: v.literal(true),
+});
+export const replyReviewValidator = v.object({
+  requestId: v.string(),
+  messageId: v.string(),
+  values: reviewedValuesValidator,
+  confirmed: v.literal(true),
+});
 export const comparisonContent = {
   request: procurementRequestValidator,
   offers: v.array(supplierOfferValidator),
@@ -57,6 +69,7 @@ export const comparisonContent = {
       ),
       webReview: v.optional(webReviewValidator),
       documentReview: v.optional(documentReviewValidator),
+      replyReview: v.optional(replyReviewValidator),
       marketSource: v.optional(
         v.object({
           title: v.string(),

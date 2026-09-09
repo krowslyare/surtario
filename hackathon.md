@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T03:29:57Z
+- **Last updated:** 2026-09-09T12:50:48Z
 
 ## Log
 
@@ -127,3 +127,9 @@ Alcance: distribuidores de estudios sintéticos persistidos. La búsqueda web li
 ### 2026-09-09 - working tree · candidatos web y consulta
 Una fuente de investigación web completada puede conservarse como distribuidor candidato sin precio ni extracción. `convex/prospects.ts` reconstruye enlace, fecha e insumo desde la fuente de la sesión; nombre y contacto son anotaciones revisadas. Biblioteca reactiva y consulta vinculada al candidato, sin transformar el contacto en destinatario autorizado.
 90 tests, 40 E2E y build satisfactorios. Recorrido local con respuesta web sintética: guardar candidato sin markdown, recargar, preparar consulta y recuperar borrador; revisión móvil realizada. Revisión adversarial local de propiedad, referencias, idempotencia y separación de contacto/envío. Sin llamadas externas ni despliegue; pertinencia de fuentes reales pendiente de credenciales.
+
+
+### 2026-09-09 - working tree · respuesta a oferta revisada
+Una respuesta vinculada permite preparar una oferta mediante revisión manual explícita, abrir una comparación nueva y guardarla en Convex. El servidor reconstruye el correo por solicitud/mensaje de la sesión y conserva campos confirmados, condiciones y elección sin sobrescribir la comparación anterior ni registrar compra.
+92 tests, 41 E2E y build satisfactorios. Recorrido con correo sintético en Convex local: abrir respuesta, transcribir, confirmar, guardar y recargar con texto original y corrección separados. Corregida etiqueta accesible del selector y revisión móvil completada. Revisión adversarial local de propiedad, procedencia, respuestas no vinculadas y reintentos.
+Sin lectura automática del correo por OpenAI ni envíos reales. No combina automáticamente la nueva oferta con otras comparaciones. Alcance en `docs/desarrollo/RESPUESTA_A_OFERTA.md`; sin despliegue público.
