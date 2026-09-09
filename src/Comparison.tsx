@@ -874,6 +874,13 @@ export default function Comparison({
             {source.marketSource && (
               <blockquote>{source.marketSource.evidence}</blockquote>
             )}
+            {source.extraction && (
+              <p>
+                El documento y la propuesta extraída se conservan arriba junto a
+                tus correcciones. Los siguientes importes son los que
+                confirmaste al entrar a la comparación.
+              </p>
+            )}
             <dl className="offer-details">
               <div>
                 <dt>Insumo</dt>
@@ -884,20 +891,32 @@ export default function Comparison({
                 <dd>{source.original.specification}</dd>
               </div>
               <div>
-                <dt>Contenido original</dt>
+                <dt>
+                  {source.extraction
+                    ? "Contenido al confirmar revisión"
+                    : "Contenido original"}
+                </dt>
                 <dd>
                   {numberLabel(source.original.packageContent)}{" "}
                   {unitName(source.original.packageUnit ?? "")}
                 </dd>
               </div>
               <div>
-                <dt>Precio original</dt>
+                <dt>
+                  {source.extraction
+                    ? "Precio al confirmar revisión"
+                    : "Precio original"}
+                </dt>
                 <dd>
                   {money(source.original.priceCents, source.original.currency)}
                 </dd>
               </div>
               <div>
-                <dt>Entrega original</dt>
+                <dt>
+                  {source.extraction
+                    ? "Entrega al confirmar revisión"
+                    : "Entrega original"}
+                </dt>
                 <dd>
                   {money(
                     source.original.freightCents,

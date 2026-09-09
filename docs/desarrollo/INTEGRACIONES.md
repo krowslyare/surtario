@@ -17,7 +17,7 @@ La CLI instalada admite omitir el valor y pedirlo interactivamente. No ejecutar 
 | Servicio | Qué se necesitará | Estado del código |
 | --- | --- | --- |
 | Firecrawl | `FIRECRAWL_API_KEY` con créditos | Adaptador y action interna `discovery:probe` implementados |
-| OpenAI | API key y proyecto con acceso al modelo que se seleccione | Extracción estructurada pendiente; no hay lector de esa clave aún |
+| OpenAI | API key y proyecto con acceso al modelo que se seleccione | Prueba interna de texto sintético con `OPENAI_API_KEY` y `OPENAI_EXTRACTION_MODEL`; llamada real pendiente |
 | AgentMail | API key, inbox y destinatario de pruebas autorizado | Envío/recepción pendientes; aún no hay endpoint de webhook |
 
 No necesitas inventar endpoints ni construirlos. Para AgentMail hará falta una URL pública de recepción cuando implementemos el webhook y su verificación. Las cuentas y credenciales no equivalen a integración probada.
@@ -55,3 +55,5 @@ No se habilitan documentos privados ni llamadas pagadas anónimas como efecto de
 Convex local cargó la action; invocación por CLI sin clave falla con mensaje de configuración antes del fetch. Un cliente público fue rechazado al intentar invocarla. No se configuraron claves ni se hizo una petición real de Firecrawl.
 
 Contrato contrastado con [Search de Firecrawl](https://docs.firecrawl.dev/api-reference/endpoint/search) y tipos de Convex 1.45.0 instalados. La viabilidad real y los costos se comprobarán con la cuenta del proyecto.
+
+Extracción/revisión: ver [entrega independiente y pruebas](./EXTRACCION_REVISION.md). La UI de revisión usa fixture; la action OpenAI se prueba por separado antes de conectarla a entradas reales.

@@ -10,6 +10,8 @@
 
 import type * as comparison from "../comparison.js";
 import type * as discovery from "../discovery.js";
+import type * as extraction from "../extraction.js";
+import type * as lib_extraction from "../lib/extraction.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
 import type * as studies from "../studies.js";
 import type * as studyValidators from "../studyValidators.js";
@@ -24,6 +26,8 @@ import type {
 declare const fullApi: ApiFromModules<{
   comparison: typeof comparison;
   discovery: typeof discovery;
+  extraction: typeof extraction;
+  "lib/extraction": typeof lib_extraction;
   "lib/firecrawl": typeof lib_firecrawl;
   studies: typeof studies;
   studyValidators: typeof studyValidators;
@@ -56,4 +60,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  agent: import("@convex-dev/agent/_generated/component.js").ComponentApi<"agent">;
+};

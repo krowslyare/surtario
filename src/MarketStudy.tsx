@@ -22,6 +22,7 @@ import {
 } from "./domain/market";
 import { money, numberLabel } from "./numbers";
 import { Dialog } from "./components/Dialog";
+import ExtractionReview from "./components/ExtractionReview";
 import IngredientIntake from "./components/IngredientIntake";
 import SavedStudies, { type SavedStudy } from "./components/SavedStudies";
 import type { Id } from "../convex/_generated/dataModel";
@@ -531,6 +532,7 @@ export default function MarketStudy({
             )}
           </section>
         )}
+        <ExtractionReview onPrepare={onPrepare} />
         <aside className="market-context">
           <h3>¿Ya tienes una cotización?</h3>
           <p>
