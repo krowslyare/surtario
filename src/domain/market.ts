@@ -45,6 +45,12 @@ export type ReferenceResult = MarketBase & {
 };
 export type MarketResult = CatalogResult | DistributorResult | ReferenceResult;
 export type ComparisonSource = {
+  replyReview?: {
+    requestId: string;
+    messageId: string;
+    values: ReviewedValues;
+    confirmed: true;
+  };
   documentReview?: { runId: string; values: ReviewedValues; confirmed: true };
   webReview?: {
     runId: string;

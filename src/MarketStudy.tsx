@@ -575,6 +575,7 @@ export default function MarketStudy({
                   resultId={item.id}
                   offers={[]}
                   onEditOffer={() => {}}
+                  onPrepare={onPrepare}
                 />
               </div>
             ))}

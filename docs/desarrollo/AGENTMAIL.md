@@ -40,6 +40,10 @@ El contacto encontrado no se convierte en destinatario autorizado: la demo usa e
 
 El borrador editable para copiar sigue separado: sus cambios no se envían al correo. La UI explica cómo acceder al borrador de correo revisable. Además, las fuentes de investigaciones web completadas pueden revisarse y guardarse como candidatos, con consulta propia. Ver [distribuidores web](DISTRIBUIDORES_WEB.md). El contacto anotado sigue sin autorizar envíos.
 
+## Oferta desde respuesta
+
+«Revisar como nueva oferta» permite transcribir y confirmar una oferta del correo y abrir una comparación nueva guardable. El servidor vincula la procedencia por solicitud/mensaje; no sobrescribe ofertas anteriores ni registra compra. [Contrato y límites](RESPUESTA_A_OFERTA.md). La extracción de precios del correo sigue siendo manual.
+
 
 
 PR 6 review: signed reply text longer than 20,000 characters is retained up to that limit with an explicit truncation notice. Consult the original email for the full message. A signed-webhook regression verifies acknowledgement and bounded retention; this does not establish a real provider round trip.

@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T20:02:24Z
+- **Last updated:** 2026-09-09T20:03:56Z
 
 ## Log
 
@@ -128,6 +128,12 @@ Alcance: distribuidores de estudios sintéticos persistidos. La búsqueda web li
 Una fuente de investigación web completada puede conservarse como distribuidor candidato sin precio ni extracción. `convex/prospects.ts` reconstruye enlace, fecha e insumo desde la fuente de la sesión; nombre y contacto son anotaciones revisadas. Biblioteca reactiva y consulta vinculada al candidato, sin transformar el contacto en destinatario autorizado.
 90 tests, 40 E2E y build satisfactorios. Recorrido local con respuesta web sintética: guardar candidato sin markdown, recargar, preparar consulta y recuperar borrador; revisión móvil realizada. Revisión adversarial local de propiedad, referencias, idempotencia y separación de contacto/envío. Sin llamadas externas ni despliegue; pertinencia de fuentes reales pendiente de credenciales.
 
+
+### 2026-09-09 - working tree · respuesta a oferta revisada
+Una respuesta vinculada permite preparar una oferta mediante revisión manual explícita, abrir una comparación nueva y guardarla en Convex. El servidor reconstruye el correo por solicitud/mensaje de la sesión y conserva campos confirmados, condiciones y elección sin sobrescribir la comparación anterior ni registrar compra.
+92 tests, 41 E2E y build satisfactorios. Recorrido con correo sintético en Convex local: abrir respuesta, transcribir, confirmar, guardar y recargar con texto original y corrección separados. Corregida etiqueta accesible del selector y revisión móvil completada. Revisión adversarial local de propiedad, procedencia, respuestas no vinculadas y reintentos.
+Sin lectura automática del correo por OpenAI ni envíos reales. No combina automáticamente la nueva oferta con otras comparaciones. Alcance en `docs/desarrollo/RESPUESTA_A_OFERTA.md`; sin despliegue público.
+
 ### 2026-09-09 - working tree · correcciones de revisión del PR 1
 Corregidos tres hallazgos de Codex: unidad de empaque desconocida conservada como pendiente, mínimo sin valor supuesto al crear una oferta y resumen por grupos completos de la misma moneda. Una oferta incompleta o en otra moneda no oculta la comparación válida de las demás.
 47 tests y build aprobados en el checkout del PR 1; 8 E2E de comparación aprobados en un servidor frontal aislado, incluida regresión de campos pendientes y tercera oferta. Sin cambios de backend ni llamadas externas. Nueva ronda de revisión solicitada tras publicar el commit; merge todavía pendiente.
@@ -189,3 +195,8 @@ Integrated reviewed main into catalog requests from saved studies. Sol review an
 ### 2026-09-09 - working tree · PR 11 local review
 Integrated reviewed main into web distributor candidates and linked inquiries. Sol review and parent adjudication found no material issues. Sources are reconstructed from owned research, and found contacts never authorize email delivery. The temporary local CLI working-directory adjustment for browser setup was removed.
 91 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
+
+
+### 2026-09-09 - working tree · PR 12 local review
+Integrated reviewed main into manually reviewed reply offers. Sol review identified misleading source labels and malformed reply dates; inherited neutral provenance labels and pending-date handling now preserve unknown dates without crashing or substituting request dates. Regression covers persisted malformed reply dates and browser recovery. Temporary browser CLI setup adjustment removed.
+94 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.

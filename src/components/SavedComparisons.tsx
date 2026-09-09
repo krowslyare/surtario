@@ -110,6 +110,17 @@ function ConnectedComparisons({
         selectedOfferId: submitted.selectedOfferId,
         ...(!submitted.id &&
         submitted.offers.length === 1 &&
+        submitted.sources[submitted.offers[0].id]?.replyReview
+          ? {
+              replyReview: {
+                ...submitted.sources[submitted.offers[0].id].replyReview!,
+                requestId: submitted.sources[submitted.offers[0].id]
+                  .replyReview!.requestId as Id<"quotationRequests">,
+              },
+            }
+          : {}),
+        ...(!submitted.id &&
+        submitted.offers.length === 1 &&
         submitted.sources[submitted.offers[0].id]?.documentReview
           ? {
               documentReview: {

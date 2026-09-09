@@ -10,7 +10,7 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
 | 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; Pruebas internas Firecrawl/OpenAI preparadas; llamadas reales de sponsors pendientes |
 | 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF propios con transcripción local y lectura multimodal de ejemplos implementada; llamadas reales pendientes |
-| 4 | Solicitud, respuesta y decisión conectadas | En curso | Comparaciones y elección sintéticas recuperables; borrador persistente desde comparación, estudio sin precio o candidato web revisado y recepción firmada implementados; correo real pendiente |
+| 4 | Solicitud, respuesta y decisión conectadas | En curso | Comparaciones y elección sintéticas recuperables; borrador persistente desde comparación, estudio sin precio o candidato web revisado y recepción firmada y oferta manual revisada desde respuesta implementados; correo real pendiente |
 | 5 | Demo pública aislada y robusta | En preparación | CI de tests/build añadido; E2E locales y correo restringido probados. Hosting y verificación pública pendientes |
 | 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
 | 7 | Materiales y entrega del concurso | Pendiente | Requisitos documentados; nada publicado |
@@ -167,3 +167,6 @@ PR 10 local review: Integrated reviewed main into catalog requests from saved st
 
 
 PR 11 local review: Integrated reviewed main into web distributor candidates and linked inquiries. Sol review and parent adjudication found no material issues. Sources are reconstructed from owned research, and found contacts never authorize email delivery. The temporary local CLI working-directory adjustment for browser setup was removed. 91 tests/build and 1 focused browser checks passed. Real provider verification and deployment remain pending.
+
+
+PR 12 local review: Integrated reviewed main into manually reviewed reply offers. Sol review identified misleading source labels and malformed reply dates; inherited neutral provenance labels and pending-date handling now preserve unknown dates without crashing or substituting request dates. Regression covers persisted malformed reply dates and browser recovery. Temporary browser CLI setup adjustment removed. 94 tests/build and 1 focused browser checks passed. Real provider verification and deployment remain pending.

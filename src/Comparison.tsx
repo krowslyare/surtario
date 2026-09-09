@@ -46,13 +46,16 @@ const initialSources = (): Record<string, Source> =>
     ]),
   );
 const unitName = (unit: string) => (unit === "unit" ? "unid." : unit);
-const displayDate = (date: string) =>
-  new Intl.DateTimeFormat("es-PE", {
+const displayDate = (date: string) => {
+  const value = new Date(`${date}T12:00:00Z`);
+  if (!Number.isFinite(value.getTime())) return "Fecha pendiente";
+  return new Intl.DateTimeFormat("es-PE", {
     day: "numeric",
     month: "short",
     year: "numeric",
     timeZone: "UTC",
-  }).format(new Date(`${date}T12:00:00Z`));
+  }).format(value);
+};
 
 function OfferEditor({
   offer,
@@ -257,10 +260,12 @@ function OfferEditor({
 
 export default function Comparison({
   seed,
+  onPrepare,
   onBack,
   persistenceEnabled,
 }: {
   seed?: PurchaseSeed;
+  onPrepare?: (seed: PurchaseSeed) => void;
   onBack?: () => void;
   persistenceEnabled: boolean;
 }) {
@@ -334,7 +339,8 @@ export default function Comparison({
         entry !== undefined &&
         (entry.extraction === undefined ||
           entry.webReview !== undefined ||
-          entry.documentReview !== undefined) &&
+          entry.documentReview !== undefined ||
+          entry.replyReview !== undefined) &&
         entry.label !== "Entrada manual" &&
         offer.supplier === entry.original.supplier &&
         offer.ingredient === entry.original.ingredient &&
@@ -937,6 +943,7 @@ export default function Comparison({
             comparisonId={savedId}
             offers={offers}
             onEditOffer={setEditing}
+            onPrepare={onPrepare}
           />
         )}
         <footer>
