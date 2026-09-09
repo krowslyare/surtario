@@ -134,3 +134,19 @@ Implementado recorrido Firecrawl → fuentes persistentes → extracción explí
 ## Revisión web guardada · entrega independiente
 
 Correcciones confirmadas, condiciones y elección de fuentes web recuperables mediante referencias a investigaciones de la misma sesión. Evidencia y propuesta originales reconstruidas por servidor; sin documentos privados. 68 pruebas de dominio/backend, 34 E2E y build satisfactorios; recorrido de revisión/guardado/recarga ejecutado en Convex local con fuente sintética. [Contrato](./REVISION_WEB_GUARDADA.md). Llamadas de sponsors y AgentMail siguen pendientes.
+
+Revisión del PR 1: corregidos valores supuestos de unidad/mínimo y resumen entre ofertas compatibles. 47 tests, build y 8 E2E de comparación pasan en el checkout aislado del PR; integraciones externas y entrega pública siguen pendientes.
+
+Segunda ronda del PR 1: diálogo conserva entradas al pulsar dentro; procedencia manual fechada según calendario local. 47 tests, build y 9 E2E de comparación aprobados; no modifica el estado de las etapas externas.
+
+PR 2 review preparation: integrated the reviewed PR 1 fixes from main; 53 tests, build, and 11 comparison/extraction E2E tests passed locally. External integration stages remain open.
+
+PR 3 local review: integrated main and cleared stale save notices when restoring a new draft. Independent Sol 5.6 review adjudicated by Astra; 58 tests and build passed, plus five persistence UI checks against the existing local backend. External integrations remain unverified.
+
+PR 4 local review: integrated main, 65 tests/build and 35 E2E checks passed. Sol 5.6 review adjudicated by Astra found no material blocker. Provider behavior remains simulated; stages 2–4 still require real integration evidence.
+
+PR 5 local review: integrated main; Sol 5.6 review adjudicated by Astra found no material findings. 68 tests/build passed; 35 E2E passed initially and the web-persistence case passed with temporary local CLI configuration adjustment. External provider validation remains pending.
+
+
+## PR 6 · local review
+Reviewed main integrated. Fixed signed long replies returning a persistent server error by retaining bounded text with a visible truncation notice. Validation: 78 domain/backend tests, build and six focused browser checks passed; browser persistence used the existing local backend with later code. Mail transport remained simulated. External integration stages remain open.
