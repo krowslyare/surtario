@@ -40,8 +40,58 @@ async function setup() {
   return { t, args, comparison };
 }
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllEnvs();
   vi.clearAllMocks();
+});
+test("interrupted analyses expire without retrying or accepting a late completion", async () => {
+  vi.useFakeTimers();
+  vi.stubEnv("ADVISOR_ENABLED", "true");
+  vi.stubEnv("OPENAI_API_KEY", "test-key");
+  vi.stubEnv("OPENAI_ADVISOR_MODEL", "test-model");
+  const { t, args } = await setup();
+  const run = await t.mutation(api.advisor.prepare, args);
+  await t.mutation(internal.advisor.reserve, { token, id: run.id });
+
+  // Simulate an action that never reaches finish, then let durable recovery run.
+  await t.finishAllScheduledFunctions(() => vi.runAllTimers());
+  const expired = await t.action(api.advisor.explain, { token, id: run.id });
+  expect(expired.status).toBe("failed");
+  expect(expired.error).toMatch(/no terminó a tiempo/);
+  expect(expired.report.alternatives[1].totalCents).toBe(5000);
+  expect(explainPurchase).not.toHaveBeenCalled();
+  const late = await t.mutation(internal.advisor.finish, {
+    id: run.id,
+    narrative: {
+      reasoning: "La presentación menor permite mantener caja disponible.",
+      questions: [],
+      sourceIds: ["rice-supplier-b"],
+    },
+    toolCalls: ["evaluateScenarios", "readEvidence"],
+  });
+  expect(late).toEqual(expired);
+});
+test("expiry leaves an already completed analysis intact", async () => {
+  vi.useFakeTimers();
+  vi.stubEnv("ADVISOR_ENABLED", "true");
+  vi.stubEnv("OPENAI_API_KEY", "test-key");
+  vi.stubEnv("OPENAI_ADVISOR_MODEL", "test-model");
+  const { t, args, comparison } = await setup();
+  const run = await t.mutation(api.advisor.prepare, args);
+  await t.mutation(internal.advisor.reserve, { token, id: run.id });
+  const completed = await t.mutation(internal.advisor.finish, {
+    id: run.id,
+    narrative: {
+      reasoning: "La presentación menor permite mantener caja disponible.",
+      questions: [],
+      sourceIds: ["rice-supplier-b"],
+    },
+    toolCalls: ["evaluateScenarios", "readEvidence"],
+  });
+  await t.finishAllScheduledFunctions(() => vi.runAllTimers());
+  expect(
+    (await t.query(api.advisor.list, { token, comparisonId: comparison.id }))[0],
+  ).toEqual(completed);
 });
 test("owned snapshots preserve calculations and context, retries cannot change their meaning", async () => {
   const { t, args, comparison } = await setup();

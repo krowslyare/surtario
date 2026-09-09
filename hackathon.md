@@ -8,11 +8,11 @@
 - **Frontend:** not deployed
 - **Convex deployment:** not deployed
 - **Components:** @convex-dev/agent
-- **Convex features:** schema, indexes, queries, mutations, internal action, realtime queries (local)
+- **Convex features:** schema, indexes, queries, mutations, internal action, scheduled mutations, realtime queries (local)
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T20:34:31Z
+- **Last updated:** 2026-09-09T21:29:43Z
 
 ## Log
 
@@ -217,3 +217,8 @@ Integrated reviewed main into adding reply offers to existing comparisons. Sol r
 Added cash/coverage scenarios, optional decision context, executive advice and a copyable negotiation draft. Owned Convex snapshots retain inputs, revision and evidence; the interface marks changed analyses stale.
 The registered Agent component now has bounded read-only scenario/evidence tools. Its provider action remains disabled without explicit server configuration; no model call, purchase or message was executed.
 Independent Sol review found removed-source and mixed-currency issues, corrected with regressions. 110 domain/backend tests, build and eight focused browser checks passed locally, including snapshot recovery and mobile/desktop layouts. External provider E2E and public deployment remain pending.
+
+
+### 2026-09-09 - working tree · PR 14 local review
+Preserved decision context during the first comparison save and added scheduled recovery for interrupted advisor executions. Expiry keeps deterministic results and prevents a late model completion from replacing a failed state; it never retries a provider.
+Independent Sol review was adjudicated and corrected. 112 domain/backend tests, frontend/backend typechecks, build and three advisor browser journeys passed. Browser checks used the existing synthetic local backend; changed backend behavior was verified in memory. No real provider calls or public deployment.

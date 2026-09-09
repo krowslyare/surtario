@@ -180,3 +180,10 @@ PR 13 local review: Integrated reviewed main into adding reply offers to existin
 ## Purchasing advisor · local delivery
 
 Implemented an optional decision context, deterministic cash/coverage scenarios, an executive verdict and a copyable negotiation draft. Owned snapshots persist comparison revision and evidence; changed inputs visibly invalidate the previous analysis. The bounded Agent action uses read-only calculation/evidence tools and remains disabled without explicit server configuration. Independent review findings were corrected. 110 domain/backend tests, build and eight focused local browser checks passed. See [advisor contract and verification](ASESOR_COMPRAS.md). Stages 2–5 remain open for real provider validation and public deployment.
+
+
+## PR 14 · local review
+
+Independent Sol review and parent adjudication corrected interrupted advisor executions that could remain running indefinitely. A durable internal expiry preserves the calculation, does not retry the model, and ignores late completion. The initial-save context fix was moved into this delivery so budget and usage survive the first comparison save.
+
+112 domain/backend tests, frontend/backend typechecks and build passed. Three advisor browser journeys passed on the PR frontend using the existing synthetic local backend; the exact changed backend was tested in memory. Real provider behavior and public deployment remain pending.

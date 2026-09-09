@@ -369,6 +369,9 @@ export default function Comparison({
   }
 
   function openSaved(comparison: SavedComparison) {
+    const nextClientId = crypto.randomUUID();
+    currentClientId.current = nextClientId;
+    setClientId(nextClientId);
     setRequest({ ...comparison.request });
     setQuantity(
       comparison.request.quantity > 0
@@ -967,7 +970,15 @@ export default function Comparison({
             }
           />
         )}
-        {persistenceEnabled && <PurchasingAdvisor comparisonId={savedId} revision={savedRevision} request={effectiveRequest} offers={offers} />}
+        {persistenceEnabled && (
+          <PurchasingAdvisor
+            key={clientId}
+            comparisonId={savedId}
+            revision={savedRevision}
+            request={effectiveRequest}
+            offers={offers}
+          />
+        )}
         <footer>
           <span>
             {hasReviewedSources
