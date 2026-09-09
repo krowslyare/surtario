@@ -10,7 +10,24 @@ import {
 
 import { documentKind, documentResult } from "./documentValidators";
 import { prospectContent } from "./prospectValidators";
+import { advisorRunContent } from "./advisorValidators";
 export default defineSchema({
+  ingredientLists: defineTable({
+    ownerHash: v.string(),
+    clientId: v.string(),
+    ingredients: v.array(v.string()),
+    sourceKind: v.union(v.literal("manual"), v.literal("spreadsheet")),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerHash", ["ownerHash"])
+    .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
+  advisorRuns: defineTable({
+    ownerHash: v.string(),
+    clientId: v.string(),
+    ...advisorRunContent,
+  })
+    .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"])
+    .index("by_comparisonId", ["comparisonId"]),
   webProspects: defineTable({ ownerHash: v.string(), ...prospectContent })
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_runId_and_sourceIndex", [
@@ -101,6 +118,8 @@ export default defineSchema({
   })
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"])
+    .index("by_state", ["state"])
+    .index("by_inboxId_and_receipt_messageId", ["inboxId", "receipt.messageId"])
     .index("by_inboxId_and_receipt_threadId", ["inboxId", "receipt.threadId"]),
   quotationReplies: defineTable({
     requestId: v.id("quotationRequests"),

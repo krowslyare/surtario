@@ -140,3 +140,6 @@ Las revisiones de foto/PDF de ejemplo también admiten «Guardar comparación»:
 Las fuentes web también pueden guardarse como distribuidores candidatos sin precio ni extracción: nombre/contacto revisados, URL/fecha y consulta autorizada al buzón de prueba. [Recorrido y límites](docs/desarrollo/DISTRIBUIDORES_WEB.md).
 
 Una respuesta vinculada permite preparar una oferta mediante revisión manual y guardarla como comparación nueva o añadirla a la comparación actual tras confirmar equivalencia, con procedencia del correo conservada en Convex y nueva elección requerida. [Respuesta a oferta](docs/desarrollo/RESPUESTA_A_OFERTA.md).
+
+
+Purchasing advisor: [decision policy, server configuration and local verification](docs/desarrollo/ASESOR_COMPRAS.md). Scenarios work without model credentials; AI interpretation remains explicitly gated.

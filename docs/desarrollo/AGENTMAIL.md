@@ -30,6 +30,17 @@ Hasta 10 solicitudes por sesión y 100 en total, con 30 segundos entre creacione
 
 Un estado `sending` interrumpido o `uncertain` requiere revisión del operador en AgentMail antes de crear otra solicitud. La API pública no reintenta esos estados. La aceptación del proveedor no confirma entrega. Los borradores sin destinatario/buzón configurado deben recrearse después de configurar el entorno; no cambian silenciosamente de destino.
 
+## Operator recovery workflow
+
+Recovery is available only through internal Convex functions. It does not expose an admin screen, accept a browser session owner, call AgentMail, or resend a message.
+
+1. Run `quotationMail.inspectRecoveryQueue` internally with a limit from 1 to 100. Use 100 for a complete view: the demo caps both requests and quarantined events at 100 globally, so even the oldest retained item remains reachable. Review each `sending` or `uncertain` request in the configured AgentMail inbox using its frozen inbox, recipient, subject, idempotency key, and timestamps. Review quarantined events against their original inbox, thread, sender, message, and body.
+2. If AgentMail proves that a request was sent, copy the provider's exact message and thread identifiers. Run `quotationMail.recordVerifiedSentReceipt` internally with the request ID, displayed revision, frozen inbox ID, exact provider identifiers, and `operatorVerified: true`. The mutation accepts only `sending` or `uncertain`, rejects a changed revision, inbox mismatch, invalid identifiers, or a message or thread already assigned to another request in that inbox. Repeating the exact completed operation is harmless.
+3. After the receipt exists, run `quotationMail.linkVerifiedUnmatchedReply` internally with the request ID, quarantined event ID, and `operatorVerified: true`. It links only when the stored event matches the request's frozen inbox, provider thread, and normalized recipient address, and that route identifies exactly one request. It rejects a different sender, ambiguous thread, duplicate provider message, or a request that already holds 10 replies. A successful link removes the event from quarantine atomically; repeating it is harmless.
+4. If provider evidence is missing or any stored value differs, leave the item unchanged for later investigation. Do not create a replacement request or retry the original send as part of recovery.
+
+These operations require an operator to verify provider state outside the app. They contain no credentials and do not establish that a real AgentMail round trip has occurred.
+
 Pendiente: configurar credenciales y destinatario autorizado, publicar/registrar el webhook, ejecutar ida y vuelta real y ensayar ese recorrido para el video. Este corte admite solo texto; no procesa adjuntos ni extrae automáticamente precios de respuestas.
 
 ## Consulta desde estudio sin precio
