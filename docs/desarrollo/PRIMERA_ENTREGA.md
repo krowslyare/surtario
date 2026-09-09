@@ -1,6 +1,6 @@
 # Primera entrega: base y comparación de compra
 
-Este es el punto de entrada cuando se autorice comenzar a desarrollar. Por ahora solo se preparó el repositorio.
+Implementada localmente el 7 de septiembre de 2026. Este documento conserva el contrato de la primera entrega; estado y próximos hitos en `ETAPAS.md`. La UI es transitoria y no guarda compras; el backend expone consultas sin persistencia.
 
 ## Resultado esperado
 
@@ -15,7 +15,7 @@ El objetivo es validar las reglas antes de que una extracción automática pueda
 3. Crear `src/`, `convex/` según el scaffold y `fixtures/` con datos exclusivamente sintéticos. Usar un módulo de cálculo pequeño compartible con backend, no una arquitectura de servicios.
 4. Implementar caso base y límites de conversión aplicando el [estándar de UI/UX](../diseno/UI_UX.md). Trasladar los tokens a estilos de la app y construir solo texto, botones, campos y comparación necesarios. La interfaz distingue datos válidos de pendientes; no contiene un «ganador» predeterminado.
 5. Ejecutar pruebas de reglas y comprobaciones de build/tipos proporcionadas por el scaffold. Revisar la comparación en ancho móvil.
-6. Registrar comandos reproducibles en README y evidencia en la etapa 1. Iniciar inmediatamente los spikes de etapa 2; no expandir UI sin comprobar las dependencias externas.
+6. Registrar comandos reproducibles en README y evidencia en la etapa 1. La secuencia original priorizaba spikes externos. La decisión vigente permite exploración con ejemplos y persistencia antes de conectar APIs; consultar `ETAPAS.md`.
 
 Si falta una cuenta o credencial, crear solo configuración de ejemplo sin secretos y explicar exactamente qué conexión sigue pendiente. La falta de API no impide calcular localmente; tampoco autoriza a presentar mocks como servicios funcionando.
 
@@ -59,4 +59,4 @@ Los casos de correo duplicado, documento viejo y acceso entre sesiones pertenece
 
 ## Qué no construir aquí
 
-OCR completo, cotización enviada a terceros, recetas, múltiples locales, facturación, suscripciones, catálogo global, exploración de logo/nombre definitivo o una interfaz de chat general. Sí se aplica el estándar visual ya definido. Las pruebas externas de la etapa 2 son el siguiente paso inmediato, no una excusa para ampliar esta entrega.
+OCR completo, cotización enviada a terceros, recetas, múltiples locales, facturación, suscripciones, catálogo global, exploración de logo/nombre definitivo o una interfaz de chat general. Sí se aplica el estándar visual ya definido. Las pruebas externas de la etapa 2 siguen siendo necesarias antes de presentar integraciones como ejecutadas.

@@ -7,18 +7,24 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | Etapa | Resultado | Estado | Evidencia actual |
 | --- | --- | --- | --- |
 | 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |
-| 1 | Base de desarrollo y caso de compra calculable | Pendiente | Ningún código ni dependencia instalada |
-| 2 | Viabilidad de integraciones externas | Pendiente | Solo documentación consultada |
-| 3 | Primera comparación útil en la aplicación | Pendiente | — |
+| 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
+| 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; Prueba interna Firecrawl preparada; llamadas reales de sponsors pendientes |
+| 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF con transcripción local; fuentes reales y extracción automática pendientes |
 | 4 | Solicitud, respuesta y decisión conectadas | Pendiente | — |
 | 5 | Demo pública aislada y robusta | Pendiente | — |
 | 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
 | 7 | Materiales y entrega del concurso | Pendiente | Requisitos documentados; nada publicado |
 | P | Habilitación y validación de piloto privado | Pendiente, vía comercial independiente | No hay restaurante disponible |
 
-Preparación del agente: skills locales y plugin Convex instalados; reinicio y disponibilidad MCP pendientes de verificar. Ver [SETUP_AGENTE.md](./SETUP_AGENTE.md). Esto no completa la etapa 1.
+Preparación del agente: skills cargados, MCP invocable pero status requiere autenticación. Backend local probado por CLI y HTTP; AI files instalados. Ver [SETUP_AGENTE.md](./SETUP_AGENTE.md). La evidencia de persistencia proviene de las pruebas de aplicación, no del estado del MCP.
 
-Próximo trabajo: [Primera entrega](./PRIMERA_ENTREGA.md). Las etapas 1 y 2 deben resolverse al inicio antes de invertir en diseño completo. Si falta una credencial, completar el trabajo local y registrar el bloqueo específico; no inventar una integración exitosa.
+Bloque de persistencia completado localmente: selección y fuentes recuperables, biblioteca reactiva, aislamiento de sesión y control de revisiones. Ver [evidencia y límites](./PERSISTENCIA_ESTUDIOS.md). No habilita datos privados ni completa la demo pública.
+
+Siguientes hitos: descubrimiento/extracción de fuentes reales y revisión estructurada de precios/presentaciones; correo después en su recorrido autorizado. OpenAI, Firecrawl y AgentMail siguen aplazados por decisión del usuario. Se puede preparar el código sin claves, pero etapas 2–4 no se completan sin ejecutar las integraciones. Ver [exploración](./EXPLORACION_MERCADO.md) y [primera comparación](./PRIMERA_ENTREGA.md).
+
+Revisión visual aplicada: Manrope local y tokens índigo/lavanda; búsqueda protagonista, resultados compactos, precio normalizado destacado y acceso persistente al estudio. La portada ilustrada fue retirada. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
+
+Ensayo del guion actual completado en navegador: explorar → guardar/recuperar → consulta sin envío → compra opcional → totales comprobados. 36 pruebas de dominio/backend y 19 de navegador, build y smoke de cálculo local satisfactorios. [Guion y brechas de concurso](./ENSAYO_DEMO.md); video no grabado, integraciones y publicación pendientes.
 
 ## 1 · Base y caso de referencia
 
@@ -43,15 +49,15 @@ Trabajo y evidencia:
 
 Salida: resultados reales y limitaciones registrados. Un mock puede habilitar trabajo local, pero no cuenta como integración ejecutada. Si la fuente web no aporta al caso o no es extraíble, resolver esa decisión antes de pulir la demo.
 
-## 3 · Documento a comparación
+## 3 · Mercado a estudio y compra opcional
 
-Objetivo: primer resultado completo para el encargado, sin recetas ni historial.
+Objetivo: un estudio útil sin recetas, documentos propios, cantidad ni historial.
 
-Trabajo: cargar documento, revisar extracción, confirmar equivalencia/presentación, indicar cantidad requerida y comparar dos ofertas. Mostrar precio por unidad, paquetes, excedente, entrega y desembolso. Conservar evidencia y fecha. Registrar compras realizadas separadamente cuando el usuario lo indique.
+Trabajo: explorar por insumo/categoría y zona; separar catálogo, distribuidor sin precio y referencia; revisar fuentes/fechas/contactos y conservar selección. Persistir estudios con aislamiento. Permitir enriquecer con documentos revisados cuando esté implementada extracción. Continuar a compra solo al confirmar equivalencia y añadir cantidad/condiciones.
 
-Salida: recorrido con cero recetas y cero compras históricas; una oferta sola pide alternativa; un peso desconocido no se convierte; una oferta nueva no registra compra. Probar también documento antiguo y empaque cambiado.
+Salida: estudio recuperable sin documentos ni cantidad; contacto sin precio conserva fuente sin asignar cero; búsqueda vacía no afirma ausencia de proveedores; categoría amplia no mezcla productos incompatibles. Al continuar a compra, mostrar paquetes, mínimo, excedente y desembolso sin inventar entrega o impuestos. Una oferta nueva no registra compra.
 
-Interfaz: Insumos y proveedores / Compras. Una vista de revisión y una comparación legibles en teléfono bastan.
+El prototipo actual guarda estudios sintéticos en Convex local. Las fuentes reales y documentos siguen pendientes; guardar un fixture no acredita descubrimiento web.
 
 ## 4 · Cotización a decisión
 
@@ -93,10 +99,22 @@ Esta vía se activa cuando haya contacto; no condiciona la demo sintética.
 
 Antes de documentos reales: usuario administrador autenticado, aislamiento entre restaurantes y demo, archivos restringidos, exportación/borrado y recuperación probados, explicación de tratamiento de datos y soporte definido.
 
-Primer caso: un insumo, dos ofertas y una necesidad de compra. Registrar esfuerzo del usuario y de quien acompaña, correcciones, decisión útil y segundo uso. Probar precio con oferta concreta después de observar valor; no exigir recetas ni dar demanda por validada.
+Primer caso: una pregunta de mercado de un insumo y zona. Registrar alternativas pertinentes, utilidad de fuentes/contactos, esfuerzo del usuario y acompañante, y segundo uso del estudio. Medir por separado la continuación opcional a compra con dos ofertas y una cantidad. Probar precio con oferta concreta después de observar valor; no exigir recetas ni dar demanda por validada.
 
 Salida comercial inicial: uso real y continuidad medidos, con resultados y rechazos documentados. Para venta más amplia, aplicar condiciones del plan; una demo funcional no significa preparación comercial general.
 
 ## Cómo cerrar cada etapa
 
 En la fila correspondiente, registrar estado y enlace a evidencia breve: archivos, prueba/comando y resultado, entorno y limitaciones. En `hackathon.md`, añadir lo realizado ese día. No mantener otros checklists de estado duplicados ni abrir infraestructura de tareas antes de necesitarla.
+
+## Entrada de listas · evidencia local
+
+Entrada manual, XLSX/CSV con elección de hoja/columna y revisión de nombres implementados. Fotos/PDF conservan origen y permiten transcripción manual; OCR pendiente. Archivo/lista transitorios en navegador, sin uploads ni ofertas creadas automáticamente. 41 pruebas de dominio/backend, 24 E2E y build satisfactorios. [Alcance, límites y evidencia](./ENTRADA_INSUMOS.md). Etapas 2–4 continúan abiertas hasta ejecutar las integraciones reales.
+
+## Preparación de Firecrawl · evidencia local
+
+Action interna y adaptador de búsqueda acotada implementados. 47 tests y build satisfactorios; action cargada en Convex local, bloqueada sin clave y no invocable por cliente público. Sin petición real ni conexión a la UI/persistencia. [Configuración y secuencia de integraciones](./INTEGRACIONES.md). La etapa 2 sigue abierta.
+
+Revisión del PR 1: corregidos valores supuestos de unidad/mínimo y resumen entre ofertas compatibles. 47 tests, build y 8 E2E de comparación pasan en el checkout aislado del PR; integraciones externas y entrega pública siguen pendientes.
+
+Segunda ronda del PR 1: diálogo conserva entradas al pulsar dentro; procedencia manual fechada según calendario local. 47 tests, build y 9 E2E de comparación aprobados; no modifica el estado de las etapas externas.

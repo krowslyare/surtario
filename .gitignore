@@ -20,3 +20,10 @@ data/private/
 backups/
 
 # No ignorar convex/ ni fixtures/: contendrán código y datos sintéticos
+
+# Capturas y resultados de verificación local
+playwright-report/
+test-results/
+
+# Estado y credenciales del backend local
+.convex/
