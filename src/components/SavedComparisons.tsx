@@ -108,6 +108,15 @@ function ConnectedComparisons({
         request: submitted.request,
         offers: submitted.offers,
         selectedOfferId: submitted.selectedOfferId,
+        ...(!submitted.id &&
+        submitted.offers.some((offer) => submitted.sources[offer.id]?.webReview)
+          ? {
+              webReviews: submitted.offers.map((offer) => {
+                const review = submitted.sources[offer.id].webReview!;
+                return { ...review, runId: review.runId as Id<"researchRuns"> };
+              }),
+            }
+          : {}),
       });
       const stillCurrent = onSaved(saved, submitted.clientId);
       setMessage(
@@ -149,7 +158,7 @@ function ConnectedComparisons({
         </button>
       </div>
       <p className="field-hint">
-        Comparaciones sintéticas de esta sesión. Hasta 10; borrar los datos del
+        Comparaciones guardadas para esta sesión. Hasta 10; borrar los datos del
         sitio pierde el acceso. Abrir una reemplaza el borrador actual.
       </p>
       {draft.blockedReason && (

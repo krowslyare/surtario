@@ -331,7 +331,7 @@ export default function Comparison({
       const entry = sources[offer.id];
       return (
         entry !== undefined &&
-        entry.extraction === undefined &&
+        (entry.extraction === undefined || entry.webReview !== undefined) &&
         entry.label !== "Entrada manual" &&
         offer.supplier === entry.original.supplier &&
         offer.ingredient === entry.original.ingredient &&
@@ -341,7 +341,7 @@ export default function Comparison({
   const pendingQuantity = quantity.trim() === "";
   const persistable = persistableScenario && (pendingQuantity || validQuantity);
   const blockedReason = !persistableScenario
-    ? "Esta demo solo guarda las ofertas originales del ejemplo de arroz o del catálogo. Las ofertas agregadas manualmente siguen disponibles en esta vista."
+    ? "Esta demo solo guarda las ofertas originales del ejemplo de arroz o del catálogo, y revisiones vinculadas a fuentes web guardadas. Las ofertas agregadas manualmente siguen disponibles en esta vista."
     : !pendingQuantity && !validQuantity
       ? "Corrige la cantidad antes de guardar. Déjala vacía si todavía está pendiente."
       : null;
@@ -932,7 +932,7 @@ export default function Comparison({
         <footer>
           <span>
             {hasWebSources
-              ? "Revisión web temporal: estas correcciones no se guardan todavía."
+              ? "Guarda la comparación para conservar estas correcciones y condiciones."
               : "Datos de prueba · Guarda la comparación para recuperarla."}
           </span>
           <span>Sin recetas ni historial de compras.</span>

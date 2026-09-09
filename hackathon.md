@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T16:49:22Z
+- **Last updated:** 2026-09-09T17:12:17Z
 
 ## Log
 
@@ -91,6 +91,10 @@ Conectados búsqueda Firecrawl y extracción explícita OpenAI con revisión UI;
 Las ofertas revisadas pasan a comparación tras validar equivalencia; originales y correcciones quedan diferenciados. Las correcciones web siguen transitorias y no se habilitan documentos privados ni correo. Revisión adversarial independiente llevó a corregir guardado incierto del modelo y estados reactivos atrasados.
 65 pruebas de dominio/backend, 33 E2E y build satisfactorios; flujo positivo con respuestas simuladas, consulta de estado real en Convex local y revisión visual móvil. Sin publicación ni despliegue remoto.
 
+### 2026-09-08 - working tree · persistencia de revisión web
+Extendido el guardado de comparaciones a revisiones vinculadas a investigaciones de la sesión (`convex/comparisons.ts`). El servidor reconstruye texto, URL, propuesta original y revisión desde referencias verificadas. Condiciones y elección se recuperan sin registrar compra; archivos privados siguen excluidos.
+Corregidas igualdad de evidencia en reintentos y validación de condiciones editables. Revisión adversarial independiente completada sin hallazgos materiales pendientes. 68 pruebas de dominio/backend, 34 E2E y build correctos; recorrido de corrección, guardado y recarga ejecutado en Convex local con fuente sintética. Sin llamadas externas ni despliegue público.
+
 
 ### 2026-09-09 - working tree · correcciones de revisión del PR 1
 Corregidos tres hallazgos de Codex: unidad de empaque desconocida conservada como pendiente, mínimo sin valor supuesto al crear una oferta y resumen por grupos completos de la misma moneda. Una oferta incompleta o en otra moneda no oculta la comparación válida de las demás.
@@ -116,3 +120,9 @@ No GitHub bot review was requested. Local review found no confirmed ownership or
 Integrated reviewed main into bounded web research. Independent Sol 5.6 review and Astra adjudication found no material actionable defects in reservation/idempotency, ownership, uncertain extraction persistence or reactive UI reconciliation. A speculative transient double-click notice was not treated as a blocker.
 65 domain/backend tests, build and all 35 E2E checks passed on the integrated revision. Provider responses and the research UI transport were simulated; persistence browser tests used the existing local backend, which includes later implementation code. The PR-specific backend was tested in memory with convex-test.
 No GitHub review bot was invoked, no real provider requests were made, and no private uploads or public deployment were enabled. Reviewed web corrections remain transient in this delivery.
+
+
+### 2026-09-09 - working tree · PR 5 local review
+Integrated reviewed main into persisted web-offer reviews. Independent Sol 5.6 review and Astra adjudication found no material findings in ownership, server source reconstruction, immutable evidence, idempotency, revisions or frontend serialization.
+68 domain/backend tests and build passed. Thirty-five E2E checks passed in the full run; the web-persistence case initially failed before setup because the isolated checkout could not locate the anonymous backend. It passed after a temporary CLI working-directory adjustment using the original local checkout configuration; the adjustment was removed. The 36 browser cases therefore passed across those runs.
+The new browser case verified correction, delivery, total, choice and original evidence after reload against the existing local backend with later implementation code. PR-specific backend tests ran in memory. No real provider calls, GitHub bot review or deployment.

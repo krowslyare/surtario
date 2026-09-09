@@ -45,6 +45,12 @@ export type ReferenceResult = MarketBase & {
 };
 export type MarketResult = CatalogResult | DistributorResult | ReferenceResult;
 export type ComparisonSource = {
+  webReview?: {
+    runId: string;
+    sourceIndex: number;
+    values: ReviewedValues;
+    confirmed: true;
+  };
   /** Optional extraction proposal, separate from the accepted comparison baseline. */
   extraction?: { proposed: ExtractedOffer; reviewed: ReviewedValues };
   marketSource?: MarketSource;

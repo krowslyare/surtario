@@ -1,7 +1,11 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
-import { savedComparisonValidator } from "./comparisonValidators";
+import type { MutationCtx } from "./_generated/server";
+import {
+  savedComparisonValidator,
+  webReviewInputValidator,
+} from "./comparisonValidators";
 import {
   procurementRequestValidator,
   supplierOfferValidator,
@@ -14,6 +18,12 @@ import {
   type PurchaseSeed,
 } from "../src/domain/market";
 import {
+  combineReviewedOffers,
+  extractionFields,
+  extractionToPurchase,
+  type ReviewedValues,
+} from "../src/domain/extraction";
+import {
   evaluateOffer,
   type SupplierOffer,
   type ProcurementRequest,
@@ -21,6 +31,97 @@ import {
 
 function sameFields<T extends object>(a: T, b: T) {
   return (Object.keys(a) as Array<keyof T>).every((key) => a[key] === b[key]);
+}
+
+function sameValue(a: unknown, b: unknown): boolean {
+  if (a === b) return true;
+  if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
+  if (Array.isArray(a) || Array.isArray(b))
+    return (
+      Array.isArray(a) &&
+      Array.isArray(b) &&
+      a.length === b.length &&
+      a.every((value, i) => sameValue(value, b[i]))
+    );
+  const left = a as Record<string, unknown>,
+    right = b as Record<string, unknown>;
+  return (
+    Object.keys(left).length === Object.keys(right).length &&
+    Object.keys(left).every(
+      (key) => Object.hasOwn(right, key) && sameValue(left[key], right[key]),
+    )
+  );
+}
+
+type WebReview = {
+  runId: Doc<"researchRuns">["_id"];
+  sourceIndex: number;
+  values: ReviewedValues;
+  confirmed: true;
+};
+
+async function reconstructWebReviews(
+  ctx: MutationCtx,
+  owner: string,
+  reviews: WebReview[],
+): Promise<PurchaseSeed> {
+  if (!reviews.length || reviews.length > 3)
+    throw new ConvexError("Selecciona entre una y tres fuentes web revisadas.");
+  const refs = new Set<string>();
+  const seeds: PurchaseSeed[] = [];
+  for (const review of reviews) {
+    if (
+      !Number.isSafeInteger(review.sourceIndex) ||
+      review.sourceIndex < 0 ||
+      extractionFields.some((key) => review.values[key].length > 120)
+    )
+      throw new ConvexError("Revisión web no válida.");
+    const ref = `${review.runId}:${review.sourceIndex}`;
+    if (refs.has(ref))
+      throw new ConvexError("Una misma fuente no puede aparecer dos veces.");
+    refs.add(ref);
+    const run = await ctx.db.get("researchRuns", review.runId);
+    if (!run || run.ownerHash !== owner)
+      throw new ConvexError("Búsqueda no disponible en esta sesión.");
+    if (run.status !== "complete")
+      throw new ConvexError("La búsqueda todavía no está completa.");
+    const source = run.sources[review.sourceIndex];
+    if (!source) throw new ConvexError("Fuente no válida.");
+    if (
+      source.extractionStatus !== "complete" ||
+      !source.extraction ||
+      !source.markdown
+    )
+      throw new ConvexError("La extracción de esta fuente no está completa.");
+    try {
+      const seed = extractionToPurchase(
+        {
+          id: ref,
+          url: source.url,
+          title: source.title,
+          text: source.markdown,
+          observedAt: run.observedAt,
+          simulated: false,
+        },
+        source.extraction,
+        review.values,
+        review.confirmed,
+      );
+      seed.sources[ref].webReview = { ...review };
+      seeds.push(seed);
+    } catch (error) {
+      throw new ConvexError(
+        error instanceof Error ? error.message : "Revisión web no válida.",
+      );
+    }
+  }
+  try {
+    return combineReviewedOffers(seeds, true);
+  } catch (error) {
+    throw new ConvexError(
+      error instanceof Error ? error.message : "Revisión web no válida.",
+    );
+  }
 }
 
 function publicComparison(doc: Doc<"comparisons">) {
@@ -35,12 +136,13 @@ function publicComparison(doc: Doc<"comparisons">) {
   } = doc;
   return { id, request, offers, sources, selectedOfferId, revision, updatedAt };
 }
-// Anonymous demo accepts fixture identities and bounded scenario conditions only.
+// Demo accepts fixture identities or confirmed reviews of owned public web sources.
 // Source text never comes from the caller; snapshots survive later fixture changes.
 function validateScenario(
   request: ProcurementRequest,
   offers: SupplierOffer[],
   previous?: Doc<"comparisons"> | null,
+  createdBaseline?: PurchaseSeed,
 ) {
   if (
     !offers.length ||
@@ -74,16 +176,18 @@ function validateScenario(
         ),
         sources: previous.sources,
       }
-    : offers.every((o) => riceOffers.some((b) => b.id === o.id))
-      ? rice
-      : catalog;
+    : createdBaseline
+      ? createdBaseline
+      : offers.every((o) => riceOffers.some((b) => b.id === o.id))
+        ? rice
+        : catalog;
   if (
     request.ingredient !== baseline.request.ingredient ||
     request.specification !== baseline.request.specification ||
     request.unit !== baseline.request.unit
   )
     throw new ConvexError(
-      "Solo se guardan comparaciones de los ejemplos de arroz, sin textos privados.",
+      "La identidad de la comparación debe coincidir con el ejemplo o la revisión confirmada.",
     );
   if (
     !Number.isFinite(request.quantity) ||
@@ -102,7 +206,7 @@ function validateScenario(
       )
     )
       throw new ConvexError(
-        "Solo se guardan ofertas de los ejemplos; las entradas privadas siguen en esta pestaña.",
+        "La oferta debe coincidir con su ejemplo o revisión confirmada; las entradas privadas siguen en esta pestaña.",
       );
     for (const key of [
       "priceCents",
@@ -154,6 +258,7 @@ export const save = mutation({
     request: procurementRequestValidator,
     offers: v.array(supplierOfferValidator),
     selectedOfferId: v.union(v.string(), v.null()),
+    webReviews: v.optional(v.array(webReviewInputValidator)),
   },
   returns: savedComparisonValidator,
   handler: async (ctx, args) => {
@@ -173,7 +278,16 @@ export const save = mutation({
       throw new ConvexError(
         "La comparación cambió en otra vista. Ábrela desde Comparaciones guardadas antes de actualizar.",
       );
-    const sources = validateScenario(args.request, args.offers, previous);
+    const createdBaseline =
+      !previous && args.webReviews
+        ? await reconstructWebReviews(ctx, hash, args.webReviews)
+        : undefined;
+    const sources = validateScenario(
+      args.request,
+      args.offers,
+      previous,
+      createdBaseline,
+    );
     if (args.selectedOfferId !== null) {
       const chosen = args.offers.find((o) => o.id === args.selectedOfferId);
       if (!chosen || !evaluateOffer(args.request, chosen).eligibleForComparison)
@@ -212,7 +326,8 @@ export const save = mutation({
         content.offers.length !== existing.offers.length ||
         content.offers.some(
           (offer, index) => !sameFields(offer, existing.offers[index]),
-        )
+        ) ||
+        (args.webReviews !== undefined && !sameValue(sources, existing.sources))
       )
         throw new ConvexError(
           "La solicitud ya se guardó con otros datos. Abre la comparación guardada antes de actualizar.",

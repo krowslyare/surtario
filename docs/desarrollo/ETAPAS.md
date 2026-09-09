@@ -131,6 +131,10 @@ Verificación de este corte: 58 pruebas de dominio/backend; 30 E2E completos y u
 
 Implementado recorrido Firecrawl → fuentes persistentes → extracción explícita OpenAI → revisión y comparación. Habilitación y credenciales ausentes en local: llamadas reales y pertinencia pendientes. 65 pruebas de dominio/backend, 33 E2E y build; caso positivo con proveedores/transporte simulados, separado de consultas locales reales. Revisión adversarial corregida y límites de consumo probados. [Contrato y evidencia](./BUSQUEDA_WEB.md). No completa etapas 2–4; AgentMail y persistencia de correcciones web siguen pendientes.
 
+## Revisión web guardada · entrega independiente
+
+Correcciones confirmadas, condiciones y elección de fuentes web recuperables mediante referencias a investigaciones de la misma sesión. Evidencia y propuesta originales reconstruidas por servidor; sin documentos privados. 68 pruebas de dominio/backend, 34 E2E y build satisfactorios; recorrido de revisión/guardado/recarga ejecutado en Convex local con fuente sintética. [Contrato](./REVISION_WEB_GUARDADA.md). Llamadas de sponsors y AgentMail siguen pendientes.
+
 Revisión del PR 1: corregidos valores supuestos de unidad/mínimo y resumen entre ofertas compatibles. 47 tests, build y 8 E2E de comparación pasan en el checkout aislado del PR; integraciones externas y entrega pública siguen pendientes.
 
 Segunda ronda del PR 1: diálogo conserva entradas al pulsar dentro; procedencia manual fechada según calendario local. 47 tests, build y 9 E2E de comparación aprobados; no modifica el estado de las etapas externas.
@@ -140,3 +144,5 @@ PR 2 review preparation: integrated the reviewed PR 1 fixes from main; 53 tests,
 PR 3 local review: integrated main and cleared stale save notices when restoring a new draft. Independent Sol 5.6 review adjudicated by Astra; 58 tests and build passed, plus five persistence UI checks against the existing local backend. External integrations remain unverified.
 
 PR 4 local review: integrated main, 65 tests/build and 35 E2E checks passed. Sol 5.6 review adjudicated by Astra found no material blocker. Provider behavior remains simulated; stages 2–4 still require real integration evidence.
+
+PR 5 local review: integrated main; Sol 5.6 review adjudicated by Astra found no material findings. 68 tests/build passed; 35 E2E passed initially and the web-persistence case passed with temporary local CLI configuration adjustment. External provider validation remains pending.
