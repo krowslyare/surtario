@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
 import {
-  evaluateOffer,
+  compareProcurement,
   type SupplierOffer,
   type ProcurementRequest,
   type BaseUnit,
@@ -92,7 +92,7 @@ function OfferEditor({
       ingredient: text("ingredient"),
       specification: text("specification"),
       packageContent: parseDecimal(text("content")),
-      packageUnit: text("unit") as SupplierOffer["packageUnit"],
+      packageUnit: (text("unit") || null) as SupplierOffer["packageUnit"],
       priceCents: parseCents(text("price")),
       currency: text("currency") as SupplierOffer["currency"],
       minimumPackages: parseDecimal(text("minimum"), 0),
@@ -167,8 +167,9 @@ function OfferEditor({
             <select
               aria-label="Unidad del contenido"
               name="unit"
-              defaultValue={offer?.packageUnit ?? request.unit}
+              defaultValue={offer?.packageUnit ?? ""}
             >
+              <option value="">Por confirmar</option>
               <option value="kg">Kilogramos (kg)</option>
               <option value="g">Gramos (g)</option>
               <option value="L">Litros (L)</option>
@@ -196,7 +197,7 @@ function OfferEditor({
           {field(
             "minimum",
             "Mínimo de presentaciones",
-            offer ? offer.minimumPackages : 1,
+            offer?.minimumPackages ?? null,
             "Presentaciones completas, no kg",
           )}
           {field(
@@ -277,23 +278,22 @@ export default function Comparison({
   };
   const validQuantity =
     Number.isFinite(effectiveRequest.quantity) && effectiveRequest.quantity > 0;
-  const evaluations = offers.map((offer) =>
-    evaluateOffer(effectiveRequest, offer),
-  );
-  const complete = evaluations
-    .map((result, i) => ({ result, offer: offers[i] }))
-    .filter(({ result }) => result.eligibleForComparison);
-  const sameCurrency =
-    complete.length === offers.length &&
-    new Set(offers.map((offer) => offer.currency)).size === 1;
-  const canCompare = validQuantity && complete.length >= 2 && sameCurrency;
-  const totals = complete.map(({ result }) => result.totalCents!);
-  const difference = canCompare
-    ? Math.max(...totals) - Math.min(...totals)
-    : null;
-  const lowest = canCompare
-    ? complete.filter(({ result }) => result.totalCents === Math.min(...totals))
-    : [];
+  const { evaluations, groups } = compareProcurement(effectiveRequest, offers);
+  const summaries = groups.map((group) => {
+    const members = evaluations.filter((result) =>
+      group.offerIds.includes(result.offerId),
+    );
+    return {
+      currency: group.currency,
+      difference:
+        Math.max(...members.map((result) => result.totalCents!)) -
+        group.lowestTotalCents,
+      lowest: offers.filter((offer) =>
+        group.lowestTotalOfferIds.includes(offer.id),
+      ),
+      count: members.length,
+    };
+  });
   const source = sourceId ? sources[sourceId] : null;
   const editingOffer = offers.find((offer) => offer.id === editing);
   const unit = unitName(request.unit);
@@ -518,23 +518,28 @@ export default function Comparison({
                 aria-live="polite"
                 aria-atomic="true"
               >
-                {canCompare ? (
+                {summaries.length > 0 ? (
                   <>
                     <span className="summary-icon">
                       <Scale size={22} />
                     </span>
-                    <div>
-                      <h3>
-                        {difference === 0
-                          ? "Las ofertas requieren el mismo desembolso"
-                          : `${lowest.map(({ offer }) => offer.supplier).join(" y ")} requiere ${money(difference, offers[0].currency)} menos${offers.length > 2 ? " que la oferta de mayor desembolso" : ""}`}
-                      </h3>
-                      <p>
-                        Para {numberLabel(effectiveRequest.quantity)} {unit}.
-                        Incluye entrega e importes finales; revisa también
-                        cuánto recibirías.
-                      </p>
-                    </div>
+                    {summaries.map(
+                      ({ currency, difference, lowest, count }) => (
+                        <div key={currency}>
+                          <h3>
+                            {difference === 0
+                              ? "Las ofertas requieren el mismo desembolso"
+                              : `${lowest.map((offer) => offer.supplier).join(" y ")} requiere ${money(difference, currency)} menos${count > 2 ? " que la oferta de mayor desembolso" : ""}`}
+                          </h3>
+                          <p>
+                            Para {numberLabel(effectiveRequest.quantity)} {unit}
+                            . Incluye entrega e importes finales; revisa también
+                            cuánto recibirías. Comparación de {count} ofertas
+                            completas en {currency}.
+                          </p>
+                        </div>
+                      ),
+                    )}
                   </>
                 ) : (
                   <>

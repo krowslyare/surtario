@@ -99,3 +99,45 @@ for (const width of [320, 390, 768, 1280]) {
     ).toBeFocused();
   });
 }
+
+test("unidad y mínimo desconocidos siguen pendientes y no ocultan ofertas completas", async ({
+  page,
+}) => {
+  await page.goto("/?view=comparison");
+  const summary = page.getByRole("heading", { name: /Proveedor B requiere/ });
+  await expect(summary).toBeVisible();
+  await page
+    .getByRole("button", { name: "Agregar oferta", exact: true })
+    .click();
+  await expect(page.getByLabel("Unidad del contenido")).toHaveValue("");
+  await expect(page.getByLabel("Mínimo de presentaciones")).toHaveValue("");
+  await page.getByLabel("Proveedor", { exact: true }).fill("Proveedor C");
+  await page.getByLabel("Contenido por presentación").fill("10");
+  await page.getByLabel("Precio por presentación").fill("20");
+  await page.getByLabel("Entrega por pedido", { exact: true }).fill("0");
+  await page
+    .getByLabel("Impuestos del precio y la entrega")
+    .selectOption("included");
+  await page
+    .getByLabel("El proveedor puede entregar cuando lo necesito")
+    .check();
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(page.getByTestId("total-2")).toHaveText("Pendiente");
+  await expect(summary).toBeVisible();
+  await page.getByRole("button", { name: "Editar Proveedor C" }).click();
+  await expect(page.getByLabel("Unidad del contenido")).toHaveValue("");
+  await page.getByLabel("Precio por presentación").fill("21");
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(page.getByTestId("total-2")).toHaveText("Pendiente");
+  await page.getByRole("button", { name: "Editar Proveedor C" }).click();
+  await expect(page.getByLabel("Unidad del contenido")).toHaveValue("");
+  await page.getByLabel("Unidad del contenido").selectOption("kg");
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(page.getByTestId("total-2")).toHaveText("Pendiente");
+  await page.getByRole("button", { name: "Editar Proveedor C" }).click();
+  await page.getByLabel("Mínimo de presentaciones").fill("1");
+  await page.getByLabel("Moneda", { exact: true }).selectOption("USD");
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(page.getByTestId("total-2")).toHaveText("US$ 21.00");
+  await expect(summary).toBeVisible();
+});

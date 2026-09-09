@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-08T06:11:57Z
+- **Last updated:** 2026-09-09T13:29:54Z
 
 ## Log
 
@@ -75,3 +75,8 @@ Se implementó `IngredientIntake` con listas manuales, XLSX/CSV, selección de h
 ### 2026-09-08 - working tree · preparación interna de descubrimiento
 El bloque de entrada/UI fue subido en `6402ef5` y se abrió el PR 1 en borrador, sin merge ni cambio de visibilidad. Se implementaron `convex/discovery.ts` y el adaptador Firecrawl en `convex/lib/`: búsqueda de hasta tres fuentes con texto acotado, validación de respuesta, timeout y sin reintentos automáticos. La action es interna, no persiste resultados ni se expone a visitantes.
 47 tests y build satisfactorios. Convex local cargó la action; una invocación sin clave se detuvo antes de llamar al proveedor, y el cliente público no pudo invocarla. No hay llamada real Firecrawl ni claves configuradas. La UI y persistencia siguen usando ejemplos. Configuración del backend y pasos para OpenAI/AgentMail documentados en `docs/desarrollo/INTEGRACIONES.md`; estos dos conectores siguen pendientes. Sin despliegue público.
+
+
+### 2026-09-09 - working tree · correcciones de revisión del PR 1
+Corregidos tres hallazgos de Codex: unidad de empaque desconocida conservada como pendiente, mínimo sin valor supuesto al crear una oferta y resumen por grupos completos de la misma moneda. Una oferta incompleta o en otra moneda no oculta la comparación válida de las demás.
+47 tests y build aprobados en el checkout del PR 1; 8 E2E de comparación aprobados en un servidor frontal aislado, incluida regresión de campos pendientes y tercera oferta. Sin cambios de backend ni llamadas externas. Nueva ronda de revisión solicitada tras publicar el commit; merge todavía pendiente.
