@@ -17,14 +17,19 @@ test("recovers an owned scenario and marks changed inputs stale", async ({
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/?view=comparison");
-  await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
-    .click();
   const advisor = page.getByRole("region", { name: "Asesor de compras" });
   await advisor.getByText("Contexto de mi decisión · opcional").click();
   await advisor.getByLabel("Prioridad").selectOption("cash");
   await advisor.getByLabel("Presupuesto disponible").fill("60");
   await expect(advisor.getByLabel("Stock actual confirmado")).toHaveValue("");
+  await page
+    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .click();
+  await expect(
+    advisor.getByRole("button", { name: "Guardar escenario" }),
+  ).toBeEnabled();
+  await expect(advisor.getByLabel("Prioridad")).toHaveValue("cash");
+  await expect(advisor.getByLabel("Presupuesto disponible")).toHaveValue("60");
   await advisor.getByRole("button", { name: "Guardar escenario" }).click();
   await expect(
     advisor.getByRole("heading", { name: "Análisis guardado" }),
