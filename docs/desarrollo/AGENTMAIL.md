@@ -1,6 +1,6 @@
 # Cotizaciones por correo de prueba
 
-Entrega separada del descubrimiento web. El objetivo es revisar una solicitud vinculada a una comparación guardada, enviarla a un buzón de prueba autorizado y recuperar respuestas del mismo hilo.
+Entrega separada del descubrimiento web. El objetivo es revisar una solicitud vinculada a una comparación o estudio guardado, enviarla a un buzón de prueba autorizado y recuperar respuestas del mismo hilo.
 
 ## Contrato
 
@@ -31,3 +31,11 @@ Hasta 10 solicitudes por sesión y 100 en total, con 30 segundos entre creacione
 Un estado `sending` interrumpido o `uncertain` requiere revisión del operador en AgentMail antes de crear otra solicitud. La API pública no reintenta esos estados. La aceptación del proveedor no confirma entrega. Los borradores sin destinatario/buzón configurado deben recrearse después de configurar el entorno; no cambian silenciosamente de destino.
 
 Pendiente: configurar credenciales y destinatario autorizado, publicar/registrar el webhook, ejecutar ida y vuelta real y ensayar ese recorrido para el video. Este corte admite solo texto; no procesa adjuntos ni extrae automáticamente precios de respuestas.
+
+## Consulta desde estudio sin precio
+
+Un estudio guardado muestra «Consultar a» para sus distribuidores de ejemplo. Se puede preparar y recuperar una solicitud de catálogo sin crear una comparación, oferta ni cantidad. Convex valida propiedad del estudio y pertenencia del distribuidor; el asunto y mensaje se generan desde esos datos guardados. La solicitud mantiene la referencia al estudio y al resultado.
+
+El contacto encontrado no se convierte en destinatario autorizado: la demo usa exclusivamente el destinatario de prueba fijado en servidor. La UI lo muestra con el texto antes de requerir confirmación explícita. Guardar el estudio, preparar el borrador o recibir una respuesta no envía otro mensaje ni registra compra. Las respuestas se recuperan junto a la solicitud, sin extracción automática de precios.
+
+El borrador editable para copiar sigue separado: sus cambios no se envían al correo. La UI explica cómo acceder al borrador de correo revisable. Alcance actual: distribuidores de los estudios sintéticos guardados; los descubrimientos web libres aún no tienen este contrato de distribuidor validado.

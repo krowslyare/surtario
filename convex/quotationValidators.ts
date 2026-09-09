@@ -8,7 +8,9 @@ export const quotationReplyValidator = v.object({
 
 export const savedQuotationValidator = v.object({
   id: v.id("quotationRequests"),
-  comparisonId: v.id("comparisons"),
+  comparisonId: v.optional(v.id("comparisons")),
+  studyId: v.optional(v.id("studies")),
+  resultId: v.optional(v.string()),
   subject: v.string(),
   text: v.string(),
   recipient: v.union(v.string(), v.null()),

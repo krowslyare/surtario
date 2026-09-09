@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T02:36:23Z
+- **Last updated:** 2026-09-09T02:40:32Z
 
 ## Log
 
@@ -116,3 +116,9 @@ Sin llamadas reales a OpenAI ni carga privada. Resultado del modelo persistente;
 ### 2026-09-08 - working tree · persistencia de revisión documental
 Conectado el guardado de comparaciones derivadas de foto/PDF sintéticos. Convex reconstruye fuente y propuesta desde una lectura completa de la sesión y conserva revisión confirmada, condiciones posteriores y elección. Referencias ajenas, tipos distintos de cotización y correcciones inválidas se rechazan; las actualizaciones preservan procedencia y revisión optimista.
 87 tests de dominio/backend, 38 E2E y build satisfactorios. Recorrido local comprobó corrección 80 a 85, flete 15, total 100, elección, recarga y enlace al PDF. Revisión adversarial local de propiedad, procedencia y reintentos; sin llamadas a OpenAI ni carga privada. La CLI rechazó el selector local explícito para el backend anónimo; la importación sintética acotada funcionó con el destino existente verificado, sin reemplazar registros.
+
+
+### 2026-09-09 - working tree · consulta desde estudio sin precio
+Las solicitudes de catálogo pueden partir de un distribuidor de un estudio guardado, sin comparación, precio ni cantidad. Convex valida propiedad y pertenencia y conserva la referencia al estudio; destinatario fijado en servidor y confirmación explícita previos al envío. La copia manual queda diferenciada del borrador de correo.
+88 tests y build satisfactorios. En 39 E2E, 37 pasaron inicialmente y dos avisos antiguos fallaron tras cambiar el texto; actualizadas esas expectativas, pasaron las 13 pruebas afectadas de mercado/estudios, incluido el nuevo recorrido de creación y recarga. Revisión adversarial local de referencias, compatibilidad con solicitudes anteriores y autorización; sin envíos reales ni despliegue.
+Alcance: distribuidores de estudios sintéticos persistidos. La búsqueda web libre aún no admite este contrato de distribuidor. Detalles en `docs/desarrollo/AGENTMAIL.md`.

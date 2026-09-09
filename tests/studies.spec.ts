@@ -200,7 +200,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       /aún no tengo una cantidad/,
     );
     await expect(page.getByRole("dialog")).toContainText(
-      "No se enviará desde este prototipo",
+      "Este texto solo se copia; no envía correo.",
     );
     await page.keyboard.press("Escape");
   });

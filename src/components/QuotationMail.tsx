@@ -21,6 +21,8 @@ function message(error: unknown) {
 }
 export default function QuotationMail(props: {
   comparisonId: Id<"comparisons"> | null;
+  studyId?: Id<"studies">;
+  resultId?: string;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
 }) {
@@ -48,11 +50,15 @@ export default function QuotationMail(props: {
 function Connected({
   token,
   comparisonId,
+  studyId,
+  resultId,
   offers,
   onEditOffer,
 }: {
   token: string;
   comparisonId: Id<"comparisons"> | null;
+  studyId?: Id<"studies">;
+  resultId?: string;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
 }) {
@@ -70,12 +76,14 @@ function Connected({
     comparisonId: null,
     clientId: crypto.randomUUID(),
   });
-  const own = requests?.filter((item) => item.comparisonId === comparisonId);
+  const targetKey = studyId ? `${studyId}:${resultId}` : comparisonId;
+  const matches = (item: Quotation) =>
+    studyId
+      ? item.studyId === studyId && item.resultId === resultId
+      : item.comparisonId === comparisonId;
+  const own = requests?.filter(matches);
   const persisted = own?.find((item) => item.id === activeId);
-  const localActive =
-    local?.id === activeId && local.comparisonId === comparisonId
-      ? local
-      : null;
+  const localActive = local?.id === activeId && matches(local) ? local : null;
   const active =
     localActive && (!persisted || localActive.revision > persisted.revision)
       ? localActive
@@ -85,17 +93,20 @@ function Connected({
     setLocal(null);
     setConfirmed(false);
     setError("");
-  }, [comparisonId]);
+  }, [targetKey]);
   async function prepare() {
-    if (!comparisonId || busy) return;
-    if (creation.current.comparisonId !== comparisonId)
-      creation.current = { comparisonId, clientId: crypto.randomUUID() };
+    if (!targetKey || busy) return;
+    if (creation.current.comparisonId !== targetKey)
+      creation.current = {
+        comparisonId: targetKey,
+        clientId: crypto.randomUUID(),
+      };
     setBusy(true);
     setError("");
     try {
       const draft = await create({
         token,
-        comparisonId,
+        ...(studyId ? { studyId, resultId } : { comparisonId: comparisonId! }),
         clientId: creation.current.clientId,
       });
       setLocal(draft);
@@ -131,8 +142,9 @@ function Connected({
     <section className="saved-studies" aria-label="Cotizaciones por correo">
       <h2>Consultar condiciones por correo</h2>
       <p className="field-hint">
-        La solicitud usa la versión guardada de esta comparación. Guarda primero
-        los cambios que quieras incluir.
+        {studyId
+          ? "Consulta de catálogo basada en el estudio guardado. No exige cantidad ni precio. El destinatario será el buzón de prueba, no el contacto del distribuidor."
+          : "La solicitud usa la versión guardada de esta comparación. Guarda primero los cambios que quieras incluir."}
       </p>
       {status === undefined && (
         <p className="field-hint">Comprobando disponibilidad del correo…</p>
@@ -145,12 +157,12 @@ function Connected({
       )}
       <button
         className="button secondary"
-        disabled={!comparisonId || busy}
+        disabled={!targetKey || busy}
         onClick={prepare}
       >
         Preparar solicitud de prueba
       </button>
-      {!comparisonId && (
+      {!targetKey && (
         <p className="field-hint">Primero guarda la comparación.</p>
       )}
       {error && (

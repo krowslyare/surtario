@@ -27,6 +27,7 @@ import LiveResearch, {
   type WebSearchRequest,
 } from "./components/LiveResearch";
 import ExtractionReview from "./components/ExtractionReview";
+import QuotationMail from "./components/QuotationMail";
 import DocumentExtraction from "./components/DocumentExtraction";
 import IngredientIntake from "./components/IngredientIntake";
 import SavedStudies, { type SavedStudy } from "./components/SavedStudies";
@@ -561,6 +562,22 @@ export default function MarketStudy({
             )}
           </section>
         )}
+        {persistenceEnabled &&
+          study.id &&
+          catalog
+            .filter((item) => item.kind === "distributor")
+            .map((item) => (
+              <div key={`${study.id}:${item.id}`}>
+                <h3>Consultar a {item.supplier}</h3>
+                <QuotationMail
+                  comparisonId={null}
+                  studyId={study.id!}
+                  resultId={item.id}
+                  offers={[]}
+                  onEditOffer={() => {}}
+                />
+              </div>
+            ))}
         {persistenceEnabled && <DocumentExtraction onPrepare={onPrepare} />}
         <ExtractionReview onPrepare={onPrepare} />
         <aside className="market-context">
@@ -650,8 +667,15 @@ export default function MarketStudy({
         >
           <p className="muted">
             Borrador para {quote.supplier}. Puedes consultar catálogo sin
-            definir cantidad. No se enviará desde este prototipo.
+            definir cantidad. Este texto solo se copia; no envía correo.
           </p>
+          {persistenceEnabled && (
+            <p className="field-hint">
+              Para correo de prueba, guarda el estudio y abre «Consultar a{" "}
+              {quote.supplier}» en la página. Revisarás otro borrador y su
+              destinatario antes de autorizar el envío.
+            </p>
+          )}
           <label className="field quote-field">
             <span>Mensaje editable</span>
             <textarea
