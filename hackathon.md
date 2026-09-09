@@ -219,6 +219,11 @@ The registered Agent component now has bounded read-only scenario/evidence tools
 Independent Sol review found removed-source and mixed-currency issues, corrected with regressions. 110 domain/backend tests, build and eight focused browser checks passed locally, including snapshot recovery and mobile/desktop layouts. External provider E2E and public deployment remain pending.
 
 
+### 2026-09-09 - working tree · operator mail recovery
+Added internal recovery inspection, verified sent-receipt reconciliation and quarantined-reply linking. Frozen-route validation and idempotency preserve request ownership; no recovery path calls a provider or resends mail.
+Independent review found unreachable old queue entries and duplicate receipt assignment; both now have regression coverage. 116 combined domain/backend tests, frontend/backend typechecks and build passed. Live delivery and webhook verification with AgentMail remain pending.
+
+
 ### 2026-09-09 - working tree · PR 14 local review
 Preserved decision context during the first comparison save and added scheduled recovery for interrupted advisor executions. Expiry keeps deterministic results and prevents a late model completion from replacing a failed state; it never retries a provider.
 Independent Sol review was adjudicated and corrected. 112 domain/backend tests, frontend/backend typechecks, build and three advisor browser journeys passed. Browser checks used the existing synthetic local backend; changed backend behavior was verified in memory. No real provider calls or public deployment.
