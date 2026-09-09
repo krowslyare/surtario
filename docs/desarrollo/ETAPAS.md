@@ -120,3 +120,9 @@ Action interna y adaptador de búsqueda acotada implementados. 47 tests y build 
 Prueba interna OpenAI con dos textos sintéticos y revisión UI de propuesta/evidencia/corrección implementadas por separado. Componente Agent registrado localmente; sin llamada de modelo verificada ni OCR. Revisión permite pasar a comparación conservando originales y pendientes. 53 tests, 26 E2E y build satisfactorios; [evidencia y límites](./EXTRACCION_REVISION.md). No completa etapas 2–4.
 
 PRs por entrega: extracción/revisión se revisa contra la rama base del PR 1; condiciones/decisión y correo irán en cortes posteriores. Ningún PR se fusiona por el solo hecho de tener pruebas locales correctas.
+
+Revisión del PR 1: corregidos valores supuestos de unidad/mínimo y resumen entre ofertas compatibles. 47 tests, build y 8 E2E de comparación pasan en el checkout aislado del PR; integraciones externas y entrega pública siguen pendientes.
+
+Segunda ronda del PR 1: diálogo conserva entradas al pulsar dentro; procedencia manual fechada según calendario local. 47 tests, build y 9 E2E de comparación aprobados; no modifica el estado de las etapas externas.
+
+PR 2 review preparation: integrated the reviewed PR 1 fixes from main; 53 tests, build, and 11 comparison/extraction E2E tests passed locally. External integration stages remain open.
