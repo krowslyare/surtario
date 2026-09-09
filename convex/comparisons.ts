@@ -1,4 +1,4 @@
-import { prepareReplyOffer } from "../src/domain/replyReview";
+import { mergeReplyOffer, prepareReplyOffer } from "../src/domain/replyReview";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
@@ -352,6 +352,14 @@ export const save = mutation({
     webReviews: v.optional(v.array(webReviewInputValidator)),
     documentReview: v.optional(documentReviewInputValidator),
     replyReview: v.optional(replyReviewInputValidator),
+    appendReplies: v.optional(
+      v.array(
+        v.object({
+          review: replyReviewInputValidator,
+          equivalent: v.literal(true),
+        }),
+      ),
+    ),
   },
   returns: savedComparisonValidator,
   handler: async (ctx, args) => {
@@ -386,10 +394,48 @@ export const save = mutation({
           : !previous && args.replyReview
             ? await reconstructReply(ctx, hash, args.replyReview)
             : undefined;
+    let validatedPrevious = previous;
+    if (args.appendReplies !== undefined) {
+      if (
+        !previous ||
+        args.webReviews ||
+        args.documentReview ||
+        args.replyReview ||
+        args.appendReplies.length < 1 ||
+        args.appendReplies.length > 3
+      )
+        throw new ConvexError(
+          "Añade respuestas solo a una comparación guardada.",
+        );
+      let baseline: PurchaseSeed = {
+        request: previous.request,
+        offers: previous.offers,
+        sources: previous.sources,
+      };
+      for (const addition of args.appendReplies) {
+        const incoming = await reconstructReply(ctx, hash, addition.review);
+        try {
+          baseline = mergeReplyOffer(baseline, incoming, addition.equivalent);
+        } catch (error) {
+          throw new ConvexError(
+            error instanceof Error ? error.message : "Equivalencia no válida.",
+          );
+        }
+        if (!args.offers.some((offer) => offer.id === incoming.offers[0].id))
+          throw new ConvexError(
+            "La oferta añadida debe estar en la comparación.",
+          );
+      }
+      if (args.selectedOfferId !== null)
+        throw new ConvexError(
+          "Vuelve a elegir después de guardar las nuevas ofertas.",
+        );
+      validatedPrevious = { ...previous, sources: baseline.sources };
+    }
     const sources = validateScenario(
       args.request,
       args.offers,
-      previous,
+      validatedPrevious,
       createdBaseline,
     );
     if (args.selectedOfferId !== null) {

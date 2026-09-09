@@ -95,6 +95,23 @@ function ConnectedComparisons({
     setError("");
     setMessage("");
     const submitted = draft;
+    const persisted = comparisons?.find((item) => item.id === submitted.id);
+    const newReplies = submitted.id
+      ? submitted.offers
+          .filter(
+            (offer) =>
+              submitted.sources[offer.id]?.replyReview &&
+              !persisted?.sources[offer.id],
+          )
+          .map((offer) => ({
+            review: {
+              ...submitted.sources[offer.id].replyReview!,
+              requestId: submitted.sources[offer.id].replyReview!
+                .requestId as Id<"quotationRequests">,
+            },
+            equivalent: true as const,
+          }))
+      : [];
     try {
       const saved = await save({
         token,
@@ -103,7 +120,8 @@ function ConnectedComparisons({
         expectedRevision: submitted.expectedRevision,
         request: submitted.request,
         offers: submitted.offers,
-        selectedOfferId: submitted.selectedOfferId,
+        selectedOfferId: newReplies.length ? null : submitted.selectedOfferId,
+        ...(newReplies.length ? { appendReplies: newReplies } : {}),
         ...(!submitted.id &&
         submitted.offers.length === 1 &&
         submitted.sources[submitted.offers[0].id]?.replyReview

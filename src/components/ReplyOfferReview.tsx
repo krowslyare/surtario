@@ -16,6 +16,8 @@ export default function ReplyOfferReview({
   reply,
   onClose,
   onPrepare,
+  onAdd,
+  comparisonLabel,
 }: {
   reply: {
     requestId: string;
@@ -25,8 +27,11 @@ export default function ReplyOfferReview({
   };
   onClose: () => void;
   onPrepare: (seed: PurchaseSeed) => void;
+  onAdd?: (seed: PurchaseSeed) => void;
+  comparisonLabel?: string;
 }) {
   const [values, setValues] = useState(() => draftValues(emptyReplyProposal));
+  const [equivalent, setEquivalent] = useState(false);
   const [confirmed, setConfirmed] = useState(false),
     [error, setError] = useState("");
   return (
@@ -48,6 +53,7 @@ export default function ReplyOfferReview({
                 onChange={(e) => {
                   setValues({ ...values, [key]: e.target.value });
                   setConfirmed(false);
+                  setEquivalent(false);
                 }}
               >
                 <option value="">Pendiente</option>
@@ -67,6 +73,7 @@ export default function ReplyOfferReview({
                 onChange={(e) => {
                   setValues({ ...values, [key]: e.target.value });
                   setConfirmed(false);
+                  setEquivalent(false);
                 }}
               />
             )}
@@ -82,10 +89,46 @@ export default function ReplyOfferReview({
         Confirmo que estos datos corresponden a una oferta de esta respuesta
       </label>
       <p className="field-hint">
-        Abre una comparación nueva. No reemplaza la anterior ni registra compra.
-        Después podrás completar entrega, impuestos y mínimo y guardar la
-        comparación.
+        La opción «Continuar con nueva oferta» abre una comparación nueva sin
+        registrar compra. Después podrás completar entrega, impuestos y mínimo y
+        guardar la comparación.
       </p>
+      {onAdd && (
+        <>
+          <p>
+            Comparación actual: {comparisonLabel}. Las demás ofertas y la
+            cantidad se conservarán. Guarda la comparación después de añadir;
+            tendrás que elegir de nuevo.
+          </p>
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={equivalent}
+              onChange={(e) => setEquivalent(e.target.checked)}
+            />
+            Confirmo equivalencia con el insumo y especificación de la
+            comparación actual
+          </label>
+          <button
+            className="button secondary"
+            disabled={!confirmed || !equivalent}
+            onClick={() => {
+              try {
+                onAdd(prepareReplyOffer(reply, values, confirmed));
+                onClose();
+              } catch (cause) {
+                setError(
+                  cause instanceof Error
+                    ? cause.message
+                    : "Revisa la equivalencia.",
+                );
+              }
+            }}
+          >
+            Añadir a comparación actual
+          </button>
+        </>
+      )}
       {error && <p role="alert">{error}</p>}
       <button
         className="button primary"

@@ -1,3 +1,4 @@
+import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
 import { useRef, useState, type FormEvent } from "react";
@@ -933,6 +934,25 @@ export default function Comparison({
             offers={offers}
             onEditOffer={setEditing}
             onPrepare={onPrepare}
+            comparisonLabel={`${request.ingredient} · ${request.specification} · ${request.unit}`}
+            onAddReply={
+              savedId
+                ? (incoming) => {
+                    const merged = mergeReplyOffer(
+                      { request: effectiveRequest, offers, sources },
+                      incoming,
+                      true,
+                    );
+                    setOffers(merged.offers);
+                    setSources(merged.sources);
+                    setSelectedOfferId(null);
+                    setSelectionFingerprint(null);
+                    setMessage(
+                      "Oferta añadida a esta vista. Guarda la comparación y vuelve a elegir cuando completes las condiciones.",
+                    );
+                  }
+                : undefined
+            }
           />
         )}
         <footer>
