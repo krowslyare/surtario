@@ -87,6 +87,10 @@ function ConnectedComparisons({
       window.removeEventListener("offline", update);
     };
   }, []);
+  useEffect(() => {
+    setMessage("");
+    setError("");
+  }, [draft.clientId]);
   const connected = online && connection.isWebSocketConnected;
 
   async function persist() {

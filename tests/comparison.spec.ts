@@ -99,3 +99,71 @@ for (const width of [320, 390, 768, 1280]) {
     ).toBeFocused();
   });
 }
+
+test("unidad y mínimo desconocidos siguen pendientes y no ocultan ofertas completas", async ({
+  page,
+}) => {
+  await page.goto("/?view=comparison");
+  const summary = page.getByRole("heading", { name: /Proveedor B requiere/ });
+  await expect(summary).toBeVisible();
+  await page
+    .getByRole("button", { name: "Agregar oferta", exact: true })
+    .click();
+  await expect(page.getByLabel("Unidad del contenido")).toHaveValue("");
+  await expect(page.getByLabel("Mínimo de presentaciones")).toHaveValue("");
+  await page.getByLabel("Proveedor", { exact: true }).fill("Proveedor C");
+  await page.getByLabel("Contenido por presentación").fill("10");
+  await page.getByLabel("Precio por presentación").fill("20");
+  await page.getByLabel("Entrega por pedido", { exact: true }).fill("0");
+  await page
+    .getByLabel("Impuestos del precio y la entrega")
+    .selectOption("included");
+  await page
+    .getByLabel("El proveedor puede entregar cuando lo necesito")
+    .check();
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(page.getByTestId("total-2")).toHaveText("Pendiente");
+  await expect(summary).toBeVisible();
+  await page.getByRole("button", { name: "Editar Proveedor C" }).click();
+  await expect(page.getByLabel("Unidad del contenido")).toHaveValue("");
+  await page.getByLabel("Precio por presentación").fill("21");
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(page.getByTestId("total-2")).toHaveText("Pendiente");
+  await page.getByRole("button", { name: "Editar Proveedor C" }).click();
+  await expect(page.getByLabel("Unidad del contenido")).toHaveValue("");
+  await page.getByLabel("Unidad del contenido").selectOption("kg");
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(page.getByTestId("total-2")).toHaveText("Pendiente");
+  await page.getByRole("button", { name: "Editar Proveedor C" }).click();
+  await page.getByLabel("Mínimo de presentaciones").fill("1");
+  await page.getByLabel("Moneda", { exact: true }).selectOption("USD");
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(page.getByTestId("total-2")).toHaveText("US$ 21.00");
+  await expect(summary).toBeVisible();
+});
+
+test("clic interior conserva el formulario y origen usa la fecha local", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ timezoneId: "America/Lima" });
+  const page = await context.newPage();
+  await page.clock.setFixedTime(new Date("2026-09-10T02:30:00Z"));
+  await page.goto("/?view=comparison");
+  await page
+    .getByRole("button", { name: "Agregar oferta", exact: true })
+    .click();
+  await page.getByLabel("Proveedor", { exact: true }).fill("Oferta nocturna");
+  const dialog = page.getByRole("dialog");
+  const bounds = (await dialog.boundingBox())!;
+  await page.mouse.click(bounds.x + 12, bounds.y + bounds.height / 2);
+  await expect(dialog).toBeVisible();
+  await expect(page.getByLabel("Proveedor", { exact: true })).toHaveValue(
+    "Oferta nocturna",
+  );
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await page.getByRole("button", { name: "Ver origen" }).last().click();
+  await expect(dialog).toContainText("9 set. 2026");
+  await page.mouse.click(2, 2);
+  await expect(dialog).toHaveCount(0);
+  await context.close();
+});

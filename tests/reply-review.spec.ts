@@ -76,7 +76,7 @@ test("respuesta vinculada se revisa como oferta nueva y se recupera con su corre
       threadId: request.receipt.threadId,
       from: "demo@example.test",
       text: "Distribuidor Respuesta: arroz blanco, saco de 18 kg a PEN 80.00. Entrega por confirmar.",
-      receivedAt: new Date().toISOString(),
+      receivedAt: "not-a-date",
     });
   } finally {
     rmSync(folder, { recursive: true });
@@ -138,6 +138,8 @@ test("respuesta vinculada se revisa como oferta nueva y se recupera con su corre
     .click();
   await page.getByRole("button", { name: "Abrir comparación" }).first().click();
   await page.getByRole("button", { name: "Ver origen" }).click();
+  await expect(page.getByRole("dialog")).toContainText("Fecha pendiente");
+  await expect(page.getByRole("dialog")).not.toContainText("página pública");
   await expect(page.getByRole("dialog")).toContainText("PEN 80.00");
   await expect(page.getByRole("dialog")).toContainText("corrección manual: 85");
 });
