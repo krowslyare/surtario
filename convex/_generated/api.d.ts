@@ -21,6 +21,8 @@ import type * as lib_demoSession from "../lib/demoSession.js";
 import type * as lib_documentExtraction from "../lib/documentExtraction.js";
 import type * as lib_extraction from "../lib/extraction.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
+import type * as prospectValidators from "../prospectValidators.js";
+import type * as prospects from "../prospects.js";
 import type * as quotationMail from "../quotationMail.js";
 import type * as quotationValidators from "../quotationValidators.js";
 import type * as research from "../research.js";
@@ -49,6 +51,8 @@ declare const fullApi: ApiFromModules<{
   "lib/documentExtraction": typeof lib_documentExtraction;
   "lib/extraction": typeof lib_extraction;
   "lib/firecrawl": typeof lib_firecrawl;
+  prospectValidators: typeof prospectValidators;
+  prospects: typeof prospects;
   quotationMail: typeof quotationMail;
   quotationValidators: typeof quotationValidators;
   research: typeof research;

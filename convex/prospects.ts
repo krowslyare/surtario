@@ -1,0 +1,114 @@
+import { ConvexError, v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { savedProspect } from "./prospectValidators";
+import { ownerHash } from "./lib/demoSession";
+import type { Doc } from "./_generated/dataModel";
+const view = ({
+  _id,
+  ownerHash: _owner,
+  _creationTime: _created,
+  ...fields
+}: Doc<"webProspects">) => ({ id: _id, ...fields });
+export const list = query({
+  args: { token: v.string() },
+  returns: v.array(savedProspect),
+  handler: async (ctx, { token }) => {
+    const hash = await ownerHash(token);
+    return (
+      await ctx.db
+        .query("webProspects")
+        .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
+        .order("desc")
+        .take(10)
+    ).map(view);
+  },
+});
+export const save = mutation({
+  args: {
+    token: v.string(),
+    runId: v.id("researchRuns"),
+    sourceIndex: v.number(),
+    supplier: v.string(),
+    contact: v.string(),
+    confirmed: v.literal(true),
+  },
+  returns: savedProspect,
+  handler: async (ctx, args) => {
+    const hash = await ownerHash(args.token);
+    const supplier = args.supplier.trim(),
+      contact = args.contact.trim() || null;
+    if (
+      !supplier ||
+      supplier.length > 120 ||
+      /[\r\n]/.test(supplier) ||
+      (contact !== null && (contact.length > 300 || /[\r\n]/.test(contact)))
+    )
+      throw new ConvexError(
+        "Revisa el nombre y el contacto; usa una sola línea.",
+      );
+    if (!Number.isSafeInteger(args.sourceIndex) || args.sourceIndex < 0)
+      throw new ConvexError("Fuente no válida.");
+    const run = await ctx.db.get(args.runId);
+    if (!run || run.ownerHash !== hash)
+      throw new ConvexError("Investigación no disponible en esta sesión.");
+    if (run.status !== "complete")
+      throw new ConvexError("La investigación no está completa.");
+    const source = run.sources[args.sourceIndex];
+    if (!source) throw new ConvexError("Fuente no válida.");
+    const url = new URL(source.url);
+    if (
+      !["https:", "http:"].includes(url.protocol) ||
+      url.username ||
+      url.password
+    )
+      throw new ConvexError("Fuente sin enlace válido.");
+    const existing = await ctx.db
+      .query("webProspects")
+      .withIndex("by_ownerHash_and_runId_and_sourceIndex", (q) =>
+        q
+          .eq("ownerHash", hash)
+          .eq("runId", args.runId)
+          .eq("sourceIndex", args.sourceIndex),
+      )
+      .unique();
+    if (existing) {
+      if (existing.supplier !== supplier || existing.contact !== contact)
+        throw new ConvexError(
+          "La fuente ya se guardó con otros datos. Conserva la ficha original.",
+        );
+      return view(existing);
+    }
+    if (
+      (
+        await ctx.db
+          .query("webProspects")
+          .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
+          .take(10)
+      ).length >= 10
+    )
+      throw new ConvexError("Hasta 10 distribuidores candidatos por sesión.");
+    if (
+      (
+        await ctx.db
+          .query("webProspects")
+          .withIndex("by_creation_time")
+          .take(100)
+      ).length >= 100
+    )
+      throw new ConvexError("Se alcanzó el límite de candidatos de la demo.");
+    const id = await ctx.db.insert("webProspects", {
+      ownerHash: hash,
+      runId: args.runId,
+      sourceIndex: args.sourceIndex,
+      supplier,
+      contact,
+      ingredient: run.ingredient,
+      region: run.region,
+      sourceTitle: source.title,
+      sourceUrl: source.url,
+      observedAt: run.observedAt,
+      createdAt: Date.now(),
+    });
+    return view((await ctx.db.get(id))!);
+  },
+});

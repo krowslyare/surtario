@@ -1,3 +1,4 @@
+import { SaveWebProspect, WebProspectLibrary } from "./WebProspects";
 import {
   Component,
   useEffect,
@@ -90,7 +91,9 @@ export function ResearchWorkspace({
   onSearch,
   onExtract,
   onPrepare,
+  renderProspect,
 }: {
+  renderProspect?: (run: SavedResearch, sourceIndex: number) => ReactNode;
   status: ResearchStatus | undefined;
   runs: SavedResearch[] | undefined;
   request: WebSearchRequest | null;
@@ -339,6 +342,7 @@ export function ResearchWorkspace({
                     )}
                   </div>
                   <div className="research-source-action">
+                    {url && renderProspect?.(active, index)}
                     {!source.markdown ? (
                       <p>Sin texto recuperado para extraer datos.</p>
                     ) : !status.extractionEnabled && !proposal ? (
@@ -491,27 +495,39 @@ function ConnectedResearch({
   const attempts = useRef(new Map<number, Promise<SavedResearch>>());
   const extract = useAction(api.research.extract);
   return (
-    <ResearchWorkspace
-      {...props}
-      status={status}
-      runs={runs}
-      onSearch={(ingredient, region) => {
-        const requestId = props.request?.id ?? 0;
-        const existing = attempts.current.get(requestId);
-        if (existing) return existing;
-        const pending = search({
-          token,
-          clientId: crypto.randomUUID(),
-          ingredient,
-          region,
-        });
-        attempts.current.set(requestId, pending);
-        return pending;
-      }}
-      onExtract={(runId, sourceIndex) =>
-        extract({ token, runId: runId as Id<"researchRuns">, sourceIndex })
-      }
-    />
+    <>
+      <ResearchWorkspace
+        {...props}
+        renderProspect={(run, index) => (
+          <SaveWebProspect
+            token={token}
+            runId={run.id as Id<"researchRuns">}
+            sourceIndex={index}
+            title={run.sources[index].title}
+            url={run.sources[index].url}
+          />
+        )}
+        status={status}
+        runs={runs}
+        onSearch={(ingredient, region) => {
+          const requestId = props.request?.id ?? 0;
+          const existing = attempts.current.get(requestId);
+          if (existing) return existing;
+          const pending = search({
+            token,
+            clientId: crypto.randomUUID(),
+            ingredient,
+            region,
+          });
+          attempts.current.set(requestId, pending);
+          return pending;
+        }}
+        onExtract={(runId, sourceIndex) =>
+          extract({ token, runId: runId as Id<"researchRuns">, sourceIndex })
+        }
+      />
+      <WebProspectLibrary token={token} />
+    </>
   );
 }
 

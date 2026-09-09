@@ -9,7 +9,15 @@ import {
 } from "./researchValidators";
 
 import { documentKind, documentResult } from "./documentValidators";
+import { prospectContent } from "./prospectValidators";
 export default defineSchema({
+  webProspects: defineTable({ ownerHash: v.string(), ...prospectContent })
+    .index("by_ownerHash", ["ownerHash"])
+    .index("by_ownerHash_and_runId_and_sourceIndex", [
+      "ownerHash",
+      "runId",
+      "sourceIndex",
+    ]),
   documentRuns: defineTable({
     ownerHash: v.string(),
     clientId: v.string(),
@@ -68,6 +76,7 @@ export default defineSchema({
     clientId: v.string(),
     comparisonId: v.optional(v.id("comparisons")),
     studyId: v.optional(v.id("studies")),
+    prospectId: v.optional(v.id("webProspects")),
     resultId: v.optional(v.string()),
     recipient: v.union(v.string(), v.null()),
     inboxId: v.union(v.string(), v.null()),
