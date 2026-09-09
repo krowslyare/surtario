@@ -27,6 +27,7 @@ import LiveResearch, {
   type WebSearchRequest,
 } from "./components/LiveResearch";
 import ExtractionReview from "./components/ExtractionReview";
+import DocumentExtraction from "./components/DocumentExtraction";
 import IngredientIntake from "./components/IngredientIntake";
 import SavedStudies, { type SavedStudy } from "./components/SavedStudies";
 import type { Id } from "../convex/_generated/dataModel";
@@ -560,13 +561,15 @@ export default function MarketStudy({
             )}
           </section>
         )}
+        {persistenceEnabled && <DocumentExtraction onPrepare={onPrepare} />}
         <ExtractionReview onPrepare={onPrepare} />
         <aside className="market-context">
           <h3>¿Ya tienes una cotización?</h3>
           <p>
-            Puedes introducir precios y condiciones en la comparación manual.
-            Añadir un archivo permite revisar insumos; la extracción automática
-            de precios todavía está pendiente.
+            Puedes introducir precios y condiciones en la comparación manual. La
+            lectura automática de foto/PDF está disponible para los ejemplos al
+            configurar OpenAI. Los archivos propios conservan la alternativa
+            manual.
           </p>
           <button className="button text-button" onClick={onManualExample}>
             Abrir alternativa de comparación manual <ArrowRight size={16} />

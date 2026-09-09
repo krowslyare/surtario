@@ -35,6 +35,7 @@ type Env = {
   readonly AGENTMAIL_INBOX_ID: string | undefined;
   readonly AGENTMAIL_TEST_RECIPIENT: string | undefined;
   readonly AGENTMAIL_WEBHOOK_SECRET: string | undefined;
+  readonly DOCUMENT_EXTRACTION_ENABLED: string | undefined;
   readonly FIRECRAWL_API_KEY: string | undefined;
   readonly LIVE_RESEARCH_ENABLED: string | undefined;
   readonly OPENAI_API_KEY: string | undefined;
