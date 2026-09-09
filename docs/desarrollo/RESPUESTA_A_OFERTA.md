@@ -10,6 +10,8 @@ Disponible desde solicitudes de comparación, estudio y candidato web. Recibir e
 
 Límites: una oferta revisada por respuesta/comparación; campos hasta 120 caracteres, mismas unidades y reglas deterministas existentes. Si la respuesta contiene varias variantes, el usuario debe identificar una sola y confirmar su especificación. Precio y contenido pueden seguir pendientes; moneda y unidad necesitan confirmación para comparar.
 
-Pendiente: extracción automática del correo y comparación conjunta con otras ofertas existentes. Este corte cierra revisión manual, procedencia y guardado; no acredita correo real ni una negociación autónoma.
+Desde la solicitud de una comparación guardada también puede elegirse «Añadir a comparación actual». Requiere confirmar explícitamente equivalencia; insumo, especificación, unidad base y moneda deben coincidir. Conserva cantidad y ofertas anteriores, elimina la elección y requiere guardar los cambios. Convex reconstruye el correo, comprueba propiedad y revisión vigente y rechaza duplicados. Hasta cuatro fuentes por comparación, incluidas las retiradas para conservar su procedencia. No hay conversión de moneda ni sustitución inferida.
 
-Verificación: 92 tests de dominio/backend, 41 E2E y build aprobados. La prueba de navegador usa correo sintético insertado exclusivamente en Convex local; demuestra revisión, guardado y recarga, no recepción real de AgentMail. Vista móvil inspeccionada.
+Pendiente: extracción automática del correo. Este corte no acredita correo real ni una negociación autónoma.
+
+Verificación: 94 tests de dominio/backend, 42 E2E y build aprobados. La prueba de navegador usa correo sintético insertado exclusivamente en Convex local; demuestra revisión, guardado y recarga, no recepción real de AgentMail. Vista móvil inspeccionada.

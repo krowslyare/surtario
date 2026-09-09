@@ -146,3 +146,131 @@ test("foreign and unlinked replies, missing confirmation and conflicting retries
     }),
   ).rejects.toThrow(/otros datos/);
 });
+
+test("append to a saved comparison preserves old sources, quantity and revision while clearing choice", async () => {
+  const { t, args, reply } = await setup();
+  const { riceRequest, riceOffers } = await import("../fixtures/procurement");
+  const original = await t.mutation(api.comparisons.save, {
+    token,
+    clientId: "33333333-3333-4333-8333-333333333333",
+    id: null,
+    expectedRevision: 0,
+    request: riceRequest,
+    offers: riceOffers,
+    selectedOfferId: null,
+  });
+  const matchedValues = {
+    ...values,
+    ingredient: riceRequest.ingredient,
+    specification: riceRequest.specification,
+  };
+  const incoming = prepareReplyOffer(reply, matchedValues, true);
+  const append = {
+    token,
+    clientId: "44444444-4444-4444-8444-444444444444",
+    id: original.id,
+    expectedRevision: 1,
+    request: original.request,
+    offers: [...original.offers, ...incoming.offers],
+    selectedOfferId: null,
+    appendReplies: [
+      {
+        review: { ...args.replyReview, values: matchedValues },
+        equivalent: true as const,
+      },
+    ],
+  };
+  await expect(
+    t.mutation(api.comparisons.save, {
+      ...append,
+      selectedOfferId: riceOffers[1].id,
+    }),
+  ).rejects.toThrow(/Vuelve a elegir/);
+  const saved = await t.mutation(api.comparisons.save, append);
+  expect(saved.id).toBe(original.id);
+  expect(saved.revision).toBe(2);
+  expect(saved.request).toEqual(original.request);
+  expect(saved.offers.slice(0, 2)).toEqual(original.offers);
+  expect(saved.offers).toHaveLength(3);
+  for (const [id, source] of Object.entries(original.sources))
+    expect(saved.sources[id]).toEqual(source);
+  expect(saved.sources[incoming.offers[0].id].replyReview?.messageId).toBe(
+    reply.messageId,
+  );
+  expect(saved.selectedOfferId).toBeNull();
+  await expect(t.mutation(api.comparisons.save, append)).rejects.toThrow(
+    /otra vista/,
+  );
+  await expect(
+    t.mutation(api.comparisons.save, { ...append, expectedRevision: 2 }),
+  ).rejects.toThrow(/ya pertenece/);
+  const final = await t.mutation(api.comparisons.save, {
+    ...append,
+    expectedRevision: 2,
+    appendReplies: undefined,
+  });
+  expect(final.offers).toHaveLength(3);
+  expect(final.sources).toEqual(saved.sources);
+});
+
+test("append rejects incompatible identity and currency, unchecked equivalence and exhausted source history", async () => {
+  const { t, args, reply } = await setup();
+  const { riceRequest, riceOffers } = await import("../fixtures/procurement");
+  const original = await t.mutation(api.comparisons.save, {
+    token,
+    clientId: "33333333-3333-4333-8333-333333333333",
+    id: null,
+    expectedRevision: 0,
+    request: riceRequest,
+    offers: riceOffers,
+    selectedOfferId: null,
+  });
+  for (const changed of [
+    { specification: "Otra calidad" },
+    { currency: "USD" },
+    { packageUnit: "L" },
+  ]) {
+    const v = {
+      ...values,
+      ingredient: riceRequest.ingredient,
+      specification: riceRequest.specification,
+      ...changed,
+    };
+    const incoming = prepareReplyOffer(reply, v, true);
+    await expect(
+      t.mutation(api.comparisons.save, {
+        token,
+        clientId: "44444444-4444-4444-8444-444444444444",
+        id: original.id,
+        expectedRevision: 1,
+        request: riceRequest,
+        offers: [...riceOffers, ...incoming.offers],
+        selectedOfferId: null,
+        appendReplies: [
+          { review: { ...args.replyReview, values: v }, equivalent: true },
+        ],
+      }),
+    ).rejects.toThrow(/coincidir|moneda/);
+  }
+  const { mergeReplyOffer } = await import("../src/domain/replyReview");
+  const incoming = prepareReplyOffer(
+    reply,
+    {
+      ...values,
+      ingredient: riceRequest.ingredient,
+      specification: riceRequest.specification,
+    },
+    true,
+  );
+  expect(() => mergeReplyOffer(original, incoming, false)).toThrow(/Confirma/);
+  const full = {
+    ...original,
+    sources: {
+      ...original.sources,
+      retired1: original.sources[riceOffers[0].id],
+      retired2: original.sources[riceOffers[1].id],
+    },
+  };
+  expect(() => mergeReplyOffer(full, incoming, true)).toThrow(/cuatro fuentes/);
+  expect((await t.query(api.comparisons.list, { token }))[0].revision).toBe(1);
+});

@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T20:03:56Z
+- **Last updated:** 2026-09-09T20:06:23Z
 
 ## Log
 
@@ -134,6 +134,12 @@ Una respuesta vinculada permite preparar una oferta mediante revisión manual ex
 92 tests, 41 E2E y build satisfactorios. Recorrido con correo sintético en Convex local: abrir respuesta, transcribir, confirmar, guardar y recargar con texto original y corrección separados. Corregida etiqueta accesible del selector y revisión móvil completada. Revisión adversarial local de propiedad, procedencia, respuestas no vinculadas y reintentos.
 Sin lectura automática del correo por OpenAI ni envíos reales. No combina automáticamente la nueva oferta con otras comparaciones. Alcance en `docs/desarrollo/RESPUESTA_A_OFERTA.md`; sin despliegue público.
 
+
+### 2026-09-09 - working tree · comparar respuesta con ofertas existentes
+La revisión de una respuesta permite añadirla a la comparación guardada actual con confirmación explícita de equivalencia. Se conservan cantidad y fuentes anteriores, se elimina la elección y se exige guardar los cambios. El servidor reconstruye el correo de la sesión y comprueba identidad, moneda, duplicados, límite de cuatro fuentes y revisión vigente.
+94 tests de dominio/backend, 42 E2E y build satisfactorios. Recorridos locales con correo sintético prueban ambas opciones: comparación nueva e incorporación a la existente, guardado y recarga con procedencia. Revisión adversarial local de propiedad, validación de equivalencia, historial y elección; revisión móvil sin desbordamiento horizontal.
+La lectura del correo sigue siendo manual. No hubo envíos ni llamadas externas, despliegue o habilitación de documentos privados. Contrato actualizado en `docs/desarrollo/RESPUESTA_A_OFERTA.md`.
+
 ### 2026-09-09 - working tree · correcciones de revisión del PR 1
 Corregidos tres hallazgos de Codex: unidad de empaque desconocida conservada como pendiente, mínimo sin valor supuesto al crear una oferta y resumen por grupos completos de la misma moneda. Una oferta incompleta o en otra moneda no oculta la comparación válida de las demás.
 47 tests y build aprobados en el checkout del PR 1; 8 E2E de comparación aprobados en un servidor frontal aislado, incluida regresión de campos pendientes y tercera oferta. Sin cambios de backend ni llamadas externas. Nueva ronda de revisión solicitada tras publicar el commit; merge todavía pendiente.
@@ -200,3 +206,8 @@ Integrated reviewed main into web distributor candidates and linked inquiries. S
 ### 2026-09-09 - working tree · PR 12 local review
 Integrated reviewed main into manually reviewed reply offers. Sol review identified misleading source labels and malformed reply dates; inherited neutral provenance labels and pending-date handling now preserve unknown dates without crashing or substituting request dates. Regression covers persisted malformed reply dates and browser recovery. Temporary browser CLI setup adjustment removed.
 94 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
+
+
+### 2026-09-09 - working tree · PR 13 local review
+Integrated reviewed main into adding reply offers to existing comparisons. Sol review found a stale-query save bug; the client now tracks confirmed server revisions so a second save does not append an already persisted reply. Parent adjudicated and tested the fix. Final browser suite passed 43 cases initially; the remaining web-source link selector was updated for the corrected provenance label and then passed. All 44 cases passed across those runs, including the demo rehearsal. Temporary CLI setup adjustments were removed.
+97 domain/backend tests and build passed. 44 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.

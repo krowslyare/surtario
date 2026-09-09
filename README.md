@@ -45,7 +45,7 @@ npm run test:backend
 
 Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
 
-Verificado: 92 pruebas de dominio/backend y 41 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
+Verificado: 97 pruebas de dominio/backend y 44 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
 
 El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido reproducible y las partes del video aún pendientes. No se ha grabado un video de entrega.
 
@@ -136,4 +136,4 @@ Las revisiones de foto/PDF de ejemplo también admiten «Guardar comparación»:
 
 Las fuentes web también pueden guardarse como distribuidores candidatos sin precio ni extracción: nombre/contacto revisados, URL/fecha y consulta autorizada al buzón de prueba. [Recorrido y límites](docs/desarrollo/DISTRIBUIDORES_WEB.md).
 
-Una respuesta vinculada permite preparar una oferta mediante revisión manual y guardarla como comparación nueva, con procedencia del correo conservada en Convex. [Respuesta a oferta](docs/desarrollo/RESPUESTA_A_OFERTA.md).
+Una respuesta vinculada permite preparar una oferta mediante revisión manual y guardarla como comparación nueva o añadirla a la comparación actual tras confirmar equivalencia, con procedencia del correo conservada en Convex y nueva elección requerida. [Respuesta a oferta](docs/desarrollo/RESPUESTA_A_OFERTA.md).

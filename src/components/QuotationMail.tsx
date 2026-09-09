@@ -29,6 +29,8 @@ export default function QuotationMail(props: {
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
   onPrepare?: (seed: PurchaseSeed) => void;
+  onAddReply?: (seed: PurchaseSeed) => void;
+  comparisonLabel?: string;
 }) {
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
@@ -60,6 +62,8 @@ function Connected({
   offers,
   onEditOffer,
   onPrepare,
+  onAddReply,
+  comparisonLabel,
 }: {
   token: string;
   comparisonId: Id<"comparisons"> | null;
@@ -69,6 +73,8 @@ function Connected({
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
   onPrepare?: (seed: PurchaseSeed) => void;
+  onAddReply?: (seed: PurchaseSeed) => void;
+  comparisonLabel?: string;
 }) {
   const status = useQuery(api.quotationMail.status, {});
   const requests = useQuery(api.quotationMail.list, { token });
@@ -330,6 +336,8 @@ function Connected({
           reply={reviewReply}
           onClose={() => setReviewReply(null)}
           onPrepare={onPrepare}
+          onAdd={onAddReply}
+          comparisonLabel={comparisonLabel}
         />
       )}
     </section>

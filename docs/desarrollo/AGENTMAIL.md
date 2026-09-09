@@ -42,7 +42,8 @@ El borrador editable para copiar sigue separado: sus cambios no se envían al co
 
 ## Oferta desde respuesta
 
-«Revisar como nueva oferta» permite transcribir y confirmar una oferta del correo y abrir una comparación nueva guardable. El servidor vincula la procedencia por solicitud/mensaje; no sobrescribe ofertas anteriores ni registra compra. [Contrato y límites](RESPUESTA_A_OFERTA.md). La extracción de precios del correo sigue siendo manual.
+«Revisar como nueva oferta» permite transcribir y confirmar una oferta del correo y abrir una comparación nueva guardable, o añadirla a la comparación actual guardada tras confirmar equivalencia. Esta incorporación conserva fuentes y cantidad y elimina la elección anterior. El servidor vincula la procedencia por solicitud/mensaje; no sobrescribe ofertas anteriores ni registra compra. [Contrato y límites](RESPUESTA_A_OFERTA.md). La extracción de precios del correo sigue siendo manual.
+
 
 
 

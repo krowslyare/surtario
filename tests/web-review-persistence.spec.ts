@@ -118,7 +118,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   );
   await expect(page.getByRole("dialog")).toContainText("corrección manual: 85");
   await expect(
-    page.getByRole("link", { name: "Abrir fuente web original" }),
+    page.getByRole("link", { name: "Abrir fuente original" }),
   ).toHaveAttribute("href", "https://supplier.test/rice");
   await page.keyboard.press("Escape");
   await page.getByLabel("Cantidad necesaria").fill("20");
