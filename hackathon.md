@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T02:40:32Z
+- **Last updated:** 2026-09-09T03:29:57Z
 
 ## Log
 
@@ -122,3 +122,8 @@ Conectado el guardado de comparaciones derivadas de foto/PDF sintéticos. Convex
 Las solicitudes de catálogo pueden partir de un distribuidor de un estudio guardado, sin comparación, precio ni cantidad. Convex valida propiedad y pertenencia y conserva la referencia al estudio; destinatario fijado en servidor y confirmación explícita previos al envío. La copia manual queda diferenciada del borrador de correo.
 88 tests y build satisfactorios. En 39 E2E, 37 pasaron inicialmente y dos avisos antiguos fallaron tras cambiar el texto; actualizadas esas expectativas, pasaron las 13 pruebas afectadas de mercado/estudios, incluido el nuevo recorrido de creación y recarga. Revisión adversarial local de referencias, compatibilidad con solicitudes anteriores y autorización; sin envíos reales ni despliegue.
 Alcance: distribuidores de estudios sintéticos persistidos. La búsqueda web libre aún no admite este contrato de distribuidor. Detalles en `docs/desarrollo/AGENTMAIL.md`.
+
+
+### 2026-09-09 - working tree · candidatos web y consulta
+Una fuente de investigación web completada puede conservarse como distribuidor candidato sin precio ni extracción. `convex/prospects.ts` reconstruye enlace, fecha e insumo desde la fuente de la sesión; nombre y contacto son anotaciones revisadas. Biblioteca reactiva y consulta vinculada al candidato, sin transformar el contacto en destinatario autorizado.
+90 tests, 40 E2E y build satisfactorios. Recorrido local con respuesta web sintética: guardar candidato sin markdown, recargar, preparar consulta y recuperar borrador; revisión móvil realizada. Revisión adversarial local de propiedad, referencias, idempotencia y separación de contacto/envío. Sin llamadas externas ni despliegue; pertinencia de fuentes reales pendiente de credenciales.

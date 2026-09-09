@@ -10,6 +10,7 @@ export const savedQuotationValidator = v.object({
   id: v.id("quotationRequests"),
   comparisonId: v.optional(v.id("comparisons")),
   studyId: v.optional(v.id("studies")),
+  prospectId: v.optional(v.id("webProspects")),
   resultId: v.optional(v.string()),
   subject: v.string(),
   text: v.string(),

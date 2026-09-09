@@ -22,6 +22,7 @@ function message(error: unknown) {
 export default function QuotationMail(props: {
   comparisonId: Id<"comparisons"> | null;
   studyId?: Id<"studies">;
+  prospectId?: Id<"webProspects">;
   resultId?: string;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
@@ -51,6 +52,7 @@ function Connected({
   token,
   comparisonId,
   studyId,
+  prospectId,
   resultId,
   offers,
   onEditOffer,
@@ -58,6 +60,7 @@ function Connected({
   token: string;
   comparisonId: Id<"comparisons"> | null;
   studyId?: Id<"studies">;
+  prospectId?: Id<"webProspects">;
   resultId?: string;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
@@ -76,11 +79,14 @@ function Connected({
     comparisonId: null,
     clientId: crypto.randomUUID(),
   });
-  const targetKey = studyId ? `${studyId}:${resultId}` : comparisonId;
+  const targetKey =
+    prospectId ?? (studyId ? `${studyId}:${resultId}` : comparisonId);
   const matches = (item: Quotation) =>
-    studyId
-      ? item.studyId === studyId && item.resultId === resultId
-      : item.comparisonId === comparisonId;
+    prospectId
+      ? item.prospectId === prospectId
+      : studyId
+        ? item.studyId === studyId && item.resultId === resultId
+        : item.comparisonId === comparisonId;
   const own = requests?.filter(matches);
   const persisted = own?.find((item) => item.id === activeId);
   const localActive = local?.id === activeId && matches(local) ? local : null;
@@ -106,7 +112,11 @@ function Connected({
     try {
       const draft = await create({
         token,
-        ...(studyId ? { studyId, resultId } : { comparisonId: comparisonId! }),
+        ...(prospectId
+          ? { prospectId }
+          : studyId
+            ? { studyId, resultId }
+            : { comparisonId: comparisonId! }),
         clientId: creation.current.clientId,
       });
       setLocal(draft);
@@ -142,9 +152,11 @@ function Connected({
     <section className="saved-studies" aria-label="Cotizaciones por correo">
       <h2>Consultar condiciones por correo</h2>
       <p className="field-hint">
-        {studyId
-          ? "Consulta de catálogo basada en el estudio guardado. No exige cantidad ni precio. El destinatario será el buzón de prueba, no el contacto del distribuidor."
-          : "La solicitud usa la versión guardada de esta comparación. Guarda primero los cambios que quieras incluir."}
+        {prospectId
+          ? "Consulta basada en un candidato web guardado. El contacto anotado no es el destinatario: el envío solo usa el buzón de prueba configurado."
+          : studyId
+            ? "Consulta de catálogo basada en el estudio guardado. No exige cantidad ni precio. El destinatario será el buzón de prueba, no el contacto del distribuidor."
+            : "La solicitud usa la versión guardada de esta comparación. Guarda primero los cambios que quieras incluir."}
       </p>
       {status === undefined && (
         <p className="field-hint">Comprobando disponibilidad del correo…</p>
