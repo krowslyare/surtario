@@ -182,6 +182,9 @@ PR 13 local review: Integrated reviewed main into adding reply offers to existin
 Implemented an optional decision context, deterministic cash/coverage scenarios, an executive verdict and a copyable negotiation draft. Owned snapshots persist comparison revision and evidence; changed inputs visibly invalidate the previous analysis. The bounded Agent action uses read-only calculation/evidence tools and remains disabled without explicit server configuration. Independent review findings were corrected. 110 domain/backend tests, build and eight focused local browser checks passed. See [advisor contract and verification](ASESOR_COMPRAS.md). Stages 2–5 remain open for real provider validation and public deployment.
 
 
+## Operator mail recovery · local delivery
+
+Internal-only inspection and reconciliation now cover uncertain sends and quarantined replies. A verified provider receipt cannot be assigned to another request; reply linking checks the frozen inbox, thread, sender and limits atomically. No recovery function sends or retries email. Independent review corrected incomplete queue visibility and receipt collisions. 116 combined domain/backend tests, frontend/backend typechecks and build passed. The real mail round trip remains pending; see [operator procedure](AGENTMAIL.md).
 
 
 ## PR 14 · local review
