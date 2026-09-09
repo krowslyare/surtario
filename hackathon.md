@@ -8,11 +8,11 @@
 - **Frontend:** Convex static hosting (prepared, not deployed)
 - **Convex deployment:** not deployed
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting
-- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, realtime queries (local)
+- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, realtime queries (local)
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T21:29:43Z
+- **Last updated:** 2026-09-09T21:37:00Z
 
 ## Log
 
@@ -243,3 +243,9 @@ README and provider acceptance instructions were refreshed in English. No real p
 ### 2026-09-09 - working tree · PR 14 local review
 Preserved decision context during the first comparison save and added scheduled recovery for interrupted advisor executions. Expiry keeps deterministic results and prevents a late model completion from replacing a failed state; it never retries a provider.
 Independent Sol review was adjudicated and corrected. 112 domain/backend tests, frontend/backend typechecks, build and three advisor browser journeys passed. Browser checks used the existing synthetic local backend; changed backend behavior was verified in memory. No real provider calls or public deployment.
+
+
+### 2026-09-09 - working tree · final local PR reviews
+Completed independent Sol reviews with parent adjudication for advisor, mail recovery, saved lists and hosting. Corrected interrupted advisor execution and moved the first-save context fix into the advisor delivery. Recovery and list reviews found no further material issues.
+Hardened browser tests against an already-running frontend connected to another local backend; all persistence socket guards now enforce the selected origin, including delayed-response tests. The occupied-port check and socket rejection tests passed.
+126 unit/backend tests, frontend/backend typechecks, hosting checks and all 49 browser journeys passed on the combined code. Updated functions were accepted by the anonymous local backend. External providers remained simulated or disabled; no cloud deployment, real email, public visibility change or submission.

@@ -206,3 +206,12 @@ Implementation for this agreed demo scope is prepared. Real Firecrawl/OpenAI/Age
 Independent Sol review and parent adjudication corrected interrupted advisor executions that could remain running indefinitely. A durable internal expiry preserves the calculation, does not retry the model, and ignores late completion. The initial-save context fix was moved into this delivery so budget and usage survive the first comparison save.
 
 112 domain/backend tests, frontend/backend typechecks and build passed. Three advisor browser journeys passed on the PR frontend using the existing synthetic local backend; the exact changed backend was tested in memory. Real provider behavior and public deployment remain pending.
+
+
+## PRs 15–17 · local review and integrated verification
+
+Independent Sol review and parent adjudication found no material issues in operator mail recovery or saved lists. After integrating the reviewed advisor fixes, PR 15 passed 118 unit/backend tests and PR 16 passed 123; both passed frontend/backend typechecks and build.
+
+The hosting review found that browser tests could reuse a Vite process connected to another local backend. Playwright now starts its own server and refuses an occupied port; all persistence guards, including delayed-response overrides, validate the selected WebSocket origin. A real occupied-port invocation was rejected before running tests, and negative socket checks passed.
+
+The final combined code passed 126 unit/backend tests, frontend/backend typechecks, hosting build/asset checks and all 49 browser journeys, including the demo rehearsal. The existing anonymous local backend accepted the updated functions. Provider calls remained simulated or disabled; no cloud deployment, public visibility change or contest submission occurred. Stages 2–5 and 7 retain their external verification requirements.

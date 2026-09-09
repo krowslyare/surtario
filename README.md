@@ -16,7 +16,7 @@ The demo does not require recipes, purchase history, stock or a document. Suppli
 
 **Verification boundary:** the combined application is tested locally with synthetic data and simulated providers. No real OpenAI, Firecrawl or AgentMail request has been verified. No public deployment or submitted video exists. Current stage status is maintained only in [ETAPAS.md](docs/desarrollo/ETAPAS.md).
 
-Verified locally: **122 domain/backend tests and 49 browser journeys passed**, including the demo rehearsal. Frontend/backend typechecks and the hosting build check also passed. Provider transports were simulated or disabled.
+Verified locally: **126 unit/backend tests and 49 browser journeys passed**, including the demo rehearsal. Frontend/backend typechecks and the hosting build check also passed. Provider transports were simulated or disabled.
 
 ## Run locally
 
