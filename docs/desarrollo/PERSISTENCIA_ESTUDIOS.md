@@ -9,7 +9,7 @@ Bloque implementado el 7 de septiembre de 2026, después de la exploración aut�
 3. Recargar y abrir «Guardados» → «Abrir estudio». No hace falta cantidad ni documentos.
 4. Cambiar selección y guardar de nuevo. La lista de otra pestaña de la misma sesión se actualiza; su borrador abierto no se reemplaza automáticamente. Si intenta guardar una versión antigua, recibe un conflicto y debe abrir la revisión actual.
 
-Abrir un estudio reemplaza la selección actual, con advertencia visible. Las compras calculadas y borradores de consulta siguen transitorios. Todavía no hay compras registradas ni correos enviados.
+Abrir un estudio reemplaza la selección actual, con advertencia visible. Los borradores de consulta siguen transitorios. Las comparaciones de ejemplo tienen [guardado independiente](./PERSISTENCIA_COMPARACIONES.md). Todavía no hay compras registradas ni correos enviados.
 
 ## Contrato y límites
 

@@ -1,5 +1,8 @@
 import { Dialog } from "./components/Dialog";
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
+import SavedComparisons, {
+  type SavedComparison,
+} from "./components/SavedComparisons";
 import {
   ArrowRight,
   Check,
@@ -254,9 +257,11 @@ function OfferEditor({
 export default function Comparison({
   seed,
   onBack,
+  persistenceEnabled,
 }: {
   seed?: PurchaseSeed;
   onBack?: () => void;
+  persistenceEnabled: boolean;
 }) {
   const [request, setRequest] = useState<ProcurementRequest>({
     ...(seed?.request ?? riceRequest),
@@ -275,6 +280,17 @@ export default function Comparison({
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [savedId, setSavedId] = useState<SavedComparison["id"] | null>(null);
+  const [savedRevision, setSavedRevision] = useState(0);
+  const [clientId, setClientId] = useState(() => crypto.randomUUID());
+  const currentClientId = useRef(clientId);
+  const [baselineRequest, setBaselineRequest] = useState<ProcurementRequest>(
+    () => ({ ...(seed?.request ?? riceRequest) }),
+  );
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  const [selectionFingerprint, setSelectionFingerprint] = useState<
+    string | null
+  >(null);
   const effectiveRequest = {
     ...request,
     quantity: parseDecimal(quantity) ?? NaN,
@@ -300,12 +316,80 @@ export default function Comparison({
   const source = sourceId ? sources[sourceId] : null;
   const editingOffer = offers.find((offer) => offer.id === editing);
   const unit = unitName(request.unit);
+  const fingerprint = JSON.stringify({ request: effectiveRequest, offers });
+  const activeSelection =
+    selectionFingerprint === fingerprint ? selectedOfferId : null;
+  const persistableScenario =
+    offers.length > 0 &&
+    request.ingredient === baselineRequest.ingredient &&
+    request.specification === baselineRequest.specification &&
+    request.unit === baselineRequest.unit &&
+    offers.every((offer) => {
+      const entry = sources[offer.id];
+      return (
+        entry !== undefined &&
+        entry.extraction === undefined &&
+        entry.label !== "Entrada manual" &&
+        offer.supplier === entry.original.supplier &&
+        offer.ingredient === entry.original.ingredient &&
+        offer.specification === entry.original.specification
+      );
+    });
+  const pendingQuantity = quantity.trim() === "";
+  const persistable = persistableScenario && (pendingQuantity || validQuantity);
+  const blockedReason = !persistableScenario
+    ? "Esta demo solo guarda las ofertas originales del ejemplo de arroz o del catálogo. Las ofertas agregadas manualmente siguen disponibles en esta vista."
+    : !pendingQuantity && !validQuantity
+      ? "Corrige la cantidad antes de guardar. Déjala vacía si todavía está pendiente."
+      : null;
+
+  function chooseOffer(offerId: string) {
+    const evaluation =
+      evaluations[offers.findIndex((offer) => offer.id === offerId)];
+    if (!evaluation?.eligibleForComparison) return;
+    setSelectedOfferId(offerId);
+    setSelectionFingerprint(fingerprint);
+    setMessage(
+      "Oferta elegida para esta comparación. Esto no registra una compra.",
+    );
+  }
+
+  function openSaved(comparison: SavedComparison) {
+    setRequest({ ...comparison.request });
+    setQuantity(
+      comparison.request.quantity > 0
+        ? String(comparison.request.quantity)
+        : "",
+    );
+    setOffers(comparison.offers.map((offer) => ({ ...offer })));
+    setSources(comparison.sources);
+    setBaselineRequest({ ...comparison.request });
+    setSavedId(comparison.id);
+    setSavedRevision(comparison.revision);
+    setSelectedOfferId(comparison.selectedOfferId);
+    setSelectionFingerprint(
+      JSON.stringify({
+        request: comparison.request,
+        offers: comparison.offers,
+      }),
+    );
+    setMessage("Comparación recuperada. Reemplazó el borrador de esta vista.");
+    window.scrollTo(0, 0);
+  }
 
   function reset() {
     setRequest({ ...(seed?.request ?? riceRequest) });
     setQuantity(seed ? "" : String(riceRequest.quantity));
     setOffers((seed?.offers ?? riceOffers).map((offer) => ({ ...offer })));
     setSources(seed?.sources ?? initialSources());
+    setSavedId(null);
+    setSavedRevision(0);
+    const nextClientId = crypto.randomUUID();
+    currentClientId.current = nextClientId;
+    setClientId(nextClientId);
+    setBaselineRequest({ ...(seed?.request ?? riceRequest) });
+    setSelectedOfferId(null);
+    setSelectionFingerprint(null);
     setModal(null);
     setMessage(seed ? "Selección inicial restaurada." : "Ejemplo restaurado.");
   }
@@ -407,6 +491,35 @@ export default function Comparison({
             {seed ? "Restaurar selección" : "Restaurar ejemplo"}
           </button>
         </div>
+        {persistenceEnabled ? (
+          <SavedComparisons
+            draft={{
+              clientId,
+              id: savedId,
+              expectedRevision: savedRevision,
+              request: { ...request, quantity: parseDecimal(quantity) ?? 0 },
+              offers,
+              sources,
+              selectedOfferId: activeSelection,
+              persistable,
+              blockedReason,
+            }}
+            onOpen={openSaved}
+            onSaved={(saved, submittedClientId) => {
+              // Update only persistence metadata: edits made while the request was
+              // in flight remain the visible draft.
+              if (submittedClientId !== currentClientId.current) return false;
+              setSavedId(saved.id);
+              setSavedRevision(saved.revision);
+              return true;
+            }}
+          />
+        ) : (
+          <p className="notice info">
+            El guardado de comparaciones no está configurado. Puedes usar el
+            ejemplo durante esta visita.
+          </p>
+        )}
         <section className="request-panel" aria-label="Tu necesidad de compra">
           <div className="request-title">
             <Package size={21} />
@@ -632,6 +745,21 @@ export default function Comparison({
                             : "Faltan datos o condiciones"}
                         </span>
                       </div>
+                      <button
+                        className={
+                          activeSelection === offer.id
+                            ? "button primary"
+                            : "button secondary"
+                        }
+                        disabled={!result.eligibleForComparison}
+                        aria-pressed={activeSelection === offer.id}
+                        onClick={() => chooseOffer(offer.id)}
+                      >
+                        <Check size={16} />
+                        {activeSelection === offer.id
+                          ? "Oferta elegida"
+                          : "Elegir oferta"}
+                      </button>
                       <dl className="offer-details">
                         <div>
                           <dt>Recibirías</dt>
@@ -793,10 +921,7 @@ export default function Comparison({
           </div>
         </section>
         <footer>
-          <span>
-            Datos de prueba · Los cambios duran mientras esta vista esté
-            abierta.
-          </span>
+          <span>Datos de prueba · Guarda la comparación para recuperarla.</span>
           <span>Sin recetas ni historial de compras.</span>
         </footer>
         <p role="status" className="sr-only">

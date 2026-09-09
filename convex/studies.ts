@@ -7,17 +7,7 @@ import type { Doc } from "./_generated/dataModel";
 const MAX_PER_SESSION = 10;
 const MAX_DEMO_STUDIES = 500;
 
-// A bearer capability, not an asserted user ID. Only synthetic studies are accepted.
-async function ownerHash(token: string) {
-  if (!/^[a-f0-9]{64}$/.test(token)) throw new ConvexError("Sesión no válida.");
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(token),
-  );
-  return Array.from(new Uint8Array(digest), (byte) =>
-    byte.toString(16).padStart(2, "0"),
-  ).join("");
-}
+import { ownerHash } from "./lib/demoSession";
 function publicStudy(study: Doc<"studies">) {
   const { _id, term, region, results, selectedIds, revision, updatedAt } =
     study;

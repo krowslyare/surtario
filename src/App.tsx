@@ -17,6 +17,9 @@ export default function App({
   function openComparison(nextSeed?: PurchaseSeed) {
     setSeed(nextSeed);
     setView("comparison");
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", "comparison");
+    window.history.replaceState(null, "", url);
     window.scrollTo(0, 0);
   }
   return (
@@ -31,8 +34,12 @@ export default function App({
       {view === "comparison" && (
         <Comparison
           seed={seed}
+          persistenceEnabled={persistenceEnabled}
           onBack={() => {
             setView("market");
+            const url = new URL(window.location.href);
+            url.searchParams.delete("view");
+            window.history.replaceState(null, "", url);
             window.scrollTo(0, 0);
           }}
         />

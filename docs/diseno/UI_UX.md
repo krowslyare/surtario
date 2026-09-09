@@ -141,7 +141,7 @@ Primera entrega revisada en escritorio y móvil, con prueba de reflujo de 320 a 
 
 «Guardar estudio» confirma solo tras respuesta de Convex. «Guardados» muestra carga, vacío o lista reactiva; nunca sustituir carga por cero. Recuperar conserva fuentes y selección; actualizar desde una revisión antigua muestra conflicto y exige recuperar la versión actual. Un cambio en otra pestaña actualiza la lista y conserva el borrador abierto.
 
-Sin conexión se informa guardado no confirmado y se conserva el borrador. Un error de consulta no debe derribar exploración. La sesión pertenece a este navegador; avisar que borrar almacenamiento pierde acceso y que compras/borradores de mensajes siguen transitorios. Sin backend configurado no mostrar éxito de persistencia. Revisión visual realizada en escritorio y móvil sobre la UI implementada.
+Sin conexión se informa guardado no confirmado y se conserva el borrador. Un error de consulta no debe derribar exploración. La sesión pertenece a este navegador; avisar que borrar almacenamiento pierde acceso y que los borradores de mensajes siguen transitorios; las comparaciones de ejemplo tienen guardado independiente. Sin backend configurado no mostrar éxito de persistencia. Revisión visual realizada en escritorio y móvil sobre la UI implementada.
 
 
 ## Evidencia del pulido visual
@@ -162,3 +162,7 @@ Acceso secundario «Añadir lista o archivo» debajo de la búsqueda. Diálogo c
 ## Revisión de cotización · ejemplo local
 
 Documento y campos con evidencia en dos columnas en escritorio; una columna en móvil. Pendientes vacíos, correcciones señaladas y checkbox invalidado tras editar. Borrador conservado al cerrar, no al recargar. La UI identifica la simulación y no afirma haber llamado a IA. En comparación, los valores confirmados se distinguen de la propuesta extraída. [Evidencia](../desarrollo/EXTRACCION_REVISION.md).
+
+## Comparaciones guardadas y elección
+
+Guardado independiente del estudio, con lista reactiva y recuperación de condiciones. «Elegir oferta» solo se habilita cuando esa oferta es calculable; el estado indica elección, no compra. Cambiar condiciones invalida la elección activa. Datos de fuentes conservan su fecha original; el guardado no convierte un ejemplo en una cotización real. Errores, desconexión y restricción a ejemplos se explican junto al control de guardado.
