@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T01:35:35Z
+- **Last updated:** 2026-09-09T02:36:23Z
 
 ## Log
 
@@ -111,3 +111,8 @@ Actualizadas las guías de integraciones, README, etapas y guion del video para 
 Añadida lectura de imagen/PDF sintéticos mediante Agent/OpenAI en `convex/documents.ts` y `convex/lib/documentExtraction.ts`. El servidor envía los bytes del archivo, clasifica el documento y conserva transcripción/propuesta por sesión. Revisión con original visible, correcciones y confirmación antes de comparar; una compra/lista no se convierte en oferta.
 Revisión adversarial local de acceso, consumo y procedencia: API limitada a archivos sintéticos del servidor, reservas idempotentes, cuotas y errores sin reintento automático. Las citas contra transcripción generada no se presentan como verificación visual. 84 tests y build correctos; 36 E2E completos más un caso positivo adicional de lectura simulada. Original y revisión móvil inspeccionados.
 Sin llamadas reales a OpenAI ni carga privada. Resultado del modelo persistente; correcciones y comparación derivada de documentos todavía transitorias. Alcance y límites en `docs/desarrollo/LECTURA_DOCUMENTOS.md`. Sin despliegue público.
+
+
+### 2026-09-08 - working tree · persistencia de revisión documental
+Conectado el guardado de comparaciones derivadas de foto/PDF sintéticos. Convex reconstruye fuente y propuesta desde una lectura completa de la sesión y conserva revisión confirmada, condiciones posteriores y elección. Referencias ajenas, tipos distintos de cotización y correcciones inválidas se rechazan; las actualizaciones preservan procedencia y revisión optimista.
+87 tests de dominio/backend, 38 E2E y build satisfactorios. Recorrido local comprobó corrección 80 a 85, flete 15, total 100, elección, recarga y enlace al PDF. Revisión adversarial local de propiedad, procedencia y reintentos; sin llamadas a OpenAI ni carga privada. La CLI rechazó el selector local explícito para el backend anónimo; la importación sintética acotada funcionó con el destino existente verificado, sin reemplazar registros.

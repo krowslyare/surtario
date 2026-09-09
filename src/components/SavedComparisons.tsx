@@ -105,6 +105,17 @@ function ConnectedComparisons({
         offers: submitted.offers,
         selectedOfferId: submitted.selectedOfferId,
         ...(!submitted.id &&
+        submitted.offers.length === 1 &&
+        submitted.sources[submitted.offers[0].id]?.documentReview
+          ? {
+              documentReview: {
+                ...submitted.sources[submitted.offers[0].id].documentReview!,
+                runId: submitted.sources[submitted.offers[0].id].documentReview!
+                  .runId as Id<"documentRuns">,
+              },
+            }
+          : {}),
+        ...(!submitted.id &&
         submitted.offers.some((offer) => submitted.sources[offer.id]?.webReview)
           ? {
               webReviews: submitted.offers.map((offer) => {

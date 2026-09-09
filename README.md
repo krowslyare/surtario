@@ -45,7 +45,7 @@ npm run test:backend
 
 Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
 
-Verificado: 84 pruebas de dominio/backend y 37 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
+Verificado: 87 pruebas de dominio/backend y 38 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
 
 El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido reproducible y las partes del video aún pendientes. No se ha grabado un video de entrega.
 
@@ -131,3 +131,5 @@ Estado verificable y pasos para otro colaborador: [setup del agente](docs/desarr
 «Buscar en la web» utiliza Firecrawl cuando está configurado y habilitado en servidor. Guarda hasta tres fuentes por búsqueda, permite solicitar extracción OpenAI por fuente y revisar campos/citas antes de comparar. Sin configuración permanece deshabilitado; los ejemplos siguen separados. [Recorrido, límites y configuración](docs/desarrollo/BUSQUEDA_WEB.md).
 
 Las llamadas reales no se han ejecutado. Backend probado con proveedores simulados y UI positiva con un transporte de prueba. Fuentes y propuestas se guardan automáticamente; las correcciones y condiciones web se conservan al pulsar «Guardar comparación». No se admiten documentos privados ni se envían correos.
+
+Las revisiones de foto/PDF de ejemplo también admiten «Guardar comparación»: recuperan correcciones, condiciones, elección y enlace al documento, conservando la propuesta del modelo. [Contrato y evidencia](docs/desarrollo/LECTURA_DOCUMENTOS.md).

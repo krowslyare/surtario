@@ -18,7 +18,7 @@ Sin configurar, el botón de lectura permanece deshabilitado. El original y la t
 
 La API pública solo acepta `image` o `pdf`, identificadores de archivos sintéticos del servidor. No acepta bytes, enlaces ni documentos privados de visitantes. Los archivos propios seleccionados en la entrada existente siguen en memoria de la pestaña y admiten transcripción manual. La carga privada requiere la etapa de piloto con autenticación y control de acceso; no queda habilitada por este PR.
 
-Los resultados de lectura se guardan en `documentRuns`, aislados mediante la capacidad de sesión existente. Las correcciones y la comparación derivada de estos documentos son transitorias en este corte; todavía no están incluidas en el contrato de guardado de comparaciones web. No confundir el resultado guardado del modelo con condiciones confirmadas guardadas.
+Los resultados de lectura se guardan en `documentRuns`, aislados mediante la capacidad de sesión existente. Al pulsar «Guardar comparación», se guardan también las correcciones confirmadas, condiciones y elección. El servidor verifica la lectura de la misma sesión y reconstruye la propuesta y fuente; no acepta texto original enviado por el navegador. Las ediciones posteriores conservan ese origen y requieren guardar de nuevo.
 
 Archivos fuente: `public/examples/cotizacion-demo.pdf` y su render PNG. `fixtures/documentFiles.json` contiene los mismos bytes codificados para el backend. Una prueba verifica la igualdad binaria entre el original descargable y el archivo enviado al adaptador. El PDF tiene una página y el PNG mide 827 × 695 px.
 
@@ -30,4 +30,10 @@ Archivos fuente: `public/examples/cotizacion-demo.pdf` y su render PNG. `fixture
 - 84 tests de dominio/backend y build satisfactorios. 36 E2E del conjunto completo y una prueba positiva adicional de lectura/revisión verificadas; 37 casos de navegador en total. Se inspeccionaron original y revisión móvil.
 - Pruebas del adaptador verifican partes binarias de imagen/PDF, igualdad de bytes, clasificación, citas y límites. Pruebas de Convex cubren aislamiento, deshabilitación, cuotas y reintentos. El navegador positivo usa respuesta simulada; no acredita OCR real.
 
-Sigue pendiente: calidad real con OpenAI, fotos imperfectas, documentos de varios productos, carga privada y guardado de correcciones derivadas de documentos. Este bloque no publica la app ni habilita un piloto comercial.
+Sigue pendiente: calidad real con OpenAI, fotos imperfectas, documentos de varios productos, carga privada. Este bloque no publica la app ni habilita un piloto comercial.
+
+## Continuidad documental verificada
+
+El guardado admite una cotización documental por comparación y no mezcla referencias web/documentales en la misma creación. Recupera precio leído, precio confirmado, condiciones posteriores, fuente del archivo y elección por separado. Una creación reintentada no duplica; un cambio concurrente exige recuperar la revisión vigente. Elegir no registra compra.
+
+Pruebas nuevas: creación y actualización, reintento con evidencia distinta, lectura incompleta, tipo documental incorrecto y sesión ajena. E2E local añade solo una lectura sintética, corrige 80 a 85, completa flete 15, guarda total 100 con elección, recarga y comprueba original y corrección. No requiere OpenAI ni modifica documentos existentes.

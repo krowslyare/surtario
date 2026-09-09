@@ -245,7 +245,14 @@ export function DocumentReview({
             }
             proposal={run.result.offer}
             triggerLabel="Revisar datos leídos"
-            onPrepare={onPrepare}
+            onPrepare={(seed) => {
+              seed.sources[run.id].documentReview = {
+                runId: run.id,
+                values: seed.sources[run.id].extraction!.reviewed,
+                confirmed: true,
+              };
+              onPrepare(seed);
+            }}
           />
         ) : (
           <p>
