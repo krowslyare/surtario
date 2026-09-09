@@ -10,9 +10,9 @@
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting
 - **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, realtime queries
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
-- **AI models:** none
+- **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T22:36:22Z
+- **Last updated:** 2026-09-09T23:16:59Z
 
 ## Log
 
@@ -263,3 +263,9 @@ Reorganized research around the search and supplier evidence, with study tools a
 Applied forest/sage tokens, a shared SVG mark, native reduced-motion-aware transitions and persistent dialog headers. An image-generation reference guided composition without introducing fabricated supplier photos or features.
 Chrome computer use reviewed desktop and mobile flows. 126 domain/backend tests, all 51 browser journeys, typecheck/build and hosting-asset validation passed locally, including the demo rehearsal and keyboard/reduced-motion checks.
 The final run followed a local fixture-CLI setup correction; calculations, ownership, saved revisions and mail permissions remain intact. No cloud deployment or provider/model call occurred in this UI delivery. Full real-provider acceptance and restaurant validation remain pending. Evidence: `docs/diseno/PULIDO_EXPERIENCIA.md`.
+
+
+### 2026-09-09 - working tree · Luna CLI end-to-end rehearsal
+A local-only provider bridge now runs real Luna CLI structured generation through the existing Agent/AI SDK boundary while simulating web discovery and mail transport. Chrome computer use exercised reviewed offers, a no-price distributor, explicit email approval, duplicate signed webhook delivery, reply-to-comparison, PNG/PDF reading, XLSX/manual lists and saved decision recovery. Six substantive Luna calls completed; actual Convex tools produced the scenarios and evidence supplied to the advisor. No external email or provider API call was made by this rehearsal.
+The first live model attempt exposed a missing Agent context scope; all stateless calls now use isolated server-generated scopes without history or message storage. A subsequent advice error revealed old pending source text overriding reviewed conditions; the tool now passes current confirmations explicitly. Regression tests retain the actual Agent/SDK. Research errors no longer expose Convex stacks, missing-number copy is legible and unchanged saved verdicts are not duplicated.
+138 unit/backend tests, typechecks, hosting checks and 51 browser journeys passed. The test checkout's shared-dependency font warning was corrected and 12 focused visual/keyboard checks passed on repeat. The original PDF renderer failure remained visible until an explicit retry after local font configuration was fixed. Desktop and 390px computer-use evidence and reproduction steps are documented in `docs/desarrollo/LUNA_REHEARSAL.md`. Direct OpenAI API and full hosted acceptance, production, public visibility and contest submission remain pending.

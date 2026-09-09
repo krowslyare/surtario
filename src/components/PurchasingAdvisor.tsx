@@ -349,7 +349,7 @@ function Connected({
       </details>
       {invalid ? (
         <p role="alert">Revisa los números del contexto antes de analizar.</p>
-      ) : (
+      ) : !selected || stale ? (
         <>
           <p className="advisor-mode">
             Escenario calculado con los datos visibles
@@ -357,7 +357,7 @@ function Connected({
           <AdvisorVerdict report={report} />
           <ScenarioDetails report={report} offers={offers} />
         </>
-      )}
+      ) : null}
       <div className="advisor-actions">
         <button
           className="button secondary"

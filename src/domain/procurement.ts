@@ -105,7 +105,13 @@ function validatePositiveFinite(
   label: string,
 ): ProcurementIssue[] {
   if (!Number.isFinite(value)) {
-    return [issue(field, "not-finite", `${label} debe ser un número finito.`)];
+    return [
+      issue(
+        field,
+        "not-finite",
+        `Completa ${label.toLocaleLowerCase("es-PE")} con un número válido.`,
+      ),
+    ];
   }
   if (value <= 0) {
     return [issue(field, "not-positive", `${label} debe ser mayor que cero.`)];
@@ -119,7 +125,13 @@ function validateNonNegativeInteger(
   label: string,
 ): ProcurementIssue[] {
   if (!Number.isFinite(value)) {
-    return [issue(field, "not-finite", `${label} debe ser un número finito.`)];
+    return [
+      issue(
+        field,
+        "not-finite",
+        `Completa ${label.toLocaleLowerCase("es-PE")} con un número válido.`,
+      ),
+    ];
   }
   if (!Number.isSafeInteger(value) || value < 0) {
     return [

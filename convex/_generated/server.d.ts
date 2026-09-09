@@ -42,6 +42,8 @@ type Env = {
   readonly OPENAI_ADVISOR_MODEL: string | undefined;
   readonly OPENAI_API_KEY: string | undefined;
   readonly OPENAI_EXTRACTION_MODEL: string | undefined;
+  readonly REHEARSAL_BRIDGE_TOKEN: string | undefined;
+  readonly REHEARSAL_BRIDGE_URL: string | undefined;
 };
 
 /**

@@ -1,4 +1,5 @@
 import { ConvexError, v } from "convex/values";
+import { providerFetch } from "./lib/providerTransport";
 import {
   action,
   env,
@@ -379,7 +380,7 @@ export const send = action({
       | { kind: "failed" }
       | { kind: "uncertain" };
     try {
-      const response = await fetch(
+      const response = await providerFetch(
         `https://api.agentmail.to/v0/inboxes/${encodeURIComponent(reservation.inboxId)}/messages/send`,
         {
           method: "POST",
