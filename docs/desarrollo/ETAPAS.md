@@ -199,3 +199,10 @@ Reviewed manual and spreadsheet names can be saved by session and recovered afte
 Advisor, operator recovery, saved ingredient lists and static-hosting preparation were integrated in separate deliveries. The complete local suite passed: 122 domain/backend tests, frontend/backend typechecks, hosting build/asset checks and 49 browser journeys including the demo rehearsal. The first full pass caught an advisor context reset during initial comparison save; the corrected flow now preserves edits until the logical draft is replaced. The local test harness allows only the selected backend and Vite origins and serializes shared snapshot imports.
 
 Implementation for this agreed demo scope is prepared. Real Firecrawl/OpenAI/AgentMail behavior, hosted HTTP behavior, public visibility and contest materials remain unverified; stages 2–5 and 7 are not complete. Follow [provider configuration and complete E2E](CREDENTIALS_AND_E2E.md). Recipes and private restaurant data remain separate extensions.
+
+
+## PR 14 · local review
+
+Independent Sol review and parent adjudication corrected interrupted advisor executions that could remain running indefinitely. A durable internal expiry preserves the calculation, does not retry the model, and ignores late completion. The initial-save context fix was moved into this delivery so budget and usage survive the first comparison save.
+
+112 domain/backend tests, frontend/backend typechecks and build passed. Three advisor browser journeys passed on the PR frontend using the existing synthetic local backend; the exact changed backend was tested in memory. Real provider behavior and public deployment remain pending.

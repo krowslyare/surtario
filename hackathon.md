@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T20:50:37Z
+- **Last updated:** 2026-09-09T21:29:43Z
 
 ## Log
 
@@ -238,3 +238,8 @@ Preparation only: no cloud deployment or asset upload occurred. Provider capabil
 Integrated the advisor, mail recovery, saved lists and hosting preparation. Fixed an initial-save race that reset purchasing context, with a browser regression covering context entered before the comparison is saved. Local E2E configuration now pins the selected anonymous backend and permits the separate Vite socket; shared snapshot imports run sequentially.
 122 domain/backend tests, frontend/backend typechecks, the hosting build/asset check and all 49 browser journeys passed. The full flow includes source review, stored comparisons, synthetic documents/replies, purchasing scenarios, session isolation and the demo rehearsal.
 README and provider acceptance instructions were refreshed in English. No real provider request, email delivery, cloud deployment, public repository change or video submission occurred. Those checks remain the next stage after credentials are configured.
+
+
+### 2026-09-09 - working tree · PR 14 local review
+Preserved decision context during the first comparison save and added scheduled recovery for interrupted advisor executions. Expiry keeps deterministic results and prevents a late model completion from replacing a failed state; it never retries a provider.
+Independent Sol review was adjudicated and corrected. 112 domain/backend tests, frontend/backend typechecks, build and three advisor browser journeys passed. Browser checks used the existing synthetic local backend; changed backend behavior was verified in memory. No real provider calls or public deployment.
