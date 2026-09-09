@@ -24,7 +24,7 @@ No se crean buzones, webhooks externos ni envíos como efecto secundario de impl
 
 ## Evidencia y límites
 
-77 pruebas de dominio/backend y 35 E2E satisfactorias, además de build/tipos. El navegador comprobó creación, recarga, copia al portapapeles, envío deshabilitado y reflujo móvil. Las pruebas de backend usaron transporte simulado: aislamiento, destinatario congelado, idempotencia, errores inciertos, firma/cuerpo/timestamp, duplicados y correlación. No se ejecutó ningún envío ni recepción real de AgentMail.
+77 pruebas de dominio/backend y 35 E2E satisfactorias, además de build/tipos. El navegador comprobó creación, recarga, copia al portapapeles, envío deshabilitado y reflujo móvil. Las pruebas de backend usaron transporte simulado: aislamiento, destinatario congelado, idempotencia, errores inciertos, firma/cuerpo/timestamp, duplicados y correlación. Those checks used simulated transport. A subsequent real development round trip is recorded below and in [provider acceptance evidence](CREDENTIALS_AND_E2E.md).
 
 Hasta 10 solicitudes por sesión y 100 en total, con 30 segundos entre creaciones. Cada solicitud conserva hasta 10 respuestas de texto. Los eventos verificados sin correspondencia, incluidos los recibidos antes de guardar el comprobante de envío y los hilos ambiguos, quedan en una tabla interna acotada a 100 eventos; no hay todavía pantalla ni reconciliación automática para ellos.
 
@@ -41,7 +41,7 @@ Recovery is available only through internal Convex functions. It does not expose
 
 These operations require an operator to verify provider state outside the app. They contain no credentials and do not establish that a real AgentMail round trip has occurred.
 
-Pendiente: configurar credenciales y destinatario autorizado, publicar/registrar el webhook, ejecutar ida y vuelta real y ensayar ese recorrido para el video. Este corte admite solo texto; no procesa adjuntos ni extrae automáticamente precios de respuestas.
+September 9, 2026: server credentials, a restricted owned test recipient and the public development webhook were configured. One approved request reached the test inbox; its reply was linked through the signed webhook. A replay of the same event produced a second successful delivery attempt and only one linked reply. Manual review, new-offer creation, save and recovery passed. No operator recovery or transport-timeout scenario was exercised against the real provider. The complete AI-assisted journey and video rehearsal remain pending. This delivery accepts text only; it does not process attachments or automatically extract prices from replies.
 
 ## Consulta desde estudio sin precio
 

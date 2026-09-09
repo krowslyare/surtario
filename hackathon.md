@@ -3,16 +3,16 @@
 - **Project:** restaurant-procurement
 - **Event:** Convex All Gas Hackathon
 - **What it does:** Researches ingredient suppliers, preserves reviewed evidence and compares purchasing scenarios with optional cash/coverage advice.
-- **Live app:** not deployed
+- **Live app:** https://incredible-wolverine-122.convex.site
 - **Repo:** private
-- **Frontend:** Convex static hosting (prepared, not deployed)
-- **Convex deployment:** not deployed
+- **Frontend:** Convex static hosting
+- **Convex deployment:** https://incredible-wolverine-122.convex.cloud
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting
-- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, realtime queries (local)
+- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, realtime queries
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T21:37:00Z
+- **Last updated:** 2026-09-09T22:06:00Z
 
 ## Log
 
@@ -249,3 +249,10 @@ Independent Sol review was adjudicated and corrected. 112 domain/backend tests, 
 Completed independent Sol reviews with parent adjudication for advisor, mail recovery, saved lists and hosting. Corrected interrupted advisor execution and moved the first-save context fix into the advisor delivery. Recovery and list reviews found no further material issues.
 Hardened browser tests against an already-running frontend connected to another local backend; all persistence socket guards now enforce the selected origin, including delayed-response tests. The occupied-port check and socket rejection tests passed.
 126 unit/backend tests, frontend/backend typechecks, hosting checks and all 49 browser journeys passed on the combined code. Updated functions were accepted by the anonymous local backend. External providers remained simulated or disabled; no cloud deployment, real email, public visibility change or submission.
+
+
+### 2026-09-09 - working tree · real provider checks and development preview
+Configured a dedicated Convex cloud development deployment and server-only provider secrets through the authorized Chrome consoles. A real Firecrawl probe returned three Peruvian catalog sources; OpenAI extraction and price/coverage validation remain pending.
+An approved synthetic AgentMail request reached an owned test inbox. Its reply linked through the signed webhook (`200 Accepted`); replaying the same event succeeded without duplicating the reply. Manual offer review, save and recovery preserved PEN 4.80/kg and PEN 96 for 20 kg. No purchase was recorded.
+Published the development frontend through the registered static hosting component. Build-matching root/assets, SPA fallback, missing-asset 404 and unsigned-webhook rejection passed. Chrome recovered a hosted study in a fresh page; the hosted session stayed separate from the localhost study. Corrected the footer's fixed unsent-message claim and added an explicit development upload command.
+OpenAI account/model configuration, document extraction, advisor tool execution and the complete hosted provider journey remain unverified. Provider latency was not instrumented. Repository visibility, production and contest submission were unchanged. Evidence: `docs/desarrollo/CREDENTIALS_AND_E2E.md`, `HOSTING.md` and stage status in `ETAPAS.md`.

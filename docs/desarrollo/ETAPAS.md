@@ -8,10 +8,10 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | --- | --- | --- | --- |
 | 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |
 | 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
-| 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; Pruebas internas Firecrawl/OpenAI preparadas; llamadas reales de sponsors pendientes |
+| 2 | Viabilidad de integraciones externas | En curso | Convex cloud dev configured; real Firecrawl discovery returned three sources and AgentMail round trip/replay passed. OpenAI extraction/advice remains pending; see the dated evidence below |
 | 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisadas recuperables y fotos/PDF propios con transcripción local y lectura multimodal de ejemplos implementada; llamadas reales pendientes |
-| 4 | Solicitud, respuesta y decisión conectadas | En curso | Asesor con contexto y escenarios guardados, recuperación interna de correo y comparaciones sintéticas implementados; borrador persistente desde comparación, estudio sin precio o candidato web revisado y recepción firmada y oferta manual revisada desde respuesta e incorporación explícita a comparación existente implementados; correo real pendiente |
-| 5 | Demo pública aislada y robusta | En preparación | CI and local E2E implemented; static hosting prepared with preserved webhook routing. Real provider checks and public deployment remain pending |
+| 4 | Solicitud, respuesta y decisión conectadas | En curso | Asesor con contexto y escenarios guardados, recuperación interna de correo y comparaciones sintéticas implementados; borrador persistente desde comparación, estudio sin precio o candidato web revisado; real test email, signed reply, duplicate event and reviewed new offer persistence verified. Live AI decision and addition to an existing comparison still require the full acceptance flow |
+| 5 | Demo pública aislada y robusta | En preparación | Development HTTPS preview published; root/assets, SPA fallback, missing asset and unsigned webhook checks passed. Complete provider journey and final public-demo acceptance remain pending |
 | 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
 | 7 | Materiales y entrega del concurso | Pendiente | Requisitos documentados; nada publicado |
 | P | Habilitación y validación de piloto privado | Pendiente, vía comercial independiente | No hay restaurante disponible |
@@ -20,7 +20,7 @@ Preparación del agente: skills cargados, MCP invocable pero status requiere aut
 
 Bloque de persistencia completado localmente: selección y fuentes recuperables, biblioteca reactiva, aislamiento de sesión y control de revisiones. Ver [evidencia y límites](./PERSISTENCIA_ESTUDIOS.md). No habilita datos privados ni completa la demo pública.
 
-Siguientes hitos: ejecutar descubrimiento/extracción contra proveedores reales y el recorrido de correo de prueba autorizado. El código de búsqueda, revisión persistente y cotizaciones está preparado; faltan pruebas con credenciales. OpenAI, Firecrawl y AgentMail siguen aplazados por decisión del usuario. Se puede preparar el código sin claves, pero etapas 2–4 no se completan sin ejecutar las integraciones. Ver [exploración](./EXPLORACION_MERCADO.md) y [primera comparación](./PRIMERA_ENTREGA.md).
+Next: confirm the intended OpenAI account/project, configure its server key and compatible models, then verify web/document extraction and advisor tools against real responses. Firecrawl discovery and the authorized AgentMail test round trip passed on cloud development; they do not complete stages 2–4. Finish the combined acceptance flow and rehearsal before treating the development preview as the final demo. See [provider procedure and dated evidence](./CREDENTIALS_AND_E2E.md).
 
 Revisión visual aplicada: Manrope local y tokens índigo/lavanda; búsqueda protagonista, resultados compactos, precio normalizado destacado y acceso persistente al estudio. La portada ilustrada fue retirada. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
 
@@ -75,7 +75,7 @@ Trabajo: sesiones independientes, documentos sintéticos incluidos, límites por
 
 Entrada pública con «Probar ejemplo», sin planes de suscripción, checkout ni pago para explorar. Los precios de insumos sí forman parte de la comparación.
 
-Hosting preparado localmente con `@convex-dev/static-hosting` 0.2.1, preservando el webhook existente y el fallback SPA. Build y assets se comprueban sin credenciales; publicación y verificación HTTP siguen pendientes. Ver [contrato y pasos de publicación](./HOSTING.md).
+Development hosting is published with `@convex-dev/static-hosting` 0.2.1. HTTPS root and hashed assets match the build, extensionless routes return the SPA shell, missing assets return 404, and the webhook rejects unsigned requests. The full provider journey and final release acceptance remain pending. See [hosting contract and evidence](./HOSTING.md).
 
 Salida: dos visitantes no interfieren; no se permite envío arbitrario ni acceso a archivos ajenos; fuente vieja lleva fecha; el E2E completo pasa. Verificar URL real después de publicar dentro del alcance autorizado. Si sigue local, registrar «preparado para desplegar», no «publicado».
 
@@ -215,3 +215,10 @@ Independent Sol review and parent adjudication found no material issues in opera
 The hosting review found that browser tests could reuse a Vite process connected to another local backend. Playwright now starts its own server and refuses an occupied port; all persistence guards, including delayed-response overrides, validate the selected WebSocket origin. A real occupied-port invocation was rejected before running tests, and negative socket checks passed.
 
 The final combined code passed 126 unit/backend tests, frontend/backend typechecks, hosting build/asset checks and all 49 browser journeys, including the demo rehearsal. The existing anonymous local backend accepted the updated functions. Provider calls remained simulated or disabled; no cloud deployment, public visibility change or contest submission occurred. Stages 2–5 and 7 retain their external verification requirements.
+
+
+### September 9, 2026 — real provider and development hosting checks
+
+Configured a dedicated cloud development deployment using the author's provider consoles. A real internal Firecrawl probe returned three Peruvian catalog sources; prices, equivalence and coverage were not yet extracted or validated by OpenAI. A synthetic study without quantity or price produced one reviewed AgentMail request to an owned test inbox. The reply arrived through the signed webhook (`200 Accepted`); replaying that same event succeeded while the app retained one reply. The manually reviewed offer was saved and recovered at PEN 4.80/kg and PEN 96 for 20 kg. No purchase was recorded.
+
+The development frontend is reachable over HTTPS, with build matching root/assets, SPA fallback, asset 404 and unsigned webhook rejection verified. The hosted fixture empty-result state and separate browser-origin session were checked. OpenAI account selection, actual model compatibility, document extraction, advisor tools and the complete hosted two-session journey remain open. Provider latency was not instrumented. Evidence and reproduction boundaries: [provider acceptance](CREDENTIALS_AND_E2E.md), [hosting](HOSTING.md).
