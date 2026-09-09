@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T20:37:23Z
+- **Last updated:** 2026-09-09T20:41:04Z
 
 ## Log
 
@@ -222,3 +222,8 @@ Independent Sol review found removed-source and mixed-currency issues, corrected
 ### 2026-09-09 - working tree · operator mail recovery
 Added internal recovery inspection, verified sent-receipt reconciliation and quarantined-reply linking. Frozen-route validation and idempotency preserve request ownership; no recovery path calls a provider or resends mail.
 Independent review found unreachable old queue entries and duplicate receipt assignment; both now have regression coverage. 116 combined domain/backend tests, frontend/backend typechecks and build passed. Live delivery and webhook verification with AgentMail remain pending.
+
+
+### 2026-09-09 - working tree · saved ingredient lists
+Added session-owned storage of reviewed manual/XLSX/CSV ingredient names and recovery after reload. File bytes, other columns and document transcriptions are not part of the stored contract.
+Parent review caught a late-save confirmation affecting a replacement queue; a browser regression now verifies the correction. 121 combined domain/backend tests, build and ten focused browser cases passed against an isolated local Convex backend. No external provider calls or deployment.

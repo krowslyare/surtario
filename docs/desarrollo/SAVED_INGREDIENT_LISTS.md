@@ -23,3 +23,7 @@ browser session, and 100 lists across the demo.
 
 The interface labels this as synthetic public-demo storage. Reopening a list
 does not create a market study, offer, purchase, or source record.
+
+## Local verification
+
+121 combined domain/backend tests, build and ten focused browser checks passed on an isolated local Convex backend. Browser coverage includes reload recovery and a delayed save response arriving after the queue has been replaced. Session isolation, input bounds and immutable idempotent retries are tested in memory. Source metadata after recovery describes the saved list; it does not pretend that the original file is still available.
