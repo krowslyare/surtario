@@ -51,4 +51,55 @@ export default defineSchema({
   })
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
+  quotationRequests: defineTable({
+    ownerHash: v.string(),
+    clientId: v.string(),
+    comparisonId: v.id("comparisons"),
+    recipient: v.union(v.string(), v.null()),
+    inboxId: v.union(v.string(), v.null()),
+    subject: v.string(),
+    text: v.string(),
+    state: v.union(
+      v.literal("draft"),
+      v.literal("sending"),
+      v.literal("sent"),
+      v.literal("uncertain"),
+      v.literal("failed"),
+    ),
+    revision: v.number(),
+    idempotencyKey: v.string(),
+    receipt: v.union(
+      v.object({ messageId: v.string(), threadId: v.string() }),
+      v.null(),
+    ),
+    failure: v.union(v.string(), v.null()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerHash", ["ownerHash"])
+    .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"])
+    .index("by_inboxId_and_receipt_threadId", ["inboxId", "receipt.threadId"]),
+  quotationReplies: defineTable({
+    requestId: v.id("quotationRequests"),
+    eventId: v.string(),
+    messageId: v.string(),
+    threadId: v.string(),
+    from: v.string(),
+    text: v.string(),
+    receivedAt: v.string(),
+  })
+    .index("by_requestId", ["requestId"])
+    .index("by_eventId", ["eventId"])
+    .index("by_messageId", ["messageId"]),
+  quotationUnmatchedEvents: defineTable({
+    eventId: v.string(),
+    messageId: v.string(),
+    inboxId: v.string(),
+    threadId: v.string(),
+    from: v.string(),
+    text: v.string(),
+    receivedAt: v.string(),
+  })
+    .index("by_eventId", ["eventId"])
+    .index("by_messageId", ["messageId"]),
 });

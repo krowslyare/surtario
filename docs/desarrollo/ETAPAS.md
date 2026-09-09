@@ -10,7 +10,7 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
 | 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; Pruebas internas Firecrawl/OpenAI preparadas; llamadas reales de sponsors pendientes |
 | 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF con transcripción local; fuentes reales y extracción automática pendientes |
-| 4 | Solicitud, respuesta y decisión conectadas | En curso | Comparaciones y elección sintéticas recuperables; solicitud, respuesta y correo real pendientes |
+| 4 | Solicitud, respuesta y decisión conectadas | En curso | Comparaciones y elección sintéticas recuperables; borrador persistente y recepción firmada implementados; correo real pendiente |
 | 5 | Demo pública aislada y robusta | Pendiente | — |
 | 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
 | 7 | Materiales y entrega del concurso | Pendiente | Requisitos documentados; nada publicado |
@@ -20,7 +20,7 @@ Preparación del agente: skills cargados, MCP invocable pero status requiere aut
 
 Bloque de persistencia completado localmente: selección y fuentes recuperables, biblioteca reactiva, aislamiento de sesión y control de revisiones. Ver [evidencia y límites](./PERSISTENCIA_ESTUDIOS.md). No habilita datos privados ni completa la demo pública.
 
-Siguientes hitos: descubrimiento/extracción de fuentes reales y revisión estructurada de precios/presentaciones; correo después en su recorrido autorizado. OpenAI, Firecrawl y AgentMail siguen aplazados por decisión del usuario. Se puede preparar el código sin claves, pero etapas 2–4 no se completan sin ejecutar las integraciones. Ver [exploración](./EXPLORACION_MERCADO.md) y [primera comparación](./PRIMERA_ENTREGA.md).
+Siguientes hitos: ejecutar descubrimiento/extracción contra proveedores reales y el recorrido de correo de prueba autorizado. El código de búsqueda, revisión persistente y cotizaciones está preparado; faltan pruebas con credenciales. OpenAI, Firecrawl y AgentMail siguen aplazados por decisión del usuario. Se puede preparar el código sin claves, pero etapas 2–4 no se completan sin ejecutar las integraciones. Ver [exploración](./EXPLORACION_MERCADO.md) y [primera comparación](./PRIMERA_ENTREGA.md).
 
 Revisión visual aplicada: Manrope local y tokens índigo/lavanda; búsqueda protagonista, resultados compactos, precio normalizado destacado y acceso persistente al estudio. La portada ilustrada fue retirada. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
 

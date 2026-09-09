@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-08T20:58:27Z
+- **Last updated:** 2026-09-09T01:01:09Z
 
 ## Log
 
@@ -94,3 +94,9 @@ Las ofertas revisadas pasan a comparación tras validar equivalencia; originales
 ### 2026-09-08 - working tree · persistencia de revisión web
 Extendido el guardado de comparaciones a revisiones vinculadas a investigaciones de la sesión (`convex/comparisons.ts`). El servidor reconstruye texto, URL, propuesta original y revisión desde referencias verificadas. Condiciones y elección se recuperan sin registrar compra; archivos privados siguen excluidos.
 Corregidas igualdad de evidencia en reintentos y validación de condiciones editables. Revisión adversarial independiente completada sin hallazgos materiales pendientes. 68 pruebas de dominio/backend, 34 E2E y build correctos; recorrido de corrección, guardado y recarga ejecutado en Convex local con fuente sintética. Sin llamadas externas ni despliegue público.
+
+
+### 2026-09-08 - working tree · cotizaciones de prueba
+Solicitud persistente desde comparación guardada, revisión de texto/destino, copia manual para WhatsApp y envío AgentMail restringido por servidor (`convex/quotationMail.ts`, `src/components/QuotationMail.tsx`). Las respuestas requieren firma válida y correlación por buzón, hilo y remitente; duplicados y eventos sin correspondencia quedan separados. Recibir no modifica precios ni registra compras.
+Revisión adversarial de aislamiento e idempotencia; corregidos límites de respuesta, estados inciertos, hilos ambiguos y campos incompatibles en persistencia. 77 pruebas de dominio/backend, 35 E2E y build correctos. Envíos y webhooks probados con transporte/payloads sintéticos; borrador, recarga, portapapeles y móvil probados contra Convex local.
+Estado local confirmó correo deshabilitado. Sin credenciales, envíos reales, registro externo de webhook ni despliegue público. Configuración y reconciliación pendiente documentadas en `docs/desarrollo/AGENTMAIL.md`. Se prepara PR separado sobre persistencia de revisión web.

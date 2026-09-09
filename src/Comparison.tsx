@@ -1,3 +1,4 @@
+import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
 import { useRef, useState, type FormEvent } from "react";
 import SavedComparisons, {
@@ -921,6 +922,13 @@ export default function Comparison({
             </button>
           </div>
         </section>
+        {persistenceEnabled && (
+          <QuotationMail
+            comparisonId={savedId}
+            offers={offers}
+            onEditOffer={setEditing}
+          />
+        )}
         <footer>
           <span>
             {hasWebSources

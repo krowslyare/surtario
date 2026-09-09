@@ -1,0 +1,33 @@
+# Cotizaciones por correo de prueba
+
+Entrega separada del descubrimiento web. El objetivo es revisar una solicitud vinculada a una comparación guardada, enviarla a un buzón de prueba autorizado y recuperar respuestas del mismo hilo.
+
+## Contrato
+
+- La solicitud toma insumo, especificación y cantidad de la comparación guardada. No registra una compra. Una cantidad pendiente permite pedir catálogo y condiciones sin comprometer volumen.
+- El destinatario de prueba se fija en servidor; páginas, correos y navegador no pueden cambiarlo. La UI debe mostrar el destinatario y texto antes de confirmar.
+- Las respuestas son texto no confiable. Se vinculan por buzón e IDs de hilo/mensaje; el contenido no puede adjudicarse una sesión ni activar llamadas.
+- Recibir o revisar una respuesta no cambia automáticamente precios, stock ni decisiones. El usuario revisa las condiciones antes de editar y guardar la comparación.
+- Copiar el texto para WhatsApp es un paso manual, no un envío ni una integración de WhatsApp.
+
+## Configuración
+
+Claves solo en Convex: `AGENTMAIL_API_KEY`, `AGENTMAIL_INBOX_ID`, `AGENTMAIL_TEST_RECIPIENT`, `AGENTMAIL_WEBHOOK_SECRET` y habilitación explícita `AGENTMAIL_ENABLED=true`. No usar variables `VITE_`, no pegar valores en Git ni en el registro del hackatón. Antes de habilitar envío, el usuario debe identificar el destinatario de prueba autorizado.
+
+No se crean buzones, webhooks externos ni envíos como efecto secundario de implementar código. La recepción real requiere registrar una URL pública de webhook en AgentMail cuando exista el despliegue correspondiente.
+
+## Referencias de API
+
+- [Send Message](https://docs.agentmail.to/api-reference/inboxes/messages/send): endpoint de envío y respuesta con IDs de mensaje/hilo.
+- [Prevención de duplicados](https://docs.agentmail.to/knowledge-base/preventing-duplicate-sends): cabecera `Idempotency-Key`, distinta de `clientId`, con retención de 24 horas. No repetir automáticamente una operación incierta fuera de esa ventana.
+- [Verificación de webhooks](https://docs.agentmail.to/webhook-verification): comprobar firma sobre el cuerpo original antes de procesar eventos.
+
+## Evidencia y límites
+
+77 pruebas de dominio/backend y 35 E2E satisfactorias, además de build/tipos. El navegador comprobó creación, recarga, copia al portapapeles, envío deshabilitado y reflujo móvil. Las pruebas de backend usaron transporte simulado: aislamiento, destinatario congelado, idempotencia, errores inciertos, firma/cuerpo/timestamp, duplicados y correlación. No se ejecutó ningún envío ni recepción real de AgentMail.
+
+Hasta 10 solicitudes por sesión y 100 en total, con 30 segundos entre creaciones. Cada solicitud conserva hasta 10 respuestas de texto. Los eventos verificados sin correspondencia, incluidos los recibidos antes de guardar el comprobante de envío y los hilos ambiguos, quedan en una tabla interna acotada a 100 eventos; no hay todavía pantalla ni reconciliación automática para ellos.
+
+Un estado `sending` interrumpido o `uncertain` requiere revisión del operador en AgentMail antes de crear otra solicitud. La API pública no reintenta esos estados. La aceptación del proveedor no confirma entrega. Los borradores sin destinatario/buzón configurado deben recrearse después de configurar el entorno; no cambian silenciosamente de destino.
+
+Pendiente: configurar credenciales y destinatario autorizado, publicar/registrar el webhook, ejecutar ida y vuelta real y ensayar ese recorrido para el video. Este corte admite solo texto; no procesa adjuntos ni extrae automáticamente precios de respuestas.
