@@ -156,5 +156,5 @@ Integrated reviewed main into CI and integration handoff documentation, preservi
 
 
 ### 2026-09-09 - working tree · PR 8 local review
-Integrated reviewed main into synthetic image/PDF extraction. Sol review and parent adjudication found no material issue; the PNG preview represents the same PDF content, verified against the fixture. Human review and server-owned file limits remain enforced.
+Integrated reviewed main into synthetic image/PDF extraction. Sol review and parent adjudication corrected comparison labels that misrepresented documents as public web pages; labels now refer to their recorded source. The PNG preview represents the same PDF content, verified against the fixture. Human review and server-owned file limits remain enforced.
 85 domain/backend tests and build passed. 2 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.

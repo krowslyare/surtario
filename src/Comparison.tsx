@@ -317,7 +317,7 @@ export default function Comparison({
   const source = sourceId ? sources[sourceId] : null;
   const editingOffer = offers.find((offer) => offer.id === editing);
   const unit = unitName(request.unit);
-  const hasWebSources = offers.some(
+  const hasReviewedSources = offers.some(
     (offer) => sources[offer.id]?.marketSource?.simulated === false,
   );
   const fingerprint = JSON.stringify({ request: effectiveRequest, offers });
@@ -477,8 +477,8 @@ export default function Comparison({
             <Scale size={16} /> Comparación de insumos
           </span>
           <span className="demo-badge">
-            {hasWebSources
-              ? "Fuentes web revisadas"
+            {hasReviewedSources
+              ? "Fuentes revisadas"
               : seed
                 ? "Desde tu estudio de ejemplo"
                 : "Ejemplo sintético"}
@@ -607,8 +607,8 @@ export default function Comparison({
                 {offers.length === 1
                   ? "oferta para revisar"
                   : "ofertas para revisar"}{" "}
-                {hasWebSources
-                  ? "· Datos revisados de páginas públicas; condiciones por confirmar"
+                {hasReviewedSources
+                  ? "· Datos revisados con su fuente; condiciones por confirmar"
                   : "· Precios de ejemplo, no cotizaciones reales"}
               </p>
             </div>
@@ -939,7 +939,7 @@ export default function Comparison({
         )}
         <footer>
           <span>
-            {hasWebSources
+            {hasReviewedSources
               ? "Guarda la comparación para conservar estas correcciones y condiciones."
               : "Datos de prueba · Guarda la comparación para recuperarla."}
           </span>
@@ -1079,14 +1079,14 @@ export default function Comparison({
               rel="noopener noreferrer"
               className="button text-button"
             >
-              Abrir fuente web original
+              Abrir fuente original
             </a>
           )}
           <p className="muted">
             {source.edited
               ? "La comparación usa tus cambios manuales. Aquí conservamos los valores de entrada."
               : source.marketSource?.simulated === false
-                ? "Valores revisados desde una página pública; no equivalen a una cotización confirmada por el proveedor."
+                ? "Valores revisados desde la fuente indicada; confirma las condiciones pendientes antes de decidir."
                 : "Registro de datos sintéticos para probar la comparación. No es un documento de un proveedor real."}
           </p>
         </Dialog>
