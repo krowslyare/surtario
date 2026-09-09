@@ -1,37 +1,21 @@
 import { expect, test } from "@playwright/test";
-import { execFileSync } from "node:child_process";
-import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
 import { riceRequest, riceOffers } from "../fixtures/procurement";
+import { connectOnlyToLocalBackend, runLocalConvex } from "./e2e-local";
 for (const mode of ["new", "append"] as const)
   test(`respuesta vinculada: ${mode} conserva origen tras recargar`, async ({
     page,
     context,
   }) => {
-    const target = readFileSync(".env.local", "utf8")
-      .split("\n")
-      .find((line) => line.startsWith("CONVEX_DEPLOYMENT="));
-    if (
-      process.env.CONVEX_DEPLOY_KEY ||
-      target !== "CONVEX_DEPLOYMENT=anonymous:anonymous-convexhackaton"
-    )
-      throw new Error("Local anonymous backend only");
-    await context.routeWebSocket(/.*/, (socket) => {
-      if (!["localhost", "127.0.0.1"].includes(new URL(socket.url()).hostname))
-        throw new Error("Local sockets only");
-      socket.connectToServer();
-    });
+    await connectOnlyToLocalBackend(context);
     const token = createHash("sha256")
       .update(crypto.randomUUID())
       .digest("hex");
     const run = (fn: string, args: object) =>
-      JSON.parse(
-        execFileSync("npx", ["convex", "run", fn, JSON.stringify(args)], {
-          encoding: "utf8",
-        }),
-      );
+      JSON.parse(runLocalConvex(["run", fn, JSON.stringify(args)]));
     const saved = run("comparisons:save", {
       token,
       clientId: crypto.randomUUID(),
@@ -45,11 +29,7 @@ for (const mode of ["new", "append"] as const)
     const seed = (table: string, doc: object) => {
       const path = join(folder, `${table}.json`);
       writeFileSync(path, JSON.stringify([doc]));
-      execFileSync(
-        "npx",
-        ["convex", "import", "--append", "--table", table, path],
-        { encoding: "utf8" },
-      );
+      runLocalConvex(["import", "--append", "--table", table, path]);
     };
     try {
       seed("quotationRequests", {

@@ -32,6 +32,7 @@ En un checkout sin despliegue configurado, la CLI actual puede crear un backend 
 ```sh
 npm test
 npm run build
+npm run check:hosting
 npx playwright install chromium
 npm run test:e2e
 npm run test:demo
@@ -44,6 +45,8 @@ npm run test:backend
 ```
 
 Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
+
+El [hosting Convex está preparado](docs/desarrollo/HOSTING.md) con el componente oficial y una comprobación local del bundle. `npm run deploy:hosting` publica backend y frontend y queda reservado para una ejecución autorizada con el despliegue cloud confirmado. Todavía no existe una URL pública verificada.
 
 Verificado: 97 pruebas de dominio/backend y 44 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
 

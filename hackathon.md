@@ -5,14 +5,14 @@
 - **What it does:** Explora ejemplos de precios y distribuidores sin exigir documentos ni cantidad; guarda estudios sintéticos por sesión de navegador y permite preparar una comparación opcional.
 - **Live app:** not deployed
 - **Repo:** private
-- **Frontend:** not deployed
+- **Frontend:** Convex static hosting (prepared, not deployed)
 - **Convex deployment:** not deployed
-- **Components:** @convex-dev/agent
+- **Components:** @convex-dev/agent, @convex-dev/static-hosting
 - **Convex features:** schema, indexes, queries, mutations, internal action, realtime queries (local)
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T20:06:23Z
+- **Last updated:** 2026-09-09T20:21:41Z
 
 ## Log
 
@@ -211,3 +211,7 @@ Integrated reviewed main into manually reviewed reply offers. Sol review identif
 ### 2026-09-09 - working tree · PR 13 local review
 Integrated reviewed main into adding reply offers to existing comparisons. Sol review found a stale-query save bug; the client now tracks confirmed server revisions so a second save does not append an already persisted reply. Parent adjudicated and tested the fix. Final browser suite passed 43 cases initially; the remaining web-source link selector was updated for the corrected provenance label and then passed. All 44 cases passed across those runs, including the demo rehearsal. Temporary CLI setup adjustments were removed.
 97 domain/backend tests and build passed. 44 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
+
+### 2026-09-09 - working tree · hosting preparation
+Registered the official static-hosting component while preserving the exact AgentMail webhook route. The local readiness command builds Vite, resolves referenced assets and checks for backend secret variable names in the bundle; a router test verifies the disabled webhook response alongside the static GET fallback.
+Preparation only: no cloud deployment or asset upload occurred. Provider capabilities remain disabled by default. Hosting and provider execution procedures are documented separately.

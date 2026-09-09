@@ -75,6 +75,8 @@ Trabajo: sesiones independientes, documentos sintéticos incluidos, límites por
 
 Entrada pública con «Probar ejemplo», sin planes de suscripción, checkout ni pago para explorar. Los precios de insumos sí forman parte de la comparación.
 
+Hosting preparado localmente con `@convex-dev/static-hosting` 0.2.1, preservando el webhook existente y el fallback SPA. Build y assets se comprueban sin credenciales; publicación y verificación HTTP siguen pendientes. Ver [contrato y pasos de publicación](./HOSTING.md).
+
 Salida: dos visitantes no interfieren; no se permite envío arbitrario ni acceso a archivos ajenos; fuente vieja lleva fecha; el E2E completo pasa. Verificar URL real después de publicar dentro del alcance autorizado. Si sigue local, registrar «preparado para desplegar», no «publicado».
 
 ## 6 · Recetas como extensión opcional

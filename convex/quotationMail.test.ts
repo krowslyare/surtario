@@ -2,6 +2,7 @@
 import { convexTest } from "convex-test";
 import { afterEach, expect, test, vi } from "vitest";
 import { Webhook } from "svix";
+import http from "./http";
 import schema from "./schema";
 import { api, internal } from "./_generated/api";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
@@ -13,6 +14,16 @@ afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.clearAllMocks();
+});
+
+test("keeps the disabled AgentMail webhook ahead of the static fallback", async () => {
+  expect(http.lookup("/agentmail/webhook", "POST")).toBeDefined();
+  expect(http.lookup("/demo/route", "GET")).toBeDefined();
+
+  const t = convexTest(schema, modules);
+  const response = await t.fetch("/agentmail/webhook", { method: "POST" });
+  expect(response.status).toBe(503);
+  expect(await response.text()).toBe("Webhook disabled");
 });
 
 async function comparison(t: ReturnType<typeof convexTest>) {
@@ -411,7 +422,6 @@ test("a shared provider thread cannot route a reply to an arbitrary request", as
   );
 });
 
-
 test("acknowledges and retains a visibly truncated signed long reply", async () => {
   const t = convexTest(schema, modules);
   const secret = `whsec_${btoa("01234567890123456789012345678901")}`;
@@ -420,13 +430,17 @@ test("acknowledges and retains a visibly truncated signed long reply", async () 
     event_type: "message.received",
     event_id: "evt-long",
     message: {
-      message_id: "msg-long", inbox_id: "other", thread_id: "other",
-      from: "sender@example.test", text: "x".repeat(30_000),
+      message_id: "msg-long",
+      inbox_id: "other",
+      thread_id: "other",
+      from: "sender@example.test",
+      text: "x".repeat(30_000),
     },
   });
   const now = new Date();
   const response = await t.fetch("/agentmail/webhook", {
-    method: "POST", body: payload,
+    method: "POST",
+    body: payload,
     headers: {
       "svix-id": "delivery-long",
       "svix-timestamp": String(Math.floor(now.getTime() / 1000)),
@@ -434,7 +448,9 @@ test("acknowledges and retains a visibly truncated signed long reply", async () 
     },
   });
   expect(response.status).toBe(200);
-  const stored = await t.run(async (ctx) => ctx.db.query("quotationUnmatchedEvents").first());
+  const stored = await t.run(async (ctx) =>
+    ctx.db.query("quotationUnmatchedEvents").first(),
+  );
   expect(stored?.text.length).toBe(20_000);
   expect(stored?.text.startsWith("x".repeat(100))).toBe(true);
   expect(stored?.text).toContain("Respuesta truncada");
