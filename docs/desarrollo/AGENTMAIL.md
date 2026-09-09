@@ -39,3 +39,6 @@ Un estudio guardado muestra «Consultar a» para sus distribuidores de ejemplo. 
 El contacto encontrado no se convierte en destinatario autorizado: la demo usa exclusivamente el destinatario de prueba fijado en servidor. La UI lo muestra con el texto antes de requerir confirmación explícita. Guardar el estudio, preparar el borrador o recibir una respuesta no envía otro mensaje ni registra compra. Las respuestas se recuperan junto a la solicitud, sin extracción automática de precios.
 
 El borrador editable para copiar sigue separado: sus cambios no se envían al correo. La UI explica cómo acceder al borrador de correo revisable. Alcance actual: distribuidores de los estudios sintéticos guardados; los descubrimientos web libres aún no tienen este contrato de distribuidor validado.
+
+
+PR 6 review: signed reply text longer than 20,000 characters is retained up to that limit with an explicit truncation notice. Consult the original email for the full message. A signed-webhook regression verifies acknowledgement and bounded retention; this does not establish a real provider round trip.

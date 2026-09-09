@@ -86,6 +86,11 @@ test("guarda condiciones y elección, las recupera y una edición invalida la el
     .getByRole("dialog")
     .getByRole("button", { name: "Restaurar ejemplo" })
     .click();
+  await expect(
+    page.getByText("Comparación guardada. Los cambios posteriores", {
+      exact: false,
+    }),
+  ).toHaveCount(0);
   await page
     .getByRole("button", { name: "Guardar comparación", exact: true })
     .click();
