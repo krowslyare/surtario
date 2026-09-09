@@ -141,3 +141,29 @@ test("unidad y mínimo desconocidos siguen pendientes y no ocultan ofertas compl
   await expect(page.getByTestId("total-2")).toHaveText("US$ 21.00");
   await expect(summary).toBeVisible();
 });
+
+test("clic interior conserva el formulario y origen usa la fecha local", async ({
+  browser,
+}) => {
+  const context = await browser.newContext({ timezoneId: "America/Lima" });
+  const page = await context.newPage();
+  await page.clock.setFixedTime(new Date("2026-09-10T02:30:00Z"));
+  await page.goto("/?view=comparison");
+  await page
+    .getByRole("button", { name: "Agregar oferta", exact: true })
+    .click();
+  await page.getByLabel("Proveedor", { exact: true }).fill("Oferta nocturna");
+  const dialog = page.getByRole("dialog");
+  const bounds = (await dialog.boundingBox())!;
+  await page.mouse.click(bounds.x + 12, bounds.y + bounds.height / 2);
+  await expect(dialog).toBeVisible();
+  await expect(page.getByLabel("Proveedor", { exact: true })).toHaveValue(
+    "Oferta nocturna",
+  );
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await page.getByRole("button", { name: "Ver origen" }).last().click();
+  await expect(dialog).toContainText("9 set. 2026");
+  await page.mouse.click(2, 2);
+  await expect(dialog).toHaveCount(0);
+  await context.close();
+});

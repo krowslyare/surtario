@@ -116,3 +116,5 @@ Entrada manual, XLSX/CSV con elección de hoja/columna y revisión de nombres im
 Action interna y adaptador de búsqueda acotada implementados. 47 tests y build satisfactorios; action cargada en Convex local, bloqueada sin clave y no invocable por cliente público. Sin petición real ni conexión a la UI/persistencia. [Configuración y secuencia de integraciones](./INTEGRACIONES.md). La etapa 2 sigue abierta.
 
 Revisión del PR 1: corregidos valores supuestos de unidad/mínimo y resumen entre ofertas compatibles. 47 tests, build y 8 E2E de comparación pasan en el checkout aislado del PR; integraciones externas y entrega pública siguen pendientes.
+
+Segunda ronda del PR 1: diálogo conserva entradas al pulsar dentro; procedencia manual fechada según calendario local. 47 tests, build y 9 E2E de comparación aprobados; no modifica el estado de las etapas externas.

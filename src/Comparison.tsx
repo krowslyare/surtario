@@ -25,7 +25,10 @@ import {
 import { money, numberLabel, parseCents, parseDecimal } from "./numbers";
 
 import type { ComparisonSource as Source, PurchaseSeed } from "./domain/market";
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+};
 const initialSources = (): Record<string, Source> =>
   Object.fromEntries(
     riceOffers.map((offer) => [
