@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { internalAction } from "./_generated/server";
+import { env, internalAction } from "./_generated/server";
 import { discoverSources } from "./lib/firecrawl";
 
 /** Operator-only integration probe. No public paid endpoint or writes to demo studies. */
@@ -20,7 +20,7 @@ export const probe = internalAction({
     ),
   }),
   handler: async (_ctx, input) => {
-    const result = await discoverSources(input, process.env.FIRECRAWL_API_KEY);
+    const result = await discoverSources(input, env.FIRECRAWL_API_KEY);
     return { ...result, observedAt: new Date().toISOString() };
   },
 });
