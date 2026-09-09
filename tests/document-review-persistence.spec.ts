@@ -1,31 +1,16 @@
 import { expect, test } from "@playwright/test";
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { mkdtempSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { extractionExample, extractionSource } from "../fixtures/extraction";
+import { connectOnlyToLocalBackend, runLocalConvex } from "./e2e-local";
 
 test("revisión documental guardada recupera evidencia, condiciones y elección en Convex local", async ({
   page,
   context,
 }) => {
-  // Only internal synthetic setup, on the project's anonymous local backend.
-  const target = readFileSync(".env.local", "utf8")
-    .split("\n")
-    .find((line) => line.startsWith("CONVEX_DEPLOYMENT="));
-  if (
-    process.env.CONVEX_DEPLOY_KEY ||
-    target !== "CONVEX_DEPLOYMENT=anonymous:anonymous-convexhackaton"
-  )
-    throw new Error(
-      "Document review E2E requires the anonymous local backend.",
-    );
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname))
-      throw new Error("Only local WebSockets allowed.");
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) =>
     b.toString(16).padStart(2, "0"),
   ).join("");
@@ -50,11 +35,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     ]),
   );
   try {
-    execFileSync(
-      "npx",
-      ["convex", "import", "--append", "--table", "documentRuns", path],
-      { encoding: "utf8" },
-    );
+    runLocalConvex(["import", "--append", "--table", "documentRuns", path]);
   } finally {
     rmSync(folder, { recursive: true });
   }

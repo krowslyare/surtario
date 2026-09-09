@@ -9,9 +9,9 @@ Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo
 | 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |
 | 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
 | 2 | Viabilidad de integraciones externas | En curso | Lectura/escritura, recarga, sincronización entre pestañas y aislamiento probados en Convex local; Pruebas internas Firecrawl/OpenAI preparadas; llamadas reales de sponsors pendientes |
-| 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisables y fotos/PDF propios con transcripción local y lectura multimodal de ejemplos implementada; llamadas reales pendientes |
-| 4 | Solicitud, respuesta y decisión conectadas | En curso | Comparaciones y elección sintéticas recuperables; borrador persistente desde comparación, estudio sin precio o candidato web revisado y recepción firmada y oferta manual revisada desde respuesta e incorporación explícita a comparación existente implementados; correo real pendiente |
-| 5 | Demo pública aislada y robusta | En preparación | CI de tests/build añadido; E2E locales y correo restringido probados. Hosting y verificación pública pendientes |
+| 3 | Estudio de mercado y compra opcional | En curso | Estudios de ejemplo persistentes; listas manuales/XLSX/CSV revisadas recuperables y fotos/PDF propios con transcripción local y lectura multimodal de ejemplos implementada; llamadas reales pendientes |
+| 4 | Solicitud, respuesta y decisión conectadas | En curso | Asesor con contexto y escenarios guardados, recuperación interna de correo y comparaciones sintéticas implementados; borrador persistente desde comparación, estudio sin precio o candidato web revisado y recepción firmada y oferta manual revisada desde respuesta e incorporación explícita a comparación existente implementados; correo real pendiente |
+| 5 | Demo pública aislada y robusta | En preparación | CI and local E2E implemented; static hosting prepared with preserved webhook routing. Real provider checks and public deployment remain pending |
 | 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
 | 7 | Materiales y entrega del concurso | Pendiente | Requisitos documentados; nada publicado |
 | P | Habilitación y validación de piloto privado | Pendiente, vía comercial independiente | No hay restaurante disponible |
@@ -74,6 +74,8 @@ Objetivo: permitir que un juez recorra el producto sin invitación ni acceso a d
 Trabajo: sesiones independientes, documentos sintéticos incluidos, límites por sesión y globales, destinatarios restringidos en servidor, webhooks verificados, fallos/reintentos visibles y captura móvil revisada. Preparar hosting compatible con el concurso.
 
 Entrada pública con «Probar ejemplo», sin planes de suscripción, checkout ni pago para explorar. Los precios de insumos sí forman parte de la comparación.
+
+Hosting preparado localmente con `@convex-dev/static-hosting` 0.2.1, preservando el webhook existente y el fallback SPA. Build y assets se comprueban sin credenciales; publicación y verificación HTTP siguen pendientes. Ver [contrato y pasos de publicación](./HOSTING.md).
 
 Salida: dos visitantes no interfieren; no se permite envío arbitrario ni acceso a archivos ajenos; fuente vieja lleva fecha; el E2E completo pasa. Verificar URL real después de publicar dentro del alcance autorizado. Si sigue local, registrar «preparado para desplegar», no «publicado».
 
@@ -192,8 +194,24 @@ Internal-only inspection and reconciliation now cover uncertain sends and quaran
 Reviewed manual and spreadsheet names can be saved by session and recovered after reload without uploading the file or creating offers. Server-derived origin labels, input/storage limits and immutable retries are enforced. A delayed confirmation does not mark a replacement queue saved. 121 combined domain/backend tests, build and ten focused local browser checks passed. [Contract and verification](SAVED_INGREDIENT_LISTS.md). Private documents, external providers and public deployment remain pending.
 
 
+## Integrated hackathon implementation · local verification
+
+Advisor, operator recovery, saved ingredient lists and static-hosting preparation were integrated in separate deliveries. The complete local suite passed: 122 domain/backend tests, frontend/backend typechecks, hosting build/asset checks and 49 browser journeys including the demo rehearsal. The first full pass caught an advisor context reset during initial comparison save; the corrected flow now preserves edits until the logical draft is replaced. The local test harness allows only the selected backend and Vite origins and serializes shared snapshot imports.
+
+Implementation for this agreed demo scope is prepared. Real Firecrawl/OpenAI/AgentMail behavior, hosted HTTP behavior, public visibility and contest materials remain unverified; stages 2–5 and 7 are not complete. Follow [provider configuration and complete E2E](CREDENTIALS_AND_E2E.md). Recipes and private restaurant data remain separate extensions.
+
+
 ## PR 14 · local review
 
 Independent Sol review and parent adjudication corrected interrupted advisor executions that could remain running indefinitely. A durable internal expiry preserves the calculation, does not retry the model, and ignores late completion. The initial-save context fix was moved into this delivery so budget and usage survive the first comparison save.
 
 112 domain/backend tests, frontend/backend typechecks and build passed. Three advisor browser journeys passed on the PR frontend using the existing synthetic local backend; the exact changed backend was tested in memory. Real provider behavior and public deployment remain pending.
+
+
+## PRs 15–17 · local review and integrated verification
+
+Independent Sol review and parent adjudication found no material issues in operator mail recovery or saved lists. After integrating the reviewed advisor fixes, PR 15 passed 118 unit/backend tests and PR 16 passed 123; both passed frontend/backend typechecks and build.
+
+The hosting review found that browser tests could reuse a Vite process connected to another local backend. Playwright now starts its own server and refuses an occupied port; all persistence guards, including delayed-response overrides, validate the selected WebSocket origin. A real occupied-port invocation was rejected before running tests, and negative socket checks passed.
+
+The final combined code passed 126 unit/backend tests, frontend/backend typechecks, hosting build/asset checks and all 49 browser journeys, including the demo rehearsal. The existing anonymous local backend accepted the updated functions. Provider calls remained simulated or disabled; no cloud deployment, public visibility change or contest submission occurred. Stages 2–5 and 7 retain their external verification requirements.

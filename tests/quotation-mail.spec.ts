@@ -1,14 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { connectOnlyToLocalBackend } from "./e2e-local";
 
 test("prepara correo desde comparación guardada sin enviar al faltar configuración", async ({
   page,
   context,
 }) => {
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname))
-      throw new Error("Local backend only");
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.goto("/?view=comparison");
   await expect(

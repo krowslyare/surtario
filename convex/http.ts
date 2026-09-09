@@ -1,7 +1,8 @@
 import { httpRouter } from "convex/server";
+import { registerStaticRoutes } from "@convex-dev/static-hosting";
 import { Webhook } from "svix";
 import { env, httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 
 const http = httpRouter();
 
@@ -90,5 +91,8 @@ http.route({
     return new Response("Accepted", { status: 200 });
   }),
 });
+
+// Exact application routes must be registered before the SPA fallback.
+registerStaticRoutes(http, components.staticHosting);
 
 export default http;

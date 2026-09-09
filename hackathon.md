@@ -2,17 +2,17 @@
 
 - **Project:** restaurant-procurement
 - **Event:** Convex All Gas Hackathon
-- **What it does:** Explora ejemplos de precios y distribuidores sin exigir documentos ni cantidad; guarda estudios sintéticos por sesión de navegador y permite preparar una comparación opcional.
+- **What it does:** Researches ingredient suppliers, preserves reviewed evidence and compares purchasing scenarios with optional cash/coverage advice.
 - **Live app:** not deployed
 - **Repo:** private
-- **Frontend:** not deployed
+- **Frontend:** Convex static hosting (prepared, not deployed)
 - **Convex deployment:** not deployed
-- **Components:** @convex-dev/agent
-- **Convex features:** schema, indexes, queries, mutations, internal action, scheduled mutations, realtime queries (local)
+- **Components:** @convex-dev/agent, @convex-dev/static-hosting
+- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, realtime queries (local)
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T21:29:43Z
+- **Last updated:** 2026-09-09T21:37:00Z
 
 ## Log
 
@@ -229,6 +229,23 @@ Added session-owned storage of reviewed manual/XLSX/CSV ingredient names and rec
 Parent review caught a late-save confirmation affecting a replacement queue; a browser regression now verifies the correction. 121 combined domain/backend tests, build and ten focused browser cases passed against an isolated local Convex backend. No external provider calls or deployment.
 
 
+### 2026-09-09 - working tree · hosting preparation
+Registered the official static-hosting component while preserving the exact AgentMail webhook route. The local readiness command builds Vite, resolves referenced assets and checks for backend secret variable names in the bundle; a router test verifies the disabled webhook response alongside the static GET fallback.
+Preparation only: no cloud deployment or asset upload occurred. Provider capabilities remain disabled by default. Hosting and provider execution procedures are documented separately.
+
+
+### 2026-09-09 - working tree · complete local demo verification
+Integrated the advisor, mail recovery, saved lists and hosting preparation. Fixed an initial-save race that reset purchasing context, with a browser regression covering context entered before the comparison is saved. Local E2E configuration now pins the selected anonymous backend and permits the separate Vite socket; shared snapshot imports run sequentially.
+122 domain/backend tests, frontend/backend typechecks, the hosting build/asset check and all 49 browser journeys passed. The full flow includes source review, stored comparisons, synthetic documents/replies, purchasing scenarios, session isolation and the demo rehearsal.
+README and provider acceptance instructions were refreshed in English. No real provider request, email delivery, cloud deployment, public repository change or video submission occurred. Those checks remain the next stage after credentials are configured.
+
+
 ### 2026-09-09 - working tree · PR 14 local review
 Preserved decision context during the first comparison save and added scheduled recovery for interrupted advisor executions. Expiry keeps deterministic results and prevents a late model completion from replacing a failed state; it never retries a provider.
 Independent Sol review was adjudicated and corrected. 112 domain/backend tests, frontend/backend typechecks, build and three advisor browser journeys passed. Browser checks used the existing synthetic local backend; changed backend behavior was verified in memory. No real provider calls or public deployment.
+
+
+### 2026-09-09 - working tree · final local PR reviews
+Completed independent Sol reviews with parent adjudication for advisor, mail recovery, saved lists and hosting. Corrected interrupted advisor execution and moved the first-save context fix into the advisor delivery. Recovery and list reviews found no further material issues.
+Hardened browser tests against an already-running frontend connected to another local backend; all persistence socket guards now enforce the selected origin, including delayed-response tests. The occupied-port check and socket rejection tests passed.
+126 unit/backend tests, frontend/backend typechecks, hosting checks and all 49 browser journeys passed on the combined code. Updated functions were accepted by the anonymous local backend. External providers remained simulated or disabled; no cloud deployment, real email, public visibility change or submission.

@@ -1,14 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { connectOnlyToLocalBackend } from "./e2e-local";
 
 test("document examples are inspectable but no extraction runs without configuration", async ({
   page,
   context,
 }) => {
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["localhost", "127.0.0.1"].includes(new URL(socket.url()).hostname))
-      throw new Error("Local backend only");
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
   await page.goto("/");
   const section = page.getByRole("region", { name: "Lectura de foto y PDF" });
   await expect(

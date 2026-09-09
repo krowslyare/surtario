@@ -1,20 +1,11 @@
-import { expect, test, type BrowserContext } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import {
+  assertLocalWebSocketUrl,
+  connectOnlyToLocalBackend,
+} from "./e2e-local";
 
 // These tests write synthetic comparisons. Never connect them to a remote backend.
-async function restrictToLocalBackend(context: BrowserContext) {
-  await context.routeWebSocket(/.*/, (socket) => {
-    const url = new URL(socket.url());
-    if (!["127.0.0.1", "localhost"].includes(url.hostname)) {
-      socket.close();
-      throw new Error(
-        "Comparison persistence E2E is restricted to a local backend.",
-      );
-    }
-    socket.connectToServer();
-  });
-}
-
-test.beforeEach(async ({ context }) => restrictToLocalBackend(context));
+test.beforeEach(async ({ context }) => connectOnlyToLocalBackend(context));
 
 test("guarda condiciones y elección, las recupera y una edición invalida la elección", async ({
   page,
@@ -192,10 +183,7 @@ test("una confirmación tardía no asocia el guardado al borrador restaurado", a
   let hold = false;
   const pending: Array<() => void> = [];
   await page.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname)) {
-      socket.close();
-      throw new Error("Only local backend allowed.");
-    }
+    assertLocalWebSocketUrl(socket.url());
     const server = socket.connectToServer();
     server.onMessage((message) => {
       if (hold) pending.push(() => socket.send(message));

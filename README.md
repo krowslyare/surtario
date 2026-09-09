@@ -1,142 +1,84 @@
 # restaurant-procurement
 
-Nombre de trabajo. Producto para investigar precios y distribuidores de insumos, conservar estudios y preparar compras cuando haga falta. Los documentos propios, historial y recetas aportan contexto opcional.
+A restaurant purchasing assistant built with React, TypeScript, Vite and Convex. Start with an ingredient and location, research prices and distributors, save the evidence, and prepare a purchase only when needed. The initial interface is in Spanish with explicit currencies and units.
 
-**Estado:** exploración local implementada con ejemplos ficticios de arroz y abarrotes en Lima. Permite revisar precios y contactos sin precio, seleccionar opciones y continuar opcionalmente a una comparación por cantidad. No requiere documentos ni inventario. La captura manual sigue disponible como alternativa.
+The demo does not require recipes, purchase history, stock or a document. Supplier offers, market references and completed purchases are different facts. Choosing an offer does not place or record a purchase.
 
-Estudios guardados en Convex local con fuentes y selección recuperables, lista reactiva y aislamiento por sesión de navegador. Las comparaciones de los ejemplos también admiten guardado de condiciones y opción elegida; las ofertas manuales nuevas y archivos propios siguen transitorios. Las revisiones de fuentes web guardadas también admiten persistencia. Entrada local de listas manuales, XLSX y CSV con revisión. Fotos/PDF admiten transcripción manual conservando el archivo en la pestaña. Búsqueda Firecrawl y extracción OpenAI conectadas al recorrido mediante habilitación de servidor; llamadas reales aún no verificadas. Lectura multimodal de ejemplos PNG/PDF preparada; llamada real y restaurante piloto pendientes.
+## Current capabilities
 
-## Ejecutar
+- Research examples without a quantity, including distributors without published prices. Explicitly gated Firecrawl search and OpenAI extraction preserve sources, dates and fields requiring review.
+- Enter a manual list or review an XLSX/CSV ingredient column. Save reviewed names by browser session and recover them after reload. File bytes and other columns remain local.
+- Inspect bundled synthetic PNG/PDF documents, request extraction when enabled, correct proposed fields and preserve the reviewed comparison. Private image/PDF inputs currently support local manual transcription only.
+- Compare whole packages, minimum orders, freight, confirmed tax conditions, excess and cash outlay. Unknown critical values remain pending.
+- Set purchasing priorities, available budget, confirmed daily usage/stock and maximum coverage. Save an executive verdict, inspect alternatives and copy a negotiation draft. An optional Agent action explains the saved scenario using read-only calculation and evidence tools. Changed inputs visibly invalidate old analyses.
+- Prepare an explicitly reviewed quotation email to one configured test recipient. Review linked replies before adding an offer; internal operator recovery handles uncertain sends and unmatched replies without resending.
+- Prepare Convex static hosting while preserving the AgentMail webhook route.
 
-Requiere Node >=22.12 y npm. Se usa `package-lock.json`.
+**Verification boundary:** the combined application is tested locally with synthetic data and simulated providers. No real OpenAI, Firecrawl or AgentMail request has been verified. No public deployment or submitted video exists. Current stage status is maintained only in [ETAPAS.md](docs/desarrollo/ETAPAS.md).
+
+Verified locally: **126 unit/backend tests and 49 browser journeys passed**, including the demo rehearsal. Frontend/backend typechecks and the hosting build check also passed. Provider transports were simulated or disabled.
+
+## Run locally
+
+Requires Node.js >=22.12 and npm. Install from the lockfile:
 
 ```sh
 npm ci
-npm run dev
-```
-
-Abrir la URL local indicada por Vite (por defecto `http://127.0.0.1:5173`). El ejemplo funciona sin credenciales. El estudio conserva selección al volver desde la compra. Con el backend configurado, «Guardar estudio» permite recuperarlo desde «Guardados» tras recargar; los cambios sin guardar se pierden. En la comparación, «Guardar comparación» conserva condiciones y elección. «Comparaciones guardadas» permite recuperarlas después; los cambios sin guardar se pierden. Elegir no registra una compra.
-
-Para habilitar persistencia y consultas, ejecutar el backend local en una terminal adicional:
-
-```sh
 npm run dev:backend
 ```
 
-Configurar `VITE_CONVEX_URL=http://127.0.0.1:3210` en `.env.local` si la CLI no lo hizo, siguiendo [.env.example](.env.example), y reiniciar Vite. Sin URL, la exploración sigue disponible y el guardado aparece explícitamente sin configurar.
+Keep the backend running. On an unconfigured checkout, the Convex CLI can create an anonymous local backend without an account. Confirm the selected target before reusing existing configuration. Use the local `VITE_CONVEX_URL` written by the CLI, or follow [.env.example](.env.example).
 
-En un checkout sin despliegue configurado, la CLI actual puede crear un backend local sin cuenta. Confirmar siempre el destino antes de reutilizar una configuración existente. No se requiere ni se ejecuta `convex deploy` para esta entrega.
+In another terminal:
 
-## Verificar
+```sh
+npm run dev
+```
+
+Open the URL printed by Vite, normally `http://127.0.0.1:5173`. Restart Vite if its backend URL changes. With no backend URL, fixture exploration and calculations remain available; persistence is explicitly unavailable. Saving and reloading requires the local backend.
+
+## Verify
 
 ```sh
 npm test
-npm run build
+npm run check:hosting
+npx tsc --noEmit -p convex/tsconfig.json
 npx playwright install chromium
 npm run test:e2e
 npm run test:demo
 ```
 
-Con el backend local del proyecto ejecutándose en el puerto 3210:
+`check:hosting` runs frontend typechecking, a production build, entry-asset verification and a check for backend secret variable names in the bundle. GitHub Actions runs dependency installation, domain/Convex tests and the frontend build without provider secrets. Browser E2E requires the local backend and is run separately.
 
-```sh
-npm run test:backend
-```
+The browser configuration reads the anonymous local selector and public backend URL from `.env.local`. For a separate local checkout, set `E2E_LOCAL_DEPLOYMENT`, `E2E_LOCAL_BACKEND_URL` and `E2E_LOCAL_FRONTEND_URL` explicitly. Remote backend URLs, deployment keys and conflicting selectors are rejected. Browser data sockets must match the chosen backend; the configured local Vite socket is allowed for hot reload. Playwright starts its own Vite process and refuses an occupied frontend port so it cannot reuse a build connected to another local project. Tests write synthetic records in isolated browser sessions. They run sequentially because Convex snapshot imports share one deployment and cannot overlap.
 
-Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
+`npm run test:backend` is the original calculation smoke check for the local backend at port 3210. It verifies known 10/18/20 kg scenarios, incomplete conditions and offer bounds.
 
-Verificado: 97 pruebas de dominio/backend y 44 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
+Local verification includes desktop/mobile reflow, session isolation, stale revisions, immutable retries, reload recovery and a demo rehearsal. These checks do not establish real provider quality, commercial readiness, physical-device coverage or a full accessibility audit.
 
-El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido reproducible y las partes del video aún pendientes. No se ha grabado un video de entrega.
+## Connect providers after implementation
 
-## Cotizaciones de prueba
+Follow the [credential and complete E2E procedure](docs/desarrollo/CREDENTIALS_AND_E2E.md). Keys belong only in the Convex backend environment. Do not put them in Git, chat, browser variables or `VITE_*` settings. Provider capabilities have separate explicit gates and remain disabled when unconfigured.
 
-Una comparación guardada o un distribuidor de un estudio guardado permite preparar una solicitud, revisar su texto y copiarlo para WhatsApp. El correo requiere habilitación y destinatario de prueba configurados en servidor. Las respuestas vinculadas se revisan antes de editar condiciones; no registran compras ni precios automáticamente. Ver [configuración y límites de AgentMail](docs/desarrollo/AGENTMAIL.md). El envío y la recepción reales todavía no se han ejecutado.
+AgentMail needs an author-approved test recipient, a public HTTPS callback and a webhook signing secret. The UI requires review before sending; copied WhatsApp/negotiation drafts are not sent by the app. A timeout does not authorize an automatic retry.
 
-## Verificación de pull requests
+The [hosting procedure](docs/desarrollo/HOSTING.md) explains the selected target and route checks. `npm run deploy:hosting` publishes backend and frontend; it is a separate remote operation, not part of the local readiness command.
 
-GitHub Actions ejecuta `npm ci`, `npm test` y `npm run build` en cada PR y al actualizar `main`, sin claves de sponsors ni despliegues. Incluye tests de Convex en memoria y transporte simulado. Los E2E y el smoke del backend continúan como verificación local explícita: requieren un backend Convex local y no forman parte de ese check. Un check verde no acredita llamadas reales ni publicación.
+## Contracts and development
 
-## Añadir insumos
+| Area | Reference |
+| --- | --- |
+| Product scope and decisions | [Product plan](docs/producto/PLAN_PRODUCTO.md), [adversarial planning review](docs/producto/REVISION_ADVERSARIAL.md) |
+| Stage status | [ETAPAS.md](docs/desarrollo/ETAPAS.md) |
+| Purchasing advisor | [Decision policy and evidence](docs/desarrollo/ASESOR_COMPRAS.md) |
+| Ingredient intake | [Local intake](docs/desarrollo/ENTRADA_INSUMOS.md), [saved lists](docs/desarrollo/SAVED_INGREDIENT_LISTS.md) |
+| Web research | [Search contract](docs/desarrollo/BUSQUEDA_WEB.md), [saved reviews](docs/desarrollo/REVISION_WEB_GUARDADA.md), [distributor candidates](docs/desarrollo/DISTRIBUIDORES_WEB.md) |
+| Documents and comparisons | [Document reading](docs/desarrollo/LECTURA_DOCUMENTOS.md), [saved comparisons](docs/desarrollo/PERSISTENCIA_COMPARACIONES.md) |
+| Email and replies | [AgentMail and operator recovery](docs/desarrollo/AGENTMAIL.md), [reply-to-offer contract](docs/desarrollo/RESPUESTA_A_OFERTA.md) |
+| Design and rehearsal | [UI/UX tokens](docs/diseno/UI_UX.md), [demo rehearsal](docs/desarrollo/ENSAYO_DEMO.md) |
 
-Desde «Añadir lista o archivo», escribe un nombre por línea o elige un XLSX/CSV. Selecciona hoja, columna y encabezado; revisa los nombres antes de confirmar. Para archivos propios de foto/PDF, la transcripción sigue siendo manual. La sección de lectura automática procesa los ejemplos sintéticos incluidos cuando se habilita OpenAI. Ver [lectura de documentos y límites](docs/desarrollo/LECTURA_DOCUMENTOS.md). Los precios de otras columnas se conservan como contexto, sin incorporarse automáticamente a ofertas.
+`src/` contains the interface and deterministic domain logic; `convex/` contains the backend; `fixtures/` contains synthetic evidence; `tests/` contains browser journeys. Follow [AGENTS.md](AGENTS.md) before changes. The factual build history is in [hackathon.md](hackathon.md).
 
-Usa archivos de ejemplo. Hasta 3 MB y 100 insumos; formatos y límites en [entrada de insumos](docs/desarrollo/ENTRADA_INSUMOS.md). La lista y el archivo permanecen solo en memoria de esta pestaña: se pierden al recargar y «Guardar estudio» no los guarda.
+The repository includes [Anthropic Frontend Design](.agents/skills/frontend-design/SKILL.md), the [hackathon log skill](.agents/skills/convex-hackathon-skill/SKILL.md), and managed Convex guidance. Their licenses and [Convex skill attribution](third_party/convex-agent-skills/README.md) apply to those files, not to the rest of the application.
 
-## Por dónde empezar
-
-1. Leer las [etapas de desarrollo y su estado](docs/desarrollo/ETAPAS.md).
-2. Revisar la [exploración implementada](docs/desarrollo/EXPLORACION_MERCADO.md) y la [primera comparación](docs/desarrollo/PRIMERA_ENTREGA.md). Ver también [persistencia de estudios](docs/desarrollo/PERSISTENCIA_ESTUDIOS.md). Ver [entrada de insumos](docs/desarrollo/ENTRADA_INSUMOS.md). La [preparación de integraciones](docs/desarrollo/INTEGRACIONES.md) deja una prueba interna Firecrawl lista para configurar; llamada real y extracción automática pendientes.
-3. Consultar el [plan de producto](docs/producto/PLAN_PRODUCTO.md) para decisiones y límites, y la [revisión adversarial](docs/producto/REVISION_ADVERSARIAL.md) para sus motivos.
-4. Aplicar la [guía de UI/UX](docs/diseno/UI_UX.md) y sus tokens de referencia al construir las pantallas.
-
-Las instrucciones para trabajar en este repositorio están en [AGENTS.md](AGENTS.md). El registro factual de avance para el concurso está en [hackathon.md](hackathon.md).
-
-## Recorrido que vamos a construir
-
-Insumo/categoría y zona → precios, fuentes y distribuidores → estudio de mercado.
-
-Continuación opcional: equivalencias → cantidad y condiciones → cotización/comparación → decisión. Listas, fotos, comprobantes y recetas podrán enriquecer el recorrido sin ser requisitos de entrada.
-
-El estudio funciona **sin documentos propios, cantidad ni intención de compra**. La comparación funciona sin recetas y sin compras históricas. Registrar compras habilita seguimiento de precios. Vincular recetas habilita impacto por plato. Las ofertas, compras realizadas y referencias de mercado se mantienen separadas.
-
-## Organización actual
-
-```text
-convexhackaton/
-├── src/                       # Interfaz, reglas de cálculo y estilos
-│   ├── domain/                # Cálculo puro y sus pruebas
-│   └── styles/                # Tokens y estilos de la aplicación
-├── fixtures/                  # Datos sintéticos de referencia
-├── convex/                    # Consultas, estudios persistentes y validadores
-│   └── _generated/            # Tipos y guías administrados por Convex
-├── tests/                     # Recorridos de navegador con Playwright
-├── scripts/                   # Verificación del backend local
-├── docs/                      # Producto, etapas, revisión y UI/UX
-├── .agents/skills/            # Skills de proyecto
-├── .claude/                   # Archivos añadidos por la CLI de Convex
-├── AGENTS.md                  # Instrucciones y sección administrada
-├── CLAUDE.md                  # Entrada administrada por Convex
-├── hackathon.md               # Registro factual de construcción
-├── package.json
-├── package-lock.json          # Dependencias de aplicación
-└── skills-lock.json           # Origen de los skills instalados
-```
-
-Código actual: `src/App.tsx` (navegación), `src/MarketStudy.tsx` (exploración), `src/Comparison.tsx` (compra opcional), `src/domain/` (reglas y tests), `src/styles/tokens.css` (única fuente de tokens), `fixtures/` (ejemplo sintético), `convex/` (cálculo y persistencia de estudios), `tests/` (navegador). Stack: React, TypeScript, Vite y Convex.
-
-## Dos resultados distintos
-
-- **Hackatón:** demo pública con datos sintéticos, integraciones reales, flujo completo y entrega verificable. Requisitos y guion en la sección 11 del plan.
-- **Producto comercial:** validar utilidad y segundo uso de estudios con un restaurante. Documentos y compras son contexto opcional; privacidad, soporte y recuperación se verifican antes de admitir datos del cliente.
-
-Remoto: [krowslyare/restaurant-procurement](https://github.com/krowslyare/restaurant-procurement). Durante esta preparación mantiene visibilidad privada; la entrega del concurso requerirá hacerlo público. No hay aplicación desplegada.
-
-
-## Herramientas del agente
-
-- [Frontend Design de Anthropic](.agents/skills/frontend-design/SKILL.md): usar junto con la guía UI/UX existente; branding comercial aplazado.
-- [Skill del concurso](.agents/skills/convex-hackathon-skill/SKILL.md): `/hackathon` actualiza el registro. Si el comando no está disponible, leer y seguir el skill directamente.
-- Plugin global oficial Convex cargado. El MCP responde, pero su consulta de estado requiere autenticación; la CLI y las consultas HTTP públicas locales funcionan. AI files del proyecto instalados por la CLI; no se redistribuye el plugin global.
-- Hosting elegido: `convex.site`. Configurar el componente oficial en la etapa de hosting.
-
-Estado verificable y pasos para otro colaborador: [setup del agente](docs/desarrollo/SETUP_AGENTE.md). Los skills de diseño y hackatón conservan licencias y revisión de origen en sus carpetas. Los skills administrados por Convex tienen [atribución y licencias](third_party/convex-agent-skills/README.md) conservadas por separado. Estas licencias corresponden a dichos archivos, no establecen una licencia para el resto del proyecto.
-
-## Revisión de cotizaciones
-
-«Revisar ejemplo de cotización» permite revisar campos con evidencia y preparar una comparación sin inventar el peso del saco. La UI usa un resultado sintético; la prueba OpenAI es una action interna separada, preparada para configurar clave y modelo. [Alcance, configuración y evidencia](docs/desarrollo/EXTRACCION_REVISION.md). La lectura de imagen/PDF está conectada para ejemplos sintéticos; archivos privados y validación real siguen pendientes; el correo de prueba está preparado según la sección de cotizaciones. El [guardado de comparaciones y elección](docs/desarrollo/PERSISTENCIA_COMPARACIONES.md) admite los ejemplos de arroz y [revisiones de fuentes web guardadas](docs/desarrollo/REVISION_WEB_GUARDADA.md).
-
-## Investigación web
-
-«Buscar en la web» utiliza Firecrawl cuando está configurado y habilitado en servidor. Guarda hasta tres fuentes por búsqueda, permite solicitar extracción OpenAI por fuente y revisar campos/citas antes de comparar. Sin configuración permanece deshabilitado; los ejemplos siguen separados. [Recorrido, límites y configuración](docs/desarrollo/BUSQUEDA_WEB.md).
-
-Las llamadas reales no se han ejecutado. Backend probado con proveedores simulados y UI positiva con un transporte de prueba. Fuentes y propuestas se guardan automáticamente; las correcciones y condiciones web se conservan al pulsar «Guardar comparación». No se admiten documentos privados ni se envían correos.
-
-Las revisiones de foto/PDF de ejemplo también admiten «Guardar comparación»: recuperan correcciones, condiciones, elección y enlace al documento, conservando la propuesta del modelo. [Contrato y evidencia](docs/desarrollo/LECTURA_DOCUMENTOS.md).
-
-Las fuentes web también pueden guardarse como distribuidores candidatos sin precio ni extracción: nombre/contacto revisados, URL/fecha y consulta autorizada al buzón de prueba. [Recorrido y límites](docs/desarrollo/DISTRIBUIDORES_WEB.md).
-
-Una respuesta vinculada permite preparar una oferta mediante revisión manual y guardarla como comparación nueva o añadirla a la comparación actual tras confirmar equivalencia, con procedencia del correo conservada en Convex y nueva elección requerida. [Respuesta a oferta](docs/desarrollo/RESPUESTA_A_OFERTA.md).
-
-
-Purchasing advisor: [decision policy, server configuration and local verification](docs/desarrollo/ASESOR_COMPRAS.md). Scenarios work without model credentials; AI interpretation remains explicitly gated.
+The commercial stage requires restaurant validation, authenticated accounts and verified private-document handling before accepting customer data. Recipes and purchase history are separate extensions. The [repository](https://github.com/krowslyare/restaurant-procurement) remains private during preparation; public visibility and contest submission are separate pending actions.
