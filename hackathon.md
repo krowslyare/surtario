@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-08T19:56:39Z
+- **Last updated:** 2026-09-09T16:49:22Z
 
 ## Log
 
@@ -90,3 +90,29 @@ Pasaron 58 pruebas de dominio/backend, 30 E2E del conjunto completo y una regres
 Conectados búsqueda Firecrawl y extracción explícita OpenAI con revisión UI; fuentes y propuestas guardadas en `researchRuns`, con URL/fecha, aislamiento por capacidad, reservas idempotentes y límites de consumo (`convex/research.ts`, `src/components/LiveResearch.tsx`). Habilitación de servidor separada de claves; sin llamadas externas ejecutadas.
 Las ofertas revisadas pasan a comparación tras validar equivalencia; originales y correcciones quedan diferenciados. Las correcciones web siguen transitorias y no se habilitan documentos privados ni correo. Revisión adversarial independiente llevó a corregir guardado incierto del modelo y estados reactivos atrasados.
 65 pruebas de dominio/backend, 33 E2E y build satisfactorios; flujo positivo con respuestas simuladas, consulta de estado real en Convex local y revisión visual móvil. Sin publicación ni despliegue remoto.
+
+
+### 2026-09-09 - working tree · correcciones de revisión del PR 1
+Corregidos tres hallazgos de Codex: unidad de empaque desconocida conservada como pendiente, mínimo sin valor supuesto al crear una oferta y resumen por grupos completos de la misma moneda. Una oferta incompleta o en otra moneda no oculta la comparación válida de las demás.
+47 tests y build aprobados en el checkout del PR 1; 8 E2E de comparación aprobados en un servidor frontal aislado, incluida regresión de campos pendientes y tercera oferta. Sin cambios de backend ni llamadas externas. Nueva ronda de revisión solicitada tras publicar el commit; merge todavía pendiente.
+
+
+### 2026-09-09 - working tree · segunda ronda del PR 1
+Corregido el cierre accidental al pulsar el espacio interior del diálogo; el fondo exterior sigue cerrándolo. La fecha de una oferta manual usa el calendario local del navegador, evitando avanzar de día por UTC durante la noche peruana.
+47 tests, build y 9 E2E de comparación aprobados. Regresión con reloj fijo a las 21:30 de Lima comprueba fecha, conservación del formulario y cierre exterior. La primera expectativa de mes usó una abreviatura distinta de es-PE; corregida a set. manteniendo día y año. Sin cambios de backend ni llamadas externas. Nueva revisión pendiente antes del merge.
+
+
+### 2026-09-09 - working tree · PR 2 review preparation
+Merged main into the extraction review branch to retain the five reviewed PR 1 fixes. Resolved documentation conflicts by preserving both delivery records. Integrated revision passed 53 domain/backend tests, build, and 11 comparison/extraction E2E tests on an isolated frontend. No external calls or deployment. PR 2 will be reviewed against main; subsequent PRs remain drafts.
+
+
+### 2026-09-09 - working tree · PR 3 local review
+Integrated the reviewed main branch into comparison persistence. An independent Sol 5.6 review, adjudicated by Astra, identified stale save notices after restoring a draft. Save success and error notices now clear when the draft identity changes, while late responses retain their existing handling.
+58 domain/backend tests and build passed. Eleven comparison/extraction browser checks passed before the notice fix; five persistence browser checks passed after it, including restored-draft notice and delayed-response coverage. Persistence UI checks used the existing local backend, which contains later implementation code; the PR-specific backend was exercised with convex-test.
+No GitHub bot review was requested. Local review found no confirmed ownership or persistence blocker. No external provider call, private-data enablement, or deployment was performed.
+
+
+### 2026-09-09 - working tree · PR 4 local review
+Integrated reviewed main into bounded web research. Independent Sol 5.6 review and Astra adjudication found no material actionable defects in reservation/idempotency, ownership, uncertain extraction persistence or reactive UI reconciliation. A speculative transient double-click notice was not treated as a blocker.
+65 domain/backend tests, build and all 35 E2E checks passed on the integrated revision. Provider responses and the research UI transport were simulated; persistence browser tests used the existing local backend, which includes later implementation code. The PR-specific backend was tested in memory with convex-test.
+No GitHub review bot was invoked, no real provider requests were made, and no private uploads or public deployment were enabled. Reviewed web corrections remain transient in this delivery.
