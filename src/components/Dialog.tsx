@@ -30,7 +30,15 @@ export function Dialog({
       ref={dialog}
       onCancel={onClose}
       onClick={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (
+          event.clientX < bounds.left ||
+          event.clientX > bounds.right ||
+          event.clientY < bounds.top ||
+          event.clientY > bounds.bottom
+        )
+          onClose();
       }}
       className={wide ? "dialog wide" : "dialog"}
       aria-labelledby="dialog-title"

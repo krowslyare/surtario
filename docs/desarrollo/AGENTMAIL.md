@@ -31,3 +31,6 @@ Hasta 10 solicitudes por sesión y 100 en total, con 30 segundos entre creacione
 Un estado `sending` interrumpido o `uncertain` requiere revisión del operador en AgentMail antes de crear otra solicitud. La API pública no reintenta esos estados. La aceptación del proveedor no confirma entrega. Los borradores sin destinatario/buzón configurado deben recrearse después de configurar el entorno; no cambian silenciosamente de destino.
 
 Pendiente: configurar credenciales y destinatario autorizado, publicar/registrar el webhook, ejecutar ida y vuelta real y ensayar ese recorrido para el video. Este corte admite solo texto; no procesa adjuntos ni extrae automáticamente precios de respuestas.
+
+
+PR 6 review: signed reply text longer than 20,000 characters is retained up to that limit with an explicit truncation notice. Consult the original email for the full message. A signed-webhook regression verifies acknowledgement and bounded retention; this does not establish a real provider round trip.
