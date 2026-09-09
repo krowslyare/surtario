@@ -1,3 +1,4 @@
+import PurchasingAdvisor from "./components/PurchasingAdvisor";
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
@@ -368,6 +369,9 @@ export default function Comparison({
   }
 
   function openSaved(comparison: SavedComparison) {
+    const nextClientId = crypto.randomUUID();
+    currentClientId.current = nextClientId;
+    setClientId(nextClientId);
     setRequest({ ...comparison.request });
     setQuantity(
       comparison.request.quantity > 0
@@ -964,6 +968,15 @@ export default function Comparison({
                   }
                 : undefined
             }
+          />
+        )}
+        {persistenceEnabled && (
+          <PurchasingAdvisor
+            key={clientId}
+            comparisonId={savedId}
+            revision={savedRevision}
+            request={effectiveRequest}
+            offers={offers}
           />
         )}
         <footer>

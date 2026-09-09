@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import agent from "@convex-dev/agent/convex.config";
 const app = defineApp({
   env: {
+    ADVISOR_ENABLED: v.optional(v.string()),
+    OPENAI_ADVISOR_MODEL: v.optional(v.string()),
     OPENAI_API_KEY: v.optional(v.string()),
     OPENAI_EXTRACTION_MODEL: v.optional(v.string()),
     FIRECRAWL_API_KEY: v.optional(v.string()),
