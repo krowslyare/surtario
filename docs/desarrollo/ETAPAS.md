@@ -187,6 +187,11 @@ Implemented an optional decision context, deterministic cash/coverage scenarios,
 Internal-only inspection and reconciliation now cover uncertain sends and quarantined replies. A verified provider receipt cannot be assigned to another request; reply linking checks the frozen inbox, thread, sender and limits atomically. No recovery function sends or retries email. Independent review corrected incomplete queue visibility and receipt collisions. 116 combined domain/backend tests, frontend/backend typechecks and build passed. The real mail round trip remains pending; see [operator procedure](AGENTMAIL.md).
 
 
+## Saved ingredient lists · local delivery
+
+Reviewed manual and spreadsheet names can be saved by session and recovered after reload without uploading the file or creating offers. Server-derived origin labels, input/storage limits and immutable retries are enforced. A delayed confirmation does not mark a replacement queue saved. 121 combined domain/backend tests, build and ten focused local browser checks passed. [Contract and verification](SAVED_INGREDIENT_LISTS.md). Private documents, external providers and public deployment remain pending.
+
+
 ## PR 14 · local review
 
 Independent Sol review and parent adjudication corrected interrupted advisor executions that could remain running indefinitely. A durable internal expiry preserves the calculation, does not retry the model, and ignores late completion. The initial-save context fix was moved into this delivery so budget and usage survive the first comparison save.

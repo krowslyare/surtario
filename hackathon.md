@@ -224,6 +224,11 @@ Added internal recovery inspection, verified sent-receipt reconciliation and qua
 Independent review found unreachable old queue entries and duplicate receipt assignment; both now have regression coverage. 116 combined domain/backend tests, frontend/backend typechecks and build passed. Live delivery and webhook verification with AgentMail remain pending.
 
 
+### 2026-09-09 - working tree · saved ingredient lists
+Added session-owned storage of reviewed manual/XLSX/CSV ingredient names and recovery after reload. File bytes, other columns and document transcriptions are not part of the stored contract.
+Parent review caught a late-save confirmation affecting a replacement queue; a browser regression now verifies the correction. 121 combined domain/backend tests, build and ten focused browser cases passed against an isolated local Convex backend. No external provider calls or deployment.
+
+
 ### 2026-09-09 - working tree · PR 14 local review
 Preserved decision context during the first comparison save and added scheduled recovery for interrupted advisor executions. Expiry keeps deterministic results and prevents a late model completion from replacing a failed state; it never retries a provider.
 Independent Sol review was adjudicated and corrected. 112 domain/backend tests, frontend/backend typechecks, build and three advisor browser journeys passed. Browser checks used the existing synthetic local backend; changed backend behavior was verified in memory. No real provider calls or public deployment.
