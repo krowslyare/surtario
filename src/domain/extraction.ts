@@ -24,6 +24,8 @@ export type ExtractionField = (typeof extractionFields)[number];
 export type ExtractedField = { value: string | null; evidence: string | null };
 export type ExtractedOffer = Record<ExtractionField, ExtractedField>;
 export type ExtractionSource = {
+  id?: string;
+  url?: string;
   title: string;
   text: string;
   observedAt: string;
@@ -68,7 +70,7 @@ export function extractionToPurchase(
       "Revisa el precio: hasta 2 decimales, sin separadores de miles; puedes dejarlo pendiente.",
     );
   const offer: SupplierOffer = {
-    id: "reviewed-document",
+    id: source.id ?? "reviewed-document",
     supplier: values.supplier.trim(),
     ingredient: values.ingredient.trim(),
     specification: values.specification.trim(),
@@ -106,7 +108,7 @@ export function extractionToPurchase(
     sources: {
       [offer.id]: {
         label: `${source.simulated ? "Documento sintético revisado" : "Documento revisado"}: ${source.title}`,
-        date: source.observedAt,
+        date: source.observedAt.slice(0, 10),
         extraction: {
           proposed: structuredClone(extracted),
           reviewed: { ...values },
@@ -115,7 +117,7 @@ export function extractionToPurchase(
         edited: false,
         marketSource: {
           title: source.title,
-          url: null,
+          url: source.url ?? null,
           observedAt: source.observedAt,
           publishedAt: null,
           simulated: source.simulated,
@@ -123,5 +125,43 @@ export function extractionToPurchase(
         },
       },
     },
+  };
+}
+
+/** Human-reviewed offers can share a comparison only after explicit equivalence review. */
+export function combineReviewedOffers(
+  seeds: PurchaseSeed[],
+  confirmed: boolean,
+): PurchaseSeed {
+  if (!confirmed)
+    throw new Error("Confirma la equivalencia de las ofertas revisadas.");
+  if (
+    !seeds.length ||
+    seeds.length > 3 ||
+    seeds.some((seed) => seed.offers.length !== 1)
+  )
+    throw new Error("Selecciona entre una y tres ofertas revisadas.");
+  const first = seeds[0];
+  const offers = seeds.flatMap((seed) => seed.offers);
+  if (new Set(offers.map((offer) => offer.id)).size !== offers.length)
+    throw new Error("Una misma fuente no puede aparecer dos veces.");
+  if (
+    seeds.some(
+      (seed) =>
+        seed.request.ingredient !== first.request.ingredient ||
+        seed.request.specification !== first.request.specification ||
+        seed.request.unit !== first.request.unit ||
+        seed.offers[0].currency !== first.offers[0].currency,
+    )
+  )
+    throw new Error(
+      "Revisa insumo, especificación, unidad y moneda: estas ofertas no son comparables todavía.",
+    );
+  return {
+    request: { ...first.request, quantity: 0 },
+    offers: structuredClone(offers),
+    sources: structuredClone(
+      Object.assign({}, ...seeds.map((seed) => seed.sources)),
+    ),
   };
 }

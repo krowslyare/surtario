@@ -102,3 +102,49 @@ test("separa propuesta estructurada y baseline confirmado sin alias mutable", ()
   values.price = "90";
   expect(source.extraction?.reviewed.price).toBe("85");
 });
+
+test("fuentes web distintas conservan URL, fecha y equivalencia explícita", async () => {
+  const { combineReviewedOffers } = await import("./extraction");
+  const values = {
+    ...draftValues(extractionExample),
+    packageUnit: "kg",
+    packageContent: "18",
+  };
+  const make = (id: string) =>
+    extractionToPurchase(
+      {
+        ...extractionSource,
+        id,
+        url: `https://supplier.test/${id}`,
+        observedAt: "2026-09-08T16:00:00.000Z",
+        simulated: false,
+      },
+      extractionExample,
+      values,
+      true,
+    );
+  const a = make("web-a"),
+    b = make("web-b");
+  expect(() => combineReviewedOffers([a, b], false)).toThrow(/equivalencia/);
+  const combined = combineReviewedOffers([a, b], true);
+  expect(combined.offers.map((o) => o.id)).toEqual(["web-a", "web-b"]);
+  expect(combined.sources["web-a"].date).toBe("2026-09-08");
+  expect(combined.sources["web-a"].marketSource?.url).toBe(
+    "https://supplier.test/web-a",
+  );
+  expect(combined.sources["web-a"].marketSource?.simulated).toBe(false);
+  expect(combined.request.quantity).toBe(0);
+  expect(() => combineReviewedOffers([a, a], true)).toThrow(/dos veces/);
+  expect(() =>
+    combineReviewedOffers(
+      [a, { ...b, request: { ...b.request, specification: "Otra calidad" } }],
+      true,
+    ),
+  ).toThrow(/no son comparables/);
+  expect(() =>
+    combineReviewedOffers(
+      [a, { ...b, offers: [{ ...b.offers[0], currency: "USD" }] }],
+      true,
+    ),
+  ).toThrow(/no son comparables/);
+});

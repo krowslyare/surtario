@@ -57,3 +57,7 @@ Convex local cargó la action; invocación por CLI sin clave falla con mensaje d
 Contrato contrastado con [Search de Firecrawl](https://docs.firecrawl.dev/api-reference/endpoint/search) y tipos de Convex 1.45.0 instalados. La viabilidad real y los costos se comprobarán con la cuenta del proyecto.
 
 Extracción/revisión: ver [entrega independiente y pruebas](./EXTRACCION_REVISION.md). La UI de revisión usa fixture; la action OpenAI se prueba por separado antes de conectarla a entradas reales.
+
+## Actualización: recorrido de investigación web
+
+La búsqueda y extracción ya tienen conexión a UI y almacenamiento de fuentes/propuestas, protegidos por `LIVE_RESEARCH_ENABLED` además de las claves. Los probes anteriores siguen internos e independientes. Consulta [búsqueda web](./BUSQUEDA_WEB.md) para el contrato actual y sus pruebas. La conexión implementada no equivale a una llamada externa ejecutada; resta validar con credenciales, persistir las correcciones revisadas y conectar correo.

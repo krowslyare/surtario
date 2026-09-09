@@ -1,10 +1,12 @@
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState, type ChangeEvent } from "react";
 import { FileSearch, PencilLine } from "lucide-react";
 import {
   draftValues,
   extractionFields,
   extractionToPurchase,
+  type ExtractedOffer,
   type ExtractionField,
+  type ExtractionSource,
   type ReviewedValues,
 } from "../domain/extraction";
 import type { PurchaseSeed } from "../domain/market";
@@ -45,16 +47,31 @@ const fieldCopy: Record<
 };
 
 export default function ExtractionReview({
+  source = extractionSource,
+  proposal = extractionExample,
+  triggerLabel = "Revisar ejemplo de cotización",
   onPrepare,
+  confirmLabel = "Continuar a comparación",
 }: {
+  source?: ExtractionSource;
+  proposal?: ExtractedOffer;
+  triggerLabel?: string;
   onPrepare: (seed: PurchaseSeed) => void;
+  confirmLabel?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [values, setValues] = useState<ReviewedValues>(() =>
-    draftValues(extractionExample),
+    draftValues(proposal),
   );
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
+
+  const proposalKey = JSON.stringify(proposal);
+  useEffect(() => {
+    setValues(draftValues(proposal));
+    setConfirmed(false);
+    setError("");
+  }, [source.id, proposalKey]);
 
   const setField =
     (field: ExtractionField) =>
@@ -73,12 +90,7 @@ export default function ExtractionReview({
 
   function continueToComparison() {
     try {
-      const seed = extractionToPurchase(
-        extractionSource,
-        extractionExample,
-        values,
-        confirmed,
-      );
+      const seed = extractionToPurchase(source, proposal, values, confirmed);
       onPrepare(seed);
       setOpen(false);
       setError("");
@@ -93,7 +105,7 @@ export default function ExtractionReview({
     <section className="extraction-entry" aria-label="Revisión de cotización">
       <button className="button secondary" onClick={() => setOpen(true)}>
         <FileSearch size={17} />
-        Revisar ejemplo de cotización
+        {triggerLabel}
       </button>
 
       {open && (
@@ -103,10 +115,13 @@ export default function ExtractionReview({
           onClose={() => setOpen(false)}
         >
           <div className="extraction-intro">
-            <span className="extraction-simulation">Ejemplo sintético</span>
+            <span className="extraction-simulation">
+              {source.simulated ? "Ejemplo sintético" : "Extracción automática"}
+            </span>
             <p>
-              Esta revisión simula un resultado ya extraído. No hace una llamada
-              de IA ni sube un documento.
+              {source.simulated
+                ? "Esta revisión simula un resultado ya extraído. No hace una llamada de IA ni sube un documento."
+                : "Compara cada propuesta con el texto recuperado de la fuente antes de usarla."}
             </p>
           </div>
 
@@ -114,11 +129,21 @@ export default function ExtractionReview({
             <article className="extraction-source" aria-label="Texto original">
               <div>
                 <h3>Texto original</h3>
-                <p>{extractionSource.title}</p>
+                <p>{source.title}</p>
               </div>
-              <pre>{extractionSource.text}</pre>
-              <time dateTime={extractionSource.observedAt}>
-                Ejemplo fechado el 8 sep 2026
+              <pre>{source.text}</pre>
+              {source.url && (
+                <a href={source.url} target="_blank" rel="noopener noreferrer">
+                  Abrir página de origen
+                </a>
+              )}
+              <time dateTime={source.observedAt}>
+                Observado el{" "}
+                {new Intl.DateTimeFormat("es-PE", {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                }).format(new Date(source.observedAt))}
               </time>
             </article>
 
@@ -129,7 +154,7 @@ export default function ExtractionReview({
               </div>
               {extractionFields.map((field) => {
                 const copy = fieldCopy[field];
-                const original = extractionExample[field].value ?? "";
+                const original = proposal[field].value ?? "";
                 const edited = values[field] !== original;
                 return (
                   <div
@@ -176,8 +201,7 @@ export default function ExtractionReview({
                         Original: <strong>{original || "Pendiente"}</strong>
                       </span>
                       <span>
-                        Evidencia:{" "}
-                        {extractionExample[field].evidence ?? "No encontrada"}
+                        Evidencia: {proposal[field].evidence ?? "No encontrada"}
                       </span>
                       {edited && (
                         <span className="extraction-edited">
@@ -194,7 +218,7 @@ export default function ExtractionReview({
           <div className="extraction-pending">
             <strong>Condiciones adicionales pendientes</strong>
             <p>
-              El documento no indica pedido mínimo, costo de entrega ni
+              Esta extracción no confirma pedido mínimo, costo de entrega ni
               condición tributaria. Se revisarán por separado en la comparación.
             </p>
           </div>
@@ -229,7 +253,7 @@ export default function ExtractionReview({
               disabled={!confirmed || !requiredReady}
               onClick={continueToComparison}
             >
-              Continuar a comparación
+              {confirmLabel}
             </button>
           </div>
         </Dialog>
