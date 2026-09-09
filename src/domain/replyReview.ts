@@ -7,6 +7,13 @@ import {
 export const emptyReplyProposal = Object.fromEntries(
   extractionFields.map((key) => [key, { value: null, evidence: null }]),
 ) as ExtractedOffer;
+
+function normalizedObservedAt(receivedAt: string) {
+  const received = new Date(receivedAt);
+  if (Number.isFinite(received.getTime())) return received.toISOString();
+  return "";
+}
+
 export function prepareReplyOffer(
   reply: {
     requestId: string;
@@ -23,7 +30,7 @@ export function prepareReplyOffer(
       id,
       title: "Respuesta de cotización · revisión manual",
       text: reply.text,
-      observedAt: reply.receivedAt,
+      observedAt: normalizedObservedAt(reply.receivedAt),
       simulated: false,
     },
     emptyReplyProposal,

@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T13:14:48Z
+- **Last updated:** 2026-09-09T20:06:23Z
 
 ## Log
 
@@ -139,3 +139,75 @@ Sin lectura automática del correo por OpenAI ni envíos reales. No combina auto
 La revisión de una respuesta permite añadirla a la comparación guardada actual con confirmación explícita de equivalencia. Se conservan cantidad y fuentes anteriores, se elimina la elección y se exige guardar los cambios. El servidor reconstruye el correo de la sesión y comprueba identidad, moneda, duplicados, límite de cuatro fuentes y revisión vigente.
 94 tests de dominio/backend, 42 E2E y build satisfactorios. Recorridos locales con correo sintético prueban ambas opciones: comparación nueva e incorporación a la existente, guardado y recarga con procedencia. Revisión adversarial local de propiedad, validación de equivalencia, historial y elección; revisión móvil sin desbordamiento horizontal.
 La lectura del correo sigue siendo manual. No hubo envíos ni llamadas externas, despliegue o habilitación de documentos privados. Contrato actualizado en `docs/desarrollo/RESPUESTA_A_OFERTA.md`.
+
+### 2026-09-09 - working tree · correcciones de revisión del PR 1
+Corregidos tres hallazgos de Codex: unidad de empaque desconocida conservada como pendiente, mínimo sin valor supuesto al crear una oferta y resumen por grupos completos de la misma moneda. Una oferta incompleta o en otra moneda no oculta la comparación válida de las demás.
+47 tests y build aprobados en el checkout del PR 1; 8 E2E de comparación aprobados en un servidor frontal aislado, incluida regresión de campos pendientes y tercera oferta. Sin cambios de backend ni llamadas externas. Nueva ronda de revisión solicitada tras publicar el commit; merge todavía pendiente.
+
+
+### 2026-09-09 - working tree · segunda ronda del PR 1
+Corregido el cierre accidental al pulsar el espacio interior del diálogo; el fondo exterior sigue cerrándolo. La fecha de una oferta manual usa el calendario local del navegador, evitando avanzar de día por UTC durante la noche peruana.
+47 tests, build y 9 E2E de comparación aprobados. Regresión con reloj fijo a las 21:30 de Lima comprueba fecha, conservación del formulario y cierre exterior. La primera expectativa de mes usó una abreviatura distinta de es-PE; corregida a set. manteniendo día y año. Sin cambios de backend ni llamadas externas. Nueva revisión pendiente antes del merge.
+
+
+### 2026-09-09 - working tree · PR 2 review preparation
+Merged main into the extraction review branch to retain the five reviewed PR 1 fixes. Resolved documentation conflicts by preserving both delivery records. Integrated revision passed 53 domain/backend tests, build, and 11 comparison/extraction E2E tests on an isolated frontend. No external calls or deployment. PR 2 will be reviewed against main; subsequent PRs remain drafts.
+
+
+### 2026-09-09 - working tree · PR 3 local review
+Integrated the reviewed main branch into comparison persistence. An independent Sol 5.6 review, adjudicated by Astra, identified stale save notices after restoring a draft. Save success and error notices now clear when the draft identity changes, while late responses retain their existing handling.
+58 domain/backend tests and build passed. Eleven comparison/extraction browser checks passed before the notice fix; five persistence browser checks passed after it, including restored-draft notice and delayed-response coverage. Persistence UI checks used the existing local backend, which contains later implementation code; the PR-specific backend was exercised with convex-test.
+No GitHub bot review was requested. Local review found no confirmed ownership or persistence blocker. No external provider call, private-data enablement, or deployment was performed.
+
+
+### 2026-09-09 - working tree · PR 4 local review
+Integrated reviewed main into bounded web research. Independent Sol 5.6 review and Astra adjudication found no material actionable defects in reservation/idempotency, ownership, uncertain extraction persistence or reactive UI reconciliation. A speculative transient double-click notice was not treated as a blocker.
+65 domain/backend tests, build and all 35 E2E checks passed on the integrated revision. Provider responses and the research UI transport were simulated; persistence browser tests used the existing local backend, which includes later implementation code. The PR-specific backend was tested in memory with convex-test.
+No GitHub review bot was invoked, no real provider requests were made, and no private uploads or public deployment were enabled. Reviewed web corrections remain transient in this delivery.
+
+
+### 2026-09-09 - working tree · PR 5 local review
+Integrated reviewed main into persisted web-offer reviews. Independent Sol 5.6 review and Astra adjudication found no material findings in ownership, server source reconstruction, immutable evidence, idempotency, revisions or frontend serialization.
+68 domain/backend tests and build passed. Thirty-five E2E checks passed in the full run; the web-persistence case initially failed before setup because the isolated checkout could not locate the anonymous backend. It passed after a temporary CLI working-directory adjustment using the original local checkout configuration; the adjustment was removed. The 36 browser cases therefore passed across those runs.
+The new browser case verified correction, delivery, total, choice and original evidence after reload against the existing local backend with later implementation code. PR-specific backend tests ran in memory. No real provider calls, GitHub bot review or deployment.
+
+
+### 2026-09-09 - working tree · PR 6 local review
+Integrated reviewed main into quotation requests. Independent Sol 5.6 review and Astra adjudication identified valid signed long replies failing the persistence text limit. The webhook now retains bounded text with an explicit truncation notice instead of returning a repeatable server error.
+78 domain/backend tests and build passed, including a signed long-reply regression. Six focused browser checks passed for quotation drafting, reload, clipboard, mobile layout and comparison persistence; the browser used the existing local backend with later implementation code. Exact PR backend behavior was tested in memory with simulated mail transport.
+No GitHub review bot, actual mail send, external webhook registration or deployment was performed. Real AgentMail round-trip validation remains pending.
+
+
+### 2026-09-09 - working tree · PR 7 review preparation
+Integrated reviewed main into CI and integration handoff documentation, preserving the quotation webhook fix. The workflow runs dependency installation, in-memory tests and build with read-only permissions and pinned actions; no provider secrets or deployment steps.
+78 domain/backend tests and build passed locally. Removed a stale browser-test count from the new README guidance. CI for the integrated head remains to be verified; local tests do not establish hosted or external-provider behavior.
+
+
+### 2026-09-09 - working tree · PR 8 local review
+Integrated reviewed main into synthetic image/PDF extraction. Sol review and parent adjudication corrected comparison labels that misrepresented documents as public web pages; labels now refer to their recorded source. The PNG preview represents the same PDF content, verified against the fixture. Human review and server-owned file limits remain enforced.
+85 domain/backend tests and build passed. 2 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
+
+
+### 2026-09-09 - working tree · PR 9 local review
+Integrated reviewed document extraction into persisted document comparisons. Sol review and parent adjudication found no additional material issues. The browser seed command temporarily used the original local checkout configuration; that test-only adjustment was removed.
+88 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
+
+
+### 2026-09-09 - working tree · PR 10 local review
+Integrated reviewed main into catalog requests from saved studies. Sol review and parent adjudication found no material issues in ownership, origin-bound retries, fixed test recipients or explicit send approval.
+89 domain/backend tests and build passed. 2 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
+
+
+### 2026-09-09 - working tree · PR 11 local review
+Integrated reviewed main into web distributor candidates and linked inquiries. Sol review and parent adjudication found no material issues. Sources are reconstructed from owned research, and found contacts never authorize email delivery. The temporary local CLI working-directory adjustment for browser setup was removed.
+91 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
+
+
+### 2026-09-09 - working tree · PR 12 local review
+Integrated reviewed main into manually reviewed reply offers. Sol review identified misleading source labels and malformed reply dates; inherited neutral provenance labels and pending-date handling now preserve unknown dates without crashing or substituting request dates. Regression covers persisted malformed reply dates and browser recovery. Temporary browser CLI setup adjustment removed.
+94 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
+
+
+### 2026-09-09 - working tree · PR 13 local review
+Integrated reviewed main into adding reply offers to existing comparisons. Sol review found a stale-query save bug; the client now tracks confirmed server revisions so a second save does not append an already persisted reply. Parent adjudicated and tested the fix. Final browser suite passed 43 cases initially; the remaining web-source link selector was updated for the corrected provenance label and then passed. All 44 cases passed across those runs, including the demo rehearsal. Temporary CLI setup adjustments were removed.
+97 domain/backend tests and build passed. 44 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.

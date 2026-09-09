@@ -100,6 +100,21 @@ test("reply review saves source, manual fields and choice without altering the e
     await t.query(api.comparisons.list, { token: "b".repeat(64) }),
   ).toEqual([]);
 });
+test("an invalid signed reply timestamp stays pending without inventing a date", async () => {
+  const { t, args, reply } = await setup();
+  await t.run(async (ctx) => {
+    const stored = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_messageId", (q) => q.eq("messageId", reply.messageId))
+      .unique();
+    await ctx.db.patch(stored!._id, { receivedAt: "not-a-date" });
+  });
+  const saved = await t.mutation(api.comparisons.save, args);
+  expect(saved.sources[args.selectedOfferId].date).toBe("");
+  expect(saved.sources[args.selectedOfferId].marketSource?.observedAt).toBe(
+    "",
+  );
+});
 test("foreign and unlinked replies, missing confirmation and conflicting retries are refused", async () => {
   const { t, args } = await setup();
   await expect(

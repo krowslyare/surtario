@@ -43,3 +43,8 @@ El borrador editable para copiar sigue separado: sus cambios no se envían al co
 ## Oferta desde respuesta
 
 «Revisar como nueva oferta» permite transcribir y confirmar una oferta del correo y abrir una comparación nueva guardable, o añadirla a la comparación actual guardada tras confirmar equivalencia. Esta incorporación conserva fuentes y cantidad y elimina la elección anterior. El servidor vincula la procedencia por solicitud/mensaje; no sobrescribe ofertas anteriores ni registra compra. [Contrato y límites](RESPUESTA_A_OFERTA.md). La extracción de precios del correo sigue siendo manual.
+
+
+
+
+PR 6 review: signed reply text longer than 20,000 characters is retained up to that limit with an explicit truncation notice. Consult the original email for the full message. A signed-webhook regression verifies acknowledgement and bounded retention; this does not establish a real provider round trip.

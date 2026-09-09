@@ -140,3 +140,38 @@ Lectura de PNG/PDF sintéticos preparada con revisión visual y clasificación d
 Fuentes web sin precio conectadas a una biblioteca de candidatos revisados y consultas persistentes. [Contrato y evidencia](DISTRIBUIDORES_WEB.md). Búsqueda externa y correo real pendientes; no se habilitan envíos a contactos encontrados.
 
 Respuesta revisada incorporable a la comparación actual tras confirmar equivalencia, conservando cantidad y fuentes y dejando pendiente una nueva elección. [Contrato y verificación local](RESPUESTA_A_OFERTA.md). No completa el recorrido externo de correo.
+
+
+Revisión del PR 1: corregidos valores supuestos de unidad/mínimo y resumen entre ofertas compatibles. 47 tests, build y 8 E2E de comparación pasan en el checkout aislado del PR; integraciones externas y entrega pública siguen pendientes.
+
+Segunda ronda del PR 1: diálogo conserva entradas al pulsar dentro; procedencia manual fechada según calendario local. 47 tests, build y 9 E2E de comparación aprobados; no modifica el estado de las etapas externas.
+
+PR 2 review preparation: integrated the reviewed PR 1 fixes from main; 53 tests, build, and 11 comparison/extraction E2E tests passed locally. External integration stages remain open.
+
+PR 3 local review: integrated main and cleared stale save notices when restoring a new draft. Independent Sol 5.6 review adjudicated by Astra; 58 tests and build passed, plus five persistence UI checks against the existing local backend. External integrations remain unverified.
+
+PR 4 local review: integrated main, 65 tests/build and 35 E2E checks passed. Sol 5.6 review adjudicated by Astra found no material blocker. Provider behavior remains simulated; stages 2–4 still require real integration evidence.
+
+PR 5 local review: integrated main; Sol 5.6 review adjudicated by Astra found no material findings. 68 tests/build passed; 35 E2E passed initially and the web-persistence case passed with temporary local CLI configuration adjustment. External provider validation remains pending.
+
+
+## PR 6 · local review
+Reviewed main integrated. Fixed signed long replies returning a persistent server error by retaining bounded text with a visible truncation notice. Validation: 78 domain/backend tests, build and six focused browser checks passed; browser persistence used the existing local backend with later code. Mail transport remained simulated. External integration stages remain open.
+
+
+PR 8 local review: Integrated reviewed main into synthetic image/PDF extraction. Corrected comparison labels that misrepresented documents as public web pages. The PNG preview represents the same PDF content, verified against the fixture. Human review and server-owned file limits remain enforced. 85 tests/build and 2 focused browser checks passed. Real provider verification and deployment remain pending.
+
+
+PR 9 local review: Integrated reviewed document extraction into persisted document comparisons. Sol review and parent adjudication found no additional material issues. The browser seed command temporarily used the original local checkout configuration; that test-only adjustment was removed. 88 tests/build and 1 focused browser checks passed. Real provider verification and deployment remain pending.
+
+
+PR 10 local review: Integrated reviewed main into catalog requests from saved studies. Sol review and parent adjudication found no material issues in ownership, origin-bound retries, fixed test recipients or explicit send approval. 89 tests/build and 2 focused browser checks passed. Real provider verification and deployment remain pending.
+
+
+PR 11 local review: Integrated reviewed main into web distributor candidates and linked inquiries. Sol review and parent adjudication found no material issues. Sources are reconstructed from owned research, and found contacts never authorize email delivery. The temporary local CLI working-directory adjustment for browser setup was removed. 91 tests/build and 1 focused browser checks passed. Real provider verification and deployment remain pending.
+
+
+PR 12 local review: Integrated reviewed main into manually reviewed reply offers. Sol review identified misleading source labels and malformed reply dates; inherited neutral provenance labels and pending-date handling now preserve unknown dates without crashing or substituting request dates. Regression covers persisted malformed reply dates and browser recovery. Temporary browser CLI setup adjustment removed. 94 tests/build and 1 focused browser checks passed. Real provider verification and deployment remain pending.
+
+
+PR 13 local review: Integrated reviewed main into adding reply offers to existing comparisons. Sol review found a stale-query save bug; the client now tracks confirmed server revisions so a second save does not append an already persisted reply. Parent adjudicated and tested the fix. Final browser suite passed 43 cases initially; the remaining web-source link selector was updated for the corrected provenance label and then passed. All 44 cases passed across those runs, including the demo rehearsal. Temporary CLI setup adjustments were removed. 97 tests/build and 44 focused browser checks passed. Real provider verification and deployment remain pending.

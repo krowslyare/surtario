@@ -1,4 +1,4 @@
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { useConvexConnectionState, useMutation, useQuery } from "convex/react";
 import { ConvexError, type Infer } from "convex/values";
 import { api } from "../../convex/_generated/api";
@@ -21,6 +21,36 @@ export type ComparisonDraft = {
 };
 
 const SESSION_KEY = "procurement-demo-session-v1";
+
+export function newestComparison(
+  queried: SavedComparison | undefined,
+  confirmed: SavedComparison | undefined,
+) {
+  return !queried || (confirmed && confirmed.revision > queried.revision)
+    ? confirmed
+    : queried;
+}
+
+export function replyReviewsToAppend(
+  draft: ComparisonDraft,
+  persisted: SavedComparison | undefined,
+) {
+  if (!draft.id) return [];
+  return draft.offers
+    .filter(
+      (offer) =>
+        draft.sources[offer.id]?.replyReview &&
+        !persisted?.sources[offer.id],
+    )
+    .map((offer) => ({
+      review: {
+        ...draft.sources[offer.id].replyReview!,
+        requestId: draft.sources[offer.id].replyReview!
+          .requestId as Id<"quotationRequests">,
+      },
+      equivalent: true as const,
+    }));
+}
 
 export default function SavedComparisons(props: {
   draft: ComparisonDraft;
@@ -78,6 +108,7 @@ function ConnectedComparisons({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const confirmed = useRef(new Map<string, SavedComparison>());
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
     window.addEventListener("online", update);
@@ -87,6 +118,10 @@ function ConnectedComparisons({
       window.removeEventListener("offline", update);
     };
   }, []);
+  useEffect(() => {
+    setMessage("");
+    setError("");
+  }, [draft.clientId]);
   const connected = online && connection.isWebSocketConnected;
 
   async function persist() {
@@ -95,23 +130,11 @@ function ConnectedComparisons({
     setError("");
     setMessage("");
     const submitted = draft;
-    const persisted = comparisons?.find((item) => item.id === submitted.id);
-    const newReplies = submitted.id
-      ? submitted.offers
-          .filter(
-            (offer) =>
-              submitted.sources[offer.id]?.replyReview &&
-              !persisted?.sources[offer.id],
-          )
-          .map((offer) => ({
-            review: {
-              ...submitted.sources[offer.id].replyReview!,
-              requestId: submitted.sources[offer.id].replyReview!
-                .requestId as Id<"quotationRequests">,
-            },
-            equivalent: true as const,
-          }))
-      : [];
+    const queried = comparisons?.find((item) => item.id === submitted.id);
+    const persisted = submitted.id
+      ? newestComparison(queried, confirmed.current.get(submitted.id))
+      : undefined;
+    const newReplies = replyReviewsToAppend(submitted, persisted);
     try {
       const saved = await save({
         token,
@@ -154,6 +177,7 @@ function ConnectedComparisons({
             }
           : {}),
       });
+      confirmed.current.set(saved.id, saved);
       const stillCurrent = onSaved(saved, submitted.clientId);
       setMessage(
         stillCurrent
@@ -240,6 +264,7 @@ function ConnectedComparisons({
                   className="button secondary"
                   disabled={saving}
                   onClick={() => {
+                    confirmed.current.set(comparison.id, comparison);
                     onOpen(comparison);
                     setExpanded(false);
                     setError("");

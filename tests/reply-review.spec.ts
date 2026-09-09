@@ -79,7 +79,7 @@ for (const mode of ["new", "append"] as const)
         threadId: request.receipt.threadId,
         from: "demo@example.test",
         text: "Distribuidor Respuesta: arroz blanco, saco de 18 kg a PEN 80.00. Entrega por confirmar.",
-        receivedAt: new Date().toISOString(),
+        receivedAt: "not-a-date",
       });
     } finally {
       rmSync(folder, { recursive: true });
@@ -193,6 +193,8 @@ for (const mode of ["new", "append"] as const)
       ).toHaveCount(0);
     }
     await page.getByRole("button", { name: "Ver origen" }).last().click();
+    await expect(page.getByRole("dialog")).toContainText("Fecha pendiente");
+    await expect(page.getByRole("dialog")).not.toContainText("página pública");
     await expect(page.getByRole("dialog")).toContainText("PEN 80.00");
     await expect(page.getByRole("dialog")).toContainText(
       "corrección manual: 85",
