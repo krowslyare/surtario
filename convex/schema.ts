@@ -101,6 +101,8 @@ export default defineSchema({
   })
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"])
+    .index("by_state", ["state"])
+    .index("by_inboxId_and_receipt_messageId", ["inboxId", "receipt.messageId"])
     .index("by_inboxId_and_receipt_threadId", ["inboxId", "receipt.threadId"]),
   quotationReplies: defineTable({
     requestId: v.id("quotationRequests"),

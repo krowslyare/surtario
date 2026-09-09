@@ -3,6 +3,7 @@ import {
   action,
   env,
   internalMutation,
+  internalQuery,
   mutation,
   query,
 } from "./_generated/server";
@@ -18,6 +19,7 @@ import {
 const MAX_PER_SESSION = 10;
 const MAX_GLOBAL = 100;
 const MAX_REPLIES = 10;
+const MAX_RECOVERY_ITEMS = 100;
 const COOLDOWN_MS = 30_000;
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -25,6 +27,20 @@ const SEND_FAILED =
   "AgentMail rechazó el envío. Crea una solicitud nueva para volver a intentarlo.";
 const SEND_UNCERTAIN =
   "No se pudo confirmar el resultado del envío. No se reintentará automáticamente.";
+
+function normalizedSender(value: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .match(/<([^>]+)>$/)?.[1] ?? value.trim().toLowerCase()
+  );
+}
+
+function assertProviderId(value: string, maximum: number) {
+  if (value.length === 0 || value.length > maximum)
+    throw new ConvexError("Provider identifier is invalid.");
+}
 
 function configured() {
   const recipient = env.AGENTMAIL_TEST_RECIPIENT?.trim().toLowerCase() || null;
@@ -451,6 +467,233 @@ export const send = action({
   },
 });
 
+const recoveryRequestValidator = v.object({
+  id: v.id("quotationRequests"),
+  state: v.union(v.literal("sending"), v.literal("uncertain")),
+  revision: v.number(),
+  clientId: v.string(),
+  inboxId: v.union(v.string(), v.null()),
+  recipient: v.union(v.string(), v.null()),
+  subject: v.string(),
+  idempotencyKey: v.string(),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
+const recoveryEventValidator = v.object({
+  id: v.id("quotationUnmatchedEvents"),
+  eventId: v.string(),
+  messageId: v.string(),
+  inboxId: v.string(),
+  threadId: v.string(),
+  from: v.string(),
+  text: v.string(),
+  receivedAt: v.string(),
+  createdAt: v.number(),
+});
+
+export const inspectRecoveryQueue = internalQuery({
+  args: { limit: v.number() },
+  returns: v.object({
+    requests: v.array(recoveryRequestValidator),
+    unmatchedEvents: v.array(recoveryEventValidator),
+  }),
+  handler: async (ctx, { limit }) => {
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > MAX_RECOVERY_ITEMS)
+      throw new ConvexError("Recovery limit must be an integer from 1 to 100.");
+    const [sending, uncertain, unmatched] = await Promise.all([
+      ctx.db
+        .query("quotationRequests")
+        .withIndex("by_state", (q) => q.eq("state", "sending"))
+        .order("desc")
+        .take(limit),
+      ctx.db
+        .query("quotationRequests")
+        .withIndex("by_state", (q) => q.eq("state", "uncertain"))
+        .order("desc")
+        .take(limit),
+      ctx.db
+        .query("quotationUnmatchedEvents")
+        .withIndex("by_creation_time")
+        .order("desc")
+        .take(limit),
+    ]);
+    const requests = [...sending, ...uncertain]
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .slice(0, limit)
+      .map((request) => ({
+        id: request._id,
+        state: request.state as "sending" | "uncertain",
+        revision: request.revision,
+        clientId: request.clientId,
+        inboxId: request.inboxId,
+        recipient: request.recipient,
+        subject: request.subject,
+        idempotencyKey: request.idempotencyKey,
+        createdAt: request.createdAt,
+        updatedAt: request.updatedAt,
+      }));
+    return {
+      requests,
+      unmatchedEvents: unmatched.map((event) => ({
+        id: event._id,
+        eventId: event.eventId,
+        messageId: event.messageId,
+        inboxId: event.inboxId,
+        threadId: event.threadId,
+        from: event.from,
+        text: event.text,
+        receivedAt: event.receivedAt,
+        createdAt: event._creationTime,
+      })),
+    };
+  },
+});
+
+export const recordVerifiedSentReceipt = internalMutation({
+  args: {
+    requestId: v.id("quotationRequests"),
+    expectedRevision: v.number(),
+    inboxId: v.string(),
+    messageId: v.string(),
+    threadId: v.string(),
+    operatorVerified: v.literal(true),
+  },
+  returns: v.union(v.literal("recorded"), v.literal("existing")),
+  handler: async (ctx, args) => {
+    assertProviderId(args.inboxId, 300);
+    assertProviderId(args.messageId, 500);
+    assertProviderId(args.threadId, 500);
+    const request = await ctx.db.get(args.requestId);
+    if (!request) throw new ConvexError("Quotation request was not found.");
+    if (request.inboxId !== args.inboxId)
+      throw new ConvexError(
+        "Verified inbox does not match the frozen request.",
+      );
+    if (
+      request.state === "sent" &&
+      request.receipt?.messageId === args.messageId &&
+      request.receipt.threadId === args.threadId
+    )
+      return "existing" as const;
+    if (
+      !Number.isSafeInteger(args.expectedRevision) ||
+      request.revision !== args.expectedRevision
+    )
+      throw new ConvexError("Quotation request revision changed.");
+    if (request.state !== "sending" && request.state !== "uncertain")
+      throw new ConvexError(
+        "Only sending or uncertain requests can be reconciled.",
+      );
+    if (request.receipt)
+      throw new ConvexError(
+        "Quotation request already has a different receipt.",
+      );
+    const messageCollision = await ctx.db
+      .query("quotationRequests")
+      .withIndex("by_inboxId_and_receipt_messageId", (q) =>
+        q.eq("inboxId", args.inboxId).eq("receipt.messageId", args.messageId),
+      )
+      .take(1);
+    if (messageCollision.length > 0)
+      throw new ConvexError(
+        "Verified message is already assigned to another request.",
+      );
+    const collision = await ctx.db
+      .query("quotationRequests")
+      .withIndex("by_inboxId_and_receipt_threadId", (q) =>
+        q.eq("inboxId", args.inboxId).eq("receipt.threadId", args.threadId),
+      )
+      .take(1);
+    if (collision.length > 0)
+      throw new ConvexError(
+        "Verified thread is already assigned to another request.",
+      );
+    await ctx.db.patch(request._id, {
+      state: "sent",
+      receipt: { messageId: args.messageId, threadId: args.threadId },
+      failure: null,
+      revision: request.revision + 1,
+      updatedAt: Date.now(),
+    });
+    return "recorded" as const;
+  },
+});
+
+export const linkVerifiedUnmatchedReply = internalMutation({
+  args: {
+    requestId: v.id("quotationRequests"),
+    eventId: v.string(),
+    operatorVerified: v.literal(true),
+  },
+  returns: v.union(v.literal("linked"), v.literal("existing")),
+  handler: async (ctx, args) => {
+    assertProviderId(args.eventId, 300);
+    const existing = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_eventId", (q) => q.eq("eventId", args.eventId))
+      .unique();
+    if (existing) {
+      if (existing.requestId !== args.requestId)
+        throw new ConvexError("Reply is already linked to another request.");
+      return "existing" as const;
+    }
+    const event = await ctx.db
+      .query("quotationUnmatchedEvents")
+      .withIndex("by_eventId", (q) => q.eq("eventId", args.eventId))
+      .unique();
+    if (!event) throw new ConvexError("Quarantined event was not found.");
+    const request = await ctx.db.get(args.requestId);
+    if (
+      !request ||
+      request.state !== "sent" ||
+      !request.receipt ||
+      !request.inboxId ||
+      !request.recipient
+    )
+      throw new ConvexError("Request does not have a frozen sent route.");
+    if (
+      event.inboxId !== request.inboxId ||
+      event.threadId !== request.receipt.threadId ||
+      normalizedSender(event.from) !== request.recipient
+    )
+      throw new ConvexError(
+        "Quarantined event does not match the frozen route.",
+      );
+    const candidates = await ctx.db
+      .query("quotationRequests")
+      .withIndex("by_inboxId_and_receipt_threadId", (q) =>
+        q.eq("inboxId", event.inboxId).eq("receipt.threadId", event.threadId),
+      )
+      .take(2);
+    if (candidates.length !== 1 || candidates[0]._id !== request._id)
+      throw new ConvexError("Frozen route is ambiguous.");
+    const duplicateMessage = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_messageId", (q) => q.eq("messageId", event.messageId))
+      .unique();
+    if (duplicateMessage)
+      throw new ConvexError("Provider message is already linked.");
+    const replies = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_requestId", (q) => q.eq("requestId", request._id))
+      .take(MAX_REPLIES);
+    if (replies.length >= MAX_REPLIES)
+      throw new ConvexError("Quotation request already has 10 replies.");
+    await ctx.db.insert("quotationReplies", {
+      requestId: request._id,
+      eventId: event.eventId,
+      messageId: event.messageId,
+      threadId: event.threadId,
+      from: normalizedSender(event.from),
+      text: event.text,
+      receivedAt: event.receivedAt,
+    });
+    await ctx.db.delete(event._id);
+    return "linked" as const;
+  },
+});
+
 export const recordReceived = internalMutation({
   args: {
     eventId: v.string(),
@@ -498,11 +741,7 @@ export const recordReceived = internalMutation({
         .withIndex("by_messageId", (q) => q.eq("messageId", args.messageId))
         .unique());
     if (duplicateMessage) return "duplicate" as const;
-    const sender =
-      args.from
-        .trim()
-        .toLowerCase()
-        .match(/<([^>]+)>$/)?.[1] ?? args.from.trim().toLowerCase();
+    const sender = normalizedSender(args.from);
     const candidates = await ctx.db
       .query("quotationRequests")
       .withIndex("by_inboxId_and_receipt_threadId", (q) =>
