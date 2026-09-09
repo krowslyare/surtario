@@ -4,6 +4,7 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
   page,
 }) => {
   await page.goto("/");
+  await page.getByText("Revisar una cotización", { exact: true }).click();
   await page
     .getByRole("button", { name: "Revisar ejemplo de cotización" })
     .click();
@@ -47,6 +48,7 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
 }) => {
   await page.setViewportSize({ width: 320, height: 760 });
   await page.goto("/");
+  await page.getByText("Revisar una cotización", { exact: true }).click();
   const trigger = page.getByRole("button", {
     name: "Revisar ejemplo de cotización",
   });

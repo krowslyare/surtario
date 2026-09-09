@@ -44,6 +44,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     token,
   );
   await page.goto("/");
+  await page.getByText("Revisar una cotización", { exact: true }).click();
   await page.getByRole("button", { name: "Revisar datos leídos" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Unidad de la presentación").selectOption("kg");

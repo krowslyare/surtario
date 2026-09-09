@@ -1,0 +1,375 @@
+/* Research stays in the reading column; optional tools share a quiet rail. */
+.market-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-rows: auto 1fr;
+  gap: 20px 32px;
+  align-items: start;
+  margin-top: 28px;
+}
+.market-content {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  min-width: 0;
+}
+.study-panel,
+.study-tools {
+  grid-column: 2;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+.study-panel {
+  grid-row: 1;
+  border-top: 3px solid var(--color-primary);
+}
+.study-tools {
+  grid-row: 2;
+}
+.study-panel-heading,
+.study-tool-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.study-panel h2,
+.study-tools h2 {
+  font-size: 16px;
+}
+.study-panel-count {
+  margin-left: auto;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.study-panel .saved-studies {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.study-panel .saved-study-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.study-panel .saved-study-actions .primary {
+  grid-row: 1;
+}
+.study-panel .saved-study-row {
+  align-items: start;
+  flex-direction: column;
+}
+.study-panel .saved-study-row h3 {
+  overflow-wrap: anywhere;
+}
+.study-tools .ingredient-intake {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.study-tools .intake-actions {
+  align-items: start;
+  gap: 8px;
+}
+.study-tools .intake-actions > .button {
+  width: 100%;
+}
+.study-tools .saved-ingredient-lists {
+  margin-top: 16px;
+  padding-top: 16px;
+}
+.study-tools .ingredient-queue {
+  max-height: 360px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+.market-search-actions {
+  display: flex;
+  gap: 8px;
+}
+.market-search-actions .button {
+  min-height: 50px;
+}
+.mobile-tool-link {
+  display: none;
+}
+#study-tools {
+  scroll-margin-top: 100px;
+}
+.document-tools {
+  margin: 20px -20px -20px;
+  border-top: 1px solid var(--color-border);
+  padding: 0 20px;
+}
+.document-tools > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 68px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  list-style: none;
+}
+.document-tools > summary::-webkit-details-marker {
+  display: none;
+}
+.document-tools > summary > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.disclosure-chevron {
+  transition: transform 160ms ease;
+}
+.document-tools[open] .disclosure-chevron {
+  transform: rotate(180deg);
+}
+.document-tools[open] {
+  padding-bottom: 20px;
+}
+.document-tools-hint {
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+.document-tools .ingredient-intake {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+.document-tools .market-context {
+  margin-top: 20px;
+  padding-bottom: 0;
+}
+.document-tools .market-context h3 {
+  font-size: 14px;
+}
+.document-tools .notice {
+  overflow-wrap: anywhere;
+}
+.document-tools .button {
+  text-align: left;
+}
+.market-content .live-research:first-child {
+  margin-top: 0;
+}
+.market-content .study-next {
+  align-items: flex-start;
+  flex-direction: column;
+  border-top-width: 1px;
+}
+.market-content .study-next-actions {
+  justify-content: flex-start;
+}
+.notice.info {
+  color: var(--color-info);
+  background: var(--color-info-surface);
+  border-color: currentColor;
+}
+.comparison-setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 32px;
+  align-items: start;
+  margin-bottom: 32px;
+}
+.comparison-setup .request-panel {
+  margin-bottom: 0;
+}
+.comparison-save {
+  min-width: 0;
+}
+.comparison-save .saved-studies {
+  margin: 0;
+  padding: 0 0 16px;
+}
+.comparison-save > .text-button {
+  margin-top: 8px;
+}
+.comparison-save .saved-study-actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+.comparison-save .saved-study-row {
+  flex-direction: column;
+  align-items: start;
+}
+.dialog-head {
+  position: sticky;
+  top: -24px;
+  z-index: 2;
+  margin: -24px -24px 20px;
+  padding: 16px 16px 12px 24px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.dialog :is(input, select, textarea, button) {
+  scroll-margin-block: 84px 20px;
+}
+#results-title {
+  scroll-margin-top: 100px;
+}
+.button:not(:disabled):active,
+.icon-button:active {
+  transform: translateY(1px);
+}
+.button:disabled:hover {
+  transform: none;
+}
+.market-intro,
+.page-title {
+  animation: workspace-enter 300ms ease-out both;
+}
+.dialog[open] {
+  animation: dialog-enter 180ms ease-out both;
+}
+@keyframes workspace-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (max-width: 1050px) {
+  .comparison-setup {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+  .comparison-save .saved-study-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .market-workspace {
+    grid-template-columns: minmax(0, 1fr) 270px;
+    column-gap: 24px;
+  }
+  .market-result {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .result-value {
+    padding: 12px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--color-border);
+  }
+}
+@media (max-width: 800px) {
+  .mobile-tool-link {
+    display: inline-flex;
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding-left: 0;
+  }
+  .market-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    margin-top: 20px;
+  }
+  .market-workspace > * {
+    width: 100%;
+  }
+  .study-panel {
+    padding: 16px;
+  }
+  .study-panel-heading {
+    margin-bottom: 12px;
+  }
+  .study-panel .saved-study-actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  .study-panel .saved-study-actions .primary {
+    flex-grow: 1;
+  }
+  .market-result {
+    grid-template-columns: minmax(0, 1fr) 210px;
+  }
+  .result-value {
+    padding: 0 0 0 20px;
+    border-top: 0;
+    border-left: 1px solid var(--color-border);
+  }
+  .study-tools .intake-actions > .button {
+    width: auto;
+  }
+}
+@media (max-width: 600px) {
+  .market-main {
+    padding-top: 20px;
+  }
+  .market-main .workspace-nav {
+    margin-bottom: 20px;
+  }
+  .has-results .workspace-nav {
+    display: none;
+  }
+  .market-intro h1 {
+    font-size: 32px;
+  }
+  .market-intro p {
+    font-size: 14px;
+  }
+  .market-search {
+    gap: 12px;
+  }
+  .market-search-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .market-search-actions .button {
+    font-size: 13px;
+    padding-inline: 10px;
+  }
+  .market-result {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 20px;
+  }
+  .result-value {
+    padding: 12px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--color-border);
+  }
+  .market-toolbar > svg {
+    display: none;
+  }
+  .market-toolbar {
+    gap: 2px;
+  }
+  .filter-button {
+    padding-inline: 8px;
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .study-tools {
+    padding: 20px;
+  }
+  .dialog {
+    max-height: calc(100dvh - 24px);
+  }
+  .dialog-head {
+    top: -20px;
+    margin: -20px -20px 16px;
+    padding: 12px 12px 12px 20px;
+  }
+  .dialog-actions {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+}

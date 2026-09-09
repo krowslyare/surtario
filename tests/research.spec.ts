@@ -6,7 +6,7 @@ test("sin configuración ofrece ejemplos y no simula búsqueda web", async ({
 }) => {
   await page.goto("/");
   await expect(
-    page.getByText("Búsqueda web no configurada.", { exact: false }),
+    page.getByText("La búsqueda web aún no está habilitada.", { exact: false }),
   ).toBeVisible();
   await page.getByLabel("Insumo o categoría").fill("Arroz");
   await expect(
