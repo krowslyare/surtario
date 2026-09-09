@@ -53,6 +53,10 @@ El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido repro
 
 Una comparación guardada permite preparar una solicitud, revisar su texto y copiarlo para WhatsApp. El correo requiere habilitación y destinatario de prueba configurados en servidor. Las respuestas vinculadas se revisan antes de editar condiciones; no registran compras ni precios automáticamente. Ver [configuración y límites de AgentMail](docs/desarrollo/AGENTMAIL.md). El envío y la recepción reales todavía no se han ejecutado.
 
+## Verificación de pull requests
+
+GitHub Actions ejecuta `npm ci`, `npm test` y `npm run build` en cada PR y al actualizar `main`, sin claves de sponsors ni despliegues. Incluye tests de Convex en memoria y transporte simulado. Los 35 E2E y el smoke del backend continúan como verificación local explícita: requieren un backend Convex local y no forman parte de ese check. Un check verde no acredita llamadas reales ni publicación.
+
 ## Añadir insumos
 
 Desde «Añadir lista o archivo», escribe un nombre por línea o elige un XLSX/CSV. Selecciona hoja, columna y encabezado; revisa los nombres antes de confirmar. Para fotos y PDF, transcribe manualmente: la extracción automática todavía no está conectada. Los precios de otras columnas se conservan como contexto, sin incorporarse automáticamente a ofertas.
@@ -120,7 +124,7 @@ Estado verificable y pasos para otro colaborador: [setup del agente](docs/desarr
 
 ## Revisión de cotizaciones
 
-«Revisar ejemplo de cotización» permite revisar campos con evidencia y preparar una comparación sin inventar el peso del saco. La UI usa un resultado sintético; la prueba OpenAI es una action interna separada, preparada para configurar clave y modelo. [Alcance, configuración y evidencia](docs/desarrollo/EXTRACCION_REVISION.md). Archivos reales, OCR y correo aún no están conectados. El [guardado de comparaciones y elección](docs/desarrollo/PERSISTENCIA_COMPARACIONES.md) admite los ejemplos de arroz y [revisiones de fuentes web guardadas](docs/desarrollo/REVISION_WEB_GUARDADA.md).
+«Revisar ejemplo de cotización» permite revisar campos con evidencia y preparar una comparación sin inventar el peso del saco. La UI usa un resultado sintético; la prueba OpenAI es una action interna separada, preparada para configurar clave y modelo. [Alcance, configuración y evidencia](docs/desarrollo/EXTRACCION_REVISION.md). Archivos reales y OCR aún no están conectados; el correo de prueba está preparado según la sección de cotizaciones. El [guardado de comparaciones y elección](docs/desarrollo/PERSISTENCIA_COMPARACIONES.md) admite los ejemplos de arroz y [revisiones de fuentes web guardadas](docs/desarrollo/REVISION_WEB_GUARDADA.md).
 
 ## Investigación web
 

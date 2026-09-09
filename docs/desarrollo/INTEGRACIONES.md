@@ -2,7 +2,7 @@
 
 Estado general: [ETAPAS.md](./ETAPAS.md). El 8 de septiembre quedó preparada la primera prueba interna de Firecrawl. No hay llamadas reales a sponsors verificadas.
 
-## Configuración mañana
+## Configuración de credenciales
 
 Las claves pertenecen al entorno **del backend Convex**, nunca a variables `VITE_*`, al chat ni a Git. `.env.local` configura la CLI y frontend local; copiar una clave allí no configura por sí solo una action de Convex.
 
@@ -18,9 +18,9 @@ La CLI instalada admite omitir el valor y pedirlo interactivamente. No ejecutar 
 | --- | --- | --- |
 | Firecrawl | `FIRECRAWL_API_KEY` con créditos | Adaptador y action interna `discovery:probe` implementados |
 | OpenAI | API key y proyecto con acceso al modelo que se seleccione | Prueba interna de texto sintético con `OPENAI_API_KEY` y `OPENAI_EXTRACTION_MODEL`; llamada real pendiente |
-| AgentMail | API key, inbox y destinatario de pruebas autorizado | Envío/recepción pendientes; aún no hay endpoint de webhook |
+| AgentMail | API key, inbox y destinatario de pruebas autorizado | Borrador, envío restringido y webhook firmado implementados; ida y vuelta real pendiente |
 
-No necesitas inventar endpoints ni construirlos. Para AgentMail hará falta una URL pública de recepción cuando implementemos el webhook y su verificación. Las cuentas y credenciales no equivalen a integración probada.
+No necesitas inventar endpoints ni construirlos. Para AgentMail hará falta una URL pública de recepción para registrar el endpoint `/agentmail/webhook` ya implementado. Las cuentas y credenciales no equivalen a integración probada.
 
 ## Prueba Firecrawl preparada
 
@@ -60,4 +60,18 @@ Extracción/revisión: ver [entrega independiente y pruebas](./EXTRACCION_REVISI
 
 ## Actualización: recorrido de investigación web
 
-La búsqueda y extracción ya tienen conexión a UI y almacenamiento de fuentes/propuestas, protegidos por `LIVE_RESEARCH_ENABLED` además de las claves. Los probes anteriores siguen internos e independientes. Consulta [búsqueda web](./BUSQUEDA_WEB.md) para el contrato actual y sus pruebas. La conexión implementada no equivale a una llamada externa ejecutada; resta validar con credenciales, persistir las correcciones revisadas y conectar correo.
+La búsqueda y extracción ya tienen conexión a UI y almacenamiento de fuentes/propuestas, protegidos por `LIVE_RESEARCH_ENABLED` además de las claves. Los probes anteriores siguen internos e independientes. Consulta [búsqueda web](./BUSQUEDA_WEB.md) para el contrato actual y sus pruebas. La conexión implementada no equivale a una llamada externa ejecutada; resta validar con credenciales. Las revisiones web y cotizaciones ya están implementadas; ver el recorrido vigente al final.
+
+
+## Recorrido vigente después del PR 6
+
+Los apartados de evidencia anteriores corresponden a entregas históricas. El código actual conecta búsqueda → extracción → revisión → comparación guardada → solicitud revisada → recepción de texto. Las fuentes web revisadas y la elección ya son recuperables. Ningún sponsor externo se ha probado todavía con credenciales reales.
+
+Orden de habilitación y prueba:
+
+1. Configurar Firecrawl y OpenAI, seleccionar el modelo y habilitar `LIVE_RESEARCH_ENABLED`. Ejecutar una búsqueda concreta, comprobar fuente/fecha y revisar la extracción antes de guardar. Ver [búsqueda web](BUSQUEDA_WEB.md).
+2. Recuperar la comparación tras recargar y comprobar que propuesta original, correcciones y condiciones siguen distinguiéndose. Ver [revisión guardada](REVISION_WEB_GUARDADA.md).
+3. Configurar AgentMail con un destinatario de prueba autorizado. Revisar el borrador antes de enviar. La recepción requiere URL pública registrada y secreto de firma. Ver [AgentMail](AGENTMAIL.md).
+4. Responder desde el buzón autorizado, comprobar vínculo y duplicados, revisar condiciones y guardar una decisión. Conservar el resultado real, incluidos fallos, antes de declarar completa la integración.
+
+No poner claves en GitHub Actions: el workflow de verificación usa tests en memoria y proveedores simulados. La configuración local debe mantener deshabilitados los servicios hasta que se decida ejecutar las pruebas reales.

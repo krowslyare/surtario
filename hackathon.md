@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T01:01:09Z
+- **Last updated:** 2026-09-09T01:14:24Z
 
 ## Log
 
@@ -100,3 +100,8 @@ Corregidas igualdad de evidencia en reintentos y validación de condiciones edit
 Solicitud persistente desde comparación guardada, revisión de texto/destino, copia manual para WhatsApp y envío AgentMail restringido por servidor (`convex/quotationMail.ts`, `src/components/QuotationMail.tsx`). Las respuestas requieren firma válida y correlación por buzón, hilo y remitente; duplicados y eventos sin correspondencia quedan separados. Recibir no modifica precios ni registra compras.
 Revisión adversarial de aislamiento e idempotencia; corregidos límites de respuesta, estados inciertos, hilos ambiguos y campos incompatibles en persistencia. 77 pruebas de dominio/backend, 35 E2E y build correctos. Envíos y webhooks probados con transporte/payloads sintéticos; borrador, recarga, portapapeles y móvil probados contra Convex local.
 Estado local confirmó correo deshabilitado. Sin credenciales, envíos reales, registro externo de webhook ni despliegue público. Configuración y reconciliación pendiente documentadas en `docs/desarrollo/AGENTMAIL.md`. Se prepara PR separado sobre persistencia de revisión web.
+
+
+### 2026-09-08 - working tree · verificación de PR y entrega de integraciones
+Añadido workflow GitHub Actions de instalación reproducible, 77 tests de dominio/backend y build/tipos, sin secretos ni despliegue. Las actions quedan fijadas por SHA y el token solo tiene lectura. E2E con Convex local siguen separados del check automatizado.
+Actualizadas las guías de integraciones, README, etapas y guion del video para reflejar búsqueda, revisión persistente y correo ya implementados. Las llamadas reales, hosting y grabación siguen pendientes. Tests y build comprobados localmente; ejecución remota del workflow se verifica en el PR.
