@@ -164,7 +164,26 @@ export const reserve = internalMutation({
         "El análisis está desactualizado. Prepara uno nuevo.",
       );
     await ctx.db.patch(run._id, { status: "running" });
+    // Keep interruption recovery independent of the action that calls the model.
+    await ctx.scheduler.runAfter(120_000, internal.advisor.expire, {
+      id: run._id,
+    });
     return { fresh: true, run: view({ ...run, status: "running" }) };
+  },
+});
+export const expire = internalMutation({
+  args: { id: v.id("advisorRuns") },
+  returns: v.null(),
+  handler: async (ctx, { id }) => {
+    const run = await ctx.db.get(id);
+    if (run?.status === "running") {
+      await ctx.db.patch(id, {
+        status: "failed",
+        error:
+          "El análisis de IA no terminó a tiempo. El cálculo se conserva; no se reintenta automáticamente.",
+      });
+    }
+    return null;
   },
 });
 export const finish = internalMutation({

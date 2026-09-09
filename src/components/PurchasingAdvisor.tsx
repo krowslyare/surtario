@@ -189,13 +189,6 @@ function Connected({
   const pending = useRef<{ key: string; clientId: string } | null>(null);
   const currentComparison = useRef(comparisonId);
   currentComparison.current = comparisonId;
-  useEffect(() => {
-    setActive(null);
-    setContext({ ...defaultAdvisorContext });
-    setRaw({});
-    setError("");
-    pending.current = null;
-  }, [comparisonId]);
   const persisted = active && runs?.find((run) => run.id === active.id);
   const selected =
     persisted && persisted.status !== "calculated" ? persisted : active;

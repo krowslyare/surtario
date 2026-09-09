@@ -8,11 +8,11 @@
 - **Frontend:** not deployed
 - **Convex deployment:** not deployed
 - **Components:** @convex-dev/agent
-- **Convex features:** schema, indexes, queries, mutations, internal action, realtime queries (local)
+- **Convex features:** schema, indexes, queries, mutations, internal action, scheduled mutations, realtime queries (local)
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T20:41:04Z
+- **Last updated:** 2026-09-09T21:29:43Z
 
 ## Log
 
@@ -227,3 +227,8 @@ Independent review found unreachable old queue entries and duplicate receipt ass
 ### 2026-09-09 - working tree · saved ingredient lists
 Added session-owned storage of reviewed manual/XLSX/CSV ingredient names and recovery after reload. File bytes, other columns and document transcriptions are not part of the stored contract.
 Parent review caught a late-save confirmation affecting a replacement queue; a browser regression now verifies the correction. 121 combined domain/backend tests, build and ten focused browser cases passed against an isolated local Convex backend. No external provider calls or deployment.
+
+
+### 2026-09-09 - working tree · PR 14 local review
+Preserved decision context during the first comparison save and added scheduled recovery for interrupted advisor executions. Expiry keeps deterministic results and prevents a late model completion from replacing a failed state; it never retries a provider.
+Independent Sol review was adjudicated and corrected. 112 domain/backend tests, frontend/backend typechecks, build and three advisor browser journeys passed. Browser checks used the existing synthetic local backend; changed backend behavior was verified in memory. No real provider calls or public deployment.
