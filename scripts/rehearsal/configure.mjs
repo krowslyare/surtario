@@ -52,6 +52,15 @@ config ??= {
 };
 if (config.siteUrl !== `http://127.0.0.1:${local.ports.site}`)
   throw new Error("Rehearsal backend changed; inspect configuration first.");
+// Normalize existing, empty or duplicate flags before enabling simulated providers.
+const rehearsalEnv = envText.replace(
+  /^\s*(?:export\s+)?VITE_REHEARSAL\s*=.*$/gm,
+  "",
+);
+await writeFile(
+  ".env.local",
+  rehearsalEnv.trimEnd() + "\nVITE_REHEARSAL=true\n",
+);
 await writeFile(
   ".local/rehearsal/bridge.json",
   JSON.stringify(config, null, 2),
@@ -84,8 +93,6 @@ for (const [key, value] of Object.entries(values)) {
     throw new Error(`Could not configure ${key} on the local backend.`);
   }
 }
-if (!/^VITE_REHEARSAL=/m.test(envText))
-  await writeFile(".env.local", envText + "\nVITE_REHEARSAL=true\n");
 console.log(
   "Local rehearsal configured. Start the bridge and Vite in separate terminals.",
 );

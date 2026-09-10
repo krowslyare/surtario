@@ -375,8 +375,8 @@
 }
 /* Explicitly distinguishes the local provider rehearsal from live integrations. */
 .rehearsal-notice {
-  background: #f3e6bc;
-  color: #423916;
+  background: var(--color-warning-surface);
+  color: var(--color-warning);
   padding: 0.6rem 1rem;
   text-align: center;
   font-size: 0.8rem;
