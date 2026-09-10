@@ -55,8 +55,14 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   await review
     .getByRole("button", { name: "Guardar candidato", exact: true })
     .click();
-  await expect(review).toContainText("Candidato guardado.");
-  await page.keyboard.press("Escape");
+  await expect(review).not.toBeVisible();
+  await page.getByRole("button", { name: "Mi estudio 1", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Guardar estudio", exact: true })
+    .click();
+  await expect(
+    page.getByText("Estudio guardado con 1 opción", { exact: false }),
+  ).toBeVisible();
   await page.reload();
   const library = page.getByRole("region", {
     name: "Distribuidores web guardados",
@@ -74,7 +80,17 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     ),
   ).toBe(true);
   await page.screenshot({ path: "/tmp/web-prospect-mobile.png" });
-  await library
+  await page
+    .getByRole("button", { name: "Guardados (1)", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Abrir estudio", exact: true })
+    .click();
+  const candidate = page.getByRole("article", {
+    name: "Distribuidor en estudio: Distribuidor candidato E2E",
+  });
+  await expect(candidate).toContainText("Precio por consultar");
+  await candidate
     .getByRole("button", { name: "Preparar solicitud de prueba" })
     .click();
   const mail = page.getByRole("dialog");
@@ -87,6 +103,12 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   ).toBeDisabled();
   await page.keyboard.press("Escape");
   await page.reload();
-  await library.getByRole("button", { name: "Ver solicitud" }).click();
+  await page
+    .getByRole("button", { name: "Guardados (1)", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Abrir estudio", exact: true })
+    .click();
+  await candidate.getByRole("button", { name: "Ver solicitud" }).click();
   await expect(page.getByRole("dialog")).toContainText("Borrador");
 });

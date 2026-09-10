@@ -1,17 +1,52 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { savedStudyValidator } from "./studyValidators";
+import { webReviewInputValidator } from "./comparisonValidators";
+import { extractionFields } from "../src/domain/extraction";
+import { sameStudyContext, type WebSelection } from "../src/domain/study";
+import { reconstructWebReview } from "./lib/webReviews";
 import { marketExamples } from "../fixtures/market";
 import type { Doc } from "./_generated/dataModel";
 
+function reviewedSelectionKey(items: WebSelection[]) {
+  return JSON.stringify(
+    items
+      .map(({ sourceId, seed }) => [
+        sourceId,
+        ...extractionFields.map(
+          (field) => seed.sources[sourceId].webReview?.values[field],
+        ),
+      ])
+      .sort((a, b) => String(a[0]).localeCompare(String(b[0]))),
+  );
+}
 const MAX_PER_SESSION = 10;
 const MAX_DEMO_STUDIES = 500;
 
 import { ownerHash } from "./lib/demoSession";
 function publicStudy(study: Doc<"studies">) {
-  const { _id, term, region, results, selectedIds, revision, updatedAt } =
-    study;
-  return { id: _id, term, region, results, selectedIds, revision, updatedAt };
+  const {
+    _id,
+    term,
+    region,
+    results,
+    selectedIds,
+    webSelections,
+    prospects,
+    revision,
+    updatedAt,
+  } = study;
+  return {
+    id: _id,
+    term,
+    region,
+    results,
+    selectedIds,
+    webSelections,
+    prospects,
+    revision,
+    updatedAt,
+  };
 }
 export const list = query({
   args: { token: v.string() },
@@ -34,6 +69,8 @@ export const save = mutation({
     term: v.string(),
     region: v.string(),
     selectedIds: v.array(v.string()),
+    webReviews: v.optional(v.array(webReviewInputValidator)),
+    prospectIds: v.optional(v.array(v.id("webProspects"))),
   },
   returns: savedStudyValidator,
   handler: async (ctx, args) => {
@@ -45,26 +82,78 @@ export const save = mutation({
       args.expectedRevision < 0
     )
       throw new ConvexError("Revisión no válida.");
-    // An anonymous caller cannot store arbitrary documents, names, prices or contacts.
-    const term = args.term.trim();
+    const reviews = args.webReviews ?? [];
+    const prospectIds = args.prospectIds ?? [];
     if (
-      !["arroz", "abarrotes", "abarrotes secos"].includes(term.toLowerCase()) ||
-      args.region !== "Lima"
-    ) {
+      reviews.length > 3 ||
+      prospectIds.length > 3 ||
+      new Set(reviews.map((r) => `${r.runId}:${r.sourceIndex}`)).size !==
+        reviews.length ||
+      new Set(prospectIds).size !== prospectIds.length
+    )
       throw new ConvexError(
-        "Por ahora solo se guardan estudios del ejemplo de arroz y abarrotes en Lima.",
+        "Selecciona hasta tres ofertas web y tres distribuidores distintos.",
       );
+    const webSelections = [];
+    for (const review of reviews) {
+      const seed = await reconstructWebReview(ctx, hash, review);
+      const run = (await ctx.db.get("researchRuns", review.runId))!;
+      webSelections.push({
+        ingredient: run.ingredient,
+        region: run.region,
+        sourceId: `${review.runId}:${review.sourceIndex}`,
+        seed,
+      });
     }
+    const prospects = [];
+    for (const id of prospectIds) {
+      const item = await ctx.db.get("webProspects", id);
+      if (!item || item.ownerHash !== hash)
+        throw new ConvexError("Distribuidor no disponible en esta sesión.");
+      const { _id, _creationTime: _time, ownerHash: _owner, ...content } = item;
+      const origin = await ctx.db.get("researchRuns", content.runId);
+      prospects.push({
+        id: _id,
+        ...content,
+        simulated: content.simulated ?? origin?.simulated ?? false,
+      });
+    }
+    // Persist only server-owned evidence; never accept an arbitrary source snapshot.
+    const contextId = reviews[0]?.runId ?? prospects[0]?.runId;
+    const context = contextId
+      ? await ctx.db.get("researchRuns", contextId)
+      : null;
+    const term = context?.ingredient ?? args.term.trim();
+    const region = context?.region ?? args.region;
+    if (
+      !context &&
+      (!["arroz", "abarrotes", "abarrotes secos"].includes(
+        term.toLowerCase(),
+      ) ||
+        region !== "Lima")
+    )
+      throw new ConvexError(
+        "Por ahora solo se guardan estudios del ejemplo o fuentes web revisadas.",
+      );
     const selectedIds = [...new Set(args.selectedIds)];
     if (
       args.selectedIds.length > 4 ||
-      !selectedIds.length ||
+      (!selectedIds.length && !webSelections.length && !prospects.length) ||
       selectedIds.some((id) => !marketExamples.some((item) => item.id === id))
-    ) {
+    )
       throw new ConvexError(
-        "Selecciona entre una y cuatro opciones del ejemplo.",
+        "Selecciona entre una y cuatro opciones del ejemplo, una oferta web o un distribuidor revisado.",
       );
-    }
+    if (
+      context &&
+      (webSelections.some((item) => !sameStudyContext(context, item)) ||
+        prospects.some((item) => !sameStudyContext(context, item)) ||
+        (selectedIds.length > 0 &&
+          !sameStudyContext(context, { ingredient: "Arroz", region: "Lima" })))
+    )
+      throw new ConvexError(
+        "Este estudio reúne un insumo y una zona. Guarda la selección e inicia otro estudio para cambiar de investigación.",
+      );
     if (args.id) {
       const study = await ctx.db.get("studies", args.id);
       if (!study || study.ownerHash !== hash)
@@ -76,8 +165,10 @@ export const save = mutation({
       // Preserve the original source snapshot when updating selection.
       await ctx.db.patch("studies", study._id, {
         term,
-        region: args.region,
+        region,
         selectedIds,
+        webSelections,
+        prospects,
         revision: study.revision + 1,
         updatedAt: Date.now(),
       });
@@ -94,7 +185,12 @@ export const save = mutation({
     if (existing) {
       if (
         existing.term !== term ||
-        existing.region !== args.region ||
+        existing.region !== region ||
+        reviewedSelectionKey(existing.webSelections ?? []) !==
+          reviewedSelectionKey(webSelections) ||
+        JSON.stringify(
+          (existing.prospects ?? []).map((item) => item.id).sort(),
+        ) !== JSON.stringify([...prospectIds].sort()) ||
         existing.selectedIds.length !== selectedIds.length ||
         selectedIds.some((id) => !existing.selectedIds.includes(id))
       ) {
@@ -109,7 +205,7 @@ export const save = mutation({
       .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
       .take(MAX_PER_SESSION);
     if (own.length >= MAX_PER_SESSION)
-      throw new ConvexError("Esta sesión admite hasta 10 estudios de ejemplo.");
+      throw new ConvexError("Esta sesión admite hasta 10 estudios.");
     const all = await ctx.db
       .query("studies")
       .withIndex("by_creation_time")
@@ -120,9 +216,11 @@ export const save = mutation({
       ownerHash: hash,
       clientId: args.clientId,
       term,
-      region: args.region,
+      region,
       results: marketExamples,
       selectedIds,
+      webSelections,
+      prospects,
       revision: 1,
       updatedAt: Date.now(),
     });

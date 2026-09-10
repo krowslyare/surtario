@@ -1,4 +1,17 @@
 import { v } from "convex/values";
+import { comparisonContent } from "./comparisonValidators";
+import { savedProspect } from "./prospectValidators";
+
+export const webSelectionValidator = v.object({
+  sourceId: v.string(),
+  ingredient: v.optional(v.string()),
+  region: v.optional(v.string()),
+  seed: v.object({
+    request: comparisonContent.request,
+    offers: comparisonContent.offers,
+    sources: comparisonContent.sources,
+  }),
+});
 
 const nullableNumber = v.union(v.number(), v.null());
 const nullableString = v.union(v.string(), v.null());
@@ -52,6 +65,8 @@ export const studyContent = {
   region: v.string(),
   results: v.array(marketResultValidator),
   selectedIds: v.array(v.string()),
+  webSelections: v.optional(v.array(webSelectionValidator)),
+  prospects: v.optional(v.array(savedProspect)),
   revision: v.number(),
   updatedAt: v.number(),
 };

@@ -29,6 +29,7 @@ import type * as lib_firecrawl from "../lib/firecrawl.js";
 import type * as lib_providerTransport from "../lib/providerTransport.js";
 import type * as lib_sourceQuality from "../lib/sourceQuality.js";
 import type * as lib_webAnalysis from "../lib/webAnalysis.js";
+import type * as lib_webReviews from "../lib/webReviews.js";
 import type * as prospectValidators from "../prospectValidators.js";
 import type * as prospects from "../prospects.js";
 import type * as quotationMail from "../quotationMail.js";
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   "lib/providerTransport": typeof lib_providerTransport;
   "lib/sourceQuality": typeof lib_sourceQuality;
   "lib/webAnalysis": typeof lib_webAnalysis;
+  "lib/webReviews": typeof lib_webReviews;
   prospectValidators: typeof prospectValidators;
   prospects: typeof prospects;
   quotationMail: typeof quotationMail;

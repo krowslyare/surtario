@@ -118,6 +118,7 @@ export const save = mutation({
       sourceUrl: source.url,
       observedAt: source.observedAt ?? run.observedAt,
       createdAt: Date.now(),
+      simulated: run.simulated ?? false,
     });
     return view((await ctx.db.get(id))!);
   },
