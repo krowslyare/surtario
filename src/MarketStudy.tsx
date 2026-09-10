@@ -601,7 +601,8 @@ export default function MarketStudy({
             independiente.
           </span>
           <span>
-            Fuentes y contactos ficticios. No se han enviado consultas.
+            Los ejemplos usan fuentes y contactos ficticios. Cada envío de
+            correo requiere revisión y autorización.
           </span>
         </footer>
       </main>

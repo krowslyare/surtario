@@ -34,3 +34,20 @@ Record actual outcomes and provider latency in the stage evidence. Do not commit
 Use one ingredient throughout: research → review → saved comparison → advisor cash/negotiation decision → approved test email → reviewed reply → updated scenario. Keep the executive recommendation, impact and pending condition visible. If email latency requires a previously received response, identify it as a prior test and preserve its actual request link. The rehearsal is not a recorded or submitted video.
 
 The commercial stage still requires restaurant access, authenticated accounts, private-document handling and measured usefulness. Recipes and purchase history are separate extensions; they do not block the agreed hackathon decision flow.
+
+
+## Recorded development run — September 9, 2026
+
+The author authorized configuration through the logged-in Chrome provider consoles. The target was a newly created, dedicated Convex cloud development deployment; production was not used. Keys and the signing secret were transferred directly into backend environment fields. No secret values or message bodies are included in this record.
+
+| Check | Observed result | Limit |
+| --- | --- | --- |
+| Firecrawl internal discovery probe | At 21:48 UTC, the rice/Lima query returned three sources from Makro, Costeño and Mundo Abarrotes without an adapter warning | Catalog sources only; OpenAI extraction, price validity and delivery coverage unverified |
+| Approved AgentMail request | The browser displayed the frozen owned test recipient and exact text before approval; AgentMail accepted it and the second owned inbox received it | Synthetic study without a quantity or published price; no real supplier contacted |
+| Signed reply and duplicate | The reply appeared under the original request; Svix reported `200 Accepted`. Replaying the same received event succeeded; one linked reply remained | One real request/reply; no real timeout or operator reconciliation exercised |
+| Reviewed offer | Manual confirmation produced PEN 48 per 10 kg; confirmed synthetic conditions produced PEN 96 for 20 kg. Save/open recovered the same comparison and reply provenance | No automatic email extraction, purchase or measured savings |
+| Hosting | Development upload, root/assets build match, SPA fallback, missing asset 404 and unsigned webhook 400 passed | Final contest release and complete hosted two-session provider flow remain pending |
+
+OpenAI remained unconfigured because the intended account/project needed confirmation. Its extraction, document and advisor gates remain off; the public web-research gate also stays off until its OpenAI dependency is tested. Firecrawl's successful internal probe does not imply that the public research flow was exercised. AgentMail is enabled only with the configured test destination.
+
+Provider latency was not instrumented during this manual run; timestamps do not establish a latency benchmark. The pre-existing 126 unit/backend tests and 49 local browser journeys used simulated or disabled providers and remain separate evidence. The real run found and corrected a static footer that incorrectly claimed no consultations had been sent; it now explains the per-send review requirement.

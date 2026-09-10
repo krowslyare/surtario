@@ -1,31 +1,52 @@
-# Convex hosting preparation
+# Convex development hosting
 
-The application is configured with `@convex-dev/static-hosting` 0.2.1, the official component for serving a React/Vite application at `https://<deployment>.convex.site`. This delivery prepares code only: it has not created a cloud deployment, uploaded files, or produced a public URL.
+The React/Vite application uses `@convex-dev/static-hosting` 0.2.1. A dedicated cloud development preview was published and checked on September 9, 2026:
+
+- Frontend: https://incredible-wolverine-122.convex.site
+- Backend: https://incredible-wolverine-122.convex.cloud
+- Target: `restaurant-procurement`, development deployment `incredible-wolverine-122`.
+
+This is a development preview. Final demo acceptance, production release and contest submission remain separate work; current stage status lives in [ETAPAS.md](ETAPAS.md).
 
 ## Routing contract
 
-The component is registered without taking ownership of the root router. `convex/http.ts` keeps `POST /agentmail/webhook` as an exact application route and registers the static fallback afterward. The webhook therefore keeps its current URL, while extensionless SPA routes fall back to `index.html`. Missing assets with file extensions continue to return 404.
+The component is registered without taking ownership of the root router. `convex/http.ts` keeps `POST /agentmail/webhook` as an exact application route and registers the static fallback afterward. Extensionless SPA routes fall back to `index.html`; missing assets with file extensions return 404.
 
-The hosting CLI builds Vite with the `VITE_CONVEX_URL` for the selected deployment and publishes `dist/` atomically. OpenAI, Firecrawl, and AgentMail credentials belong only to the Convex backend environment and must never enter the frontend bundle.
+The upload CLI resolves the selected component's backend/site URLs, builds Vite with its public `VITE_CONVEX_URL`, and publishes `dist/` atomically. OpenAI, Firecrawl and AgentMail credentials belong only to the Convex backend environment and must never enter the frontend bundle.
 
-All provider capabilities remain off when their explicit server gates are absent. `LIVE_RESEARCH_ENABLED`, `DOCUMENT_EXTRACTION_ENABLED`, `AGENTMAIL_ENABLED`, and `ADVISOR_ENABLED` each require the exact value `true` together with their corresponding server credentials. `OPENAI_ADVISOR_MODEL` selects the advisor model when that capability is enabled; it is backend configuration, not a `VITE_*` variable or a substitute for `OPENAI_API_KEY`.
+Provider capabilities require their explicit server gates and corresponding credentials. Uploading frontend assets does not enable a provider. The configured test destination and per-send review still apply on the hosted app.
 
-## Local checks without credentials
+## Local check
 
 ```sh
 npm ci
 npm run check:hosting
-npm test -- --run convex/quotationMail.test.ts
 ```
 
-The hosting check runs TypeScript and the Vite build, confirms that `dist/index.html` references existing assets, and rejects backend secret variable names found in generated HTML, JavaScript, or CSS. The focused router test confirms that the exact AgentMail webhook still responds with 503 when its server secret is absent while the static GET fallback is registered. These checks do not validate real HTTP caching, storage, or SPA fallback behavior because that requires uploading to a Convex deployment.
+The check runs TypeScript and Vite, confirms entry assets exist, and rejects backend secret variable names in generated HTML, JavaScript or CSS. It does not itself publish files or prove HTTP behavior.
 
-## Remaining deployment steps
+## Publish to the selected development deployment
 
-1. Sign in to Convex and confirm the exact cloud deployment. Do not reuse a deployment from another project.
-2. Keep all four provider gates absent until each capability's credentials and model configuration have been tested separately.
-3. Run `npm run deploy:hosting`. This command builds with the backend URL, deploys the Convex backend, and uploads `dist/`. It changes remote state and publishes a URL, so it is intentionally not run during this preparation.
-4. Use `GET` to verify the root document, a hashed asset, and an SPA route after reload. Verify that `POST /agentmail/webhook` without its secret returns 503. Convex HTTP does not currently support `HEAD` for this hosting check.
-5. Run the public demo flow in two isolated sessions with synthetic data before describing the demo as published.
+1. Authenticate with Convex and confirm the project, development deployment and frontend backend URL. Do not reuse another project's selector or set a production deploy key.
+2. Deploy the backend to that development target with `npx convex dev --once`. For the first cloud setup, select the existing project and cloud development explicitly through `npx convex dev --configure existing --dev-deployment cloud --once`.
+3. Confirm the registered component's public URLs with `npx convex run --component staticHosting lib:getUrls`.
+4. Run `npm run deploy:hosting:dev`. It invokes `upload --dev --build-command "npm run check:hosting"`: the build check must pass before upload. This uploads frontend assets only; backend changes require step 2.
+5. Verify with GET requests and a real browser. Convex HTTP does not currently support HEAD for this check.
 
-API sources checked on September 9, 2026: the published README for `@convex-dev/static-hosting` 0.2.1 and the served Convex capability catalog. The final URL, cloud deployment, cache behavior, and hosted HTTP behavior remain unverified.
+The original `npm run deploy:hosting` command runs the component's one-shot `deploy`, which selects **production** for URL resolution, backend deployment and upload. Do not use it for development verification. These command behaviors were checked in the installed 0.2.1 CLI source and the development upload was executed successfully.
+
+## Observed HTTP behavior
+
+At 22:01 UTC on September 9, 2026:
+
+| Request | Result |
+| --- | --- |
+| `GET /` | 200 HTML, byte-for-byte match with the build; `public, max-age=0, must-revalidate` |
+| Entry JavaScript and CSS | 200, SHA-256 matches with local build files; `public, max-age=31536000` |
+| `GET /comparison` | 200 with the same SPA shell |
+| Missing `.js` asset | 404 |
+| Unsigned `POST /agentmail/webhook` | 400 `Invalid signature`; the configured exact route was preserved |
+
+Earlier in the same run, a real signed AgentMail reply returned `200 Accepted`; replaying that event succeeded without duplicating the reply. Without a configured signing secret, the route instead returns 503 as covered by the local router test.
+
+Chrome loaded the hosted app, displayed an empty fixture search correctly, and saved/recovered a synthetic rice study in a fresh page. The HTTPS-origin session did not inherit the localhost session's saved study or email request. This smoke check does not replace the complete hosted two-session provider journey. OpenAI extraction and advisor calls remain pending; see [provider acceptance evidence](CREDENTIALS_AND_E2E.md).

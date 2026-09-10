@@ -12,9 +12,9 @@ The demo does not require recipes, purchase history, stock or a document. Suppli
 - Compare whole packages, minimum orders, freight, confirmed tax conditions, excess and cash outlay. Unknown critical values remain pending.
 - Set purchasing priorities, available budget, confirmed daily usage/stock and maximum coverage. Save an executive verdict, inspect alternatives and copy a negotiation draft. An optional Agent action explains the saved scenario using read-only calculation and evidence tools. Changed inputs visibly invalidate old analyses.
 - Prepare an explicitly reviewed quotation email to one configured test recipient. Review linked replies before adding an offer; internal operator recovery handles uncertain sends and unmatched replies without resending.
-- Prepare Convex static hosting while preserving the AgentMail webhook route.
+- Serve the development preview through Convex static hosting while preserving the signed AgentMail webhook route.
 
-**Verification boundary:** the combined application is tested locally with synthetic data and simulated providers. No real OpenAI, Firecrawl or AgentMail request has been verified. No public deployment or submitted video exists. Current stage status is maintained only in [ETAPAS.md](docs/desarrollo/ETAPAS.md).
+**Verification boundary:** real Firecrawl discovery and an AgentMail test round trip were verified on a dedicated Convex development deployment on September 9, 2026. The signed reply was reviewed, saved as an offer and recovered; replaying its webhook did not duplicate the reply. OpenAI extraction/advice and the complete provider journey remain unverified. The [development preview](https://incredible-wolverine-122.convex.site) is reachable over HTTPS; it is not the final contest release. No video has been submitted. Current stage status is maintained only in [ETAPAS.md](docs/desarrollo/ETAPAS.md).
 
 Verified locally: **126 unit/backend tests and 49 browser journeys passed**, including the demo rehearsal. Frontend/backend typechecks and the hosting build check also passed. Provider transports were simulated or disabled.
 
@@ -62,7 +62,7 @@ Follow the [credential and complete E2E procedure](docs/desarrollo/CREDENTIALS_A
 
 AgentMail needs an author-approved test recipient, a public HTTPS callback and a webhook signing secret. The UI requires review before sending; copied WhatsApp/negotiation drafts are not sent by the app. A timeout does not authorize an automatic retry.
 
-The [hosting procedure](docs/desarrollo/HOSTING.md) explains the selected target and route checks. `npm run deploy:hosting` publishes backend and frontend; it is a separate remote operation, not part of the local readiness command.
+The [hosting procedure](docs/desarrollo/HOSTING.md) explains target selection and verified HTTP behavior. `npm run deploy:hosting:dev` builds, checks and uploads the frontend to the configured development deployment after its backend has been deployed. The original `npm run deploy:hosting` targets production and publishes backend and frontend; do not use it for the development acceptance flow. Both are remote operations, separate from local readiness checks.
 
 ## Contracts and development
 

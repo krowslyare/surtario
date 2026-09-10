@@ -2,7 +2,11 @@
 
 Verificado el 7 de septiembre de 2026 en Codex Desktop para macOS, con shell zsh y soporte de skills locales en `.agents/skills/`.
 
-## Estado
+## September 9 update
+
+Convex CLI login and a dedicated cloud development project are now configured. Firecrawl discovery, an approved AgentMail round trip with signed duplicate delivery, and development static hosting were verified using Chrome and the CLI. OpenAI account/project confirmation remains pending. This does not establish MCP deployment access. Current stage status and evidence are in [ETAPAS.md](ETAPAS.md) and [provider acceptance](CREDENTIALS_AND_E2E.md).
+
+## September 7 baseline
 
 - Plugin global `convex@convex-codex-plugin` 1.10.0 instalado y habilitado. Marketplace oficial `get-convex/convex-codex-plugin` verificado mediante el listado de Codex.
 - Plugin y skills locales disponibles en la sesión de implementación. El MCP es invocable; su `status` devolvió autorización pendiente incluso con backend local. No se afirma acceso MCP al despliegue.
