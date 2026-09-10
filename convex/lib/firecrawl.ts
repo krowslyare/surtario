@@ -28,6 +28,9 @@ function cleanPageStatus(value: unknown) {
     value === 304
   );
 }
+function sameReportedPage(value: unknown, target: string) {
+  return typeof value !== "string" || publicSourceUrl(value) === target;
+}
 export function parseDiscovery(value: unknown): DiscoveryResult {
   const body = record(value);
   const web = record(body.data).web;
@@ -48,6 +51,8 @@ export function parseDiscovery(value: unknown): DiscoveryResult {
     seen.add(url);
     const markdown =
       cleanPageStatus(metadata.statusCode) &&
+      sameReportedPage(metadata.sourceURL, url) &&
+      sameReportedPage(metadata.url, url) &&
       typeof page.markdown === "string" &&
       page.markdown.trim()
         ? page.markdown
