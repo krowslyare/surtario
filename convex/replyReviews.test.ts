@@ -7,6 +7,7 @@ import { ownerHash } from "./lib/demoSession";
 import {
   canAutoApplyReplySuggestion,
   prepareReplyOffer,
+  reconcileReplyExtraction,
 } from "../src/domain/replyReview";
 const modules = import.meta.glob("./**/*.ts");
 const token = "a".repeat(64);
@@ -243,6 +244,50 @@ test("late suggestions auto-apply only to an untouched empty review", () => {
   expect(
     canAutoApplyReplySuggestion(0, 0, { ...empty, supplier: "Manual" }),
   ).toBe(false);
+});
+test("a live completed extraction replaces running state without overwriting edits", () => {
+  const empty = {
+    supplier: "",
+    ingredient: "",
+    specification: "",
+    packageContent: "",
+    packageUnit: "",
+    price: "",
+    currency: "",
+  };
+  const extraction = {
+    supplier: { value: "Proveedor", evidence: "Proveedor" },
+    ingredient: { value: "Arroz", evidence: "Arroz" },
+    specification: { value: null, evidence: null },
+    packageContent: { value: null, evidence: null },
+    packageUnit: { value: null, evidence: null },
+    price: { value: null, evidence: null },
+    currency: { value: null, evidence: null },
+  };
+  const running = {
+    extraction: null,
+    extractionStatus: "running" as const,
+    extractionError: null,
+    extractionAttempts: 1,
+    extractionAttempt: null,
+  };
+  const complete = {
+    extraction,
+    extractionStatus: "complete" as const,
+    extractionError: null,
+    extractionAttempts: 1,
+    extractionAttempt: 1,
+  };
+  expect(reconcileReplyExtraction(running, complete, 0, empty).kind).toBe(
+    "apply",
+  );
+  const edited = { ...empty, supplier: "Mi corrección" };
+  const update = reconcileReplyExtraction(running, complete, 1, edited);
+  expect(update.kind).toBe("pending");
+  expect(edited.supplier).toBe("Mi corrección");
+  expect(reconcileReplyExtraction(complete, running, 0, empty).kind).toBe(
+    "ignore",
+  );
 });
 test("an invalid signed reply timestamp stays pending without inventing a date", async () => {
   const { t, args, reply } = await setup();

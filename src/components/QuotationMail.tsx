@@ -117,6 +117,11 @@ function Connected({
     localActive && (!persisted || localActive.revision > persisted.revision)
       ? localActive
       : (persisted ?? localActive);
+  const liveReviewReply = reviewReply
+    ? requests
+        ?.find((request) => request.id === reviewReply.requestId)
+        ?.replies.find((reply) => reply.messageId === reviewReply.messageId)
+    : undefined;
   useEffect(() => {
     setActiveId(null);
     setReviewReply(null);
@@ -350,7 +355,18 @@ function Connected({
       )}
       {reviewReply && onPrepare && (
         <ReplyOfferReview
-          reply={reviewReply}
+          reply={{
+            ...reviewReply,
+            ...(liveReviewReply
+              ? {
+                  extraction: liveReviewReply.extraction,
+                  extractionStatus: liveReviewReply.extractionStatus,
+                  extractionError: liveReviewReply.extractionError,
+                  extractionAttempts: liveReviewReply.extractionAttempts,
+                  extractionAttempt: liveReviewReply.extractionAttempt,
+                }
+              : {}),
+          }}
           token={token}
           aiEnabled={status?.extractionEnabled ?? false}
           onClose={() => setReviewReply(null)}
