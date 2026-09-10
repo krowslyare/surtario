@@ -154,7 +154,7 @@ async function reconstructDocumentReview(
         title: `Transcripción automática · cotización sintética · ${run.kind}`,
         text: run.result.transcript,
         observedAt: new Date(run.createdAt).toISOString().slice(0, 10),
-        simulated: false,
+        simulated: true,
         url: `/examples/cotizacion-demo.${run.kind === "pdf" ? "pdf" : "png"}`,
       },
       run.result.offer,

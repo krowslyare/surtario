@@ -61,6 +61,7 @@ test("document correction, original, source and decision survive save, retry and
   expect(saved.sources[id].marketSource?.url).toBe(
     "/examples/cotizacion-demo.pdf",
   );
+  expect(saved.sources[id].marketSource?.simulated).toBe(true);
   expect(
     saved.sources[id].marketSource?.evidence.split(
       "\n\nRevisión con correcciones manuales:",
@@ -83,6 +84,7 @@ test("document correction, original, source and decision survive save, retry and
   });
   expect(updated.sources[id].extraction).toEqual(saved.sources[id].extraction);
   expect(updated.sources[id].original.priceCents).toBe(8500);
+  expect(updated.sources[id].marketSource?.simulated).toBe(true);
   expect(updated.offers[0].priceCents).toBe(9000);
   expect(updated.sources[id].edited).toBe(true);
   await expect(

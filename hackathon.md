@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-10T00:49:00Z
+- **Last updated:** 2026-09-10T01:00:00Z
 
 ## Log
 
@@ -274,4 +274,4 @@ The first live model attempt exposed a missing Agent context scope; all stateles
 ### 2026-09-10 - 51fdbcd · review corrections and integration
 GitHub Codex reviewed the provider, UI and rehearsal PRs. PRs #18 and #19 were merged; independent local review caught stale example results after changing to a live query. The fix preserves saved research and study selections, with a browser regression and a second clean Codex review.
 Rehearsal configuration now enforces its visible notice before enabling simulated providers and uses shared warning colors. Research runs and mail send reservations retain server-derived synthetic provenance through review, comparison and advisor tools; legacy records remain unchanged. Computer use also corrected review copy that confused synthetic source content with whether extraction used a model.
-147 unit/backend/configuration tests, frontend/backend typechecks and hosting checks passed. All 51 browser journeys were verified across the full run and the two corrected fixture cases. In-app browser computer use confirmed the search transition, retained selection and one fresh Luna extraction; Chrome control timed out. No cloud deployment, external email, public repository change or contest submission occurred. PR #20 final GitHub review and merge remain pending at this entry.
+147 unit/backend/configuration tests, frontend/backend typechecks and hosting checks passed. All 51 browser journeys were verified across the full run and the two corrected fixture cases. In-app browser computer use confirmed the search transition, retained selection and one fresh Luna extraction; Chrome control timed out. No cloud deployment, external email, public repository change or contest submission occurred. The final GitHub review identified the same provenance issue in bundled PNG/PDF sources; both paths now mark them synthetic, with persistence assertions and focused document checks. The last small follow-up was reviewed locally before integration.
