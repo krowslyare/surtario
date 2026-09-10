@@ -80,6 +80,6 @@ The [hosting procedure](docs/desarrollo/HOSTING.md) explains target selection an
 
 `src/` contains the interface and deterministic domain logic; `convex/` contains the backend; `fixtures/` contains synthetic evidence; `tests/` contains browser journeys. Follow [AGENTS.md](AGENTS.md) before changes. The factual build history is in [hackathon.md](hackathon.md).
 
-The repository includes [Anthropic Frontend Design](.agents/skills/frontend-design/SKILL.md), the [hackathon log skill](.agents/skills/convex-hackathon-skill/SKILL.md), and managed Convex guidance. Their licenses and [Convex skill attribution](third_party/convex-agent-skills/README.md) apply to those files, not to the rest of the application.
+The repository includes [Anthropic Frontend Design](.agents/skills/frontend-design/SKILL.md), the [hackathon log skill](.agents/skills/convex-hackathon-skill/SKILL.md), the official [Firecrawl integration skill](.agents/skills/firecrawl/SKILL.md), and managed Convex guidance. Their licenses and the [Firecrawl](.agents/skills/firecrawl/UPSTREAM.md) and [Convex](third_party/convex-agent-skills/README.md) attributions apply to those files, not to the rest of the application.
 
 The commercial stage requires restaurant validation, authenticated accounts and verified private-document handling before accepting customer data. Recipes and purchase history are separate extensions. The [repository](https://github.com/krowslyare/restaurant-procurement) remains private during preparation; public visibility and contest submission are separate pending actions.

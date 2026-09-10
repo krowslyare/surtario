@@ -33,3 +33,14 @@ Nine real Luna generations ran in this delivery: four initial cases, two evidenc
 - Independent adversarial review closed without material findings after correcting legacy quality bypass, validation order, changed-URL provenance and multiline title labeling.
 
 The source filter does not establish equivalence or guarantee detection of every misleading page. Discovery still may return empty or unreadable results; a fresh scrape does not prove the supplier updated its price. Contact-only sourcing, missing data and manual confirmation remain first-class outcomes. Direct OpenAI API acceptance, the combined hosted journey and restaurant validation remain open. No cloud deployment, repository visibility change or contest submission occurred in this delivery.
+
+
+## Final scrape documentation pass — September 10, 2026, 13:23–13:36 UTC
+
+Checked the current [scrape guide](https://docs.firecrawl.dev/features/scrape) and [REST source of truth](https://docs.firecrawl.dev/agent-source-of-truth/curl). The adapter now distinguishes the Firecrawl API response from the target page's HTTP status, withholding error-page Markdown from extraction while retaining the discovered URL as a candidate. It preserves metadata title/description fallbacks. Discovery uses an explicit one-hour cache bound; a user-selected product read uses `maxAge: 0`, Peru location and Spanish language. Neither successful fetching nor cache bypass proves supplier availability or price validity.
+
+Two real Firecrawl requests exercised the final adapter. Discovery for Brilhante 50 kg in Lima returned three bodies in 10.059 seconds; it did not establish equivalence among them. The selected Mundo Abarrotes product read returned 7,005 characters in 21.017 seconds. Real Luna CLI interpretation on the saved body identified a principal product at PEN 208 per 50 kg, retaining exact evidence and separating related products. The first proposal included a currency symbol in the numeric value; clarifying the numeric-only output instruction produced `208.00` in a separate 12.353-second run. The source body was reused for model work. See the [sanitized manifest](evidence/firecrawl-final-pass-2026-09-10.json).
+
+The official scrape build skill is vendored with license, required reference and pinned provenance under `.agents/skills/firecrawl/`. No Firecrawl MCP tool is callable in this session; connection choices are documented in `SETUP_AGENTE.md`. MCP/skills support development; server-side REST remains the product integration. Actions, Interact, screenshots and secondary JSON/product extraction were not added: the observed pages did not require interaction and the reviewed literal-source contract remains the consumer's evidence boundary.
+
+Direct OpenAI API compatibility, the combined hosted acceptance run and the final timed recording remain pending. These measurements are single observations, not performance guarantees.

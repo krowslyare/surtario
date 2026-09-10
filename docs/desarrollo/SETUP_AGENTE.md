@@ -2,6 +2,14 @@
 
 Verificado el 7 de septiembre de 2026 en Codex Desktop para macOS, con shell zsh y soporte de skills locales en `.agents/skills/`.
 
+## September 10 Firecrawl developer tooling
+
+The repository now carries Firecrawl's official ISC-licensed [`firecrawl-build-scrape`](../../.agents/skills/firecrawl/SKILL.md) skill at a pinned upstream revision, with its required freshness reference and [provenance](../../.agents/skills/firecrawl/UPSTREAM.md). It guides future application integration work; it does not install the Firecrawl CLI, authenticate an account, or change the application's provider configuration.
+
+This Codex session exposed no callable Firecrawl MCP tool. Official connection choices are the hosted keyless endpoint `https://mcp.firecrawl.dev/v2/mcp`, the browser-authenticated endpoint `https://mcp.firecrawl.dev/v2/mcp-oauth`, or the same hosted MCP endpoint with an API key supplied in an authorization header from environment or secret storage. Do not embed a key in the URL or commit client configuration containing one. See the [official MCP setup](https://docs.firecrawl.dev/mcp-server) and [official open-source server](https://github.com/firecrawl/firecrawl-mcp-server).
+
+The product itself continues to call Firecrawl's `/v2/search` and `/v2/scrape` REST endpoints from the server-only adapter in `convex/lib/firecrawl.ts`. MCP and skills improve developer capabilities; neither is part of the deployed runtime or proof that provider acceptance passed.
+
 ## September 9 update
 
 Convex CLI login and a dedicated cloud development project are now configured. Firecrawl discovery, an approved AgentMail round trip with signed duplicate delivery, and development static hosting were verified using Chrome and the CLI. OpenAI account/project confirmation remains pending. This does not establish MCP deployment access. Current stage status and evidence are in [ETAPAS.md](ETAPAS.md) and [provider acceptance](CREDENTIALS_AND_E2E.md).
