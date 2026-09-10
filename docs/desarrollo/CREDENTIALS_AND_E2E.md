@@ -12,6 +12,7 @@ Configure secrets in the Convex backend environment using its dashboard or inter
 | --- | --- | --- |
 | Web research | `FIRECRAWL_API_KEY`, `OPENAI_API_KEY`, `OPENAI_EXTRACTION_MODEL` | `LIVE_RESEARCH_ENABLED=true` |
 | Synthetic image/PDF extraction | `OPENAI_API_KEY`, a compatible `OPENAI_EXTRACTION_MODEL` | `DOCUMENT_EXTRACTION_ENABLED=true` |
+| Linked reply extraction | `OPENAI_API_KEY`, `OPENAI_EXTRACTION_MODEL` | `REPLY_EXTRACTION_ENABLED=true` |
 | Purchasing advisor | `OPENAI_API_KEY`, `OPENAI_ADVISOR_MODEL` | `ADVISOR_ENABLED=true` |
 | Test email | `AGENTMAIL_API_KEY`, `AGENTMAIL_INBOX_ID`, `AGENTMAIL_TEST_RECIPIENT`, `AGENTMAIL_WEBHOOK_SECRET` | `AGENTMAIL_ENABLED=true` |
 

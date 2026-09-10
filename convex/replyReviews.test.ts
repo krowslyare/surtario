@@ -2,9 +2,13 @@
 import { convexTest } from "convex-test";
 import { expect, test } from "vitest";
 import schema from "./schema";
-import { api } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 import { ownerHash } from "./lib/demoSession";
-import { prepareReplyOffer } from "../src/domain/replyReview";
+import {
+  canAutoApplyReplySuggestion,
+  prepareReplyOffer,
+  reconcileReplyExtraction,
+} from "../src/domain/replyReview";
 const modules = import.meta.glob("./**/*.ts");
 const token = "a".repeat(64);
 const values = {
@@ -112,6 +116,179 @@ test("synthetic request provenance reaches reply comparison evidence", async () 
     true,
   );
 });
+test("comparison rebuilds the AI proposal from the stored reply", async () => {
+  const { t, args, reply } = await setup(true);
+  const storedProposal = {
+    supplier: { value: null, evidence: null },
+    ingredient: { value: "Arroz", evidence: "Arroz blanco extra" },
+    specification: { value: "blanco extra", evidence: "Arroz blanco extra" },
+    packageContent: { value: "18", evidence: "saco 18 kg" },
+    packageUnit: { value: "kg", evidence: "saco 18 kg" },
+    price: { value: "80.00", evidence: "PEN 80.00" },
+    currency: { value: "PEN", evidence: "PEN 80.00" },
+  };
+  await t.run(async (ctx) => {
+    const stored = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_messageId", (q) => q.eq("messageId", reply.messageId))
+      .unique();
+    await ctx.db.patch(stored!._id, {
+      extraction: storedProposal,
+      extractionStatus: "complete",
+      extractionError: null,
+      extractionAttempts: 1,
+      extractionAttempt: 1,
+    });
+  });
+  const saved = await t.mutation(api.comparisons.save, {
+    ...args,
+    replyReview: { ...args.replyReview, extractionAttempt: 1 },
+  });
+  expect(saved.sources[args.selectedOfferId].extraction?.proposed).toEqual(
+    storedProposal,
+  );
+  expect(saved.sources[args.selectedOfferId].extraction?.reviewed.price).toBe(
+    "85",
+  );
+  expect(saved.sources[args.selectedOfferId].marketSource?.simulated).toBe(
+    true,
+  );
+});
+test("manual review stays manual while extraction is running", async () => {
+  const { t, args, reply } = await setup();
+  await t.mutation(internal.quotationMail.reserveReplyExtraction, {
+    token,
+    requestId: reply.requestId,
+    messageId: reply.messageId,
+  });
+  const saved = await t.mutation(api.comparisons.save, args);
+  expect(
+    saved.sources[args.selectedOfferId].extraction?.proposed.price,
+  ).toEqual({ value: null, evidence: null });
+  expect(
+    saved.sources[args.selectedOfferId].replyReview?.extractionAttempt,
+  ).toBeUndefined();
+});
+test("a proposal completed in another tab is not attached to a manual review", async () => {
+  const { t, args, reply } = await setup();
+  const storedProposal = {
+    supplier: { value: null, evidence: null },
+    ingredient: { value: "Arroz", evidence: "Arroz blanco extra" },
+    specification: { value: "blanco extra", evidence: "Arroz blanco extra" },
+    packageContent: { value: "18", evidence: "saco 18 kg" },
+    packageUnit: { value: "kg", evidence: "saco 18 kg" },
+    price: { value: "80.00", evidence: "PEN 80.00" },
+    currency: { value: "PEN", evidence: "PEN 80.00" },
+  };
+  await t.run(async (ctx) => {
+    const stored = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_messageId", (q) => q.eq("messageId", reply.messageId))
+      .unique();
+    await ctx.db.patch(stored!._id, {
+      extraction: storedProposal,
+      extractionStatus: "complete",
+      extractionError: null,
+      extractionAttempts: 1,
+      extractionAttempt: 1,
+    });
+  });
+  const saved = await t.mutation(api.comparisons.save, args);
+  expect(
+    saved.sources[args.selectedOfferId].extraction?.proposed.price.value,
+  ).toBeNull();
+  expect(saved.sources[args.selectedOfferId].label).toContain("manual");
+});
+test("AI-assisted review requires the exact completed generation", async () => {
+  const { t, args, reply } = await setup();
+  await t.run(async (ctx) => {
+    const stored = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_messageId", (q) => q.eq("messageId", reply.messageId))
+      .unique();
+    await ctx.db.patch(stored!._id, {
+      extraction: {
+        supplier: { value: null, evidence: null },
+        ingredient: { value: "Arroz", evidence: "Arroz blanco extra" },
+        specification: { value: null, evidence: null },
+        packageContent: { value: null, evidence: null },
+        packageUnit: { value: null, evidence: null },
+        price: { value: "80.00", evidence: "PEN 80.00" },
+        currency: { value: "PEN", evidence: "PEN 80.00" },
+      },
+      extractionStatus: "complete",
+      extractionError: null,
+      extractionAttempts: 2,
+      extractionAttempt: 2,
+    });
+  });
+  await expect(
+    t.mutation(api.comparisons.save, {
+      ...args,
+      replyReview: { ...args.replyReview, extractionAttempt: 1 },
+    }),
+  ).rejects.toThrow(/cambió|no está completa/);
+});
+test("late suggestions auto-apply only to an untouched empty review", () => {
+  const empty = {
+    supplier: "",
+    ingredient: "",
+    specification: "",
+    packageContent: "",
+    packageUnit: "",
+    price: "",
+    currency: "",
+  };
+  expect(canAutoApplyReplySuggestion(0, 0, empty)).toBe(true);
+  expect(canAutoApplyReplySuggestion(0, 1, empty)).toBe(false);
+  expect(
+    canAutoApplyReplySuggestion(0, 0, { ...empty, supplier: "Manual" }),
+  ).toBe(false);
+});
+test("a live completed extraction replaces running state without overwriting edits", () => {
+  const empty = {
+    supplier: "",
+    ingredient: "",
+    specification: "",
+    packageContent: "",
+    packageUnit: "",
+    price: "",
+    currency: "",
+  };
+  const extraction = {
+    supplier: { value: "Proveedor", evidence: "Proveedor" },
+    ingredient: { value: "Arroz", evidence: "Arroz" },
+    specification: { value: null, evidence: null },
+    packageContent: { value: null, evidence: null },
+    packageUnit: { value: null, evidence: null },
+    price: { value: null, evidence: null },
+    currency: { value: null, evidence: null },
+  };
+  const running = {
+    extraction: null,
+    extractionStatus: "running" as const,
+    extractionError: null,
+    extractionAttempts: 1,
+    extractionAttempt: null,
+  };
+  const complete = {
+    extraction,
+    extractionStatus: "complete" as const,
+    extractionError: null,
+    extractionAttempts: 1,
+    extractionAttempt: 1,
+  };
+  expect(reconcileReplyExtraction(running, complete, 0, empty).kind).toBe(
+    "apply",
+  );
+  const edited = { ...empty, supplier: "Mi corrección" };
+  const update = reconcileReplyExtraction(running, complete, 1, edited);
+  expect(update.kind).toBe("pending");
+  expect(edited.supplier).toBe("Mi corrección");
+  expect(reconcileReplyExtraction(complete, running, 0, empty).kind).toBe(
+    "ignore",
+  );
+});
 test("an invalid signed reply timestamp stays pending without inventing a date", async () => {
   const { t, args, reply } = await setup();
   await t.run(async (ctx) => {
@@ -123,9 +300,7 @@ test("an invalid signed reply timestamp stays pending without inventing a date",
   });
   const saved = await t.mutation(api.comparisons.save, args);
   expect(saved.sources[args.selectedOfferId].date).toBe("");
-  expect(saved.sources[args.selectedOfferId].marketSource?.observedAt).toBe(
-    "",
-  );
+  expect(saved.sources[args.selectedOfferId].marketSource?.observedAt).toBe("");
 });
 test("foreign and unlinked replies, missing confirmation and conflicting retries are refused", async () => {
   const { t, args } = await setup();

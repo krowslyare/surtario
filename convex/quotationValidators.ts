@@ -1,9 +1,18 @@
 import { v } from "convex/values";
+import {
+  extractedOfferValidator,
+  extractionStatusValidator,
+} from "./researchValidators";
 
 export const quotationReplyValidator = v.object({
   messageId: v.string(),
   text: v.string(),
   receivedAt: v.string(),
+  extraction: v.union(extractedOfferValidator, v.null()),
+  extractionStatus: extractionStatusValidator,
+  extractionError: v.union(v.string(), v.null()),
+  extractionAttempts: v.number(),
+  extractionAttempt: v.union(v.number(), v.null()),
 });
 
 export const savedQuotationValidator = v.object({
@@ -34,3 +43,4 @@ export const savedQuotationValidator = v.object({
 });
 
 export type SavedQuotation = typeof savedQuotationValidator.type;
+export type QuotationReply = typeof quotationReplyValidator.type;

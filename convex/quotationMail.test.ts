@@ -65,6 +65,7 @@ test("creates an owned fixed draft without credentials and never accepts message
   expect(await t.query(api.quotationMail.status, {})).toEqual({
     enabled: false,
     recipient: null,
+    extractionEnabled: false,
   });
   expect(
     await t.query(api.quotationMail.list, { token: "b".repeat(64) }),
@@ -232,6 +233,11 @@ test("verified replies require frozen inbox, thread and sender; duplicates are h
         messageId: "msg-in",
         text: "S/ 92 por saco",
         receivedAt: event.receivedAt,
+        extraction: null,
+        extractionStatus: "idle",
+        extractionError: null,
+        extractionAttempts: 0,
+        extractionAttempt: null,
       },
     ],
   );

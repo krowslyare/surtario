@@ -1,4 +1,8 @@
-import { mergeReplyOffer, prepareReplyOffer } from "../src/domain/replyReview";
+import {
+  emptyReplyProposal,
+  mergeReplyOffer,
+  prepareReplyOffer,
+} from "../src/domain/replyReview";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
@@ -130,6 +134,7 @@ async function reconstructReply(
   review: {
     requestId: Doc<"quotationRequests">["_id"];
     messageId: string;
+    extractionAttempt?: number;
     values: ReviewedValues;
     confirmed: true;
   },
@@ -137,6 +142,10 @@ async function reconstructReply(
   if (
     !review.messageId ||
     review.messageId.length > 500 ||
+    (review.extractionAttempt !== undefined &&
+      (!Number.isSafeInteger(review.extractionAttempt) ||
+        review.extractionAttempt < 1 ||
+        review.extractionAttempt > 2)) ||
     extractionFields.some((key) => review.values[key].length > 120)
   )
     throw new ConvexError("Revisión de respuesta no válida.");
@@ -149,6 +158,18 @@ async function reconstructReply(
     .unique();
   if (!reply || reply.requestId !== request._id)
     throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+  let proposal: typeof emptyReplyProposal | undefined;
+  if (review.extractionAttempt !== undefined) {
+    if (
+      reply.extractionStatus !== "complete" ||
+      !reply.extraction ||
+      reply.extractionAttempt !== review.extractionAttempt
+    )
+      throw new ConvexError(
+        "La propuesta de IA cambió o no está completa. Abre de nuevo la respuesta antes de confirmar.",
+      );
+    proposal = reply.extraction;
+  }
   try {
     return prepareReplyOffer(
       {
@@ -160,6 +181,8 @@ async function reconstructReply(
       },
       review.values,
       review.confirmed,
+      proposal,
+      review.extractionAttempt,
     );
   } catch (error) {
     throw new ConvexError(

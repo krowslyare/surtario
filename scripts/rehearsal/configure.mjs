@@ -78,6 +78,7 @@ const values = {
   FIRECRAWL_API_KEY: "local-rehearsal-only",
   AGENTMAIL_API_KEY: "local-rehearsal-only",
   DOCUMENT_EXTRACTION_ENABLED: "true",
+  REPLY_EXTRACTION_ENABLED: "true",
   LIVE_RESEARCH_ENABLED: "true",
   ADVISOR_ENABLED: "true",
   AGENTMAIL_ENABLED: "true",

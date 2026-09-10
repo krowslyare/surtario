@@ -15,10 +15,17 @@ import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { ownerHash } from "./lib/demoSession";
+import { extractReplyOfferWithAgent } from "./lib/replyExtraction";
 import {
+  quotationReplyValidator,
   savedQuotationValidator,
+  type QuotationReply,
   type SavedQuotation,
 } from "./quotationValidators";
+import {
+  extractedOfferValidator,
+  type ExtractedOffer,
+} from "./researchValidators";
 
 const MAX_PER_SESSION = 10;
 const MAX_GLOBAL = 100;
@@ -31,6 +38,8 @@ const SEND_FAILED =
   "AgentMail rechazó el envío. Crea una solicitud nueva para volver a intentarlo.";
 const SEND_UNCERTAIN =
   "No se pudo confirmar el resultado del envío. No se reintentará automáticamente.";
+const REPLY_EXTRACTION_ERROR =
+  "No se obtuvo una sugerencia verificable. Puedes completar los campos manualmente o volver a intentarlo una vez.";
 
 function normalizedSender(value: string) {
   return (
@@ -60,6 +69,27 @@ function configured() {
   };
 }
 
+function replyExtractorConfigured() {
+  return (
+    env.REPLY_EXTRACTION_ENABLED === "true" &&
+    !!env.OPENAI_API_KEY?.trim() &&
+    !!env.OPENAI_EXTRACTION_MODEL?.trim()
+  );
+}
+
+function publicReply(doc: Doc<"quotationReplies">): QuotationReply {
+  return {
+    messageId: doc.messageId,
+    text: doc.text,
+    receivedAt: doc.receivedAt,
+    extraction: doc.extraction ?? null,
+    extractionStatus: doc.extractionStatus ?? "idle",
+    extractionError: doc.extractionError ?? null,
+    extractionAttempts: doc.extractionAttempts ?? 0,
+    extractionAttempt: doc.extractionAttempt ?? null,
+  };
+}
+
 async function publicRequest(
   ctx: QueryCtx | MutationCtx,
   doc: Doc<"quotationRequests">,
@@ -83,11 +113,7 @@ async function publicRequest(
     receipt: doc.receipt,
     failure: doc.failure,
     createdAt: doc.createdAt,
-    replies: replies.map((reply) => ({
-      messageId: reply.messageId,
-      text: reply.text,
-      receivedAt: reply.receivedAt,
-    })),
+    replies: replies.map(publicReply),
   };
 }
 
@@ -96,10 +122,15 @@ export const status = query({
   returns: v.object({
     enabled: v.boolean(),
     recipient: v.union(v.string(), v.null()),
+    extractionEnabled: v.boolean(),
   }),
   handler: async () => {
     const value = configured();
-    return { enabled: value.enabled, recipient: value.recipient };
+    return {
+      enabled: value.enabled,
+      recipient: value.recipient,
+      extractionEnabled: replyExtractorConfigured(),
+    };
   },
 });
 
@@ -114,6 +145,167 @@ export const list = query({
       .order("desc")
       .take(MAX_PER_SESSION);
     return await Promise.all(docs.map((doc) => publicRequest(ctx, doc)));
+  },
+});
+
+const replyExtractionReservation = v.union(
+  v.object({ kind: v.literal("complete"), reply: quotationReplyValidator }),
+  v.object({ kind: v.literal("running") }),
+  v.object({
+    kind: v.literal("reserved"),
+    replyId: v.id("quotationReplies"),
+    text: v.string(),
+    attempt: v.number(),
+  }),
+);
+
+export const reserveReplyExtraction = internalMutation({
+  args: {
+    token: v.string(),
+    requestId: v.id("quotationRequests"),
+    messageId: v.string(),
+  },
+  returns: replyExtractionReservation,
+  handler: async (ctx, args) => {
+    const hash = await ownerHash(args.token);
+    if (!args.messageId || args.messageId.length > 500)
+      throw new ConvexError("Respuesta no válida.");
+    const request = await ctx.db.get(args.requestId);
+    if (!request || request.ownerHash !== hash)
+      throw new ConvexError("Solicitud no disponible en esta sesión.");
+    const reply = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_messageId", (q) => q.eq("messageId", args.messageId))
+      .unique();
+    if (!reply || reply.requestId !== request._id)
+      throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+    const status = reply.extractionStatus ?? "idle";
+    const attempts = reply.extractionAttempts ?? 0;
+    if (!Number.isSafeInteger(attempts) || attempts < 0)
+      throw new Error("Invalid reply extraction state.");
+    if (status === "complete" && reply.extraction)
+      return { kind: "complete" as const, reply: publicReply(reply) };
+    if (status === "running") return { kind: "running" as const };
+    if (attempts >= 2)
+      throw new ConvexError(
+        "Esta respuesta alcanzó el máximo de dos intentos. Completa los campos manualmente.",
+      );
+    await ctx.db.patch(reply._id, {
+      extraction: null,
+      extractionStatus: "running",
+      extractionError: null,
+      extractionAttempts: attempts + 1,
+      extractionAttempt: null,
+    });
+    return {
+      kind: "reserved" as const,
+      replyId: reply._id,
+      text: reply.text,
+      attempt: attempts + 1,
+    };
+  },
+});
+
+export const finishReplyExtraction = internalMutation({
+  args: {
+    replyId: v.id("quotationReplies"),
+    attempt: v.number(),
+    offer: extractedOfferValidator,
+  },
+  returns: quotationReplyValidator,
+  handler: async (ctx, { replyId, attempt, offer }) => {
+    const reply = await ctx.db.get(replyId);
+    if (
+      !reply ||
+      reply.extractionStatus !== "running" ||
+      reply.extractionAttempts !== attempt
+    )
+      throw new Error("Missing reserved reply extraction.");
+    await ctx.db.patch(replyId, {
+      extraction: offer,
+      extractionStatus: "complete",
+      extractionError: null,
+      extractionAttempt: attempt,
+    });
+    return publicReply((await ctx.db.get(replyId))!);
+  },
+});
+
+export const failReplyExtraction = internalMutation({
+  args: { replyId: v.id("quotationReplies") },
+  returns: quotationReplyValidator,
+  handler: async (ctx, { replyId }) => {
+    const reply = await ctx.db.get(replyId);
+    if (!reply) throw new Error("Missing reserved reply extraction.");
+    if (reply.extractionStatus === "running")
+      await ctx.db.patch(replyId, {
+        extraction: null,
+        extractionStatus: "failed",
+        extractionError:
+          (reply.extractionAttempts ?? 0) >= 2
+            ? "No se obtuvo una sugerencia verificable en dos intentos. Completa los campos manualmente."
+            : REPLY_EXTRACTION_ERROR,
+      });
+    return publicReply((await ctx.db.get(replyId))!);
+  },
+});
+
+export const extractReply = action({
+  args: {
+    token: v.string(),
+    requestId: v.id("quotationRequests"),
+    messageId: v.string(),
+  },
+  returns: quotationReplyValidator,
+  handler: async (ctx, args): Promise<QuotationReply> => {
+    if (!replyExtractorConfigured())
+      throw new ConvexError("La extracción de respuestas no está habilitada.");
+    const reservation:
+      | { kind: "complete"; reply: QuotationReply }
+      | { kind: "running" }
+      | {
+          kind: "reserved";
+          replyId: Id<"quotationReplies">;
+          text: string;
+          attempt: number;
+        } = await ctx.runMutation(
+      internal.quotationMail.reserveReplyExtraction,
+      args,
+    );
+    if (reservation.kind === "complete") return reservation.reply;
+    if (reservation.kind === "running")
+      throw new ConvexError(
+        "La extracción de esta respuesta ya está en curso o requiere revisión del operador.",
+      );
+    let offer: ExtractedOffer;
+    try {
+      offer = await extractReplyOfferWithAgent(
+        ctx,
+        reservation.text,
+        env.OPENAI_API_KEY!,
+        env.OPENAI_EXTRACTION_MODEL!,
+      );
+    } catch {
+      return await ctx.runMutation(internal.quotationMail.failReplyExtraction, {
+        replyId: reservation.replyId,
+      });
+    }
+    // If persistence is uncertain, keep the paid reservation running so a retry
+    // cannot issue a second provider call.
+    try {
+      return await ctx.runMutation(
+        internal.quotationMail.finishReplyExtraction,
+        {
+          replyId: reservation.replyId,
+          attempt: reservation.attempt,
+          offer,
+        },
+      );
+    } catch {
+      throw new ConvexError(
+        "La extracción respondió, pero no se confirmó su guardado. No repitas la llamada; requiere revisión del operador.",
+      );
+    }
   },
 });
 
