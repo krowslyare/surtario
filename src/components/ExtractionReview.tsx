@@ -120,11 +120,11 @@ export default function ExtractionReview({
         >
           <div className="extraction-intro">
             <span className="extraction-simulation">
-              {source.simulated ? "Ejemplo sintético" : "Extracción automática"}
+              {source.simulated ? "Ejemplo sintético" : "Fuente para revisión"}
             </span>
             <p>
               {source.simulated
-                ? "Esta revisión simula un resultado ya extraído. No hace una llamada de IA ni sube un documento."
+                ? "El contenido de origen es ficticio. Revisa la propuesta y confirma los datos antes de continuar."
                 : "Compara cada propuesta con el texto recuperado de la fuente antes de usarla."}
             </p>
           </div>

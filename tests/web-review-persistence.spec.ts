@@ -31,6 +31,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     ],
     discarded: 0,
     warning: false,
+    simulated: true,
   });
   run("research:reserveExtraction", {
     token,
@@ -95,6 +96,9 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     page.getByRole("button", { name: "Oferta elegida" }),
   ).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Ver origen" }).click();
+  await expect(page.getByRole("dialog")).toContainText(
+    "Documento sintético revisado",
+  );
   await expect(page.getByRole("dialog")).toContainText(
     "Precio por presentación: 80.00",
   );

@@ -240,3 +240,10 @@ The rehearsal exposed and fixed a missing context scope at all stateless Agent c
 138 unit/backend tests, frontend/backend typechecks and hosting build checks passed. All 51 browser journeys passed on a separate anonymous backend. A shared-dependency font warning in that test checkout was corrected with its own install, followed by 12 passing focused visual/keyboard checks. Chrome inspected the actual rehearsal at desktop and 390 × 844, including the native file picker. Six substantive Luna calls completed in 8.1–13.3 seconds; these are local sample timings.
 
 See [reproduction steps, failures and evidence boundaries](LUNA_REHEARSAL.md). Direct OpenAI API calls, the combined hosted provider flow, contest recording/submission and private restaurant validation remain pending. Stages 2–5 and 7 are not marked complete by this simulation. Cloud settings, repository visibility and production were unchanged.
+
+
+## PR review closure — September 10, 2026 UTC
+
+PRs #18 and #19 were merged after GitHub Codex review; independent local review additionally caught stale examples after a different web query, now fixed without losing saved research or the selected study. PR #20 review fixes enforce the rehearsal notice and preserve server-derived synthetic provenance through source review, saved comparisons and advisor evidence. Existing records are not reclassified.
+
+147 unit/backend/configuration tests, frontend/backend typechecks and hosting checks passed. Browser verification covers all 51 journeys: 49 passed in the complete run; two fixture setup calls needed the newly required internal provenance argument and passed after correction, including synthetic source recovery. Computer use in the in-app browser verified the rice-to-fish transition and selected-study recovery; a fresh Luna CLI extraction used the persisted synthetic marker. Chrome computer use timed out in this review session. This closure changes GitHub code, not the hosted deployment or the outstanding real OpenAI API acceptance.

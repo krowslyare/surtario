@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T23:16:59Z
+- **Last updated:** 2026-09-10T00:49:00Z
 
 ## Log
 
@@ -269,3 +269,9 @@ The final run followed a local fixture-CLI setup correction; calculations, owner
 A local-only provider bridge now runs real Luna CLI structured generation through the existing Agent/AI SDK boundary while simulating web discovery and mail transport. Chrome computer use exercised reviewed offers, a no-price distributor, explicit email approval, duplicate signed webhook delivery, reply-to-comparison, PNG/PDF reading, XLSX/manual lists and saved decision recovery. Six substantive Luna calls completed; actual Convex tools produced the scenarios and evidence supplied to the advisor. No external email or provider API call was made by this rehearsal.
 The first live model attempt exposed a missing Agent context scope; all stateless calls now use isolated server-generated scopes without history or message storage. A subsequent advice error revealed old pending source text overriding reviewed conditions; the tool now passes current confirmations explicitly. Regression tests retain the actual Agent/SDK. Research errors no longer expose Convex stacks, missing-number copy is legible and unchanged saved verdicts are not duplicated.
 138 unit/backend tests, typechecks, hosting checks and 51 browser journeys passed. The test checkout's shared-dependency font warning was corrected and 12 focused visual/keyboard checks passed on repeat. The original PDF renderer failure remained visible until an explicit retry after local font configuration was fixed. Desktop and 390px computer-use evidence and reproduction steps are documented in `docs/desarrollo/LUNA_REHEARSAL.md`. Direct OpenAI API and full hosted acceptance, production, public visibility and contest submission remain pending.
+
+
+### 2026-09-10 - 51fdbcd · review corrections and integration
+GitHub Codex reviewed the provider, UI and rehearsal PRs. PRs #18 and #19 were merged; independent local review caught stale example results after changing to a live query. The fix preserves saved research and study selections, with a browser regression and a second clean Codex review.
+Rehearsal configuration now enforces its visible notice before enabling simulated providers and uses shared warning colors. Research runs and mail send reservations retain server-derived synthetic provenance through review, comparison and advisor tools; legacy records remain unchanged. Computer use also corrected review copy that confused synthetic source content with whether extraction used a model.
+147 unit/backend/configuration tests, frontend/backend typechecks and hosting checks passed. All 51 browser journeys were verified across the full run and the two corrected fixture cases. In-app browser computer use confirmed the search transition, retained selection and one fresh Luna extraction; Chrome control timed out. No cloud deployment, external email, public repository change or contest submission occurred. PR #20 final GitHub review and merge remain pending at this entry.

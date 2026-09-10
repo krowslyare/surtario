@@ -16,7 +16,7 @@ The demo does not require recipes, purchase history, stock or a document. Suppli
 
 **Verification boundary:** real Firecrawl discovery and an AgentMail test round trip were verified on a dedicated Convex development deployment on September 9, 2026. The signed reply was reviewed, saved as an offer and recovered; replaying its webhook did not duplicate the reply. A separate local rehearsal now exercises extraction and advice through real Luna CLI calls with simulated web/mail transport; direct OpenAI API acceptance and the complete hosted provider journey remain unverified. See [the rehearsal procedure and evidence](docs/desarrollo/LUNA_REHEARSAL.md). The [development preview](https://incredible-wolverine-122.convex.site) is reachable over HTTPS; it is not the final contest release. No video has been submitted. Current stage status is maintained only in [ETAPAS.md](docs/desarrollo/ETAPAS.md).
 
-Verified locally: **138 unit/backend tests and 51 browser journeys passed**, including the demo rehearsal. Frontend/backend typechecks and the hosting build check also passed. Provider transports were simulated or disabled; the separate computer-use rehearsal invoked `gpt-5.6-luna` through `codex exec`.
+Verified locally: **147 unit/backend and configuration tests and 51 browser journeys passed**, including the demo rehearsal. Frontend/backend typechecks and the hosting build check also passed. Provider transports were simulated or disabled; the separate computer-use rehearsal invoked `gpt-5.6-luna` through `codex exec`.
 
 ## Run locally
 
