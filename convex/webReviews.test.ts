@@ -164,3 +164,21 @@ test("same offer values cannot disguise changed review evidence on create retry"
     }),
   ).rejects.toThrow(/otros datos/);
 });
+
+test("legacy extractions cannot bypass current source quality checks", async () => {
+  const { t, args } = await setup();
+  for (const markdown of [
+    "Ha habido un error crítico en esta web.",
+    "Arbitraje de consumo y registro de proveedores.",
+  ]) {
+    await t.run(async (ctx) => {
+      const run = (await ctx.db.get(args.webReviews[0].runId))!;
+      await ctx.db.patch(run._id, {
+        sources: run.sources.map((source) => ({ ...source, markdown })),
+      });
+    });
+    await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
+      /evidencia utilizable/,
+    );
+  }
+});

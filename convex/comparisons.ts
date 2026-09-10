@@ -14,6 +14,8 @@ import {
   supplierOfferValidator,
 } from "./validators";
 import { ownerHash } from "./lib/demoSession";
+import { inspectSource } from "./lib/sourceQuality";
+import { webSourceText } from "./lib/webAnalysis";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
 import { marketExamples } from "../fixtures/market";
 import {
@@ -91,6 +93,18 @@ async function reconstructWebReviews(
     const source = run.sources[review.sourceIndex];
     if (!source) throw new ConvexError("Fuente no válida.");
     if (
+      inspectSource(source, run.ingredient).state !== "readable" ||
+      (source.parentSourceIndex !== undefined &&
+        source.readStatus !== "complete")
+    )
+      throw new ConvexError(
+        "La fuente no contiene evidencia utilizable para comparar.",
+      );
+    if (source.analysis && source.analysis.kind !== "product")
+      throw new ConvexError(
+        "Selecciona y revisa una ficha de producto antes de compararla.",
+      );
+    if (
       source.extractionStatus !== "complete" ||
       !source.extraction ||
       !source.markdown
@@ -102,8 +116,10 @@ async function reconstructWebReviews(
           id: ref,
           url: source.url,
           title: source.title,
-          text: source.markdown,
-          observedAt: run.observedAt,
+          text: source.analysis
+            ? `${webSourceText({ title: source.title, markdown: source.markdown })}\n\nAnálisis propuesto de la fuente (requiere revisión): ${source.analysis.summary}\n${source.analysis.warnings.join("\n")}`
+            : source.markdown,
+          observedAt: source.observedAt ?? run.observedAt,
           simulated: run.simulated ?? false,
         },
         source.extraction,

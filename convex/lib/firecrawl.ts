@@ -1,4 +1,5 @@
 import { providerFetch } from "./providerTransport";
+import { publicSourceUrl } from "./sourceQuality";
 /** Server-only discovery adapter. Returned page text is untrusted evidence, never an offer. */
 export type DiscoveredSource = {
   url: string;
@@ -108,6 +109,78 @@ async function limitedJson(response: Response): Promise<unknown> {
     }
   } finally {
     await reader.cancel();
+  }
+}
+
+/** Read one user-selected, server-verified public product link; never browse recursively. */
+export async function readProductPage(
+  url: string,
+  apiKey: string | undefined,
+  request: typeof fetch = providerFetch,
+): Promise<DiscoveredSource> {
+  const target = publicSourceUrl(url);
+  if (!target || !apiKey?.trim())
+    throw new Error("La ficha o la configuración de lectura no es válida.");
+  const abort = new AbortController();
+  const timeout = setTimeout(() => abort.abort(), 25000);
+  try {
+    const response = await request("https://api.firecrawl.dev/v2/scrape", {
+      method: "POST",
+      redirect: "error",
+      signal: abort.signal,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: target,
+        formats: ["markdown"],
+        onlyMainContent: true,
+        maxAge: 0,
+        timeout: 20000,
+        parsers: [],
+      }),
+    });
+    if (!response.ok) {
+      await response.body?.cancel();
+      throw new Error("Firecrawl no completó la lectura de la ficha.");
+    }
+    const body = record(await limitedJson(response));
+    const data = record(body.data);
+    const metadata = record(data.metadata);
+    if (
+      body.success !== true ||
+      typeof data.markdown !== "string" ||
+      !data.markdown.trim() ||
+      (typeof metadata.statusCode === "number" && metadata.statusCode >= 400)
+    )
+      throw new Error("La ficha no devolvió contenido utilizable.");
+    const returnedUrl =
+      typeof metadata.url === "string"
+        ? metadata.url
+        : typeof metadata.sourceURL === "string"
+          ? metadata.sourceURL
+          : target;
+    const canonical = publicSourceUrl(returnedUrl);
+    if (canonical !== target)
+      throw new Error(
+        "La ficha cambió de dirección; revisa el enlace original.",
+      );
+    return {
+      url: target,
+      title:
+        typeof metadata.title === "string"
+          ? metadata.title.slice(0, 300)
+          : "Ficha del producto",
+      description:
+        typeof metadata.description === "string"
+          ? metadata.description.slice(0, 2000)
+          : "",
+      markdown: data.markdown.slice(0, 20000),
+      contentTruncated: data.markdown.length > 20000,
+    };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 export async function discoverSources(

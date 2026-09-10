@@ -3,6 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { savedProspect } from "./prospectValidators";
 import { ownerHash } from "./lib/demoSession";
 import type { Doc } from "./_generated/dataModel";
+import { inspectSource } from "./lib/sourceQuality";
 const view = ({
   _id,
   ownerHash: _owner,
@@ -55,6 +56,15 @@ export const save = mutation({
       throw new ConvexError("La investigación no está completa.");
     const source = run.sources[args.sourceIndex];
     if (!source) throw new ConvexError("Fuente no válida.");
+    const inspection = inspectSource(source, run.ingredient);
+    if (
+      ["blocked", "unrelated"].includes(inspection.state) ||
+      source.analysis?.kind === "irrelevant" ||
+      (source.readStatus && source.readStatus !== "complete")
+    )
+      throw new ConvexError(
+        "Esta fuente no aporta un distribuidor revisable para el insumo.",
+      );
     const url = new URL(source.url);
     if (
       !["https:", "http:"].includes(url.protocol) ||
@@ -106,7 +116,7 @@ export const save = mutation({
       region: run.region,
       sourceTitle: source.title,
       sourceUrl: source.url,
-      observedAt: run.observedAt,
+      observedAt: source.observedAt ?? run.observedAt,
       createdAt: Date.now(),
     });
     return view((await ctx.db.get(id))!);
