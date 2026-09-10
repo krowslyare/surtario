@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-10T16:58:53Z
+- **Last updated:** 2026-09-10T20:38:39Z
 
 ## Log
 
@@ -298,3 +298,9 @@ The 170-second video plan remains unmeasured. Direct OpenAI API configuration an
 ### 2026-09-10 - working tree · PR 21–26 review corrections
 PRs #21–#25 are merged after independent Sol 5.6 review, with PR #23 reviewed by Luna, and parent adjudication. PR #24 keeps Firecrawl discovery candidates while suppressing markdown whose source or final metadata URL points to another page, with canonical same-page normalization and unchanged behavior when metadata is absent. PR #25 synchronizes open linked-reply reviews with reactive extraction state, preserves manual edits as pending suggestions and ignores stale responses. PR #26 now fingerprints only active offers while retaining historical source records; its review and fix verification are complete.
 The current integrated pass records 175 unit/backend/configuration tests and 10 focused browser journeys (four reply/research checks and six advisor checks), plus frontend/backend typechecks and hosting build/asset checks. The preceding full-suite delivery covered all 54 browser journeys. This is local verification only; no new cloud deployment, provider call, repository visibility change or contest submission is recorded. Stages 2–5 and 7 retain their provider and hosted-acceptance requirements, separate from PR review completion.
+
+
+### 2026-09-10 - 6ed1dd1 · reviewed main development deployment
+Published the merged PR #21–#26 backend and frontend to the existing Convex development preview. Backend deployment, frontend typecheck/build and hosting checks passed. All eight served files matched the local build by SHA-256; SPA fallback, asset 404 and unsigned webhook rejection passed.
+In-app browser verification saved a synthetic study containing one priced offer and one distributor without a price, then recovered both after reload. Evidence: `docs/desarrollo/HOSTING.md`. The application remains at the reviewed main revision; this entry records deployment evidence.
+Provider settings, production and private repository visibility were unchanged; no external provider call or email was sent. Work stops here for the separate branding pass. Direct OpenAI API, combined hosted provider acceptance, recording and contest submission remain pending.

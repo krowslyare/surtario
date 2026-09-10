@@ -50,3 +50,20 @@ At 22:01 UTC on September 9, 2026:
 Earlier in the same run, a real signed AgentMail reply returned `200 Accepted`; replaying that event succeeded without duplicating the reply. Without a configured signing secret, the route instead returns 503 as covered by the local router test.
 
 Chrome loaded the hosted app, displayed an empty fixture search correctly, and saved/recovered a synthetic rice study in a fresh page. The HTTPS-origin session did not inherit the localhost session's saved study or email request. This smoke check does not replace the complete hosted two-session provider journey. OpenAI extraction and advisor calls remain pending; see [provider acceptance evidence](CREDENTIALS_AND_E2E.md).
+
+
+## Reviewed main publication — September 10, 2026
+
+Published the backend and frontend from reviewed main revision `6ed1dd1587562c5e8db630ec0f155eb20dffdd0a` to the same development deployment. `convex dev --once` completed successfully; `deploy:hosting:dev` rebuilt with the cloud backend URL and `VITE_REHEARSAL=false`, passed typechecking and hosting asset checks, and atomically published eight files. Provider environment variables were not changed.
+
+HTTP checks started at 20:36:58 UTC:
+
+| Check | Result |
+| --- | --- |
+| All eight files, including HTML, JS, CSS, font, worker, SVG and synthetic PNG/PDF | 200; SHA-256 matches the local build |
+| `GET /comparison` | 200; same SPA shell |
+| Missing `.js` asset | 404 |
+| Unsigned `POST /agentmail/webhook` | 400 `Invalid signature` |
+| In-app browser | App loaded; synthetic study with a priced rice offer and a distributor without a price saved and reopened after reload with both options preserved |
+
+The application code matches reviewed main; the follow-up documentation commit records this deployment only. This verifies deployment and basic hosted persistence, not the combined real-provider journey. OpenAI API acceptance and final contest release remain pending. No external provider request, email, production deployment or repository visibility change occurred.
