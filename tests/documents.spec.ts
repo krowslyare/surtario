@@ -7,6 +7,7 @@ test("document examples are inspectable but no extraction runs without configura
 }) => {
   await connectOnlyToLocalBackend(context);
   await page.goto("/");
+  await page.getByText("Revisar una cotización", { exact: true }).click();
   const section = page.getByRole("region", { name: "Lectura de foto y PDF" });
   await expect(
     section.getByRole("button", { name: "Leer con OpenAI" }),
@@ -89,7 +90,9 @@ test("a simulated reading keeps the original visible, requires review and opens 
   await dialog.getByRole("checkbox").check();
   await page.screenshot({ path: "/tmp/document-review-mobile.png" });
   await dialog.getByRole("button", { name: "Continuar a comparación" }).click();
-  await expect(page.getByText("Fuentes revisadas", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Fuentes revisadas", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByText(/páginas públicas/)).toHaveCount(0);
   await expect(
     page.getByLabel("Cantidad necesaria", { exact: true }),

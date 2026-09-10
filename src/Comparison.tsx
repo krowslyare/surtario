@@ -1,3 +1,4 @@
+import Brand from "./components/Brand";
 import PurchasingAdvisor from "./components/PurchasingAdvisor";
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
@@ -10,7 +11,6 @@ import {
   ArrowRight,
   Check,
   CircleHelp,
-  ClipboardList,
   FileText,
   Info,
   Package,
@@ -462,14 +462,7 @@ export default function Comparison({
         Ir a la comparación
       </a>
       <header className="topbar">
-        <div className="brand">
-          <span className="brand-icon">
-            <ClipboardList size={22} />
-          </span>
-          <span>
-            Compras <span className="brand-description">para restaurantes</span>
-          </span>
-        </div>
+        <Brand />
         <button
           className="button text-button"
           aria-label="Cómo comparar"
@@ -504,109 +497,123 @@ export default function Comparison({
               Añade cantidad y confirma condiciones para calcular el pedido.
             </p>
           </div>
-          <button
-            className="button secondary"
-            onClick={() => setModal("reset")}
-          >
-            <RotateCcw size={16} />
-            {seed ? "Restaurar selección" : "Restaurar ejemplo"}
-          </button>
         </div>
-        {persistenceEnabled ? (
-          <SavedComparisons
-            draft={{
-              clientId,
-              id: savedId,
-              expectedRevision: savedRevision,
-              request: { ...request, quantity: parseDecimal(quantity) ?? 0 },
-              offers,
-              sources,
-              selectedOfferId: activeSelection,
-              persistable,
-              blockedReason,
-            }}
-            onOpen={openSaved}
-            onSaved={(saved, submittedClientId) => {
-              // Update only persistence metadata: edits made while the request was
-              // in flight remain the visible draft.
-              if (submittedClientId !== currentClientId.current) return false;
-              setSavedId(saved.id);
-              setSavedRevision(saved.revision);
-              return true;
-            }}
-          />
-        ) : (
-          <p className="notice info">
-            El guardado de comparaciones no está configurado. Puedes usar el
-            ejemplo durante esta visita.
-          </p>
-        )}
-        <section className="request-panel" aria-label="Tu necesidad de compra">
-          <div className="request-title">
-            <Package size={21} />
-            <h2>¿Qué necesitas comprar?</h2>
-          </div>
-          <div className="request-fields">
-            <label className="field ingredient">
-              <span>Insumo</span>
-              <input
-                value={request.ingredient}
-                onChange={(e) =>
-                  setRequest({ ...request, ingredient: e.target.value })
-                }
-                maxLength={120}
-              />
-            </label>
-            <label className="field specification">
-              <span>Especificación / calidad</span>
-              <input
-                value={request.specification}
-                onChange={(e) =>
-                  setRequest({ ...request, specification: e.target.value })
-                }
-                maxLength={160}
-              />
-            </label>
-            <label className="field quantity">
-              <span>Cantidad necesaria</span>
-              <input
-                inputMode="decimal"
-                value={quantity}
-                aria-invalid={!validQuantity}
-                aria-describedby={
-                  !validQuantity ? "quantity-error" : "quantity-help"
-                }
-                onChange={(e) => setQuantity(e.target.value)}
-                maxLength={16}
-              />
-            </label>
-            <label className="field unit">
-              <span>Unidad</span>
-              <select
-                value={request.unit}
-                onChange={(e) =>
-                  setRequest({ ...request, unit: e.target.value as BaseUnit })
-                }
-              >
-                <option value="kg">kg</option>
-                <option value="L">L</option>
-                <option value="unit">unid.</option>
-              </select>
-            </label>
-          </div>
-          {!validQuantity ? (
-            <p className="field-error" id="quantity-error">
-              Escribe una cantidad mayor que cero, con hasta 3 decimales y sin
-              separador de miles.
-            </p>
-          ) : (
-            <p className="field-hint" id="quantity-help">
-              Calculamos presentaciones completas para cubrir tu necesidad.
-              Puedes usar punto o coma decimal.
-            </p>
-          )}
-        </section>
+        <div className="comparison-setup">
+          <section
+            className="request-panel"
+            aria-label="Tu necesidad de compra"
+          >
+            <div className="request-title">
+              <Package size={21} />
+              <h2>¿Qué necesitas comprar?</h2>
+            </div>
+            <div className="request-fields">
+              <label className="field ingredient">
+                <span>Insumo</span>
+                <input
+                  value={request.ingredient}
+                  onChange={(e) =>
+                    setRequest({ ...request, ingredient: e.target.value })
+                  }
+                  maxLength={120}
+                />
+              </label>
+              <label className="field specification">
+                <span>Especificación / calidad</span>
+                <input
+                  value={request.specification}
+                  onChange={(e) =>
+                    setRequest({ ...request, specification: e.target.value })
+                  }
+                  maxLength={160}
+                />
+              </label>
+              <label className="field quantity">
+                <span>Cantidad necesaria</span>
+                <input
+                  inputMode="decimal"
+                  value={quantity}
+                  aria-invalid={!validQuantity}
+                  aria-describedby={
+                    !validQuantity ? "quantity-error" : "quantity-help"
+                  }
+                  onChange={(e) => setQuantity(e.target.value)}
+                  maxLength={16}
+                />
+              </label>
+              <label className="field unit">
+                <span>Unidad</span>
+                <select
+                  value={request.unit}
+                  onChange={(e) =>
+                    setRequest({ ...request, unit: e.target.value as BaseUnit })
+                  }
+                >
+                  <option value="kg">kg</option>
+                  <option value="L">L</option>
+                  <option value="unit">unid.</option>
+                </select>
+              </label>
+            </div>
+            {!validQuantity ? (
+              <p className="field-error" id="quantity-error">
+                Escribe una cantidad mayor que cero, con hasta 3 decimales y sin
+                separador de miles.
+              </p>
+            ) : (
+              <p className="field-hint" id="quantity-help">
+                Calculamos presentaciones completas para cubrir tu necesidad.
+                Puedes usar punto o coma decimal.
+              </p>
+            )}
+          </section>
 
+          <aside
+            className="comparison-save"
+            aria-label="Guardar y recuperar comparación"
+          >
+            {persistenceEnabled ? (
+              <SavedComparisons
+                draft={{
+                  clientId,
+                  id: savedId,
+                  expectedRevision: savedRevision,
+                  request: {
+                    ...request,
+                    quantity: parseDecimal(quantity) ?? 0,
+                  },
+                  offers,
+                  sources,
+                  selectedOfferId: activeSelection,
+                  persistable,
+                  blockedReason,
+                }}
+                onOpen={openSaved}
+                onSaved={(saved, submittedClientId) => {
+                  // Update only persistence metadata: edits made while the request was
+                  // in flight remain the visible draft.
+                  if (submittedClientId !== currentClientId.current)
+                    return false;
+                  setSavedId(saved.id);
+                  setSavedRevision(saved.revision);
+                  return true;
+                }}
+              />
+            ) : (
+              <p className="notice info">
+                El guardado de comparaciones no está configurado. Puedes usar el
+                ejemplo durante esta visita.
+              </p>
+            )}
+            <button
+              className="button text-button"
+              onClick={() => setModal("reset")}
+            >
+              <RotateCcw size={16} />
+              {seed ? "Restaurar selección" : "Restaurar ejemplo"}
+            </button>
+          </aside>
+        </div>
         <section
           id="comparison"
           tabIndex={-1}

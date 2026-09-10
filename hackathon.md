@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T22:06:00Z
+- **Last updated:** 2026-09-09T22:36:22Z
 
 ## Log
 
@@ -256,3 +256,10 @@ Configured a dedicated Convex cloud development deployment and server-only provi
 An approved synthetic AgentMail request reached an owned test inbox. Its reply linked through the signed webhook (`200 Accepted`); replaying the same event succeeded without duplicating the reply. Manual offer review, save and recovery preserved PEN 4.80/kg and PEN 96 for 20 kg. No purchase was recorded.
 Published the development frontend through the registered static hosting component. Build-matching root/assets, SPA fallback, missing-asset 404 and unsigned-webhook rejection passed. Chrome recovered a hosted study in a fresh page; the hosted session stayed separate from the localhost study. Corrected the footer's fixed unsent-message claim and added an explicit development upload command.
 OpenAI account/model configuration, document extraction, advisor tool execution and the complete hosted provider journey remain unverified. Provider latency was not instrumented. Repository visibility, production and contest submission were unchanged. Evidence: `docs/desarrollo/CREDENTIALS_AND_E2E.md`, `HOSTING.md` and stage status in `ETAPAS.md`.
+
+
+### 2026-09-09 - working tree · procurement workspace experience
+Reorganized research around the search and supplier evidence, with study tools alongside on desktop and after results on mobile. Comparison quantity now precedes saving; document tools use a disclosure that preserves the review draft.
+Applied forest/sage tokens, a shared SVG mark, native reduced-motion-aware transitions and persistent dialog headers. An image-generation reference guided composition without introducing fabricated supplier photos or features.
+Chrome computer use reviewed desktop and mobile flows. 126 domain/backend tests, all 51 browser journeys, typecheck/build and hosting-asset validation passed locally, including the demo rehearsal and keyboard/reduced-motion checks.
+The final run followed a local fixture-CLI setup correction; calculations, ownership, saved revisions and mail permissions remain intact. No cloud deployment or provider/model call occurred in this UI delivery. Full real-provider acceptance and restaurant validation remain pending. Evidence: `docs/diseno/PULIDO_EXPERIENCIA.md`.

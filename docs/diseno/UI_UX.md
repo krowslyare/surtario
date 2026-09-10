@@ -1,6 +1,6 @@
 # Guía de UI y UX
 
-Versión 0.5 · Pulido visual solicitado por el usuario. Branding comercial fuera del alcance actual. Primera comparación revisada visualmente en navegador; validación con restaurantes pendiente.
+Versión 0.6 · Revisión de jerarquía y experiencia solicitada por el usuario. Branding comercial fuera del alcance actual. Primera comparación revisada visualmente en navegador; validación con restaurantes pendiente.
 
 Esta guía aplica a la aplicación y demo. Complementa el [plan de producto](../producto/PLAN_PRODUCTO.md); no crea otra etapa de investigación o diseño de marca.
 
@@ -12,27 +12,28 @@ Nombre provisional: **Compras para restaurantes**, como texto sencillo en el enc
 
 ## 2. Dirección visual
 
-Dirección: mesa de trabajo para investigar insumos, con tinta índigo y fondo lavanda suave. Búsqueda protagonista, sin hero ilustrado ni eslóganes. Los resultados comparten una lista compacta: proveedor y fuente a la izquierda, precio normalizado y presentación a la derecha; en móvil se apilan. Selección con acento lateral y texto, sin declarar ganador. «Mi estudio» permanece accesible en el encabezado al desplazarse.
+Dirección: mesa de trabajo para investigar insumos, con tinta verde bosque y fondo blanco cálido. Búsqueda protagonista, sin hero ilustrado ni eslóganes. Los resultados comparten una lista compacta: proveedor y fuente a la izquierda, precio normalizado y presentación a la derecha; en móvil se apilan. Selección con acento lateral y texto, sin declarar ganador. «Mi estudio» permanece accesible en el encabezado al desplazarse.
 
 Tokens implementados: [tokens.css](../../src/styles/tokens.css), única fuente de valores de la UI.
 
 | Función | Token / valor inicial |
 | --- | --- |
-| Fondo de aplicación | `--color-canvas`: `#F6F6FA` |
+| Fondo de aplicación | `--color-canvas`: `#F7F8F2` |
 | Superficies | `--color-surface`: `#FFFFFF` |
-| Texto principal | `--color-text`: `#292943` |
-| Texto secundario | `--color-text-muted`: `#626278` |
-| Acción principal | `--color-primary`: `#42416F`, texto blanco |
+| Texto principal | `--color-text`: `#213D32` |
+| Texto secundario | `--color-text-muted`: `#5D6C63` |
+| Acción principal | `--color-primary`: `#213D32`, texto blanco |
+| Selección | Verde suave `#E8EEDF`, acento `#DBEDAB` y texto explícito |
 | Pendiente | Texto `#8A4B08` sobre `#FFF4D6` |
 | Error | Texto `#B42318` sobre `#FEECE9` |
 | Información | Texto `#175CD3` sobre `#EFF8FF` |
-| Bordes | Decorativos `#DDDDE8`; controles `#8B8B9E` |
+| Bordes | Decorativos `#DCE2D7`; controles `#849183` |
 
-Tipografía: Manrope variable, subconjunto latino WOFF2 de 24.83 kB empaquetado localmente, con fallback de sistema y font-display swap. No consulta servicios de fuentes externos. Licencia OFL-1.1 conservada en la dependencia `@fontsource-variable/manrope`. Texto base e inputs 16 px; tablas y etiquetas 14 px; metadatos no decisivos 11–12 px. Título inicial de 32–50 px, reducido a 28 px al explorar; cifras de mercado de 28–30 px. Pesos 400/500/600/650/800; evitar texto fino. Cifras con dígitos tabulares y alineadas a la derecha en columnas numéricas.
+Tipografía: Manrope variable, subconjunto latino WOFF2 de 24.83 kB empaquetado localmente, con fallback de sistema y font-display swap. No consulta servicios de fuentes externos. Licencia OFL-1.1 conservada en la dependencia `@fontsource-variable/manrope`. Texto base e inputs 16 px; tablas y etiquetas 14 px; metadatos no decisivos 11–12 px. Título inicial de 32–44 px, reducido a 28 px al explorar en escritorio; cifras de mercado de 28–30 px. Pesos 400/500/600/650/800; evitar texto fino. Cifras con dígitos tabulares y alineadas a la derecha en columnas numéricas.
 
 Escala de espacios: 4, 8, 12, 16, 24, 32, 48 px. Controles de al menos 44 px de alto. Los resultados comparten un contenedor de radio 10 px con separadores internos, sin sombras ni una tarjeta dentro de otra. Las superficies de comparación y diálogos mantienen sus estilos.
 
-La versión es clara. La ilustración de despensa deja de mostrarse; la entrada presenta datos del ejemplo calculados desde los fixtures. No hay animación de entrada. Modo oscuro y branding comercial definitivo siguen aplazados.
+La versión es clara. La ilustración de despensa deja de mostrarse; la entrada presenta datos del ejemplo calculados desde los fixtures. Entrada de título de 300 ms, diálogos de 180 ms y transiciones de selección de 160 ms. La preferencia de movimiento reducido desactiva animaciones y transiciones. No se sustituye el desplazamiento nativo. Modo oscuro y branding comercial definitivo siguen aplazados.
 
 Para la entrega del concurso no diseñar sección de pricing, tarjetas de planes, checkout ni paywall. El acceso público se presenta con «Probar ejemplo». Esto se refiere a la tarifa del SaaS: precios de insumos, cotizaciones y totales permanecen visibles. La tarifa comercial está pendiente de validación.
 
@@ -54,7 +55,7 @@ Mostrar el precio por kg junto a su etiqueta. No permitir que una cifra grande s
 
 ### A. Explorar mercado y mi estudio
 
-Entrada por insumo/categoría y zona. Separar precios de catálogo, distribuidores sin precio y referencias generales. Cada resultado muestra origen/fecha, ubicación declarada y contacto cuando exista evidencia; sin precio no significa precio cero. Seleccionar opciones permite construir un estudio sin preparar una compra. «Cargar documento» es contexto opcional cuando esté implementado.
+Entrada por insumo/categoría y zona. Separar precios de catálogo, distribuidores sin precio y referencias generales. Cada resultado muestra origen/fecha, ubicación declarada y contacto cuando exista evidencia; sin precio no significa precio cero. Seleccionar opciones permite construir un estudio sin preparar una compra. Las listas aparecen en «Tus insumos» y la revisión de documentos en «Revisar una cotización». En móvil, «Usar lista o archivo» da acceso directo a estas herramientas.
 
 El prototipo local ofrece «Explorar ejemplo» y avisa que filtra datos ficticios; no simula una búsqueda real. La demo conectada ofrecerá «Probar ejemplo» con fuentes y contactos identificados. No exige archivos privados ni cantidad. Las condiciones no verificadas permanecen pendientes al continuar a compra.
 
@@ -62,7 +63,7 @@ No abrir con indicadores de ganancias, ahorro o platos que todavía no podemos c
 
 ### B. Revisar documento
 
-En escritorio, documento y campos extraídos uno al lado del otro. En teléfono, alternar documento/campos conservando edición; no forzar dos columnas estrechas. Cada campo dudoso señala qué falta y permite corregirlo.
+En escritorio, documento y campos extraídos uno al lado del otro. En teléfono, documento y campos se apilan conservando la edición; el cierre del diálogo permanece visible al desplazarse. Cada campo dudoso señala qué falta y permite corregirlo.
 
 Ejemplo: «Dice “caja”, pero no indica el peso. ¿Cuántos kg contiene?». Si el usuario no lo sabe, permitir conservar pendiente y continuar con otros datos; no asignar peso por defecto.
 
@@ -132,7 +133,7 @@ Revisar entrada de exploración, resultados con/sin precio, estudio, compra opci
 
 Para aceptar exploración: el usuario distingue precio, contacto y referencia, encuentra la fuente y conserva opciones sin cantidad ni documentos. Para aceptar compra: reconoce cantidad y desembolso e identifica condiciones pendientes. En ambas entiende la próxima acción. Verificarlo con teclado y en teléfono. Las imágenes o capturas de verificación deben corresponder a la UI implementada.
 
-Contrastes calculados de la paleta propuesta: texto principal/blanco 14.07:1; secundario/blanco 5.94:1; blanco/acción principal 9.47:1; secundario/lavanda 4.93:1; borde de control/blanco 3.34:1; pendiente 6.20:1; error 5.76:1; información 5.57:1. Son combinaciones sólidas concretas, no un certificado para cualquier mezcla de colores ni para la aplicación completa. Revalidar si se cambia color, fondo u opacidad.
+Contrastes calculados de la paleta implementada: texto principal/blanco y blanco/acción principal 11.81:1; secundario/blanco 5.54:1; secundario/fondo 5.19:1; secundario/verde suave 4.68:1; borde de control/blanco 3.30:1; texto principal/acento de selección 9.40:1. Son combinaciones sólidas concretas, no un certificado para cualquier mezcla de colores ni para la aplicación completa. Revalidar si se cambia color, fondo u opacidad.
 
 Primera entrega revisada en escritorio y móvil, con prueba de reflujo de 320 a 1280 px y cierre de diálogos por teclado. Pendientes: extracción documental, pruebas con usuarios y auditoría completa de accesibilidad. Branding comercial aplazado; no condiciona desarrollo ni entrega del concurso.
 
@@ -166,3 +167,12 @@ Documento y campos con evidencia en dos columnas en escritorio; una columna en m
 ## Comparaciones guardadas y elección
 
 Guardado independiente del estudio, con lista reactiva y recuperación de condiciones. «Elegir oferta» solo se habilita cuando esa oferta es calculable; el estado indica elección, no compra. Cambiar condiciones invalida la elección activa. Datos de fuentes conservan su fecha original; el guardado no convierte un ejemplo en una cotización real. Errores, desconexión y restricción a ejemplos se explican junto al control de guardado.
+
+
+## Workspace · versión 0.6
+
+Búsqueda y proveedores ocupan la columna principal. Guardado y herramientas quedan al costado en escritorio; en móvil, los resultados preceden al guardado y las herramientas. La revisión visual descartó apilar el panel de guardado antes del primer proveedor. En comparación, cantidad y especificación preceden al guardado; restaurar el ejemplo permanece como acción secundaria.
+
+La revisión de cotizaciones se agrupa en un desplegable nativo. Cerrar este bloque o su diálogo conserva el borrador de revisión. «Mi estudio» lleva el foco al título de la selección. Si la búsqueda web está habilitada, Enter ejecuta esa búsqueda; «Explorar ejemplo» sigue siendo una acción separada. Estado de proveedores, fuentes, impuestos y entrega permanecen explícitos.
+
+Marca SVG sencilla compartida y favicon a juego; el nombre comercial sigue pendiente. La imagen generada se usó como referencia de composición, sin incorporar fotos de proveedores ni funciones inventadas. [Plan visual y evidencia](PULIDO_EXPERIENCIA.md).

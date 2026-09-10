@@ -1,23 +1,23 @@
 /* Fuente única de tokens de UI. No usar estados para declarar un ganador global. */
 :root {
   color-scheme: light;
-  --color-canvas: #f6f6fa;
+  --color-canvas: #f7f8f2;
   --color-surface: #ffffff;
-  --color-text: #292943;
-  --color-text-muted: #626278;
-  --color-primary: #42416f;
-  --color-primary-hover: #302e59;
+  --color-text: #213d32;
+  --color-text-muted: #5d6c63;
+  --color-primary: #213d32;
+  --color-primary-hover: #132c22;
   --color-on-primary: #ffffff;
-  --color-success: #42416f;
-  --color-success-surface: #eeedf7;
+  --color-success: #213d32;
+  --color-success-surface: #e8eedf;
   --color-warning: #8a4b08;
   --color-warning-surface: #fff4d6;
   --color-danger: #b42318;
   --color-danger-surface: #feece9;
   --color-info: #175cd3;
   --color-info-surface: #eff8ff;
-  --color-border: #dddde8;
-  --color-control-border: #8b8b9e;
+  --color-border: #dce2d7;
+  --color-control-border: #849183;
   --color-focus: #175cd3;
 
   --font-sans:
@@ -39,14 +39,14 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --space-12: 3rem;
-  --radius-control: 0.75rem;
-  --radius-panel: 1.25rem;
+  --radius-control: 0.625rem;
+  --radius-panel: 1rem;
   --control-min-height: 2.75rem;
   --content-max-width: 75rem;
   --focus-width: 2px;
   --focus-offset: 2px;
-  --shadow-overlay: 0 24px 80px rgb(41 41 67 / 16%);
-  --color-hero: #eae9f3;
-  --color-accent: #d77158;
-  --shadow-panel: 0 8px 32px rgb(41 41 67 / 4%);
+  --shadow-overlay: 0 24px 80px rgb(21 45 32 / 16%);
+  --color-hero: #e8eedf;
+  --color-accent: #dbedab;
+  --shadow-panel: 0 8px 32px rgb(21 45 32 / 4%);
 }

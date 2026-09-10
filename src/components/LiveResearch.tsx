@@ -206,6 +206,9 @@ export function ResearchWorkspace({
   if (!status)
     return <p className="notice info">Comprobando la búsqueda web…</p>;
 
+  // Keep the status subscription mounted without an empty duplicate search panel.
+  if (!searching && !active && !error && !runs?.length) return null;
+
   return (
     <section className="live-research" aria-labelledby="live-research-title">
       <div className="live-research-heading">

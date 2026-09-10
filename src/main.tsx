@@ -5,6 +5,7 @@ import { ConvexProvider, ConvexReactClient } from "convex/react";
 import "./styles/fonts.css";
 import "./styles/tokens.css";
 import "./styles/app.css";
+import "./styles/workspace.css";
 
 const backendUrl = import.meta.env.VITE_CONVEX_URL;
 const convex = backendUrl ? new ConvexReactClient(backendUrl) : null;

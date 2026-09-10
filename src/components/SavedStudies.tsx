@@ -131,8 +131,8 @@ function ConnectedStudies({
         </button>
       </div>
       <p className="field-hint">
-        Estudios de ejemplo guardados para este navegador. Hasta 10; borrar los
-        datos del sitio pierde el acceso. Guarda antes de recargar.
+        Hasta 10 estudios de ejemplo en este navegador. Guarda antes de salir.
+        Si borras los datos del sitio, pierdes el acceso.
       </p>
       {!connected && (
         <p role="status">

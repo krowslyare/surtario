@@ -22,7 +22,7 @@ Bloque de persistencia completado localmente: selección y fuentes recuperables,
 
 Next: confirm the intended OpenAI account/project, configure its server key and compatible models, then verify web/document extraction and advisor tools against real responses. Firecrawl discovery and the authorized AgentMail test round trip passed on cloud development; they do not complete stages 2–4. Finish the combined acceptance flow and rehearsal before treating the development preview as the final demo. See [provider procedure and dated evidence](./CREDENTIALS_AND_E2E.md).
 
-Revisión visual aplicada: Manrope local y tokens índigo/lavanda; búsqueda protagonista, resultados compactos, precio normalizado destacado y acceso persistente al estudio. La portada ilustrada fue retirada. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
+Revisión visual aplicada: Manrope local y tokens verde bosque/blanco cálido; búsqueda y resultados como foco principal, herramientas al costado en escritorio y después de los resultados en móvil, precio normalizado destacado y acceso persistente al estudio. La portada ilustrada fue retirada. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
 
 Ensayo del guion actual completado en navegador: explorar → guardar/recuperar → consulta sin envío → compra opcional → totales comprobados. 36 pruebas de dominio/backend y 19 de navegador, build y smoke de cálculo local satisfactorios. [Guion y brechas de concurso](./ENSAYO_DEMO.md); video no grabado, integraciones y publicación pendientes.
 
@@ -222,3 +222,10 @@ The final combined code passed 126 unit/backend tests, frontend/backend typechec
 Configured a dedicated cloud development deployment using the author's provider consoles. A real internal Firecrawl probe returned three Peruvian catalog sources; prices, equivalence and coverage were not yet extracted or validated by OpenAI. A synthetic study without quantity or price produced one reviewed AgentMail request to an owned test inbox. The reply arrived through the signed webhook (`200 Accepted`); replaying that same event succeeded while the app retained one reply. The manually reviewed offer was saved and recovered at PEN 4.80/kg and PEN 96 for 20 kg. No purchase was recorded.
 
 The development frontend is reachable over HTTPS, with build matching root/assets, SPA fallback, asset 404 and unsigned webhook rejection verified. The hosted fixture empty-result state and separate browser-origin session were checked. OpenAI account selection, actual model compatibility, document extraction, advisor tools and the complete hosted two-session journey remain open. Provider latency was not instrumented. Evidence and reproduction boundaries: [provider acceptance](CREDENTIALS_AND_E2E.md), [hosting](HOSTING.md).
+
+
+## 2026-09-09 · procurement workspace experience
+
+Reworked research into a main evidence column with study tools alongside; mobile prioritizes results and provides a keyboard-accessible shortcut to list/file tools. Comparison quantity now precedes saving. Unified forest/sage tokens, shared SVG identity, restrained native motion and persistent dialog headers apply across the existing flows. The document disclosure preserves review drafts.
+
+126 domain/backend tests, all 51 browser journeys in one final run, typecheck/build and hosting-asset validation passed locally. Chrome computer use reviewed desktop and 390px mobile, while the suite covers 320/390/768/1280px reflow and reduced motion. See [design decisions and verification](../diseno/PULIDO_EXPERIENCIA.md). The local CLI fixture setup was corrected before the final run; no cloud or provider settings changed. This delivery does not complete stages 2–5 or restaurant validation.
