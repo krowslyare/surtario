@@ -34,7 +34,9 @@ The five initial searches returned 15 sources: four had no Markdown, one contain
 5. **Product form matters.** Redondos describes a chicken product with a weight range, not one exact package weight. Bottato describes pre-fried/frozen products on its site. Neither can be assumed equivalent to an unspecified fresh ingredient.
 6. **Freshness is separate from observation.** The action's timestamp records when we received the result, not when the supplier updated it. The adapter does not override Firecrawl caching or retain a supplier-validity date. [Firecrawl documents caching and freshness limitations](https://docs.firecrawl.dev/features/scrape#caching-and-maxage).
 
-## Next implementation slice — not yet implemented
+## Follow-up planned at the time of this probe
+
+The bounded source-analysis and product-read slice below is now implemented locally. Its real scrape, Luna replay, tests and remaining limits are recorded separately in [source analysis evidence](FIRECRAWL_SOURCE_ANALYSIS.md). The observations above describe the original deployed adapter.
 
 1. Classify readable product evidence, a catalog needing product selection, contact-only sources, unreadable/error pages and irrelevant results before offering price extraction. Keep contact-only discovery useful. Do not hardcode these suppliers as the product's only supported sources.
 2. Let the user select a product link from a discovered catalog and read that public page with a bounded same-site follow-up. Preserve the source relationship, timestamp and truncation state. The failed exact-search experiment supports trying direct reading rather than repeating search indefinitely; a real `/scrape` acceptance test is still required.

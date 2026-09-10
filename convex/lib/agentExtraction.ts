@@ -8,6 +8,54 @@ import {
   extractionInstructions,
   validateExtraction,
 } from "./extraction";
+import {
+  webAnalysisInstructions,
+  webAnalysisSchema,
+  validateWebAnalysis,
+  webSourceText,
+  sourceEvidenceLines,
+} from "./webAnalysis";
+
+export async function analyzeWebSourceWithAgent(
+  ctx: ActionCtx,
+  input: {
+    markdown: string;
+    ingredient: string;
+    title: string;
+    url: string;
+    contentTruncated: boolean;
+  },
+  apiKey: string,
+  model: string,
+) {
+  const { markdown: _markdown, ...context } = input;
+  const source = webSourceText(input);
+  const agent = new Agent(components.agent, {
+    name: "Procurement source analysis",
+    languageModel: createOpenAI({ apiKey, fetch: providerFetch })(model),
+    instructions: webAnalysisInstructions,
+    storageOptions: { saveMessages: "none" },
+    contextOptions: { recentMessages: 0, searchOtherThreads: false },
+  });
+  const result = await agent.generateObject(
+    ctx,
+    { userId: `stateless:${crypto.randomUUID()}` },
+    {
+      prompt: JSON.stringify({
+        ...context,
+        evidenceLines: sourceEvidenceLines(source).map((text, index) => ({
+          line: index + 1,
+          text,
+        })),
+      }),
+      schema: webAnalysisSchema,
+      maxRetries: 0,
+      maxOutputTokens: 2600,
+      abortSignal: AbortSignal.timeout(30000),
+    },
+  );
+  return validateWebAnalysis(result.object, source);
+}
 
 export async function extractOfferWithAgent(
   ctx: ActionCtx,

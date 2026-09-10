@@ -10,7 +10,6 @@ import {
 import {
   ExternalLink,
   FileSearch,
-  Globe2,
   History,
   Search,
 } from "lucide-react";
@@ -25,6 +24,12 @@ import {
 } from "../domain/extraction";
 import type { PurchaseSeed } from "../domain/market";
 import ExtractionReview from "./ExtractionReview";
+import {
+  ProductLinkReader,
+  SourceQualitySummary,
+  type SourceAnalysis,
+  type SourceInspection,
+} from "./SourceQuality";
 
 const SESSION_KEY = "procurement-demo-session-v1";
 
@@ -42,6 +47,12 @@ export type ResearchSource = {
   extraction: ExtractedOffer | null;
   extractionStatus: "idle" | "running" | "complete" | "failed";
   extractionError: string | null;
+  analysis?: SourceAnalysis;
+  inspection?: SourceInspection;
+  parentSourceIndex?: number;
+  observedAt?: string;
+  readStatus?: "running" | "complete" | "failed";
+  readError?: string | null;
 };
 
 export type SavedResearch = {
@@ -92,6 +103,7 @@ export function ResearchWorkspace({
   onStatus,
   onSearch,
   onExtract,
+  onRead,
   onPrepare,
   renderProspect,
 }: {
@@ -102,12 +114,21 @@ export function ResearchWorkspace({
   onStatus: (status: ResearchStatus | undefined) => void;
   onSearch: (ingredient: string, region: string) => Promise<SavedResearch>;
   onExtract: (runId: string, sourceIndex: number) => Promise<ExtractedOffer>;
+  onRead?: (
+    runId: string,
+    sourceIndex: number,
+    url: string,
+  ) => Promise<SavedResearch>;
   onPrepare: (seed: PurchaseSeed) => void;
 }) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localRun, setLocalRun] = useState<SavedResearch | null>(null);
   const [searching, setSearching] = useState(false);
   const [extracting, setExtracting] = useState<string[]>([]);
+  const [reading, setReading] = useState<string[]>([]);
+  const [readFailures, setReadFailures] = useState<Record<string, string>>({});
+  const [selectedLinks, setSelectedLinks] = useState<Record<string, string>>({});
+  const [readNotice, setReadNotice] = useState("");
   const [localExtractions, setLocalExtractions] = useState<
     Record<string, ExtractedOffer>
   >({});
@@ -131,6 +152,9 @@ export function ResearchWorkspace({
         setActiveId(run.id);
         setReviewed([]);
         setEquivalent(false);
+        setReadFailures({});
+        setSelectedLinks({});
+        setReadNotice("");
       })
       .catch((cause) => {
         if (current)
@@ -148,10 +172,19 @@ export function ResearchWorkspace({
 
   const active = useMemo(() => {
     const persisted = runs?.find((run) => run.id === activeId);
+    const localReadResolved = localRun?.sources.some((source, index) => {
+      const persistedSource = persisted?.sources[index];
+      return (
+        source.parentSourceIndex !== undefined &&
+        source.readStatus !== "running" &&
+        persistedSource?.readStatus === "running"
+      );
+    });
     if (
       localRun?.id === activeId &&
-      localRun.status !== "running" &&
-      persisted?.status === "running"
+      (persisted?.status === "running" ||
+        localRun.sources.length > (persisted?.sources.length ?? 0) ||
+        localReadResolved)
     )
       return localRun;
     return persisted ?? (localRun?.id === activeId ? localRun : null);
@@ -172,6 +205,44 @@ export function ResearchWorkspace({
       );
     } finally {
       setExtracting((current) => current.filter((id) => id !== sourceId));
+    }
+  }
+
+  async function readProduct(
+    run: SavedResearch,
+    sourceIndex: number,
+    url: string,
+  ) {
+    if (!onRead) return;
+    const sourceId = `${run.id}:${sourceIndex}`;
+    setReading((current) => [...current, sourceId]);
+    setReadNotice("");
+    setReadFailures((current) => {
+      const next = { ...current };
+      delete next[sourceId];
+      return next;
+    });
+    try {
+      const updated = await onRead(run.id, sourceIndex, url);
+      setLocalRun(updated);
+      const child = updated.sources.find(
+        (source) => source.parentSourceIndex === sourceIndex,
+      );
+      setReadNotice(
+        child?.readStatus === "failed"
+          ? "La ficha no pudo leerse. La lectura no se repetirá automáticamente."
+          : "Ficha leída. Revisa la nueva fuente antes de usar sus datos.",
+      );
+    } catch (cause) {
+      setReadFailures((current) => ({
+        ...current,
+        [sourceId]:
+          cause instanceof ConvexError && typeof cause.data === "string"
+            ? cause.data
+            : "No se pudo leer la ficha seleccionada. La lectura no se repetirá automáticamente.",
+      }));
+    } finally {
+      setReading((current) => current.filter((id) => id !== sourceId));
     }
   }
 
@@ -257,6 +328,9 @@ export function ResearchWorkspace({
                   setLocalRun(null);
                   setReviewed([]);
                   setEquivalent(false);
+                  setReadFailures({});
+                  setSelectedLinks({});
+                  setReadNotice("");
                   setError("");
                 }}
               >
@@ -288,6 +362,11 @@ export function ResearchWorkspace({
               </span>
             )}
           </div>
+          {readNotice && (
+            <p className="field-hint" role="status" aria-live="polite">
+              {readNotice}
+            </p>
+          )}
           {active.warning && (
             <p className="notice info">
               La búsqueda devolvió contenido parcial; revisa las fuentes.
@@ -303,6 +382,19 @@ export function ResearchWorkspace({
               por no cumplir los límites de la búsqueda.
             </p>
           )}
+          {active.sources.length > 0 &&
+            active.sources.every(
+              (source) =>
+                source.inspection?.state === "blocked" ||
+                source.inspection?.state === "unrelated" ||
+                source.analysis?.kind === "irrelevant",
+            ) && (
+              <p className="notice" role="status">
+                Ninguna fuente quedó lista para analizar como oferta. Puedes
+                revisar las páginas de origen o intentar una búsqueda más
+                específica.
+              </p>
+            )}
           {active.status === "complete" && active.sources.length === 0 && (
             <div className="empty-state">
               <Search size={30} />
@@ -314,27 +406,67 @@ export function ResearchWorkspace({
             {active.sources.map((source, index) => {
               const sourceId = `${active.id}:${index}`;
               const url = safeUrl(source.url);
-              const proposal = localExtractions[sourceId] ?? source.extraction;
+              const localProposal = localExtractions[sourceId];
+              const proposal = localProposal ?? source.extraction;
+              const awaitingAnalysis = Boolean(
+                localProposal && !source.extraction && !source.analysis,
+              );
               const isExtracting =
                 extracting.includes(sourceId) ||
                 source.extractionStatus === "running";
+              const isReading =
+                reading.includes(sourceId) || source.readStatus === "running";
+              const readFailure =
+                readFailures[sourceId] ||
+                (source.readStatus === "failed" ? source.readError : "") ||
+                "";
+              const isChild = source.parentSourceIndex !== undefined;
+              const parentTitle = isChild
+                ? active.sources[source.parentSourceIndex!]?.title
+                : undefined;
+              const hasChild = active.sources.some(
+                (candidate) => candidate.parentSourceIndex === index,
+              );
+              const inspectionBlocksAnalysis =
+                source.inspection && source.inspection.state !== "readable";
+              const readBlocksAnalysis =
+                source.readStatus === "running" ||
+                source.readStatus === "failed";
+              const analysisIsProduct =
+                !source.analysis || source.analysis.kind === "product";
+              const prospectAllowed =
+                source.inspection?.state !== "blocked" &&
+                source.inspection?.state !== "unrelated" &&
+                source.analysis?.kind !== "irrelevant";
               const wasReviewed = reviewed.some(
                 (item) => item.sourceId === sourceId,
               );
               const extractionSource: ExtractionSource = {
                 id: sourceId,
                 title: source.title,
-                text: source.markdown ?? source.description,
-                observedAt: active.observedAt,
+                text: source.analysis
+                  ? `Título de la página: ${source.title.replace(/\s+/g, " ").trim()}\n\n${source.markdown ?? source.description}`
+                  : source.markdown ?? source.description,
+                observedAt: source.observedAt ?? active.observedAt,
                 simulated: active.simulated,
                 ...(url ? { url } : {}),
               };
               return (
-                <article className="research-source" key={sourceId}>
+                <article
+                  className={`research-source${isChild ? " research-source-child" : ""}`}
+                  key={sourceId}
+                >
                   <div className="research-source-copy">
-                    <span>Fuente web candidata</span>
+                    <span>
+                      {isChild
+                        ? `Ficha leída desde ${parentTitle ?? "una fuente candidata"}`
+                        : "Fuente web candidata"}
+                    </span>
                     <h3>{source.title}</h3>
                     <p>{source.description}</p>
+                    {source.analysis && (
+                      <SourceQualitySummary analysis={source.analysis} />
+                    )}
                     {source.contentTruncated && (
                       <small>El contenido recuperado está incompleto.</small>
                     )}
@@ -347,8 +479,72 @@ export function ResearchWorkspace({
                     )}
                   </div>
                   <div className="research-source-action">
-                    {url && renderProspect?.(active, index)}
-                    {!source.markdown ? (
+                    {url && prospectAllowed && renderProspect?.(active, index)}
+                    {!isChild &&
+                      !hasChild &&
+                      onRead &&
+                      source.inspection?.state !== "blocked" &&
+                      source.inspection?.state !== "unrelated" &&
+                      source.analysis?.kind !== "irrelevant" &&
+                      source.inspection?.links.length ? (
+                        <ProductLinkReader
+                          links={source.inspection.links}
+                          selectedUrl={
+                            selectedLinks[sourceId] ??
+                            source.inspection.links[0]?.url ??
+                            ""
+                          }
+                          reading={isReading}
+                          failed={readFailure}
+                          onSelect={(selectedUrl) =>
+                            setSelectedLinks((current) => ({
+                              ...current,
+                              [sourceId]: selectedUrl,
+                            }))
+                          }
+                          onRead={() =>
+                            void readProduct(
+                              active,
+                              index,
+                              selectedLinks[sourceId] ??
+                                source.inspection?.links[0]?.url ??
+                                "",
+                            )
+                          }
+                        />
+                      ) : null}
+                    {source.readStatus === "running" && (
+                      <p className="field-hint" role="status" aria-live="polite">
+                        La ficha se está leyendo. No se repetirá automáticamente.
+                      </p>
+                    )}
+                    {source.readStatus === "failed" && source.readError && (
+                      <p className="notice error" role="alert">
+                        {source.readError}
+                      </p>
+                    )}
+                    {readBlocksAnalysis ? (
+                      <p className="field-hint">
+                        Espera a que termine la lectura de esta página. Si falló,
+                        revisa el origen manualmente.
+                      </p>
+                    ) : inspectionBlocksAnalysis ? (
+                      <p className="field-hint">
+                        {source.inspection?.state === "unrelated"
+                          ? "No encontramos coincidencias textuales suficientes con esta búsqueda. Revisa el origen si necesitas confirmarlo."
+                          : source.inspection?.reason ||
+                            "Esta página no tiene contenido legible para analizar."}
+                      </p>
+                    ) : !analysisIsProduct ? (
+                      <p className="field-hint">
+                        Esta fuente aporta contexto o contacto, pero no una oferta
+                        de producto comparable.
+                      </p>
+                    ) : awaitingAnalysis ? (
+                      <p className="field-hint" role="status" aria-live="polite">
+                        Clasificando la fuente antes de habilitar su revisión…
+                      </p>
+                    ) : !source.markdown ? (
                       <p>Sin texto recuperado para extraer datos.</p>
                     ) : !status.extractionEnabled && !proposal ? (
                       <p>Extracción no configurada en el servidor.</p>
@@ -373,15 +569,23 @@ export function ResearchWorkspace({
                         }}
                       />
                     ) : (
-                      <button
-                        type="button"
-                        className="button secondary"
-                        disabled={isExtracting}
-                        onClick={() => void extract(active, index)}
-                      >
-                        <FileSearch size={16} />
-                        {isExtracting ? "Extrayendo datos…" : "Extraer datos"}
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="button secondary"
+                          disabled={isExtracting}
+                          onClick={() => void extract(active, index)}
+                        >
+                          <FileSearch size={16} />
+                          {isExtracting ? "Analizando fuente…" : "Extraer datos"}
+                        </button>
+                        {!isExtracting && (
+                          <p className="field-hint">
+                            Primero identifica el tipo de página y cita la
+                            evidencia; solo una ficha de producto pasa a revisión.
+                          </p>
+                        )}
+                      </>
                     )}
                     {source.extractionStatus === "failed" &&
                       source.extractionError && (
@@ -499,6 +703,7 @@ function ConnectedResearch({
   const search = useAction(api.research.search);
   const attempts = useRef(new Map<number, Promise<SavedResearch>>());
   const extract = useAction(api.research.extract);
+  const readProduct = useAction(api.research.readProduct);
   return (
     <>
       <ResearchWorkspace
@@ -529,6 +734,14 @@ function ConnectedResearch({
         }}
         onExtract={(runId, sourceIndex) =>
           extract({ token, runId: runId as Id<"researchRuns">, sourceIndex })
+        }
+        onRead={(runId, sourceIndex, url) =>
+          readProduct({
+            token,
+            runId: runId as Id<"researchRuns">,
+            sourceIndex,
+            url,
+          })
         }
       />
       <WebProspectLibrary token={token} onPrepare={props.onPrepare} />

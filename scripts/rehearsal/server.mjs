@@ -296,7 +296,35 @@ createServer(async (request, response) => {
         sources: web.length,
         simulated: true,
       });
-      reply(response, 200, { success: true, data: { web } });
+      reply(response, 200, {
+        success: true,
+        data: {
+          web: web.map((source) => ({
+            ...source,
+            markdown: `${source.markdown}\n[Ficha de arroz extra](${source.url}/producto-arroz)`,
+          })),
+        },
+      });
+    } else if (request.url === "/firecrawl/v2/scrape") {
+      const source = catalog.find(
+        (item) => `${item.url}/producto-arroz` === body.url,
+      );
+      if (!source)
+        throw new Error(
+          "Only bundled synthetic product links can be read in this rehearsal.",
+        );
+      await log({ kind: "product_read", url: body.url, simulated: true });
+      reply(response, 200, {
+        success: true,
+        data: {
+          markdown: source.markdown,
+          metadata: {
+            title: source.title,
+            sourceURL: body.url,
+            statusCode: 200,
+          },
+        },
+      });
     } else if (request.url === "/openai/v1/responses") {
       const forced = body.tool_choice;
       if (

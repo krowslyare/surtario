@@ -48,7 +48,7 @@ export function createProviderTransport(
       source.pathname === "/v1/responses"
         ? "openai"
         : source.origin === "https://api.firecrawl.dev" &&
-            source.pathname === "/v2/search"
+            ["/v2/search", "/v2/scrape"].includes(source.pathname)
           ? "firecrawl"
           : source.origin === "https://api.agentmail.to" &&
               /^\/v0\/inboxes\/[^/]+\/messages\/send$/.test(source.pathname)

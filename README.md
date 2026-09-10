@@ -7,6 +7,7 @@ The demo does not require recipes, purchase history, stock or a document. Suppli
 ## Current capabilities
 
 - Research examples without a quantity, including distributors without published prices. Explicitly gated Firecrawl search and OpenAI extraction preserve sources, dates and fields requiring review.
+- Classify candidate sources before price review, retain cited summaries and warnings, and explicitly read a selected same-site product page. Catalogs, broken pages and unrelated sources cannot silently become comparable offers.
 - Enter a manual list or review an XLSX/CSV ingredient column. Save reviewed names by browser session and recover them after reload. File bytes and other columns remain local.
 - Inspect bundled synthetic PNG/PDF documents, request extraction when enabled, correct proposed fields and preserve the reviewed comparison. Private image/PDF inputs currently support local manual transcription only.
 - Compare whole packages, minimum orders, freight, confirmed tax conditions, excess and cash outlay. Unknown critical values remain pending.
@@ -16,7 +17,7 @@ The demo does not require recipes, purchase history, stock or a document. Suppli
 
 **Verification boundary:** real Firecrawl discovery and an AgentMail test round trip were verified on a dedicated Convex development deployment on September 9, 2026. The signed reply was reviewed, saved as an offer and recovered; replaying its webhook did not duplicate the reply. A separate local rehearsal now exercises extraction and advice through real Luna CLI calls with simulated web/mail transport; direct OpenAI API acceptance and the complete hosted provider journey remain unverified. See [the rehearsal procedure and evidence](docs/desarrollo/LUNA_REHEARSAL.md). The [development preview](https://incredible-wolverine-122.convex.site) is reachable over HTTPS; it is not the final contest release. No video has been submitted. Current stage status is maintained only in [ETAPAS.md](docs/desarrollo/ETAPAS.md).
 
-Verified locally: **147 unit/backend and configuration tests and 51 browser journeys passed**, including the demo rehearsal. Frontend/backend typechecks and the hosting build check also passed. Provider transports were simulated or disabled; the separate computer-use rehearsal invoked `gpt-5.6-luna` through `codex exec`.
+Latest source-quality verification: **155 unit/backend and configuration tests and three focused browser journeys passed**. A real Firecrawl product read and recorded-source analysis through real Luna CLI are documented in [source analysis evidence](docs/desarrollo/FIRECRAWL_SOURCE_ANALYSIS.md). Computer use also exercised the local review-to-save flow. The preceding delivery verified all 51 then-existing browser journeys; the full browser suite was not rerun for this slice. Direct OpenAI API and hosted acceptance remain pending.
 
 ## Run locally
 

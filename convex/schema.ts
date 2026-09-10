@@ -6,6 +6,7 @@ import {
   extractedOfferValidator,
   extractionStatusValidator,
   researchStatusValidator,
+  sourceExtensionFields,
 } from "./researchValidators";
 
 import { documentKind, documentResult } from "./documentValidators";
@@ -73,6 +74,7 @@ export default defineSchema({
     error: v.union(v.string(), v.null()),
     sources: v.array(
       v.object({
+        ...sourceExtensionFields,
         url: v.string(),
         title: v.string(),
         description: v.string(),

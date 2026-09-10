@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-10T03:45:02Z
+- **Last updated:** 2026-09-10T05:15:04Z
 
 ## Log
 
@@ -280,3 +280,9 @@ Rehearsal configuration now enforces its visible notice before enabling simulate
 ### 2026-09-10 - working tree · real Firecrawl source validation
 Ran seven real discovery attempts through the existing internal Convex action on the development deployment. The initial five returned 15 sources, including unreadable social pages, a site error, ambiguous catalog prices and irrelevant negative-control results. One published rice presentation/price pair matched a separate page inspection.
 A targeted rice query returned no sources and a targeted oil query reached the existing timeout without a retry. Recorded sanitized measurements and source-quality follow-ups in `docs/desarrollo/FIRECRAWL_VALIDATION.md`; raw page bodies and contact details are excluded from Git. No model extraction, email, study write or deployment occurred. Real-source extraction and hosted acceptance remain pending.
+
+
+### 2026-09-10 - working tree · source analysis and product evidence
+Added server source inspection, persisted Agent classification with numbered literal evidence, and an explicit bounded Firecrawl product-page read. Catalogs and unusable sources cannot become comparable offers; selected child pages retain their URL, observation time and parent. Reviewed values still require confirmation, with purchase conditions kept separate.
+A real scrape recovered the selected rice page with PEN 208 for 50 kg. Real Luna CLI replay separated catalogs from that product and retained missing prices; initial quotation-validation failures led to server-reconstructed evidence references. Replaying the original 15 sources identified four unreadable pages, one site error and all three irrelevant controls. Full provider acceptance remains open.
+155 unit/backend/configuration tests and three focused browser journeys passed. In-app browser computer use verified mobile/desktop research, explicit child reading, one real Luna extraction, review and local Convex save. Independent adversarial review closed after fixing legacy quality bypass, validation order, redirects and multiline title provenance. Evidence: `docs/desarrollo/FIRECRAWL_SOURCE_ANALYSIS.md`. No cloud deployment, external email, direct OpenAI API call, public visibility change or contest submission occurred.
