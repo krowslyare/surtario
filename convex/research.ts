@@ -5,6 +5,7 @@ import type { Doc } from "./_generated/dataModel";
 import { ownerHash } from "./lib/demoSession";
 import { discoverSources, type DiscoveryResult } from "./lib/firecrawl";
 import { extractOfferWithAgent } from "./lib/agentExtraction";
+import { providerRehearsalEnabled } from "./lib/providerTransport";
 import {
   extractedOfferValidator,
   savedResearchValidator,
@@ -39,6 +40,7 @@ function cleanInput(ingredient: string, region: string) {
 function publicRun(run: Doc<"researchRuns">): SavedResearch {
   return {
     id: run._id,
+    simulated: run.simulated ?? false,
     ingredient: run.ingredient,
     region: run.region,
     observedAt: run.observedAt,
@@ -167,6 +169,7 @@ export const finishSearch = internalMutation({
     ),
     discarded: v.number(),
     warning: v.boolean(),
+    simulated: v.boolean(),
   },
   returns: savedResearchValidator,
   handler: async (ctx, args) => {
@@ -195,6 +198,7 @@ export const finishSearch = internalMutation({
         })),
         discarded: args.discarded,
         warning: args.warning,
+        simulated: args.simulated,
       });
     return publicRun((await ctx.db.get(run._id))!);
   },
@@ -238,6 +242,7 @@ export const search = action({
       return await ctx.runMutation(internal.research.finishSearch, {
         id: reservation.run.id,
         ...result,
+        simulated: providerRehearsalEnabled(),
       });
     } catch {
       return await ctx.runMutation(internal.research.failSearch, {

@@ -31,6 +31,9 @@ async function walk(directory) {
 await walk(dist);
 
 const forbiddenBackendEnvNames = [
+  "REHEARSAL_BRIDGE_TOKEN",
+  "REHEARSAL_BRIDGE_URL",
+  "Ensayo local · IA por Luna CLI",
   "OPENAI_API_KEY",
   "FIRECRAWL_API_KEY",
   "AGENTMAIL_API_KEY",

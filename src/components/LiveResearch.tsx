@@ -15,6 +15,7 @@ import {
   Search,
 } from "lucide-react";
 import { useAction, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import type { Id } from "../../convex/_generated/dataModel";
 import { api } from "../../convex/_generated/api";
 import {
@@ -45,6 +46,7 @@ export type ResearchSource = {
 
 export type SavedResearch = {
   id: string;
+  simulated: boolean;
   ingredient: string;
   region: string;
   observedAt: string;
@@ -133,8 +135,8 @@ export function ResearchWorkspace({
       .catch((cause) => {
         if (current)
           setError(
-            cause instanceof Error
-              ? cause.message
+            cause instanceof ConvexError && typeof cause.data === "string"
+              ? cause.data
               : "No se pudo completar la búsqueda. Vuelve a intentarlo.",
           );
       })
@@ -164,8 +166,8 @@ export function ResearchWorkspace({
       setLocalExtractions((current) => ({ ...current, [sourceId]: proposal }));
     } catch (cause) {
       setError(
-        cause instanceof Error
-          ? cause.message
+        cause instanceof ConvexError && typeof cause.data === "string"
+          ? cause.data
           : "No se pudo extraer esta fuente. Puedes intentar de nuevo.",
       );
     } finally {
@@ -324,7 +326,7 @@ export function ResearchWorkspace({
                 title: source.title,
                 text: source.markdown ?? source.description,
                 observedAt: active.observedAt,
-                simulated: false,
+                simulated: active.simulated,
                 ...(url ? { url } : {}),
               };
               return (

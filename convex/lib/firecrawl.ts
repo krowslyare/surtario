@@ -1,3 +1,4 @@
+import { providerFetch } from "./providerTransport";
 /** Server-only discovery adapter. Returned page text is untrusted evidence, never an offer. */
 export type DiscoveredSource = {
   url: string;
@@ -112,7 +113,7 @@ async function limitedJson(response: Response): Promise<unknown> {
 export async function discoverSources(
   input: { ingredient: string; region: string },
   apiKey: string | undefined,
-  request: typeof fetch = fetch,
+  request: typeof fetch = providerFetch,
 ): Promise<DiscoveryResult> {
   if (
     !input.ingredient.trim() ||

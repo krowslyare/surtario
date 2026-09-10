@@ -16,12 +16,13 @@ const values = {
   price: "85",
   currency: "PEN",
 };
-async function setup() {
+async function setup(simulated?: boolean) {
   const t = convexTest(schema, modules);
   const requestId = await t.run(async (ctx) =>
     ctx.db.insert("quotationRequests", {
       ownerHash: await ownerHash(token),
       clientId: "fixture",
+      ...(simulated === undefined ? {} : { simulated }),
       recipient: null,
       inboxId: null,
       subject: "Consulta",
@@ -49,7 +50,7 @@ async function setup() {
       from: "test@example.test",
     }),
   );
-  const seed = prepareReplyOffer(reply, values, true);
+  const seed = prepareReplyOffer({ ...reply, simulated }, values, true);
   const args = {
     token,
     clientId: "22222222-2222-4222-8222-222222222222",
@@ -82,6 +83,7 @@ test("reply review saves source, manual fields and choice without altering the e
   );
   expect(source.extraction?.proposed.price.value).toBeNull();
   expect(source.extraction?.reviewed.price).toBe("85");
+  expect(source.marketSource?.simulated).toBe(false);
   expect(saved.offers[0].priceCents).toBe(8500);
   expect(saved.selectedOfferId).toBe(args.selectedOfferId);
   expect((await t.mutation(api.comparisons.save, args)).id).toBe(saved.id);
@@ -96,9 +98,19 @@ test("reply review saves source, manual fields and choice without altering the e
   expect(
     (await t.query(api.quotationMail.list, { token }))[0].replies[0].text,
   ).toBe(reply.text);
+  expect((await t.query(api.quotationMail.list, { token }))[0].simulated).toBe(
+    false,
+  );
   expect(
     await t.query(api.comparisons.list, { token: "b".repeat(64) }),
   ).toEqual([]);
+});
+test("synthetic request provenance reaches reply comparison evidence", async () => {
+  const { t, args } = await setup(true);
+  const saved = await t.mutation(api.comparisons.save, args);
+  expect(saved.sources[args.selectedOfferId].marketSource?.simulated).toBe(
+    true,
+  );
 });
 test("an invalid signed reply timestamp stays pending without inventing a date", async () => {
   const { t, args, reply } = await setup();

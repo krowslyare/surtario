@@ -1,5 +1,9 @@
 import { ConvexError, v } from "convex/values";
 import {
+  providerFetch,
+  providerRehearsalEnabled,
+} from "./lib/providerTransport";
+import {
   action,
   env,
   internalMutation,
@@ -67,6 +71,7 @@ async function publicRequest(
     .take(MAX_REPLIES);
   return {
     id: doc._id,
+    simulated: doc.simulated ?? false,
     ...(doc.comparisonId ? { comparisonId: doc.comparisonId } : {}),
     ...(doc.studyId ? { studyId: doc.studyId, resultId: doc.resultId } : {}),
     ...(doc.prospectId ? { prospectId: doc.prospectId } : {}),
@@ -303,6 +308,7 @@ export const reserveSend = internalMutation({
       );
     await ctx.db.patch(doc._id, {
       state: "sending",
+      simulated: providerRehearsalEnabled(),
       revision: doc.revision + 1,
       updatedAt: Date.now(),
     });
@@ -379,7 +385,7 @@ export const send = action({
       | { kind: "failed" }
       | { kind: "uncertain" };
     try {
-      const response = await fetch(
+      const response = await providerFetch(
         `https://api.agentmail.to/v0/inboxes/${encodeURIComponent(reservation.inboxId)}/messages/send`,
         {
           method: "POST",

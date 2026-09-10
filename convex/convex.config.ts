@@ -4,6 +4,8 @@ import agent from "@convex-dev/agent/convex.config";
 import staticHosting from "@convex-dev/static-hosting/convex.config";
 const app = defineApp({
   env: {
+    REHEARSAL_BRIDGE_URL: v.optional(v.string()),
+    REHEARSAL_BRIDGE_TOKEN: v.optional(v.string()),
     ADVISOR_ENABLED: v.optional(v.string()),
     OPENAI_ADVISOR_MODEL: v.optional(v.string()),
     OPENAI_API_KEY: v.optional(v.string()),

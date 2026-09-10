@@ -7,7 +7,7 @@ import { extractionExample, extractionSource } from "../fixtures/extraction";
 import { draftValues, extractionToPurchase } from "../src/domain/extraction";
 const modules = import.meta.glob("./**/*.ts");
 const token = "a".repeat(64);
-async function setup() {
+async function setup(simulated = false) {
   const t = convexTest(schema, modules);
   const reserved = await t.mutation(internal.research.reserveSearch, {
     token,
@@ -28,6 +28,7 @@ async function setup() {
     ],
     discarded: 0,
     warning: false,
+    simulated,
   });
   await t.mutation(internal.research.reserveExtraction, {
     token,
@@ -105,6 +106,13 @@ test("web review preserves source proposal, correction, conditions and idempoten
       expectedRevision: 1,
     }),
   ).rejects.toThrow(/otra vista/);
+});
+test("synthetic provenance survives the saved run after rehearsal configuration is gone", async () => {
+  const { t, args, ref } = await setup(true);
+  const run = (await t.query(api.research.list, { token }))[0];
+  expect(run.simulated).toBe(true);
+  const saved = await t.mutation(api.comparisons.save, args);
+  expect(saved.sources[ref].marketSource?.simulated).toBe(true);
 });
 test("rejects foreign sources, missing extraction, malformed corrections and duplicate source refs", async () => {
   const { t, args } = await setup();

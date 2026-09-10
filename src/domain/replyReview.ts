@@ -20,6 +20,7 @@ export function prepareReplyOffer(
     messageId: string;
     text: string;
     receivedAt: string;
+    simulated?: boolean;
   },
   values: ReviewedValues,
   confirmed: boolean,
@@ -31,7 +32,7 @@ export function prepareReplyOffer(
       title: "Respuesta de cotización · revisión manual",
       text: reply.text,
       observedAt: normalizedObservedAt(reply.receivedAt),
-      simulated: false,
+      simulated: reply.simulated ?? false,
     },
     emptyReplyProposal,
     values,

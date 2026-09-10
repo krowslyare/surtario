@@ -373,3 +373,12 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
+/* Explicitly distinguishes the local provider rehearsal from live integrations. */
+.rehearsal-notice {
+  background: var(--color-warning-surface);
+  color: var(--color-warning);
+  padding: 0.6rem 1rem;
+  text-align: center;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}

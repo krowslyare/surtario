@@ -1,5 +1,6 @@
 import { Agent } from "@convex-dev/agent";
 import { createOpenAI } from "@ai-sdk/openai";
+import { providerFetch } from "./providerTransport";
 import { z } from "zod";
 import { components } from "../_generated/api";
 import type { ActionCtx } from "../_generated/server";
@@ -34,14 +35,16 @@ export async function extractDocument(
 ) {
   const extractor = new Agent(components.agent, {
     name: "Procurement visual document reader",
-    languageModel: createOpenAI({ apiKey })(model),
+    languageModel: createOpenAI({ apiKey, fetch: providerFetch })(model),
     instructions: `${extractionInstructions} Transcribe el texto visible del archivo sin completar partes ilegibles y clasifica el documento: quotation, purchase, list o unknown. Las citas deben aparecer en esa transcripcion. Si no es una cotizacion o contiene varias ofertas ambiguas, no conviertas compras ni listas en ofertas: deja todos los campos de offer nulos.`,
     storageOptions: { saveMessages: "none" },
+    contextOptions: { recentMessages: 0, searchOtherThreads: false },
   });
   const bytes = Uint8Array.from(atob(file.base64), (c) => c.charCodeAt(0));
   const result = await extractor.generateObject(
     ctx,
-    {},
+    // Agent requires a scope even for stateless calls. Never share context across runs.
+    { userId: `stateless:${crypto.randomUUID()}` },
     {
       messages: [
         {

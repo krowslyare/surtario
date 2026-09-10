@@ -91,7 +91,7 @@ test("a simulated reading keeps the original visible, requires review and opens 
   await page.screenshot({ path: "/tmp/document-review-mobile.png" });
   await dialog.getByRole("button", { name: "Continuar a comparación" }).click();
   await expect(
-    page.getByText("Fuentes revisadas", { exact: true }),
+    page.getByText("Desde tu estudio de ejemplo", { exact: true }),
   ).toBeVisible();
   await expect(page.getByText(/páginas públicas/)).toHaveCount(0);
   await expect(

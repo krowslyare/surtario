@@ -85,6 +85,7 @@ function Connected({
     messageId: string;
     text: string;
     receivedAt: string;
+    simulated: boolean;
   } | null>(null);
   const [activeId, setActiveId] = useState<Quotation["id"] | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -306,7 +307,13 @@ function Connected({
                   <button
                     className="button secondary"
                     onClick={() => {
-                      setReviewReply({ requestId: active.id, ...reply });
+                      setReviewReply({
+                        requestId: active.id,
+                        messageId: reply.messageId,
+                        text: reply.text,
+                        receivedAt: reply.receivedAt,
+                        simulated: active.simulated,
+                      });
                       setActiveId(null);
                       setConfirmed(false);
                     }}

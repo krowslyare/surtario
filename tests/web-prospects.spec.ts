@@ -30,6 +30,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     ],
     discarded: 0,
     warning: false,
+    simulated: true,
   });
   await context.addInitScript(
     (value) => localStorage.setItem("procurement-demo-session-v1", value),
