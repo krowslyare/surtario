@@ -1,0 +1,212 @@
+{
+  "recordedAt": "2026-09-10T03:45:02Z",
+  "target": {
+    "type": "development",
+    "url": "https://incredible-wolverine-122.convex.cloud",
+    "function": "discovery:probe"
+  },
+  "limits": {
+    "searchResults": 3,
+    "retainedCharactersPerPage": 20000,
+    "applicationTimeoutMs": 25000
+  },
+  "transport": "real Firecrawl API; no rehearsal bridge",
+  "timing": "CLI wall time, not isolated provider latency",
+  "automatedModelExtraction": false,
+  "attempts": [
+    {
+      "id": "rice",
+      "ingredient": "arroz extra 50 kg",
+      "region": "Lima",
+      "startedAt": "2026-09-10T03:42:55.536Z",
+      "observedAt": "2026-09-10T03:42:59.217Z",
+      "elapsedMs": 3682,
+      "status": "completed",
+      "providerWarning": false,
+      "discarded": 0,
+      "sources": [
+        {
+          "url": "https://www.costenoalimentos.com.pe/venta-corporativa?page=11",
+          "retainedCharacters": 3372,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "dc72f45b07ffaed39357aa553c475581c15e323eb5b7b1a8877d500712fe9203",
+          "operatorAssessment": "catalog_without_price"
+        },
+        {
+          "url": "https://mundoabarrotes.com/etiqueta/arroz-50-kilos/",
+          "retainedCharacters": 5620,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "6c8aed3396b1343332f291613e741c7e173da69d955de9b44890157f4389e9d4",
+          "operatorAssessment": "catalog_with_prices_and_variant_conflicts"
+        },
+        {
+          "url": "https://www.makro.plazavea.com.pe/abarrotes/arroz",
+          "retainedCharacters": 20000,
+          "contentTruncated": true,
+          "retainedMarkdownSha256": "712d9818b3e6cb03b35f8430507be8425c1bb521bd1c33c54c54fcb31b5362cb",
+          "operatorAssessment": "truncated_catalog_with_conflicting_price_text"
+        }
+      ]
+    },
+    {
+      "id": "oil",
+      "ingredient": "aceite vegetal 20 L",
+      "region": "Lima",
+      "startedAt": "2026-09-10T03:42:55.538Z",
+      "observedAt": "2026-09-10T03:43:02.976Z",
+      "elapsedMs": 7416,
+      "status": "completed",
+      "providerWarning": false,
+      "discarded": 0,
+      "sources": [
+        {
+          "url": "https://www.facebook.com/groups/269072867397386/posts/1688604078777584/",
+          "retainedCharacters": 0,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": null,
+          "operatorAssessment": "unreadable_social_result"
+        },
+        {
+          "url": "https://grupomontesolperu.com/",
+          "retainedCharacters": 10000,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "35241ecc866bb4508bbcd8bc73569d57ede76550957774e478ac25e3430c08a0",
+          "operatorAssessment": "supplier_catalog_and_contact_without_price"
+        },
+        {
+          "url": "https://pe.kompass.com/a/aceites-comestibles/03880/",
+          "retainedCharacters": 13805,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "d12305b42f79cfe1c7de4db312aac669023d968918a4cbbe4a519582fca16844",
+          "operatorAssessment": "directory_without_specific_offer"
+        }
+      ]
+    },
+    {
+      "id": "chicken",
+      "ingredient": "pollo entero",
+      "region": "Lima",
+      "startedAt": "2026-09-10T03:42:59.221Z",
+      "observedAt": "2026-09-10T03:43:04.527Z",
+      "elapsedMs": 5272,
+      "status": "completed",
+      "providerWarning": false,
+      "discarded": 0,
+      "sources": [
+        {
+          "url": "https://avigroup-peru.com/",
+          "retainedCharacters": 155,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "9a11fd431d33315b9b78c6aa5286f644d4dd155e6ac37f51574e30611c74788a",
+          "operatorAssessment": "site_error"
+        },
+        {
+          "url": "https://www.instagram.com/reypolloperu/?hl=en",
+          "retainedCharacters": 0,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": null,
+          "operatorAssessment": "unreadable_social_result"
+        },
+        {
+          "url": "https://www.redondos.com.pe/producto/linea-pollo/pollo-brasa/",
+          "retainedCharacters": 5049,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "87f3a2a82179b9ef47a6c7db2009e440c2b1fa7b4e2cb04dc91973b2a38c7f47",
+          "operatorAssessment": "product_specification_without_price"
+        }
+      ]
+    },
+    {
+      "id": "potato",
+      "ingredient": "papa huayro",
+      "region": "Lima",
+      "startedAt": "2026-09-10T03:43:02.955Z",
+      "observedAt": "2026-09-10T03:43:08.342Z",
+      "elapsedMs": 5378,
+      "status": "completed",
+      "providerWarning": false,
+      "discarded": 0,
+      "sources": [
+        {
+          "url": "https://www.facebook.com/DRDARHCO/posts/precios-de-papa-al-por-mayor-y-de-primera-calidad-ciudades-de-lima-y-hu%C3%A1nuco/1179110884389823/",
+          "retainedCharacters": 0,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": null,
+          "operatorAssessment": "unreadable_social_result"
+        },
+        {
+          "url": "https://bottatocompany.com/Papahuayro",
+          "retainedCharacters": 191,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "afb7740cc1855eaf2d9775fb5b8056d1622a5e3c1e3af61ec41685307d2c7bf0",
+          "operatorAssessment": "contact_and_pdf_catalog_without_price"
+        },
+        {
+          "url": "https://www.facebook.com/EmpresaMunicipaldeMercados/videos/papa-yungay/823089158098018/",
+          "retainedCharacters": 0,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": null,
+          "operatorAssessment": "unreadable_social_result"
+        }
+      ]
+    },
+    {
+      "id": "negative",
+      "ingredient": "ingrediente inexistente zxqv-7842",
+      "region": "Lima",
+      "startedAt": "2026-09-10T03:43:04.494Z",
+      "observedAt": "2026-09-10T03:43:17.044Z",
+      "elapsedMs": 12699,
+      "status": "completed",
+      "providerWarning": false,
+      "discarded": 0,
+      "sources": [
+        {
+          "url": "https://www.grupomathiesen.com/peru/",
+          "retainedCharacters": 14348,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "ac29a394abac9d4a118e0f6251c3e004772a391d6ea47d9fe6cc05a313902fb6",
+          "operatorAssessment": "irrelevant_supplier"
+        },
+        {
+          "url": "https://repositorio.promperu.gob.pe/bitstreams/e4ab017f-b910-4086-9666-c45c4b5e0a98/download",
+          "retainedCharacters": 20000,
+          "contentTruncated": true,
+          "retainedMarkdownSha256": "7bf71b565995df857cc0ea80a8c60368b9f9c6729c0be23d4246cb4665b08768",
+          "operatorAssessment": "irrelevant_regulatory_pdf"
+        },
+        {
+          "url": "https://consumidor.gob.pe/wp-content/uploads/2020/07/Registro_Proveedores_Adheridos_Arbitraje_2023.pdf",
+          "retainedCharacters": 8775,
+          "contentTruncated": false,
+          "retainedMarkdownSha256": "b795803ebbac5623cf5aeafc11484c49208469ab2e13c47370438eea7c88d382",
+          "operatorAssessment": "irrelevant_consumer_registry_pdf"
+        }
+      ]
+    },
+    {
+      "id": "rice-targeted",
+      "ingredient": "\"arroz Brilhante extra 50 kg\" site:mundoabarrotes.com/producto/",
+      "region": "Lima",
+      "startedAt": "2026-09-10T03:43:59.125Z",
+      "observedAt": "2026-09-10T03:44:01.255Z",
+      "elapsedMs": 2107,
+      "status": "completed",
+      "providerWarning": false,
+      "discarded": 0,
+      "sources": []
+    },
+    {
+      "id": "oil-targeted",
+      "ingredient": "\"aceite vegetal\" \"20\" -site:facebook.com -site:instagram.com",
+      "region": "Lima",
+      "startedAt": "2026-09-10T03:43:59.127Z",
+      "observedAt": null,
+      "elapsedMs": 26643,
+      "status": "application_timeout",
+      "providerWarning": null,
+      "discarded": null,
+      "sources": []
+    }
+  ]
+}
