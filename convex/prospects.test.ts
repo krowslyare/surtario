@@ -27,6 +27,7 @@ async function setup() {
     ],
     discarded: 0,
     warning: false,
+    simulated: false,
   });
   return {
     t,

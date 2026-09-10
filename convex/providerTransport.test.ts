@@ -1,5 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
-import { createProviderTransport } from "./lib/providerTransport";
+import {
+  createProviderTransport,
+  providerRehearsalConfigured,
+} from "./lib/providerTransport";
 
 const local = {
   cloudUrl: "http://127.0.0.1:3240",
@@ -7,6 +10,12 @@ const local = {
   token: "t".repeat(64),
 };
 describe("local provider rehearsal transport", () => {
+  it("reports rehearsal only for a fully validated loopback configuration", () => {
+    expect(providerRehearsalConfigured(local)).toBe(true);
+    expect(
+      providerRehearsalConfigured({ cloudUrl: local.cloudUrl }),
+    ).toBe(false);
+  });
   it("preserves the default provider transport without opt-in", () => {
     const request = vi.fn();
     expect(

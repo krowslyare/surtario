@@ -94,9 +94,9 @@ export async function explainPurchase(
             label: s.label,
             date: s.date,
             url: s.marketSource?.url ?? null,
-            synthetic: s.replyReview
-              ? false
-              : !!s.documentReview || (s.marketSource?.simulated ?? true),
+            synthetic:
+              !!s.documentReview ||
+              (s.marketSource?.simulated ?? !s.replyReview),
             evidence: s.marketSource?.evidence.slice(0, 1800) ?? s.label,
             reviewed: s.edited || !!s.extraction,
           }));

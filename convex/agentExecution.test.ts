@@ -111,10 +111,13 @@ test("the real advisor executes both tools before accepting structured advice", 
             ],
           }),
         );
-      expect(JSON.stringify(body.input)).toContain("function_call_output");
-      expect(JSON.stringify(body.input)).toContain("chosenPriority");
-      expect(JSON.stringify(body.input)).toContain("reviewedConditions");
-      expect(JSON.stringify(body.input)).toContain("deliveryConfirmed");
+      const input = JSON.stringify(body.input);
+      expect(input).toContain("function_call_output");
+      expect(input).toContain("chosenPriority");
+      expect(input).toContain("reviewedConditions");
+      expect(input).toContain("deliveryConfirmed");
+      expect(input).toContain('\\"synthetic\\":false');
+      expect(input).toContain('\\"synthetic\\":true');
       return message({
         reasoning: "La presentación menor protege la caja disponible.",
         questions: [],
@@ -131,6 +134,50 @@ test("the real advisor executes both tools before accepting structured advice", 
     request: riceRequest,
     offers: riceOffers,
     selectedOfferId: null,
+  });
+  await t.run(async (ctx) => {
+    const stored = (await ctx.db.get(comparison.id))!;
+    await ctx.db.patch(stored._id, {
+      sources: {
+        ...stored.sources,
+        "rice-supplier-a": {
+          ...stored.sources["rice-supplier-a"],
+          marketSource: {
+            title: "Live source",
+            url: "https://supplier.example/rice",
+            observedAt: "2026-09-09T12:00:00Z",
+            publishedAt: null,
+            evidence: "Reviewed live evidence",
+            simulated: false,
+          },
+        },
+        "rice-supplier-b": {
+          ...stored.sources["rice-supplier-b"],
+          replyReview: {
+            requestId: "synthetic-request",
+            messageId: "synthetic-reply",
+            values: {
+              supplier: "Proveedor B",
+              ingredient: riceRequest.ingredient,
+              specification: riceRequest.specification,
+              packageContent: "1",
+              packageUnit: "kg",
+              price: "5",
+              currency: "PEN",
+            },
+            confirmed: true,
+          },
+          marketSource: {
+            title: "Synthetic reply",
+            url: null,
+            observedAt: "2026-09-09T12:00:00Z",
+            publishedAt: null,
+            evidence: "Synthetic rehearsal reply",
+            simulated: true,
+          },
+        },
+      },
+    });
   });
   const run = await t.mutation(api.advisor.prepare, {
     token,

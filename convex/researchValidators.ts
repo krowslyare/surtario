@@ -41,6 +41,7 @@ export const savedResearchSourceValidator = v.object({
 
 export const savedResearchValidator = v.object({
   id: v.id("researchRuns"),
+  simulated: v.boolean(),
   ingredient: v.string(),
   region: v.string(),
   observedAt: v.string(),

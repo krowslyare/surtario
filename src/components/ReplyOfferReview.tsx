@@ -24,6 +24,7 @@ export default function ReplyOfferReview({
     messageId: string;
     text: string;
     receivedAt: string;
+    simulated: boolean;
   };
   onClose: () => void;
   onPrepare: (seed: PurchaseSeed) => void;

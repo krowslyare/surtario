@@ -45,6 +45,12 @@ function enableMail() {
   vi.stubEnv("AGENTMAIL_TEST_RECIPIENT", "buyer@example.test");
 }
 
+function enableRehearsal() {
+  vi.stubEnv("CONVEX_CLOUD_URL", "http://127.0.0.1:3240");
+  vi.stubEnv("REHEARSAL_BRIDGE_URL", "http://127.0.0.1:8789");
+  vi.stubEnv("REHEARSAL_BRIDGE_TOKEN", "r".repeat(64));
+}
+
 test("creates an owned fixed draft without credentials and never accepts message text", async () => {
   const t = convexTest(schema, modules);
   const saved = await comparison(t);
@@ -112,6 +118,7 @@ test("reserves once, sends the frozen payload with idempotency, and prevents dup
     confirmed: true,
   });
   expect(sent.state).toBe("sent");
+  expect(sent.simulated).toBe(false);
   expect(sent.receipt).toEqual({ messageId: "msg-out", threadId: "thread-1" });
   expect(
     (
@@ -124,6 +131,32 @@ test("reserves once, sends the frozen payload with idempotency, and prevents dup
     ).state,
   ).toBe("sent");
   expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+test("send reservation freezes validated rehearsal provenance on the request", async () => {
+  enableMail();
+  enableRehearsal();
+  const t = convexTest(schema, modules);
+  const saved = await comparison(t);
+  const draft = await t.mutation(api.quotationMail.create, {
+    token,
+    comparisonId: saved.id,
+    clientId: "22222222-2222-4222-8222-222222222222",
+  });
+  await t.mutation(internal.quotationMail.reserveSend, {
+    token,
+    id: draft.id,
+    expectedRevision: 1,
+    confirmed: true,
+  });
+  vi.stubEnv("REHEARSAL_BRIDGE_URL", "");
+  vi.stubEnv("REHEARSAL_BRIDGE_TOKEN", "");
+  expect((await t.query(api.quotationMail.list, { token }))[0].simulated).toBe(
+    true,
+  );
+  await t.run(async (ctx) => {
+    expect((await ctx.db.get(draft.id))?.simulated).toBe(true);
+  });
 });
 
 test("network ambiguity is terminal for the public API", async () => {

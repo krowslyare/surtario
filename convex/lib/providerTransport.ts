@@ -17,16 +17,29 @@ function loopback(value: string): URL {
   return url;
 }
 
+export function providerRehearsalConfigured(config: RehearsalConfig): boolean {
+  if (!config.bridgeUrl) return false;
+  loopback(config.cloudUrl);
+  loopback(config.bridgeUrl);
+  if (!config.token || config.token.length < 32)
+    throw new Error("Provider rehearsal requires a local bridge token.");
+  return true;
+}
+
+export const providerRehearsalEnabled = () =>
+  providerRehearsalConfigured({
+    cloudUrl: env.CONVEX_CLOUD_URL,
+    bridgeUrl: env.REHEARSAL_BRIDGE_URL,
+    token: env.REHEARSAL_BRIDGE_TOKEN,
+  });
+
 /** Local-only transport substitution; ownership, validation and tools still run in Convex. */
 export function createProviderTransport(
   config: RehearsalConfig,
   request: typeof fetch = fetch,
 ): typeof fetch {
-  if (!config.bridgeUrl) return request;
-  loopback(config.cloudUrl);
-  const bridge = loopback(config.bridgeUrl);
-  if (!config.token || config.token.length < 32)
-    throw new Error("Provider rehearsal requires a local bridge token.");
+  if (!providerRehearsalConfigured(config)) return request;
+  const bridge = loopback(config.bridgeUrl!);
   return async (input, init) => {
     const original = new Request(input, init);
     const source = new URL(original.url);

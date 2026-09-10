@@ -46,6 +46,7 @@ export type ResearchSource = {
 
 export type SavedResearch = {
   id: string;
+  simulated: boolean;
   ingredient: string;
   region: string;
   observedAt: string;
@@ -325,7 +326,7 @@ export function ResearchWorkspace({
                 title: source.title,
                 text: source.markdown ?? source.description,
                 observedAt: active.observedAt,
-                simulated: false,
+                simulated: active.simulated,
                 ...(url ? { url } : {}),
               };
               return (

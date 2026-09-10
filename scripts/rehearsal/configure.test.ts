@@ -38,12 +38,14 @@ test.each([
       // Replace the CLI process, so this exercises the real script without a backend or network.
       writeFileSync(
         join(directory, "bin/npx"),
-        `#!/usr/bin/env node
-const fs = require("node:fs");
-const text = fs.readFileSync(".env.local", "utf8");
-if (!/^VITE_REHEARSAL=true$/m.test(text)) process.exit(9);
-if (process.argv.slice(2, 5).join(" ") !== "convex env set") process.exit(10);
-fs.appendFileSync("calls.txt", "configured\\n");
+        `#!/bin/sh
+notice=false
+while IFS= read -r line; do
+  [ "$line" = "VITE_REHEARSAL=true" ] && notice=true
+done < .env.local
+[ "$notice" = true ] || exit 9
+[ "$1 $2 $3" = "convex env set" ] || exit 10
+printf 'configured\\n' >> calls.txt
 `,
         { mode: 0o700 },
       );

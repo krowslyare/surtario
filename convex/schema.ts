@@ -64,6 +64,7 @@ export default defineSchema({
   researchRuns: defineTable({
     ownerHash: v.string(),
     clientId: v.string(),
+    simulated: v.optional(v.boolean()),
     ingredient: v.string(),
     region: v.string(),
     observedAt: v.string(),
@@ -91,6 +92,7 @@ export default defineSchema({
   quotationRequests: defineTable({
     ownerHash: v.string(),
     clientId: v.string(),
+    simulated: v.optional(v.boolean()),
     comparisonId: v.optional(v.id("comparisons")),
     studyId: v.optional(v.id("studies")),
     prospectId: v.optional(v.id("webProspects")),

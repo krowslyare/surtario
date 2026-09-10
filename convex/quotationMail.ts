@@ -1,5 +1,8 @@
 import { ConvexError, v } from "convex/values";
-import { providerFetch } from "./lib/providerTransport";
+import {
+  providerFetch,
+  providerRehearsalEnabled,
+} from "./lib/providerTransport";
 import {
   action,
   env,
@@ -68,6 +71,7 @@ async function publicRequest(
     .take(MAX_REPLIES);
   return {
     id: doc._id,
+    simulated: doc.simulated ?? false,
     ...(doc.comparisonId ? { comparisonId: doc.comparisonId } : {}),
     ...(doc.studyId ? { studyId: doc.studyId, resultId: doc.resultId } : {}),
     ...(doc.prospectId ? { prospectId: doc.prospectId } : {}),
@@ -304,6 +308,7 @@ export const reserveSend = internalMutation({
       );
     await ctx.db.patch(doc._id, {
       state: "sending",
+      simulated: providerRehearsalEnabled(),
       revision: doc.revision + 1,
       updatedAt: Date.now(),
     });
