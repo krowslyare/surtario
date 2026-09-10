@@ -24,27 +24,50 @@ export function prepareReplyOffer(
   },
   values: ReviewedValues,
   confirmed: boolean,
+  proposal: ExtractedOffer = emptyReplyProposal,
+  extractionAttempt?: number,
 ) {
   const id = `reply:${reply.requestId}:${reply.messageId}`;
+  if (
+    extractionAttempt !== undefined &&
+    (!Number.isSafeInteger(extractionAttempt) ||
+      extractionAttempt < 1 ||
+      extractionAttempt > 2)
+  )
+    throw new Error("La generación de la propuesta de IA no es válida.");
+  const assisted = extractionAttempt !== undefined;
+  const reviewedProposal = assisted ? proposal : emptyReplyProposal;
   const seed = extractionToPurchase(
     {
       id,
-      title: "Respuesta de cotización · revisión manual",
+      title: `Respuesta de cotización · revisión ${assisted ? "asistida" : "manual"}`,
       text: reply.text,
       observedAt: normalizedObservedAt(reply.receivedAt),
       simulated: reply.simulated ?? false,
     },
-    emptyReplyProposal,
+    reviewedProposal,
     values,
     confirmed,
   );
   seed.sources[id].replyReview = {
     requestId: reply.requestId,
     messageId: reply.messageId,
+    ...(assisted ? { extractionAttempt } : {}),
     values: { ...values },
     confirmed: true,
   };
   return seed;
+}
+
+export function canAutoApplyReplySuggestion(
+  startedEditGeneration: number,
+  currentEditGeneration: number,
+  values: ReviewedValues,
+) {
+  return (
+    startedEditGeneration === currentEditGeneration &&
+    extractionFields.every((key) => values[key] === "")
+  );
 }
 
 /** Exact identity and explicit human equivalence; never infer substitutions. */

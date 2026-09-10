@@ -133,6 +133,12 @@ export default defineSchema({
     from: v.string(),
     text: v.string(),
     receivedAt: v.string(),
+    // Optional while existing replies migrate; public reads expose explicit defaults.
+    extraction: v.optional(v.union(extractedOfferValidator, v.null())),
+    extractionStatus: v.optional(extractionStatusValidator),
+    extractionError: v.optional(v.union(v.string(), v.null())),
+    extractionAttempts: v.optional(v.number()),
+    extractionAttempt: v.optional(v.union(v.number(), v.null())),
   })
     .index("by_requestId", ["requestId"])
     .index("by_eventId", ["eventId"])

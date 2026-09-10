@@ -81,11 +81,16 @@ function Connected({
   const create = useMutation(api.quotationMail.create);
   const send = useAction(api.quotationMail.send);
   const [reviewReply, setReviewReply] = useState<{
-    requestId: string;
+    requestId: Id<"quotationRequests">;
     messageId: string;
     text: string;
     receivedAt: string;
     simulated: boolean;
+    extraction: Quotation["replies"][number]["extraction"];
+    extractionStatus: Quotation["replies"][number]["extractionStatus"];
+    extractionError: string | null;
+    extractionAttempts: number;
+    extractionAttempt: number | null;
   } | null>(null);
   const [activeId, setActiveId] = useState<Quotation["id"] | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -313,6 +318,11 @@ function Connected({
                         text: reply.text,
                         receivedAt: reply.receivedAt,
                         simulated: active.simulated,
+                        extraction: reply.extraction,
+                        extractionStatus: reply.extractionStatus,
+                        extractionError: reply.extractionError,
+                        extractionAttempts: reply.extractionAttempts,
+                        extractionAttempt: reply.extractionAttempt,
                       });
                       setActiveId(null);
                       setConfirmed(false);
@@ -341,6 +351,8 @@ function Connected({
       {reviewReply && onPrepare && (
         <ReplyOfferReview
           reply={reviewReply}
+          token={token}
+          aiEnabled={status?.extractionEnabled ?? false}
           onClose={() => setReviewReply(null)}
           onPrepare={onPrepare}
           onAdd={onAddReply}

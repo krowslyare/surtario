@@ -27,6 +27,7 @@ import type * as lib_documentExtraction from "../lib/documentExtraction.js";
 import type * as lib_extraction from "../lib/extraction.js";
 import type * as lib_firecrawl from "../lib/firecrawl.js";
 import type * as lib_providerTransport from "../lib/providerTransport.js";
+import type * as lib_replyExtraction from "../lib/replyExtraction.js";
 import type * as lib_sourceQuality from "../lib/sourceQuality.js";
 import type * as lib_webAnalysis from "../lib/webAnalysis.js";
 import type * as lib_webReviews from "../lib/webReviews.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   "lib/extraction": typeof lib_extraction;
   "lib/firecrawl": typeof lib_firecrawl;
   "lib/providerTransport": typeof lib_providerTransport;
+  "lib/replyExtraction": typeof lib_replyExtraction;
   "lib/sourceQuality": typeof lib_sourceQuality;
   "lib/webAnalysis": typeof lib_webAnalysis;
   "lib/webReviews": typeof lib_webReviews;
