@@ -82,6 +82,7 @@ export default function MarketStudy({
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [showStudy, setShowStudy] = useState(false);
+  const [resultsView, setResultsView] = useState<"example" | "web">("example");
   const [nextIngredient, setNextIngredient] = useState<string | null>(null);
   const results = search
     ? filterMarketExamples(catalog, search.term, search.region)
@@ -96,6 +97,7 @@ export default function MarketStudy({
   const sourceTitle = search
     ? `${search.term} en ${search.region}`
     : "Tu estudio";
+  const showExampleWorkspace = resultsView === "example" || showStudy;
 
   function beginIngredientStudy(ingredient: string) {
     setCatalog(marketExamples);
@@ -103,6 +105,7 @@ export default function MarketStudy({
     setStudy({ id: null, revision: 0, clientId: crypto.randomUUID() });
     setTerm(ingredient);
     setSearch({ term: ingredient, region });
+    setResultsView("example");
     setShowStudy(false);
     setFilter("all");
     setError("");
@@ -111,6 +114,9 @@ export default function MarketStudy({
 
   function searchWeb() {
     setError("");
+    setResultsView("web");
+    setShowStudy(false);
+    setFilter("all");
     setWebRequest((current) => ({
       id: (current?.id ?? 0) + 1,
       ingredient: term.trim(),
@@ -126,6 +132,7 @@ export default function MarketStudy({
     }
     setError("");
     setSearch({ term: term.trim(), region });
+    setResultsView("example");
     setShowStudy(false);
     setFilter("all");
   }
@@ -133,6 +140,7 @@ export default function MarketStudy({
     setTerm("Arroz");
     setRegion("Lima");
     setSearch({ term: "Arroz", region: "Lima" });
+    setResultsView("example");
     setFilter("all");
     setShowStudy(false);
     setError("");
@@ -143,6 +151,7 @@ export default function MarketStudy({
     setTerm(saved.term);
     setRegion(saved.region);
     setSearch({ term: saved.term, region: saved.region });
+    setResultsView("example");
     setStudy({
       id: saved.id,
       revision: saved.revision,
@@ -200,7 +209,7 @@ export default function MarketStudy({
         </button>
       </header>
       <main
-        className={`market-main ${search || showStudy ? "has-results" : "is-intro"}`}
+        className={`market-main ${search || showStudy || resultsView === "web" ? "has-results" : "is-intro"}`}
       >
         <div className="workspace-nav">
           <span>
@@ -283,11 +292,22 @@ export default function MarketStudy({
         <div className="market-workspace">
           <div className="market-content">
             {persistenceEnabled && (
-              <LiveResearch
-                request={webRequest}
-                onStatus={setWebStatus}
-                onPrepare={onPrepare}
-              />
+              <div
+                className="live-research-view"
+                id={
+                  resultsView === "web" && !showStudy
+                    ? "market-results"
+                    : undefined
+                }
+                tabIndex={resultsView === "web" && !showStudy ? -1 : undefined}
+                aria-label="Resultados de investigación web"
+              >
+                <LiveResearch
+                  request={webRequest}
+                  onStatus={setWebStatus}
+                  onPrepare={onPrepare}
+                />
+              </div>
             )}
             {error && !prepareOpen && (
               <p className="notice error" role="alert">
@@ -295,7 +315,7 @@ export default function MarketStudy({
               </p>
             )}
 
-            {!search && !showStudy ? (
+            {showExampleWorkspace && (!search && !showStudy ? (
               <section
                 className="market-start"
                 id="market-results"
@@ -554,8 +574,9 @@ export default function MarketStudy({
                   </section>
                 )}
               </section>
-            )}
-            {persistenceEnabled &&
+            ))}
+            {showExampleWorkspace &&
+              persistenceEnabled &&
               study.id &&
               catalog
                 .filter((item) => item.kind === "distributor")
