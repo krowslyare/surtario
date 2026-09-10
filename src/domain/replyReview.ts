@@ -8,6 +8,49 @@ export const emptyReplyProposal = Object.fromEntries(
   extractionFields.map((key) => [key, { value: null, evidence: null }]),
 ) as ExtractedOffer;
 
+export type ReplyExtractionSnapshot = {
+  extraction: ExtractedOffer | null;
+  extractionStatus: "idle" | "running" | "complete" | "failed";
+  extractionError: string | null;
+  extractionAttempts: number;
+  extractionAttempt: number | null;
+};
+
+const extractionStatusOrder: Record<
+  ReplyExtractionSnapshot["extractionStatus"],
+  number
+> = { idle: 0, running: 1, failed: 2, complete: 3 };
+
+export function reconcileReplyExtraction(
+  current: ReplyExtractionSnapshot,
+  incoming: ReplyExtractionSnapshot,
+  editGeneration: number,
+  values: ReviewedValues,
+) {
+  const newer =
+    incoming.extractionAttempts > current.extractionAttempts ||
+    (incoming.extractionAttempts === current.extractionAttempts &&
+      extractionStatusOrder[incoming.extractionStatus] >
+        extractionStatusOrder[current.extractionStatus]);
+  if (!newer) return { kind: "ignore" as const };
+  if (
+    incoming.extractionStatus !== "complete" ||
+    !incoming.extraction ||
+    incoming.extractionAttempt === null
+  )
+    return { kind: "status" as const, snapshot: incoming };
+  return {
+    kind: canAutoApplyReplySuggestion(0, editGeneration, values)
+      ? ("apply" as const)
+      : ("pending" as const),
+    snapshot: incoming,
+    suggestion: {
+      proposal: incoming.extraction,
+      attempt: incoming.extractionAttempt,
+    },
+  };
+}
+
 function normalizedObservedAt(receivedAt: string) {
   const received = new Date(receivedAt);
   if (Number.isFinite(received.getTime())) return received.toISOString();

@@ -1,13 +1,14 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAction } from "convex/react";
 import { ConvexError } from "convex/values";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { draftValues, extractionFields } from "../domain/extraction";
 import {
-  canAutoApplyReplySuggestion,
   emptyReplyProposal,
   prepareReplyOffer,
+  reconcileReplyExtraction,
+  type ReplyExtractionSnapshot,
 } from "../domain/replyReview";
 import type { ExtractedOffer, ReviewedValues } from "../domain/extraction";
 import type { PurchaseSeed } from "../domain/market";
@@ -71,6 +72,13 @@ export default function ReplyOfferReview({
   const valuesRef = useRef(values);
   valuesRef.current = values;
   const editGeneration = useRef(0);
+  const latestExtraction = useRef<ReplyExtractionSnapshot>({
+    extraction: reply.extraction,
+    extractionStatus: reply.extractionStatus,
+    extractionError: reply.extractionError,
+    extractionAttempts: reply.extractionAttempts,
+    extractionAttempt: reply.extractionAttempt,
+  });
   const [equivalent, setEquivalent] = useState(false);
   const [extracting, setExtracting] = useState(false);
   const [confirmed, setConfirmed] = useState(false),
@@ -97,6 +105,36 @@ export default function ReplyOfferReview({
     setConfirmed(false);
     setEquivalent(false);
   }
+  function acceptExtraction(incoming: ReplyExtractionSnapshot) {
+    const update = reconcileReplyExtraction(
+      latestExtraction.current,
+      incoming,
+      editGeneration.current,
+      valuesRef.current,
+    );
+    if (update.kind === "ignore") return;
+    latestExtraction.current = update.snapshot;
+    setStatus(update.snapshot.extractionStatus);
+    setAttempts(update.snapshot.extractionAttempts);
+    setError(update.snapshot.extractionError ?? "");
+    if (update.kind === "apply") applySuggestion(update.suggestion);
+    if (update.kind === "pending") setPendingSuggestion(update.suggestion);
+  }
+  useEffect(() => {
+    acceptExtraction({
+      extraction: reply.extraction,
+      extractionStatus: reply.extractionStatus,
+      extractionError: reply.extractionError,
+      extractionAttempts: reply.extractionAttempts,
+      extractionAttempt: reply.extractionAttempt,
+    });
+  }, [
+    reply.extraction,
+    reply.extractionAttempt,
+    reply.extractionAttempts,
+    reply.extractionError,
+    reply.extractionStatus,
+  ]);
   async function suggest() {
     if (
       !aiEnabled ||
@@ -105,9 +143,15 @@ export default function ReplyOfferReview({
       status === "complete"
     )
       return;
-    const startedEditGeneration = editGeneration.current;
     setExtracting(true);
     setStatus("running");
+    latestExtraction.current = {
+      extraction: null,
+      extractionStatus: "running",
+      extractionError: null,
+      extractionAttempts: attempts + 1,
+      extractionAttempt: null,
+    };
     setError("");
     try {
       const result = await extractReply({
@@ -115,24 +159,7 @@ export default function ReplyOfferReview({
         requestId: reply.requestId,
         messageId: reply.messageId,
       });
-      setStatus(result.extractionStatus);
-      setAttempts(result.extractionAttempts);
-      setError(result.extractionError ?? "");
-      if (result.extraction && result.extractionAttempt !== null) {
-        const suggestion = {
-          proposal: result.extraction,
-          attempt: result.extractionAttempt,
-        };
-        if (
-          canAutoApplyReplySuggestion(
-            startedEditGeneration,
-            editGeneration.current,
-            valuesRef.current,
-          )
-        )
-          applySuggestion(suggestion);
-        else setPendingSuggestion(suggestion);
-      }
+      acceptExtraction(result);
     } catch (cause) {
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"

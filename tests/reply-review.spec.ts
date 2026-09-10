@@ -180,3 +180,118 @@ for (const mode of ["new", "append"] as const)
       "corrección manual: 85",
     );
   });
+
+test("an open review receives a completed extraction without replacing edits", async ({
+  page,
+  context,
+}) => {
+  await connectOnlyToLocalBackend(context);
+  const token = createHash("sha256")
+    .update(crypto.randomUUID())
+    .digest("hex");
+  const run = (fn: string, args: object) =>
+    JSON.parse(runLocalConvex(["run", fn, JSON.stringify(args)]));
+  const saved = run("comparisons:save", {
+    token,
+    clientId: crypto.randomUUID(),
+    id: null,
+    expectedRevision: 0,
+    request: riceRequest,
+    offers: riceOffers,
+    selectedOfferId: null,
+  });
+  const folder = mkdtempSync(join(tmpdir(), "reply-live-e2e-"));
+  const seed = (table: string, doc: object) => {
+    const path = join(folder, `${table}.json`);
+    writeFileSync(path, JSON.stringify([doc]));
+    runLocalConvex(["import", "--append", "--table", table, path]);
+  };
+  const messageId = crypto.randomUUID();
+  try {
+    seed("quotationRequests", {
+      ownerHash: createHash("sha256").update(token).digest("hex"),
+      clientId: crypto.randomUUID(),
+      comparisonId: saved.id,
+      recipient: null,
+      inboxId: null,
+      subject: "Consulta sintética",
+      text: "Solicitud de prueba",
+      state: "sent",
+      revision: 3,
+      idempotencyKey: crypto.randomUUID(),
+      receipt: {
+        messageId: crypto.randomUUID(),
+        threadId: crypto.randomUUID(),
+      },
+      failure: null,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    const request = run("quotationMail:list", { token })[0];
+    seed("quotationReplies", {
+      requestId: request.id,
+      eventId: crypto.randomUUID(),
+      messageId,
+      threadId: request.receipt.threadId,
+      from: "demo@example.test",
+      text: "Distribuidor Original\nArroz blanco extra\nSaco 18 kg: PEN 80.00",
+      receivedAt: "2026-09-10T12:00:00Z",
+    });
+    await context.addInitScript(
+      (value) => localStorage.setItem("procurement-demo-session-v1", value),
+      token,
+    );
+    await page.goto("/?view=comparison");
+    await page
+      .getByRole("button", { name: "Comparaciones guardadas (1)" })
+      .click();
+    await page.getByRole("button", { name: "Abrir comparación" }).click();
+    await page.getByRole("button", { name: "Ver solicitud" }).click();
+    await page
+      .getByRole("button", { name: "Revisar como nueva oferta" })
+      .click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByLabel("Proveedor", { exact: true }).fill("Mi corrección");
+
+    const reservation = run("quotationMail:reserveReplyExtraction", {
+      token,
+      requestId: request.id,
+      messageId,
+    });
+    expect(reservation.kind).toBe("reserved");
+    await expect(dialog.getByText("Extracción en curso…")).toBeVisible();
+    run("quotationMail:finishReplyExtraction", {
+      replyId: reservation.replyId,
+      attempt: reservation.attempt,
+      offer: {
+        supplier: {
+          value: "Distribuidor Original",
+          evidence: "Distribuidor Original",
+        },
+        ingredient: { value: "Arroz", evidence: "Arroz blanco extra" },
+        specification: {
+          value: "blanco extra",
+          evidence: "Arroz blanco extra",
+        },
+        packageContent: { value: "18", evidence: "Saco 18 kg: PEN 80.00" },
+        packageUnit: { value: "kg", evidence: "Saco 18 kg: PEN 80.00" },
+        price: { value: "80.00", evidence: "Saco 18 kg: PEN 80.00" },
+        currency: { value: "PEN", evidence: "Saco 18 kg: PEN 80.00" },
+      },
+    });
+    await expect(dialog.getByText(/La sugerencia está lista/)).toBeVisible();
+    await expect(dialog.getByLabel("Proveedor", { exact: true })).toHaveValue(
+      "Mi corrección",
+    );
+    await expect(
+      dialog.getByRole("button", { name: "Aplicar sugerencia de IA" }),
+    ).toBeVisible();
+    await expect(
+      dialog.getByLabel(
+        "Confirmo que estos datos corresponden a una oferta de esta respuesta",
+      ),
+    ).not.toBeChecked();
+  } finally {
+    rmSync(folder, { recursive: true });
+  }
+});
