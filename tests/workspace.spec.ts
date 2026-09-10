@@ -65,6 +65,12 @@ test("Enter uses enabled web research while the example remains an explicit sepa
     }),
   );
   await page.goto("/");
+  await page.getByRole("button", { name: "Explorar ejemplo de arroz" }).click();
+  await page
+    .getByRole("article")
+    .first()
+    .getByRole("button", { name: "Añadir a mi estudio" })
+    .click();
   await page.getByLabel("Insumo o categoría").fill("Pescado");
   const search = page.getByRole("button", {
     name: "Buscar en la web",
@@ -75,6 +81,29 @@ test("Enter uses enabled web research while the example remains an explicit sepa
   await expect(page.getByLabel("Test web request")).toHaveText(
     JSON.stringify({ id: 1, ingredient: "Pescado", region: "Lima" }),
   );
+  await expect(
+    page.getByRole("heading", { name: "Arroz en Lima" }),
+  ).toHaveCount(0);
+  await expect(page.getByRole("article")).toHaveCount(0);
+  await page.getByRole("link", { name: "Ir a los resultados" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.locator("#market-results")).toBeFocused();
+
+  await page.getByRole("button", { name: "Mi estudio", exact: false }).click();
+  await expect(
+    page.getByRole("heading", { name: "Mi estudio de mercado" }),
+  ).toBeVisible();
+  await expect(page.getByRole("article")).toHaveCount(1);
+  await page.getByRole("button", { name: /Ver fuente de ejemplo/ }).click();
+  await expect(page.getByRole("dialog")).toContainText("Ficha de arroz A");
+  await expect(page.getByRole("dialog")).toContainText(
+    "Este ejemplo no procede de una búsqueda real.",
+  );
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Volver a resultados" }).click();
+  await expect(page.getByLabel("Test web request")).toBeVisible();
+  await expect(page.getByRole("article")).toHaveCount(0);
+
   await page
     .getByRole("button", { name: "Explorar ejemplo", exact: true })
     .click();

@@ -155,7 +155,7 @@
 .document-tools .button {
   text-align: left;
 }
-.market-content .live-research:first-child {
+.market-content .live-research-view:first-child .live-research {
   margin-top: 0;
 }
 .market-content .study-next {
