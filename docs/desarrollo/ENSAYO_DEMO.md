@@ -1,55 +1,50 @@
-# Ensayo del recorrido y pendientes del video
+# Under-three-minute demo rehearsal
 
-Verificación del 8 de septiembre de 2026 UTC. Se ensayó el recorrido implementado con Playwright contra la app y Convex locales. No se grabó ni editó un video; los tiempos siguientes son un guion objetivo, no una duración medida de narración.
+This is the recording plan for the contest video. The proposed shot budget is **170 seconds (2:50)**, leaving ten seconds below the three-minute limit. It has not yet been rehearsed with a stopwatch, so none of the timings below are measured results.
 
-## Ensayo reproducible
+The demo tells one continuous story: research one restaurant ingredient, preserve reviewed evidence in one study, compare compatible offers, ask the purchasing advisor what to do, then incorporate a quotation received through the approved test-email flow. A quantity is needed only when moving from research to a possible purchase. Selecting an offer or accepting AI suggestions never records a purchase.
 
-Con Vite y Convex locales configurados según README:
+## Evidence boundary for the recording
 
-```sh
-npm run test:demo
-```
+- The main Firecrawl shot must come from the final hosted acceptance run. Show the original URL, observation date, source classification and the explicitly read product page. A saved run is acceptable when introduced as a real run completed before recording; do not imply that a network request happened during the shot.
+- OpenAI suggestions are proposals. Show literal evidence, make an evidence-supported correction when needed, and use the manual confirmation control. The deterministic totals and executive verdict remain the source for amounts; the AI interpretation explains the saved scenario and cites its active sources.
+- AgentMail may use a reply received before recording because email latency is unpredictable. Say that it is a previously received test reply, and show that it remains linked to the approved request and the owned test recipient. Do not send a second message for the video.
+- Keep every `Ejemplo simulado` marker visible if a fixture is used. Synthetic data may illustrate a second offer or a failure state, but it does not prove Firecrawl, OpenAI or AgentMail execution.
+- Leave missing price, minimum, freight, tax, stock, delivery and coverage values pending unless the visible source or the operator explicitly confirms them. Do not describe cash difference as realized savings.
 
-El test usa una sesión nueva, exclusivamente ejemplos sintéticos y conexiones WebSocket limitadas a localhost. Los pasos aparecen identificados en el reporte de Playwright. La ejecución automática pasó; su duración de ejecución no mide cuánto tardaría una persona en explicar el producto.
+## Shot plan
 
-| Tiempo objetivo | Recorrido actual | Evidencia y límite |
+| Budget | Screen action | Narration and proof |
 | --- | --- | --- |
-| 0:00–0:20 | Explorar arroz en Lima, sin documentos ni cantidad | Filtro local explícito; aún no descubre proveedores reales |
-| 0:20–0:45 | Revisar fuente, dos catálogos y un distribuidor sin precio | Fuentes y contacto ficticios, identificados como ejemplo |
-| 0:45–1:05 | Seleccionar, guardar y recuperar tras recargar | Persistencia real en Convex local; se conserva evidencia |
-| 1:05–1:25 | Abrir contacto y preparar consulta | Borrador editable, sin envío; no demuestra AgentMail |
-| 1:25–2:10 | Confirmar equivalencia, indicar 10 kg, completar condiciones de ejemplo | Totales inicialmente pendientes. Fallback manual explícito: mínimo 1, flete A S/15 y B S/0, impuestos incluidos y entrega confirmada |
-| 2:10–2:35 | Explicar S/95 frente a S/50; cambiar a 20 kg | S/175 frente a S/100. Se preserva el precio original; no se registra una compra |
-| 2:35–2:40 | Volver al estudio y explicar continuidad | Selección conservada; ese ensayo original no cubre el guardado de comparación ni correo |
+| **0:00–0:10 · 10 s** | Open the final hosted app on market research. Enter the chosen ingredient and Lima; do not provide a recipe, document or quantity. | “A restaurant can begin with one ingredient and a location. It does not need purchase history or a committed order.” |
+| **0:10–0:38 · 28 s** | Open the prepared real Firecrawl research run. Show a catalog/contact classification with its cited evidence and warning, choose its product link, then show the child page produced by **Leer ficha del producto**. Keep the URL and observation date visible. | Explain that a search result is only a candidate. The product page is read separately before it can become a comparable offer; missing price or delivery stays pending. |
+| **0:38–1:04 · 26 s** | Open **Revisar extracción** on the product page. Show proposed fields beside literal evidence, correct at least one field only if the page supports the correction, confirm the review and choose **Añadir al estudio**. Add a second compatible reviewed offer or a distributor with no published price that was prepared for the same ingredient and region. | “The model proposes structured fields; the buyer owns the correction and confirmation. The original proposal, edited value, source and date remain together.” |
+| **1:04–1:22 · 18 s** | Open **Mi estudio**. Show the real/simulated provenance on every card, the no-price candidate as `Pendiente`, and the combined option count. Use **Guardar estudio**, reload or open **Guardados**, and recover it. | “Offers and distributor leads now live in one recoverable study. Saving evidence does not create a purchase.” |
+| **1:22–1:56 · 34 s** | Compare the compatible reviewed offers. Enter the required quantity and confirm only the known minimum, freight, tax and delivery conditions. Open the advisor, set one concise decision context such as cash priority and budget, then use **Guardar escenario y pedir análisis de IA**. Hold on **Qué haría**, **Impacto en este pedido**, **Condición para decidir**, and the cited **Interpretación de IA**. | Read the executive verdict, one cash/coverage consequence and one unresolved condition. State that package counts, excess and outlay are deterministic; AI explains rather than replaces them. |
+| **1:56–2:32 · 36 s** | Open the saved AgentMail request. Show the safe, owned test recipient, `Aceptado por AgentMail`, and the linked reply received before recording. Choose **Revisar como nueva oferta**, then show **Sugerir campos con IA** results and their evidence. Correct any unsupported field, manually confirm the offer and equivalence, and choose **Añadir a comparación actual**. | “This reply came from our owned test mailbox and stayed linked by the provider thread. AI proposes fields from untrusted email text; a person verifies them before the offer can affect the comparison.” |
+| **2:32–2:50 · 18 s** | Save the changed comparison. Show that the previous choice or advisor analysis is stale until the updated scenario is reviewed, then finish on the new offer, source link and remaining pending condition. | “The new evidence updates the decision without inventing delivery or stock. Nothing was purchased, and every consequential step required review.” |
 
-La prueba completa incluye fuente antes y después de edición, contacto sin precio, recuperación y cálculos. El E2E independiente de persistencia comprueba actualización entre dos pestañas, aislamiento y conflicto. No montar un video que presente estos fixtures o ediciones manuales como scraping, OCR o una respuesta recibida.
+The editor may shorten loading or use a visible cut to a completed real run. Do not hide a provider failure, splice a synthetic success into a real claim, or narrate a pre-existing result as live. If any essential state cannot be read comfortably within its shot, simplify the narration rather than speed through the evidence.
 
-## Qué falta para el guion de concurso
+## Rehearsal and recording checklist
 
-La revisión de las [reglas oficiales](https://www.convex.dev/hackathons/all-gas) y [Luma](https://luma.com/convex-allgas-hackathon) confirma: uso real de sponsors, repo público, URL pública admitida y video menor de tres minutos. Los criterios mencionan explícitamente que OpenAI, Firecrawl y AgentMail deben ejecutar trabajo dentro del producto. Este repo continúa privado y la app local; push no equivale a publicación de la demo.
+### Provider and data readiness
 
-1. **Descubrimiento con Firecrawl:** obtener precios, presentaciones, contactos y fuentes reales con resultados parciales. No inventar cobertura, disponibilidad o entrega.
-2. **Extracción con OpenAI:** convertir contenido/documento en datos estructurados, con revisión humana y pendientes. Empezar con un formato sintético verificable, sin construir todos los formatos de archivo.
-3. **Cotización con AgentMail:** solicitud revisada, destinatario de prueba restringido, respuesta vinculada al estudio, idempotencia y revisión antes de usar el precio. El texto para WhatsApp permanece como alternativa.
-4. **Continuidad de compra y decisión:** conservar las condiciones revisadas y la decisión; implementada y probada localmente; falta ensayarla con los resultados reales. Elegir no registra compra realizada.
-5. **Demo pública:** controles de abuso y sesiones, manejo de fallos, hosting, verificación de URL y revisión de contenido antes de hacer público el repo. Después grabar, revisar el video y completar materiales/entrega autorizados.
+- [ ] Confirm the exact OpenAI account and project intended for the demo; configure its server-side key and compatible extraction/advisor models on the verified target.
+- [ ] Complete direct OpenAI API acceptance inside the app for Firecrawl-source extraction, advisor tool execution and reply-field suggestions. Luna CLI rehearsal is separate evidence and does not satisfy this item.
+- [ ] Complete one final hosted journey on the intended release deployment: real Firecrawl discovery/product read, direct OpenAI review and advice, one explicitly approved AgentMail send to a display-safe owned test recipient, signed linked reply, and manual reply-to-offer confirmation.
+- [ ] Preload only the same owned browser session and the approved test reply needed for the take. Remove credentials, private message bodies and unrelated customer data from every visible surface.
+- [ ] Verify the empty-result and provider-failure states separately. They need not consume video time, but the final demo must not invent suppliers when a provider returns nothing.
 
-No hacen falta recetas, ERP, pricing ni nuevas pantallas decorativas para cerrar ese guion. Prioridad: completar el flujo ya acordado. APIs siguen aplazadas por decisión del usuario; ninguna prueba sintética resuelve esa dependencia.
+### Take readiness
 
-Para negocio, falta observar utilidad y segundo uso con restaurantes, canales reales y costo de servir. Antes de aceptar documentos privados se mantiene la etapa de piloto con autenticación, aislamiento, recuperación y tratamiento de datos. El acabado visual y un E2E verde no acreditan validación comercial.
+- [ ] Rehearse this exact path with a stopwatch and record the measured duration; the current measurement is pending.
+- [ ] Confirm each real source, observation date, reviewed edit, option count, restored study, deterministic total, advisor source citation, AgentMail request state and reply linkage immediately before recording.
+- [ ] Keep a short disclosure ready for any pre-completed Firecrawl run, pre-generated AI result or pre-received AgentMail reply used to avoid provider latency.
+- [ ] Record at readable scale, review the final cut end to end, and verify its exported duration is below three minutes.
 
+### Release and submission still remaining
 
-## Ensayo que sigue con las integraciones preparadas
-
-El recorrido histórico de arriba sigue siendo reproducible. Desde entonces se añadieron búsqueda/extracción conectadas, comparación web persistente y cotización por correo. Esto permite preparar el siguiente guion, todavía pendiente de ejecución con servicios reales:
-
-| Tiempo objetivo | Acción y prueba visible |
-| --- | --- |
-| 0:00–0:25 | Buscar un insumo y zona sin pedir receta, stock ni cantidad |
-| 0:25–0:55 | Abrir una fuente encontrada, extraer presentación/precio y confirmar campos con evidencia |
-| 0:55–1:20 | Guardar y recuperar la comparación; añadir cantidad solo para preparar compra |
-| 1:20–1:50 | Mostrar solicitud revisada a buzón de prueba y aceptación de AgentMail |
-| 1:50–2:25 | Mostrar respuesta real vinculada, revisar condiciones y comparar desembolso |
-| 2:25–2:50 | Guardar elección, explicar fuente/fecha y pendientes; elegir no compra |
-
-La latencia del correo no está medida. Si se usa una respuesta de una solicitud de prueba anterior, identificarla y conservar su vínculo real; no representar un fixture como respuesta en vivo. Los tiempos son un presupuesto de narración, no una grabación ni prueba de cumplimiento.
+- [ ] Run the final hosted acceptance checks for the public URL, assets, SPA reload, session isolation and signed webhook route.
+- [ ] Review tracked files and history for secrets or private data, then make the repository public only with the author's release authorization.
+- [ ] Upload the final video, verify that its link is accessible, and complete the contest submission. A local rehearsal, development preview or repository push is not submission evidence.

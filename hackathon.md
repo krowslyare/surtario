@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-10T05:15:04Z
+- **Last updated:** 2026-09-10T16:58:53Z
 
 ## Log
 
@@ -286,3 +286,15 @@ A targeted rice query returned no sources and a targeted oil query reached the e
 Added server source inspection, persisted Agent classification with numbered literal evidence, and an explicit bounded Firecrawl product-page read. Catalogs and unusable sources cannot become comparable offers; selected child pages retain their URL, observation time and parent. Reviewed values still require confirmation, with purchase conditions kept separate.
 A real scrape recovered the selected rice page with PEN 208 for 50 kg. Real Luna CLI replay separated catalogs from that product and retained missing prices; initial quotation-validation failures led to server-reconstructed evidence references. Replaying the original 15 sources identified four unreadable pages, one site error and all three irrelevant controls. Full provider acceptance remains open.
 155 unit/backend/configuration tests and three focused browser journeys passed. In-app browser computer use verified mobile/desktop research, explicit child reading, one real Luna extraction, review and local Convex save. Independent adversarial review closed after fixing legacy quality bypass, validation order, redirects and multiline title provenance. Evidence: `docs/desarrollo/FIRECRAWL_SOURCE_ANALYSIS.md`. No cloud deployment, external email, direct OpenAI API call, public visibility change or contest submission occurred.
+
+
+### 2026-09-10 - working tree · unified study and final provider pass
+Connected reviewed web offers and no-price candidates to one saved market study, with server-owned source reconstruction, ingredient/location bounds and consistent recovery/counts. Added explicit AI suggestions for linked replies while preserving manual review, late edits and the exact reviewed extraction attempt. The prominent advisor now saves comparison/context and prepares the scenario through one action; positive quantity, semantic reuse and full draft guards prevent invalid or duplicate calls.
+Rechecked current Firecrawl scrape documentation, target-page status and freshness behavior, and vendored its official scrape skill with license and pinned provenance. Two real Firecrawl calls returned three discovery sources and the selected product at PEN 208 per 50 kg. Five real Luna CLI generations ran through local Convex/Agent: two recorded-page analyses, one synthetic web source, one linked synthetic reply and one advisor explanation using actual calculation/evidence tools. The first numeric price proposal was corrected by a clarified prompt and explicit rerun.
+Computer use saved and recovered the combined study, approved a locally simulated test email, observed one reply after duplicate signed events, reviewed PEN 47 per 10 kg and confirmed PEN 94 for a 20 kg scenario. Advice correctly requested another offer instead of inventing savings; reload recovered it without another model call. 173 unit/backend/configuration tests, all 54 browser journeys, frontend/backend typechecks and hosting checks passed. Independent adversarial review closed without remaining material findings after fixes. Evidence: `docs/desarrollo/DEMO_FLOW_VALIDATION.md` and `FIRECRAWL_SOURCE_ANALYSIS.md`.
+The 170-second video plan remains unmeasured. Direct OpenAI API configuration and combined hosted acceptance remain pending. This pass did not send external email, deploy to cloud, change repository visibility or submit the project.
+
+
+### 2026-09-10 - working tree · PR 21–26 review corrections
+PRs #21–#25 are merged after independent Sol 5.6 review, with PR #23 reviewed by Luna, and parent adjudication. PR #24 keeps Firecrawl discovery candidates while suppressing markdown whose source or final metadata URL points to another page, with canonical same-page normalization and unchanged behavior when metadata is absent. PR #25 synchronizes open linked-reply reviews with reactive extraction state, preserves manual edits as pending suggestions and ignores stale responses. PR #26 now fingerprints only active offers while retaining historical source records; its review and fix verification are complete.
+The current integrated pass records 175 unit/backend/configuration tests and 10 focused browser journeys (four reply/research checks and six advisor checks), plus frontend/backend typechecks and hosting build/asset checks. The preceding full-suite delivery covered all 54 browser journeys. This is local verification only; no new cloud deployment, provider call, repository visibility change or contest submission is recorded. Stages 2–5 and 7 retain their provider and hosted-acceptance requirements, separate from PR review completion.
