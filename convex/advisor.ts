@@ -20,6 +20,19 @@ const enabled = () =>
   env.ADVISOR_ENABLED === "true" &&
   !!env.OPENAI_API_KEY?.trim() &&
   !!env.OPENAI_ADVISOR_MODEL?.trim();
+function sameContext(
+  left: typeof advisorContext.type,
+  right: typeof advisorContext.type,
+) {
+  return (
+    left.priority === right.priority &&
+    left.budgetCents === right.budgetCents &&
+    left.dailyUsage === right.dailyUsage &&
+    left.stockQuantity === right.stockQuantity &&
+    left.maxCoverageDays === right.maxCoverageDays &&
+    left.preferredOfferId === right.preferredOfferId
+  );
+}
 const view = ({
   _id,
   _creationTime: _created,
@@ -47,7 +60,7 @@ export const list = query({
           q.eq("comparisonId", args.comparisonId),
         )
         .order("desc")
-        .take(10)
+        .take(20)
     ).map(view);
   },
 });
@@ -77,7 +90,7 @@ export const prepare = mutation({
       if (
         existing.comparisonId !== args.comparisonId ||
         existing.comparisonRevision !== args.expectedRevision ||
-        JSON.stringify(existing.context) !== JSON.stringify(args.context)
+        !sameContext(existing.context, args.context)
       )
         throw new ConvexError("Esta solicitud ya corresponde a otro análisis.");
       return view(existing);
@@ -85,6 +98,13 @@ export const prepare = mutation({
     if (comparison.revision !== args.expectedRevision)
       throw new ConvexError(
         "La comparación cambió. Recupera la versión guardada antes de analizar.",
+      );
+    if (
+      !Number.isFinite(comparison.request.quantity) ||
+      comparison.request.quantity <= 0
+    )
+      throw new ConvexError(
+        "Indica una cantidad mayor que cero antes de preparar el análisis.",
       );
     const c = args.context;
     if (
@@ -101,6 +121,21 @@ export const prepare = mutation({
       throw new ConvexError(
         "Revisa el contexto: importes y cantidades válidos, consumo y cobertura mayores a cero.",
       );
+    const matching = (
+      await ctx.db
+        .query("advisorRuns")
+        .withIndex("by_comparisonId", (q) =>
+          q.eq("comparisonId", comparison._id),
+        )
+        .order("desc")
+        .take(20)
+    ).find(
+      (run) =>
+        run.ownerHash === owner &&
+        run.comparisonRevision === comparison.revision &&
+        sameContext(run.context, c),
+    );
+    if (matching) return view(matching);
     if (
       (
         await ctx.db

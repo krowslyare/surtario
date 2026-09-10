@@ -130,9 +130,95 @@ test("owned snapshots preserve calculations and context, retries cannot change t
     (await t.query(api.advisor.list, { token, comparisonId: comparison.id }))[0]
       .snapshot.request.quantity,
   ).toBe(10);
+  expect((await t.mutation(api.advisor.prepare, args)).id).toBe(run.id);
   await expect(
     t.mutation(api.advisor.prepare, { ...args, clientId: crypto.randomUUID() }),
   ).rejects.toThrow(/cambió/);
+});
+test("new client requests reuse the same semantic run in every persisted state", async () => {
+  vi.stubEnv("ADVISOR_ENABLED", "true");
+  vi.stubEnv("OPENAI_API_KEY", "test-key");
+  vi.stubEnv("OPENAI_ADVISOR_MODEL", "test-model");
+  const { t, args } = await setup();
+  const calculated = await t.mutation(api.advisor.prepare, args);
+  expect(
+    (
+      await t.mutation(api.advisor.prepare, {
+        ...args,
+        clientId: crypto.randomUUID(),
+      })
+    ).id,
+  ).toBe(calculated.id);
+
+  await t.mutation(internal.advisor.reserve, { token, id: calculated.id });
+  const running = await t.mutation(api.advisor.prepare, {
+    ...args,
+    clientId: crypto.randomUUID(),
+  });
+  expect(running.id).toBe(calculated.id);
+  expect(running.status).toBe("running");
+
+  await t.mutation(internal.advisor.finish, {
+    id: calculated.id,
+    narrative: {
+      reasoning: "La presentación menor permite mantener caja disponible.",
+      questions: [],
+      sourceIds: ["rice-supplier-b"],
+    },
+    toolCalls: ["evaluateScenarios", "readEvidence"],
+  });
+  const complete = await t.mutation(api.advisor.prepare, {
+    ...args,
+    clientId: crypto.randomUUID(),
+  });
+  expect(complete.id).toBe(calculated.id);
+  expect(complete.status).toBe("complete");
+
+  const failedContext = { ...context, priority: "balanced" as const };
+  const failing = await t.mutation(api.advisor.prepare, {
+    ...args,
+    clientId: crypto.randomUUID(),
+    context: failedContext,
+  });
+  await t.mutation(internal.advisor.reserve, { token, id: failing.id });
+  await t.mutation(internal.advisor.finish, {
+    id: failing.id,
+    narrative: null,
+    toolCalls: [],
+  });
+  const failed = await t.mutation(api.advisor.prepare, {
+    ...args,
+    clientId: crypto.randomUUID(),
+    context: failedContext,
+  });
+  expect(failed.id).toBe(failing.id);
+  expect(failed.status).toBe("failed");
+  expect(explainPurchase).not.toHaveBeenCalled();
+});
+test("a saved comparison with pending quantity cannot prepare an advisor run", async () => {
+  const { t, args, comparison } = await setup();
+  await t.mutation(api.comparisons.save, {
+    token,
+    id: comparison.id,
+    clientId: crypto.randomUUID(),
+    expectedRevision: 1,
+    request: { ...riceRequest, quantity: 0 },
+    offers: riceOffers,
+    selectedOfferId: null,
+  });
+  await expect(
+    t.mutation(api.advisor.prepare, {
+      ...args,
+      expectedRevision: 2,
+      clientId: crypto.randomUUID(),
+    }),
+  ).rejects.toThrow(/cantidad mayor que cero/);
+  expect(
+    await t.query(api.advisor.list, {
+      token,
+      comparisonId: comparison.id,
+    }),
+  ).toEqual([]);
 });
 test("disabled, failed and concurrent analyses never trigger an unapproved retry", async () => {
   const { t, args } = await setup();

@@ -1,11 +1,14 @@
 import Brand from "./components/Brand";
-import PurchasingAdvisor from "./components/PurchasingAdvisor";
+import PurchasingAdvisor, {
+  stableValue,
+} from "./components/PurchasingAdvisor";
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
 import { useRef, useState, type FormEvent } from "react";
 import SavedComparisons, {
   type SavedComparison,
+  type SavedComparisonsHandle,
 } from "./components/SavedComparisons";
 import {
   ArrowRight,
@@ -290,6 +293,8 @@ export default function Comparison({
   const [message, setMessage] = useState("");
   const [savedId, setSavedId] = useState<SavedComparison["id"] | null>(null);
   const [savedRevision, setSavedRevision] = useState(0);
+  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
+  const savedComparisons = useRef<SavedComparisonsHandle>(null);
   const [clientId, setClientId] = useState(() => crypto.randomUUID());
   const currentClientId = useRef(clientId);
   const [baselineRequest, setBaselineRequest] = useState<ProcurementRequest>(
@@ -356,6 +361,30 @@ export default function Comparison({
     : !pendingQuantity && !validQuantity
       ? "Corrige la cantidad antes de guardar. Déjala vacía si todavía está pendiente."
       : null;
+  const comparisonDraft = {
+    clientId,
+    id: savedId,
+    expectedRevision: savedRevision,
+    request: {
+      ...request,
+      quantity: parseDecimal(quantity) ?? 0,
+    },
+    offers,
+    sources,
+    selectedOfferId: activeSelection,
+    persistable,
+    blockedReason,
+  };
+  const currentFingerprint = stableValue({
+    request: comparisonDraft.request,
+    offers,
+    sources,
+    selectedOfferId: activeSelection,
+  });
+  const currentFingerprintRef = useRef(currentFingerprint);
+  currentFingerprintRef.current = currentFingerprint;
+  const comparisonCurrent =
+    savedId !== null && savedFingerprint === currentFingerprint;
 
   function chooseOffer(offerId: string) {
     const evaluation =
@@ -383,6 +412,14 @@ export default function Comparison({
     setBaselineRequest({ ...comparison.request });
     setSavedId(comparison.id);
     setSavedRevision(comparison.revision);
+    setSavedFingerprint(
+      stableValue({
+        request: comparison.request,
+        offers: comparison.offers,
+        sources: comparison.sources,
+        selectedOfferId: comparison.selectedOfferId,
+      }),
+    );
     setSelectedOfferId(comparison.selectedOfferId);
     setSelectionFingerprint(
       JSON.stringify({
@@ -401,6 +438,7 @@ export default function Comparison({
     setSources(seed?.sources ?? initialSources());
     setSavedId(null);
     setSavedRevision(0);
+    setSavedFingerprint(null);
     const nextClientId = crypto.randomUUID();
     currentClientId.current = nextClientId;
     setClientId(nextClientId);
@@ -409,6 +447,17 @@ export default function Comparison({
     setSelectionFingerprint(null);
     setModal(null);
     setMessage(seed ? "Selección inicial restaurada." : "Ejemplo restaurado.");
+  }
+  async function saveComparisonForAdvisor() {
+    const startedWith = currentFingerprintRef.current;
+    const result = await savedComparisons.current?.persist();
+    if (
+      !result ||
+      result.submitted.clientId !== currentClientId.current ||
+      currentFingerprintRef.current !== startedWith
+    )
+      return null;
+    return { id: result.saved.id, revision: result.saved.revision };
   }
   function saveOffer(offer: SupplierOffer) {
     setOffers((current) =>
@@ -574,28 +623,24 @@ export default function Comparison({
           >
             {persistenceEnabled ? (
               <SavedComparisons
-                draft={{
-                  clientId,
-                  id: savedId,
-                  expectedRevision: savedRevision,
-                  request: {
-                    ...request,
-                    quantity: parseDecimal(quantity) ?? 0,
-                  },
-                  offers,
-                  sources,
-                  selectedOfferId: activeSelection,
-                  persistable,
-                  blockedReason,
-                }}
+                ref={savedComparisons}
+                draft={comparisonDraft}
                 onOpen={openSaved}
-                onSaved={(saved, submittedClientId) => {
+                onSaved={(saved, submittedClientId, submitted) => {
                   // Update only persistence metadata: edits made while the request was
                   // in flight remain the visible draft.
                   if (submittedClientId !== currentClientId.current)
                     return false;
                   setSavedId(saved.id);
                   setSavedRevision(saved.revision);
+                  setSavedFingerprint(
+                    stableValue({
+                      request: submitted.request,
+                      offers: submitted.offers,
+                      sources: submitted.sources,
+                      selectedOfferId: submitted.selectedOfferId,
+                    }),
+                  );
                   return true;
                 }}
               />
@@ -614,6 +659,24 @@ export default function Comparison({
             </button>
           </aside>
         </div>
+        {persistenceEnabled && (
+          <PurchasingAdvisor
+            key={clientId}
+            comparisonId={savedId}
+            revision={savedRevision}
+            request={effectiveRequest}
+            offers={offers}
+            comparisonFingerprint={currentFingerprint}
+            comparisonCurrent={comparisonCurrent}
+            canSaveComparison={persistable && validQuantity}
+            saveBlockedReason={
+              !validQuantity
+                ? "Indica una cantidad válida para analizar esta compra."
+                : blockedReason
+            }
+            onSaveComparison={saveComparisonForAdvisor}
+          />
+        )}
         <section
           id="comparison"
           tabIndex={-1}
@@ -975,15 +1038,6 @@ export default function Comparison({
                   }
                 : undefined
             }
-          />
-        )}
-        {persistenceEnabled && (
-          <PurchasingAdvisor
-            key={clientId}
-            comparisonId={savedId}
-            revision={savedRevision}
-            request={effectiveRequest}
-            offers={offers}
           />
         )}
         <footer>

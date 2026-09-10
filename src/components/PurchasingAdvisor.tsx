@@ -39,13 +39,18 @@ export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
   useEffect(() => setCopied(false), [report.negotiationDraft]);
   return (
     <div className="advisor-verdict">
-      <p className="advisor-recommendation">{report.recommendation}</p>
-      <p>
-        <strong>Impacto en este pedido.</strong> {report.impact}
-      </p>
-      <p className="field-hint">
-        <strong>Antes de decidir.</strong> {report.warning}
-      </p>
+      <div className="advisor-decision-row advisor-decision-primary">
+        <span>Qué haría</span>
+        <p className="advisor-recommendation">{report.recommendation}</p>
+      </div>
+      <div className="advisor-decision-row">
+        <span>Impacto en este pedido</span>
+        <p>{report.impact}</p>
+      </div>
+      <div className="advisor-decision-row advisor-decision-condition">
+        <span>Condición para decidir</span>
+        <p>{report.warning}</p>
+      </div>
       {report.missing.length > 0 && (
         <details>
           <summary>Datos que faltan</summary>
@@ -141,6 +146,14 @@ export default function PurchasingAdvisor(props: {
   revision: number;
   request: ProcurementRequest;
   offers: SupplierOffer[];
+  comparisonFingerprint: string;
+  comparisonCurrent: boolean;
+  canSaveComparison: boolean;
+  saveBlockedReason: string | null;
+  onSaveComparison: () => Promise<{
+    id: Id<"comparisons">;
+    revision: number;
+  } | null>;
 }) {
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
@@ -165,12 +178,25 @@ function Connected({
   request,
   offers,
   token,
+  comparisonFingerprint,
+  comparisonCurrent,
+  canSaveComparison,
+  saveBlockedReason,
+  onSaveComparison,
 }: {
   comparisonId: Id<"comparisons"> | null;
   revision: number;
   request: ProcurementRequest;
   offers: SupplierOffer[];
   token: string;
+  comparisonFingerprint: string;
+  comparisonCurrent: boolean;
+  canSaveComparison: boolean;
+  saveBlockedReason: string | null;
+  onSaveComparison: () => Promise<{
+    id: Id<"comparisons">;
+    revision: number;
+  } | null>;
 }) {
   const enabled = useQuery(api.advisor.status, {});
   const runs = useQuery(
@@ -187,19 +213,37 @@ function Connected({
     [error, setError] = useState("");
   const [raw, setRaw] = useState<Record<string, string>>({});
   const pending = useRef<{ key: string; clientId: string } | null>(null);
-  const currentComparison = useRef(comparisonId);
-  currentComparison.current = comparisonId;
-  const persisted = active && runs?.find((run) => run.id === active.id);
+  const mounted = useRef(true);
+  const attempt = useRef(0);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      attempt.current += 1;
+    };
+  }, []);
+  const matchesCurrent = (run: Run) =>
+    comparisonCurrent &&
+    run.comparisonRevision === revision &&
+    comparisonFingerprint ===
+      stableValue({
+        request: run.snapshot.request,
+        offers: run.snapshot.offers,
+        sources: run.snapshot.sources,
+        selectedOfferId: run.snapshot.selectedOfferId,
+      }) &&
+    stableValue(context) === stableValue(run.context);
+  const persistedActive = active && runs?.find((run) => run.id === active.id);
+  const matchingPersisted = runs?.find(matchesCurrent);
   const selected =
-    persisted && persisted.status !== "calculated" ? persisted : active;
-  const sameDraft = (run: Run) =>
-    stableValue({ request, offers }) ===
-    stableValue({ request: run.snapshot.request, offers: run.snapshot.offers });
+    matchingPersisted ??
+    (active && matchesCurrent(active) ? persistedActive ?? active : null) ??
+    persistedActive ??
+    active ??
+    runs?.[0] ??
+    null;
   const stale =
-    !!selected &&
-    (selected.comparisonRevision !== revision ||
-      !sameDraft(selected) ||
-      stableValue(context) !== stableValue(selected.context));
+    !!selected && !matchesCurrent(selected);
   const invalid = Object.entries(raw).some(([k, value]) => {
     const n = k === "budgetCents" ? parseCents(value) : parseDecimal(value);
     return (
@@ -211,7 +255,12 @@ function Connected({
         ((k === "dailyUsage" || k === "maxCoverageDays") && n === 0))
     );
   });
+  const validRequestQuantity =
+    Number.isFinite(request.quantity) && request.quantity > 0;
   const report = analyzePurchase(request, offers, context);
+  const flowKey = stableValue({ comparisonFingerprint, context });
+  const currentFlowKey = useRef(flowKey);
+  currentFlowKey.current = flowKey;
   function updateNumber(
     key: "budgetCents" | "dailyUsage" | "stockQuantity" | "maxCoverageDays",
     value: string,
@@ -221,43 +270,116 @@ function Connected({
       key === "budgetCents" ? parseCents(value) : parseDecimal(value);
     setContext({ ...context, [key]: parsed === null ? null : parsed });
   }
-  async function saveScenario() {
-    if (!comparisonId || busy || invalid) return;
-    const target = comparisonId,
-      key = stableValue({ comparisonId, revision, context });
+  async function saveScenario(
+    target: Id<"comparisons">,
+    targetRevision: number,
+  ) {
+    const key = stableValue({
+      comparisonId: target,
+      revision: targetRevision,
+      comparisonFingerprint,
+      context,
+    });
     if (pending.current?.key !== key)
       pending.current = { key, clientId: crypto.randomUUID() };
+    return await prepare({
+      token,
+      comparisonId: target,
+      expectedRevision: targetRevision,
+      clientId: pending.current.clientId,
+      context,
+    });
+  }
+  async function progress() {
+    if (
+      busy ||
+      invalid ||
+      !validRequestQuantity ||
+      enabled === undefined ||
+      (comparisonCurrent && comparisonId !== null && runs === undefined)
+    )
+      return;
+    const attemptId = ++attempt.current;
+    const startedWith = currentFlowKey.current;
+    const isCurrentAttempt = () =>
+      mounted.current &&
+      attempt.current === attemptId &&
+      currentFlowKey.current === startedWith;
+    const reportChangedFlow = () => {
+      if (mounted.current && attempt.current === attemptId)
+        setError(
+          "Los datos cambiaron durante la operación. La versión confirmada conserva su propio estado; vuelve a continuar cuando termines de editar.",
+        );
+    };
     setBusy(true);
     setError("");
     try {
-      const run = await prepare({
-        token,
-        comparisonId,
-        expectedRevision: revision,
-        clientId: pending.current.clientId,
-        context,
-      });
-      if (currentComparison.current === target) setActive(run);
+      let targetId = comparisonId;
+      let targetRevision = revision;
+      if (!comparisonCurrent) {
+        if (!canSaveComparison) return;
+        const saved = await onSaveComparison();
+        if (!isCurrentAttempt()) {
+          reportChangedFlow();
+          return;
+        }
+        if (!saved) {
+          setError(
+            "No se confirmó el guardado de la comparación. Conserva los datos y vuelve a intentar.",
+          );
+          return;
+        }
+        targetId = saved.id;
+        targetRevision = saved.revision;
+      }
+      if (!targetId) return;
+      let run =
+        selected &&
+        !stale &&
+        selected.comparisonId === targetId &&
+        selected.comparisonRevision === targetRevision
+          ? selected
+          : await saveScenario(targetId, targetRevision);
+      if (!isCurrentAttempt()) {
+        reportChangedFlow();
+        return;
+      }
+      setActive(run);
+      if (enabled === true && run.status === "calculated") {
+        run = await explain({ token, id: run.id });
+        if (!isCurrentAttempt()) {
+          reportChangedFlow();
+          return;
+        }
+        setActive(run);
+      }
     } catch (e) {
-      setError(errorText(e));
+      if (mounted.current && attempt.current === attemptId)
+        setError(errorText(e));
     } finally {
-      setBusy(false);
+      if (mounted.current && attempt.current === attemptId) setBusy(false);
     }
   }
-  async function ask() {
-    if (!selected || stale || busy) return;
-    const target = comparisonId;
-    setBusy(true);
-    setError("");
-    try {
-      const run = await explain({ token, id: selected.id });
-      if (currentComparison.current === target) setActive(run);
-    } catch (e) {
-      setError(errorText(e));
-    } finally {
-      setBusy(false);
-    }
-  }
+  const displayedReport = selected && !stale ? selected.report : report;
+  const actionAvailable =
+    !selected ||
+    stale ||
+    (selected.status === "calculated" && enabled === true);
+  const actionLabel = busy
+    ? enabled === true
+      ? "Guardando y analizando…"
+      : "Guardando escenario…"
+    : enabled === undefined
+      ? "Comprobando asesor…"
+      : !comparisonCurrent
+        ? enabled
+          ? "Guardar comparación y pedir análisis de IA"
+          : "Guardar comparación y escenario"
+        : selected && !stale && selected.status === "calculated" && enabled
+          ? "Pedir análisis de IA"
+          : enabled
+            ? "Guardar escenario y pedir análisis de IA"
+            : "Guardar escenario";
   return (
     <section className="advisor-panel" aria-label="Asesor de compras">
       <div className="advisor-heading">
@@ -268,7 +390,6 @@ function Connected({
             propuesta no realiza una compra.
           </p>
         </div>
-        <span className="demo-badge">Asesor de compras</span>
       </div>
       <details className="advisor-context">
         <summary>Contexto de mi decisión · opcional</summary>
@@ -348,46 +469,70 @@ function Connected({
         </p>
       </details>
       {invalid ? (
-        <p role="alert">Revisa los números del contexto antes de analizar.</p>
-      ) : !selected || stale ? (
+        <p role="alert" className="notice error">
+          Revisa los números del contexto antes de analizar. El resultado se
+          mostrará de nuevo cuando los corrijas.
+        </p>
+      ) : (
         <>
           <p className="advisor-mode">
-            Escenario calculado con los datos visibles
+            {selected && !stale
+              ? selected.narrative
+                ? "Escenario guardado e interpretado con sus fuentes"
+                : "Escenario guardado con cálculo verificable"
+              : "Escenario calculado con los datos visibles"}
           </p>
-          <AdvisorVerdict report={report} />
-          <ScenarioDetails report={report} offers={offers} />
+          <AdvisorVerdict report={displayedReport} />
+          <ScenarioDetails
+            report={displayedReport}
+            offers={selected && !stale ? selected.snapshot.offers : offers}
+          />
         </>
-      ) : null}
-      <div className="advisor-actions">
-        <button
-          className="button secondary"
-          disabled={!comparisonId || busy || invalid}
-          onClick={saveScenario}
-        >
-          {busy ? "Procesando…" : "Guardar escenario"}
-        </button>
-        <button
-          className="button primary"
-          disabled={
-            invalid ||
-            !enabled ||
-            !selected ||
-            stale ||
-            busy ||
-            selected.status !== "calculated"
-          }
-          onClick={ask}
-        >
-          Pedir análisis de IA
-        </button>
-      </div>
-      <p className="field-hint">
-        {!comparisonId
-          ? "Guarda primero la comparación y sus condiciones."
-          : "El análisis conserva la versión guardada de la comparación. Guarda tus cambios antes de crear un escenario."}{" "}
-        {enabled === false &&
-          "IA sin configurar; los cálculos siguen disponibles."}
-      </p>
+      )}
+      {selected && stale && (
+        <>
+          <p role="status" className="notice info">
+            El análisis guardado está desactualizado respecto a esta vista. La
+            acción siguiente guardará la comparación visible y preparará un
+            escenario nuevo.
+          </p>
+          <details className="advisor-stale-evidence">
+            <summary>Ver el análisis guardado anterior</summary>
+            <AdvisorVerdict report={selected.report} />
+            <ScenarioDetails
+              report={selected.report}
+              offers={selected.snapshot.offers}
+            />
+          </details>
+        </>
+      )}
+      {actionAvailable && (
+        <div className="advisor-actions">
+          <button
+            className="button primary"
+            disabled={
+              busy ||
+              invalid ||
+              !validRequestQuantity ||
+              enabled === undefined ||
+              (!comparisonCurrent && !canSaveComparison) ||
+              (comparisonCurrent && comparisonId !== null && runs === undefined)
+            }
+            onClick={progress}
+          >
+            {actionLabel}
+          </button>
+        </div>
+      )}
+      {actionAvailable && (
+        <p className="field-hint advisor-action-hint">
+          {saveBlockedReason
+            ? saveBlockedReason
+            : enabled === false
+              ? "La IA no está configurada; guardarás el cálculo determinista y sus fuentes."
+              : "Una sola acción conserva la comparación y el contexto antes de consultar la IA. No envía mensajes ni registra una compra."}
+        </p>
+      )}
       {error && (
         <p role="alert" className="notice error">
           {error}
@@ -395,29 +540,15 @@ function Connected({
       )}
       {selected && (
         <div className="advisor-saved">
-          <h3>Análisis guardado</h3>
-          {stale && (
-            <p role="status" className="notice info">
-              Desactualizado respecto a la vista actual. Guarda la comparación y
-              prepara un nuevo escenario.
-            </p>
-          )}
-          <AdvisorVerdict report={selected.report} />
-          <ScenarioDetails
-            report={selected.report}
-            offers={selected.snapshot.offers}
-          />
           {selected.status === "running" && (
             <p role="status">
               El asesor está consultando los escenarios y sus fuentes…
             </p>
           )}
-          {selected.error && <p role="alert">{selected.error}</p>}
-          {selected.narrative && (
+          {selected.error && !stale && <p role="alert">{selected.error}</p>}
+          {selected.narrative && !stale && (
             <>
-              <p className="advisor-mode">
-                Análisis de IA · revisa la interpretación antes de actuar
-              </p>
+              <h3>Interpretación de IA</h3>
               <p>{selected.narrative.reasoning}</p>
               <ul>
                 {selected.narrative.questions.map((q, i) => (

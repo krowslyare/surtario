@@ -106,9 +106,11 @@ test("una oferta manual explica por qué no se puede guardar en la demo", async 
     page.getByRole("button", { name: "Guardar comparación", exact: true }),
   ).toBeDisabled();
   await expect(
-    page.getByText("Esta demo solo guarda las ofertas originales", {
-      exact: false,
-    }),
+    page
+      .getByRole("region", { name: "Comparaciones guardadas" })
+      .getByText("Esta demo solo guarda las ofertas originales", {
+        exact: false,
+      }),
   ).toBeVisible();
 });
 
