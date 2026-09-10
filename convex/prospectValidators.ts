@@ -10,6 +10,7 @@ export const prospectContent = {
   sourceUrl: v.string(),
   observedAt: v.string(),
   createdAt: v.number(),
+  simulated: v.optional(v.boolean()),
 };
 export const savedProspect = v.object({
   id: v.id("webProspects"),

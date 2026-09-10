@@ -1,3 +1,4 @@
+import type { StudyProspect } from "../domain/study";
 import type { PurchaseSeed } from "../domain/market";
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
@@ -13,12 +14,14 @@ export function SaveWebProspect({
   sourceIndex,
   title,
   url,
+  onSaved,
 }: {
   token: string;
   runId: Id<"researchRuns">;
   sourceIndex: number;
   title: string;
   url: string;
+  onSaved?: (prospect: StudyProspect) => void;
 }) {
   const save = useMutation(api.prospects.save);
   const [open, setOpen] = useState(false),
@@ -30,7 +33,7 @@ export function SaveWebProspect({
     [saved, setSaved] = useState(false);
   return (
     <>
-      <button className="button secondary" onClick={() => setOpen(true)}>
+      <button className="button text-button" onClick={() => setOpen(true)}>
         {saved ? "Ver candidato guardado" : "Guardar posible distribuidor"}
       </button>
       {open && (
@@ -99,7 +102,7 @@ export function SaveWebProspect({
                 setBusy(true);
                 setError("");
                 try {
-                  await save({
+                  const result = await save({
                     token,
                     runId,
                     sourceIndex,
@@ -108,6 +111,8 @@ export function SaveWebProspect({
                     confirmed: true,
                   });
                   setSaved(true);
+                  onSaved?.(result);
+                  if (onSaved) setOpen(false);
                 } catch (cause) {
                   setError(
                     cause instanceof ConvexError &&
@@ -131,9 +136,13 @@ export function SaveWebProspect({
 export function WebProspectLibrary({
   token,
   onPrepare,
+  onSelect,
+  selectedIds,
 }: {
   token: string;
   onPrepare: (seed: PurchaseSeed) => void;
+  onSelect?: (prospect: StudyProspect) => void;
+  selectedIds?: string[];
 }) {
   const prospects = useQuery(api.prospects.list, { token });
   if (!prospects?.length) return null;
@@ -165,13 +174,29 @@ export function WebProspectLibrary({
             {new Date(item.observedAt).toLocaleDateString("es-PE")}. Contacto
             sin verificación independiente.
           </p>
-          <QuotationMail
-            comparisonId={null}
-            prospectId={item.id}
-            offers={[]}
-            onEditOffer={() => {}}
-            onPrepare={onPrepare}
-          />
+          {onSelect ? (
+            <button
+              className="button secondary"
+              aria-pressed={selectedIds?.includes(item.id)}
+              disabled={
+                selectedIds?.includes(item.id) ||
+                (selectedIds?.length ?? 0) >= 3
+              }
+              onClick={() => onSelect(item)}
+            >
+              {selectedIds?.includes(item.id)
+                ? "En mi estudio"
+                : "Añadir a mi estudio"}
+            </button>
+          ) : (
+            <QuotationMail
+              comparisonId={null}
+              prospectId={item.id}
+              offers={[]}
+              onEditOffer={() => {}}
+              onPrepare={onPrepare}
+            />
+          )}
         </article>
       ))}
     </section>

@@ -14,8 +14,7 @@ import {
   supplierOfferValidator,
 } from "./validators";
 import { ownerHash } from "./lib/demoSession";
-import { inspectSource } from "./lib/sourceQuality";
-import { webSourceText } from "./lib/webAnalysis";
+import { reconstructWebReview, type WebReview } from "./lib/webReviews";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
 import { marketExamples } from "../fixtures/market";
 import {
@@ -58,13 +57,6 @@ function sameValue(a: unknown, b: unknown): boolean {
   );
 }
 
-type WebReview = {
-  runId: Doc<"researchRuns">["_id"];
-  sourceIndex: number;
-  values: ReviewedValues;
-  confirmed: true;
-};
-
 async function reconstructWebReviews(
   ctx: MutationCtx,
   owner: string,
@@ -72,68 +64,14 @@ async function reconstructWebReviews(
 ): Promise<PurchaseSeed> {
   if (!reviews.length || reviews.length > 3)
     throw new ConvexError("Selecciona entre una y tres fuentes web revisadas.");
-  const refs = new Set<string>();
-  const seeds: PurchaseSeed[] = [];
-  for (const review of reviews) {
-    if (
-      !Number.isSafeInteger(review.sourceIndex) ||
-      review.sourceIndex < 0 ||
-      extractionFields.some((key) => review.values[key].length > 120)
-    )
-      throw new ConvexError("Revisión web no válida.");
-    const ref = `${review.runId}:${review.sourceIndex}`;
-    if (refs.has(ref))
-      throw new ConvexError("Una misma fuente no puede aparecer dos veces.");
-    refs.add(ref);
-    const run = await ctx.db.get("researchRuns", review.runId);
-    if (!run || run.ownerHash !== owner)
-      throw new ConvexError("Búsqueda no disponible en esta sesión.");
-    if (run.status !== "complete")
-      throw new ConvexError("La búsqueda todavía no está completa.");
-    const source = run.sources[review.sourceIndex];
-    if (!source) throw new ConvexError("Fuente no válida.");
-    if (
-      inspectSource(source, run.ingredient).state !== "readable" ||
-      (source.parentSourceIndex !== undefined &&
-        source.readStatus !== "complete")
-    )
-      throw new ConvexError(
-        "La fuente no contiene evidencia utilizable para comparar.",
-      );
-    if (source.analysis && source.analysis.kind !== "product")
-      throw new ConvexError(
-        "Selecciona y revisa una ficha de producto antes de compararla.",
-      );
-    if (
-      source.extractionStatus !== "complete" ||
-      !source.extraction ||
-      !source.markdown
-    )
-      throw new ConvexError("La extracción de esta fuente no está completa.");
-    try {
-      const seed = extractionToPurchase(
-        {
-          id: ref,
-          url: source.url,
-          title: source.title,
-          text: source.analysis
-            ? `${webSourceText({ title: source.title, markdown: source.markdown })}\n\nAnálisis propuesto de la fuente (requiere revisión): ${source.analysis.summary}\n${source.analysis.warnings.join("\n")}`
-            : source.markdown,
-          observedAt: source.observedAt ?? run.observedAt,
-          simulated: run.simulated ?? false,
-        },
-        source.extraction,
-        review.values,
-        review.confirmed,
-      );
-      seed.sources[ref].webReview = { ...review };
-      seeds.push(seed);
-    } catch (error) {
-      throw new ConvexError(
-        error instanceof Error ? error.message : "Revisión web no válida.",
-      );
-    }
-  }
+  if (
+    new Set(reviews.map((review) => `${review.runId}:${review.sourceIndex}`))
+      .size !== reviews.length
+  )
+    throw new ConvexError("Una misma fuente no puede aparecer dos veces.");
+  const seeds = [];
+  for (const review of reviews)
+    seeds.push(await reconstructWebReview(ctx, owner, review));
   try {
     return combineReviewedOffers(seeds, true);
   } catch (error) {

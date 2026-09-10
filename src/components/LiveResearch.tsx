@@ -7,12 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  ExternalLink,
-  FileSearch,
-  History,
-  Search,
-} from "lucide-react";
+import { ExternalLink, FileSearch, History, Search } from "lucide-react";
 import { useAction, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -22,6 +17,7 @@ import {
   type ExtractedOffer,
   type ExtractionSource,
 } from "../domain/extraction";
+import type { WebSelection, StudyProspect } from "../domain/study";
 import type { PurchaseSeed } from "../domain/market";
 import ExtractionReview from "./ExtractionReview";
 import {
@@ -106,7 +102,13 @@ export function ResearchWorkspace({
   onRead,
   onPrepare,
   renderProspect,
+  selections,
+  onReview,
+  onOpenStudy,
 }: {
+  selections?: WebSelection[];
+  onReview?: (selection: WebSelection) => void;
+  onOpenStudy?: () => void;
   renderProspect?: (run: SavedResearch, sourceIndex: number) => ReactNode;
   status: ResearchStatus | undefined;
   runs: SavedResearch[] | undefined;
@@ -127,14 +129,17 @@ export function ResearchWorkspace({
   const [extracting, setExtracting] = useState<string[]>([]);
   const [reading, setReading] = useState<string[]>([]);
   const [readFailures, setReadFailures] = useState<Record<string, string>>({});
-  const [selectedLinks, setSelectedLinks] = useState<Record<string, string>>({});
+  const [selectedLinks, setSelectedLinks] = useState<Record<string, string>>(
+    {},
+  );
   const [readNotice, setReadNotice] = useState("");
   const [localExtractions, setLocalExtractions] = useState<
     Record<string, ExtractedOffer>
   >({});
-  const [reviewed, setReviewed] = useState<
+  const [localReviewed, setReviewed] = useState<
     { sourceId: string; seed: PurchaseSeed }[]
   >([]);
+  const reviewed = selections ?? localReviewed;
   const [equivalent, setEquivalent] = useState(false);
   const [error, setError] = useState("");
 
@@ -247,6 +252,16 @@ export function ResearchWorkspace({
   }
 
   function saveReview(sourceId: string, seed: PurchaseSeed) {
+    if (onReview) {
+      onReview({
+        sourceId,
+        seed,
+        ingredient: active!.ingredient,
+        region: active!.region,
+      });
+      setEquivalent(false);
+      return;
+    }
     setReviewed((current) => {
       const existing = current.findIndex((item) => item.sourceId === sourceId);
       if (existing >= 0)
@@ -307,9 +322,11 @@ export function ResearchWorkspace({
           aria-label="Investigaciones guardadas"
         >
           <p className="field-hint">
-            Abrir otra investigación reemplaza la selección revisada de esta
-            vista. Hasta 10 búsquedas por navegador; borrar datos del sitio
-            pierde acceso.
+            {onReview
+              ? "Tu selección permanece en Mi estudio al abrir otra investigación."
+              : "Abrir otra investigación reemplaza la selección revisada de esta vista."}{" "}
+            Hasta 10 búsquedas por navegador; borrar datos del sitio pierde
+            acceso.
           </p>
           <span>
             <History size={16} /> Investigaciones guardadas
@@ -446,7 +463,7 @@ export function ResearchWorkspace({
                 title: source.title,
                 text: source.analysis
                   ? `Título de la página: ${source.title.replace(/\s+/g, " ").trim()}\n\n${source.markdown ?? source.description}`
-                  : source.markdown ?? source.description,
+                  : (source.markdown ?? source.description),
                 observedAt: source.observedAt ?? active.observedAt,
                 simulated: active.simulated,
                 ...(url ? { url } : {}),
@@ -481,12 +498,22 @@ export function ResearchWorkspace({
                   <div className="research-source-action">
                     {url && prospectAllowed && renderProspect?.(active, index)}
                     {!isChild &&
-                      !hasChild &&
-                      onRead &&
-                      source.inspection?.state !== "blocked" &&
-                      source.inspection?.state !== "unrelated" &&
-                      source.analysis?.kind !== "irrelevant" &&
-                      source.inspection?.links.length ? (
+                    !hasChild &&
+                    onRead &&
+                    source.inspection?.state !== "blocked" &&
+                    source.inspection?.state !== "unrelated" &&
+                    source.analysis?.kind !== "irrelevant" &&
+                    source.inspection?.links.length ? (
+                      <details
+                        className="source-reader-options"
+                        open={
+                          source.analysis?.kind === "catalog" ||
+                          source.analysis?.kind === "contact" ||
+                          isReading ||
+                          Boolean(readFailure)
+                        }
+                      >
+                        <summary>Leer una ficha de este sitio</summary>
                         <ProductLinkReader
                           links={source.inspection.links}
                           selectedUrl={
@@ -512,10 +539,16 @@ export function ResearchWorkspace({
                             )
                           }
                         />
-                      ) : null}
+                      </details>
+                    ) : null}
                     {source.readStatus === "running" && (
-                      <p className="field-hint" role="status" aria-live="polite">
-                        La ficha se está leyendo. No se repetirá automáticamente.
+                      <p
+                        className="field-hint"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        La ficha se está leyendo. No se repetirá
+                        automáticamente.
                       </p>
                     )}
                     {source.readStatus === "failed" && source.readError && (
@@ -525,8 +558,8 @@ export function ResearchWorkspace({
                     )}
                     {readBlocksAnalysis ? (
                       <p className="field-hint">
-                        Espera a que termine la lectura de esta página. Si falló,
-                        revisa el origen manualmente.
+                        Espera a que termine la lectura de esta página. Si
+                        falló, revisa el origen manualmente.
                       </p>
                     ) : inspectionBlocksAnalysis ? (
                       <p className="field-hint">
@@ -537,11 +570,15 @@ export function ResearchWorkspace({
                       </p>
                     ) : !analysisIsProduct ? (
                       <p className="field-hint">
-                        Esta fuente aporta contexto o contacto, pero no una oferta
-                        de producto comparable.
+                        Esta fuente aporta contexto o contacto, pero no una
+                        oferta de producto comparable.
                       </p>
                     ) : awaitingAnalysis ? (
-                      <p className="field-hint" role="status" aria-live="polite">
+                      <p
+                        className="field-hint"
+                        role="status"
+                        aria-live="polite"
+                      >
                         Clasificando la fuente antes de habilitar su revisión…
                       </p>
                     ) : !source.markdown ? (
@@ -556,6 +593,7 @@ export function ResearchWorkspace({
                           wasReviewed ? "Editar revisión" : "Revisar extracción"
                         }
                         confirmLabel="Añadir al estudio"
+                        confirmationNote="Añade esta oferta revisada a Mi estudio. Guarda el estudio para recuperarla después; todavía no estás preparando una compra."
                         onPrepare={(seed) => {
                           const entry = seed.sources[sourceId];
                           if (entry.extraction)
@@ -572,17 +610,20 @@ export function ResearchWorkspace({
                       <>
                         <button
                           type="button"
-                          className="button secondary"
+                          className="button primary"
                           disabled={isExtracting}
                           onClick={() => void extract(active, index)}
                         >
                           <FileSearch size={16} />
-                          {isExtracting ? "Analizando fuente…" : "Extraer datos"}
+                          {isExtracting
+                            ? "Analizando fuente…"
+                            : "Extraer datos"}
                         </button>
                         {!isExtracting && (
                           <p className="field-hint">
                             Primero identifica el tipo de página y cita la
-                            evidencia; solo una ficha de producto pasa a revisión.
+                            evidencia; solo una ficha de producto pasa a
+                            revisión.
                           </p>
                         )}
                       </>
@@ -593,9 +634,8 @@ export function ResearchWorkspace({
                       )}
                     {isExtracting && (
                       <p className="field-hint">
-                        La extracción está en curso o quedó interrumpida. No se
-                        repetirá automáticamente; si persiste, requiere revisión
-                        del operador.
+                        La IA está revisando la fuente y sus referencias. La
+                        solicitud no se repetirá automáticamente.
                       </p>
                     )}
                     {wasReviewed && (
@@ -612,7 +652,24 @@ export function ResearchWorkspace({
         </div>
       )}
 
-      {reviewed.length > 0 && (
+      {reviewed.length > 0 && onOpenStudy && (
+        <div className="reviewed-research" role="status">
+          <strong>
+            {reviewed.length}{" "}
+            {reviewed.length === 1
+              ? "oferta revisada en Mi estudio"
+              : "ofertas revisadas en Mi estudio"}
+          </strong>
+          <p>
+            Guarda el estudio para recuperar tus correcciones. Comparar una
+            compra es opcional.
+          </p>
+          <button className="button primary" onClick={onOpenStudy}>
+            Ver mi estudio
+          </button>
+        </div>
+      )}
+      {reviewed.length > 0 && !onOpenStudy && (
         <div className="reviewed-research">
           <strong>
             {reviewed.length}{" "}
@@ -652,11 +709,17 @@ export function ResearchWorkspace({
   );
 }
 
-export default function LiveResearch(props: {
+type LiveResearchProps = {
   request: WebSearchRequest | null;
   onStatus: (status: ResearchStatus | undefined) => void;
   onPrepare: (seed: PurchaseSeed) => void;
-}) {
+  selections?: WebSelection[];
+  onReview?: (selection: WebSelection) => void;
+  onOpenStudy?: () => void;
+  selectedProspectIds?: string[];
+  onProspect?: (prospect: StudyProspect) => void;
+};
+export default function LiveResearch(props: LiveResearchProps) {
   const [token, setToken] = useState<string | null>(null);
   const [storageError, setStorageError] = useState(false);
   useEffect(() => {
@@ -692,12 +755,7 @@ export default function LiveResearch(props: {
 function ConnectedResearch({
   token,
   ...props
-}: {
-  token: string;
-  request: WebSearchRequest | null;
-  onStatus: (status: ResearchStatus | undefined) => void;
-  onPrepare: (seed: PurchaseSeed) => void;
-}) {
+}: LiveResearchProps & { token: string }) {
   const status = useQuery(api.research.status, {});
   const runs = useQuery(api.research.list, { token });
   const search = useAction(api.research.search);
@@ -710,6 +768,7 @@ function ConnectedResearch({
         {...props}
         renderProspect={(run, index) => (
           <SaveWebProspect
+            onSaved={props.onProspect}
             token={token}
             runId={run.id as Id<"researchRuns">}
             sourceIndex={index}
@@ -744,7 +803,12 @@ function ConnectedResearch({
           })
         }
       />
-      <WebProspectLibrary token={token} onPrepare={props.onPrepare} />
+      <WebProspectLibrary
+        token={token}
+        onPrepare={props.onPrepare}
+        onSelect={props.onProspect}
+        selectedIds={props.selectedProspectIds}
+      />
     </>
   );
 }

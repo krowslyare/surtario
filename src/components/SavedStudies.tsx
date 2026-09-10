@@ -3,6 +3,8 @@ import { useConvexConnectionState, useMutation, useQuery } from "convex/react";
 import { ConvexError, type Infer } from "convex/values";
 import { api } from "../../convex/_generated/api";
 import type { savedStudyValidator } from "../../convex/studyValidators";
+import { studyOptionCount } from "../domain/study";
+import type { WebSelection, StudyProspect } from "../domain/study";
 import type { Id } from "../../convex/_generated/dataModel";
 
 export type SavedStudy = Infer<typeof savedStudyValidator>;
@@ -13,6 +15,8 @@ export type StudyDraft = {
   term: string;
   region: string;
   selectedIds: string[];
+  webSelections?: WebSelection[];
+  prospects?: StudyProspect[];
 };
 const SESSION_KEY = "procurement-demo-session-v1";
 
@@ -81,22 +85,33 @@ function ConnectedStudies({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const count = studyOptionCount(draft);
   const eligible =
-    draft.selectedIds.length > 0 &&
-    ["arroz", "abarrotes", "abarrotes secos"].includes(
-      draft.term.toLowerCase(),
-    ) &&
-    draft.region === "Lima";
+    count > 0 &&
+    (Boolean(draft.webSelections?.length || draft.prospects?.length) ||
+      (["arroz", "abarrotes", "abarrotes secos"].includes(
+        draft.term.toLowerCase(),
+      ) &&
+        draft.region === "Lima"));
   async function persist() {
     if (saving || !connected) return;
     setSaving(true);
     setError("");
     setMessage("");
     try {
-      const saved = await save({ token, ...draft });
+      const { webSelections, prospects, ...base } = draft;
+      const saved = await save({
+        token,
+        ...base,
+        webReviews: (webSelections ?? []).map(({ seed, sourceId }) => {
+          const review = seed.sources[sourceId].webReview!;
+          return { ...review, runId: review.runId as Id<"researchRuns"> };
+        }),
+        prospectIds: (prospects ?? []).map((item) => item.id),
+      });
       onSaved(saved);
       setMessage(
-        `Estudio guardado con ${saved.selectedIds.length} ${saved.selectedIds.length === 1 ? "opción" : "opciones"}. Los cambios posteriores requieren guardar de nuevo.`,
+        `Estudio guardado con ${studyOptionCount(saved)} ${studyOptionCount(saved) === 1 ? "opción" : "opciones"}. Los cambios posteriores requieren guardar de nuevo.`,
       );
     } catch (cause) {
       setError(
@@ -131,8 +146,8 @@ function ConnectedStudies({
         </button>
       </div>
       <p className="field-hint">
-        Hasta 10 estudios de ejemplo en este navegador. Guarda antes de salir.
-        Si borras los datos del sitio, pierdes el acceso.
+        Hasta 10 estudios en este navegador. Guarda antes de salir. Si borras
+        los datos del sitio, pierdes el acceso.
       </p>
       {!connected && (
         <p role="status">
@@ -160,8 +175,8 @@ function ConnectedStudies({
                     {study.term} en {study.region}
                   </strong>
                   <p>
-                    {study.selectedIds.length}{" "}
-                    {study.selectedIds.length === 1 ? "opción" : "opciones"} ·
+                    {studyOptionCount(study)}{" "}
+                    {studyOptionCount(study) === 1 ? "opción" : "opciones"} ·
                     Revisión {study.revision} ·{" "}
                     {new Date(study.updatedAt).toLocaleString("es-PE")}
                   </p>

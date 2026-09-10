@@ -52,9 +52,11 @@ export default function ExtractionReview({
   triggerLabel = "Revisar ejemplo de cotización",
   onPrepare,
   confirmLabel = "Continuar a comparación",
+  confirmationNote = "Continuar prepara una comparación. No registra una compra ni guarda el documento.",
   originalPreview,
   sourceTextLabel = "Texto original",
 }: {
+  confirmationNote?: string;
   originalPreview?: ReactNode;
   sourceTextLabel?: string;
   source?: ExtractionSource;
@@ -239,10 +241,7 @@ export default function ExtractionReview({
             />
             Revisé el origen y confirmo los datos, incluidas mis correcciones
           </label>
-          <p className="extraction-boundary">
-            Continuar prepara una comparación. No registra una compra ni guarda
-            el documento.
-          </p>
+          <p className="extraction-boundary">{confirmationNote}</p>
 
           {error && (
             <p className="notice error" role="alert">
