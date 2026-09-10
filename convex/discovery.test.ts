@@ -55,9 +55,43 @@ describe("prueba interna Firecrawl", () => {
     expect(JSON.parse(init[1].body as string)).toMatchObject({
       country: "PE",
       limit: 3,
-      scrapeOptions: { formats: [{ type: "markdown" }] },
+      scrapeOptions: {
+        formats: [{ type: "markdown" }],
+        onlyMainContent: true,
+        maxAge: 60 * 60 * 1000,
+      },
     });
     expect(init[1].redirect).toBe("error");
+  });
+  it("keeps a failed page as a reviewable lead but withholds its body from extraction", () => {
+    const result = parseDiscovery({
+      success: true,
+      data: {
+        web: [
+          {
+            url: "https://proveedor.com/error",
+            markdown: "Arroz extra S/ 100",
+            metadata: {
+              title: "Página temporalmente movida",
+              description: "El proveedor respondió con una redirección.",
+              statusCode: 302,
+            },
+          },
+          {
+            url: "https://proveedor.com/cache",
+            markdown: "Arroz extra S/ 110",
+            metadata: { statusCode: 304 },
+          },
+        ],
+      },
+    });
+    expect(result.sources[0]).toMatchObject({
+      title: "Página temporalmente movida",
+      description: "El proveedor respondió con una redirección.",
+      markdown: null,
+      contentTruncated: false,
+    });
+    expect(result.sources[1].markdown).toBe("Arroz extra S/ 110");
   });
   it("descarta enlaces peligrosos y duplicados, declara truncación y ausencia de contenido", () => {
     const result = parseDiscovery({

@@ -12,7 +12,7 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
   expect(await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
     true,
   );
-  await expect(dialog).toContainText("No hace una llamada de IA");
+  await expect(dialog).toContainText("El contenido de origen es ficticio");
   await expect(dialog).toContainText("Saco: S/ 80.00");
   await expect(dialog.getByText("Original: Pendiente")).toHaveCount(2);
   await expect(

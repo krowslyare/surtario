@@ -140,8 +140,11 @@ test("product reading accepts only an owned source link, preserves parent, and n
   const fetch = vi.fn(async (_input: unknown, init?: RequestInit) => {
     expect(JSON.parse(String(init?.body))).toMatchObject({
       url: productUrl,
+      formats: ["markdown"],
+      onlyMainContent: true,
       maxAge: 0,
       parsers: [],
+      location: { country: "PE", languages: ["es-PE", "es"] },
     });
     return Response.json({
       success: true,
@@ -241,6 +244,33 @@ test("scrape refuses changed source URLs, including same-site redirects, and nev
   await expect(readProductPage(productUrl, "test", fetch)).rejects.toThrow(
     /cambió de dirección/,
   );
+});
+
+test("scrape rejects non-clean page statuses even when Firecrawl returns markdown", async () => {
+  const moved = vi.fn(async () =>
+    Response.json({
+      success: true,
+      data: {
+        markdown: "Arroz extra 49 kg: S/200.",
+        metadata: { sourceURL: productUrl, statusCode: 301 },
+      },
+    }),
+  );
+  await expect(readProductPage(productUrl, "test", moved)).rejects.toThrow(
+    /contenido utilizable/,
+  );
+  const notModified = vi.fn(async () =>
+    Response.json({
+      success: true,
+      data: {
+        markdown: "Arroz extra 49 kg: S/200.",
+        metadata: { sourceURL: productUrl, statusCode: 304 },
+      },
+    }),
+  );
+  await expect(
+    readProductPage(productUrl, "test", notModified),
+  ).resolves.toMatchObject({ markdown: "Arroz extra 49 kg: S/200." });
 });
 
 test("the real Agent receives the query and saves a grounded non-product assessment", async () => {
