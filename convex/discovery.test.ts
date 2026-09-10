@@ -93,6 +93,56 @@ describe("prueba interna Firecrawl", () => {
     });
     expect(result.sources[1].markdown).toBe("Arroz extra S/ 110");
   });
+  it("keeps redirected search leads but withholds bodies attributed to another URL", () => {
+    const result = parseDiscovery({
+      success: true,
+      data: {
+        web: [
+          {
+            url: "https://supplier.example.com/product/arroz",
+            markdown: "Arroz extra S/ 100",
+            metadata: {
+              sourceURL: "https://supplier.example.com/product/arroz",
+              url: "https://other.example.org/landing",
+              statusCode: 200,
+            },
+          },
+          {
+            url: "https://proveedor.com/arroz",
+            markdown: "Arroz extra S/ 110",
+            metadata: {
+              sourceURL: "https://proveedor.com/catalogo",
+              url: "https://proveedor.com/arroz",
+              statusCode: 200,
+            },
+          },
+          {
+            url: "https://PROVEEDOR-VALIDO.com/arroz#resultado",
+            markdown: "Arroz extra S/ 120",
+            metadata: {
+              sourceURL: "https://proveedor-valido.com/arroz#producto",
+              url: "https://PROVEEDOR-VALIDO.COM/arroz",
+              statusCode: 200,
+            },
+          },
+        ],
+      },
+    });
+    expect(result.sources).toMatchObject([
+      {
+        url: "https://supplier.example.com/product/arroz",
+        markdown: null,
+      },
+      {
+        url: "https://proveedor.com/arroz",
+        markdown: null,
+      },
+      {
+        url: "https://proveedor-valido.com/arroz",
+        markdown: "Arroz extra S/ 120",
+      },
+    ]);
+  });
   it("descarta enlaces peligrosos y duplicados, declara truncación y ausencia de contenido", () => {
     const result = parseDiscovery({
       success: true,
