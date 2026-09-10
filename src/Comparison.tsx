@@ -1,6 +1,6 @@
 import Brand from "./components/Brand";
 import PurchasingAdvisor, {
-  stableValue,
+  comparisonStateFingerprint,
 } from "./components/PurchasingAdvisor";
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
@@ -375,7 +375,7 @@ export default function Comparison({
     persistable,
     blockedReason,
   };
-  const currentFingerprint = stableValue({
+  const currentFingerprint = comparisonStateFingerprint({
     request: comparisonDraft.request,
     offers,
     sources,
@@ -413,7 +413,7 @@ export default function Comparison({
     setSavedId(comparison.id);
     setSavedRevision(comparison.revision);
     setSavedFingerprint(
-      stableValue({
+      comparisonStateFingerprint({
         request: comparison.request,
         offers: comparison.offers,
         sources: comparison.sources,
@@ -634,7 +634,7 @@ export default function Comparison({
                   setSavedId(saved.id);
                   setSavedRevision(saved.revision);
                   setSavedFingerprint(
-                    stableValue({
+                    comparisonStateFingerprint({
                       request: submitted.request,
                       offers: submitted.offers,
                       sources: submitted.sources,

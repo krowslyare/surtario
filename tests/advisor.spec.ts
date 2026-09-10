@@ -93,6 +93,34 @@ test("a matching saved scenario is restored without preparing another run", asyn
   await expect(advisor.getByText(/guardarás el cálculo/)).toHaveCount(0);
 });
 
+test("removing an offer before the first save keeps the new scenario current", async ({
+  page,
+}) => {
+  await page.goto("/?view=comparison");
+  const advisor = page.getByRole("region", { name: "Asesor de compras" });
+  await page
+    .getByRole("button", { name: "Quitar oferta", exact: true })
+    .first()
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Quitar oferta", exact: true })
+    .click();
+
+  await advisor
+    .getByRole("button", { name: "Guardar comparación y escenario" })
+    .click();
+  await expect(
+    advisor.getByText("Escenario guardado con cálculo verificable"),
+  ).toBeVisible();
+  await expect(advisor.getByText(/desactualizado respecto/i)).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Editar Proveedor B" }).click();
+  await page.getByLabel("Precio por presentación").fill("96");
+  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await expect(advisor.getByText(/desactualizado respecto/i)).toBeVisible();
+});
+
 test("pending quantity stays blocked after the comparison is saved", async ({
   page,
 }) => {

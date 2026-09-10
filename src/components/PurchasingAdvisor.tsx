@@ -28,6 +28,24 @@ export function stableValue(value: unknown): string {
       .join(",")}}`;
   return JSON.stringify(value);
 }
+export function comparisonStateFingerprint(value: {
+  request: ProcurementRequest;
+  offers: SupplierOffer[];
+  sources: Record<string, unknown>;
+  selectedOfferId: string | null;
+}) {
+  return stableValue({
+    request: value.request,
+    offers: value.offers,
+    sources: Object.fromEntries(
+      value.offers.map((offer) => [
+        offer.id,
+        Object.hasOwn(value.sources, offer.id) ? value.sources[offer.id] : null,
+      ]),
+    ),
+    selectedOfferId: value.selectedOfferId,
+  });
+}
 type Run = typeof savedAdvisorRun.type;
 function errorText(error: unknown) {
   return error instanceof ConvexError && typeof error.data === "string"
@@ -226,7 +244,7 @@ function Connected({
     comparisonCurrent &&
     run.comparisonRevision === revision &&
     comparisonFingerprint ===
-      stableValue({
+      comparisonStateFingerprint({
         request: run.snapshot.request,
         offers: run.snapshot.offers,
         sources: run.snapshot.sources,
