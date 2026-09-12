@@ -23,10 +23,10 @@ test("guarda condiciones y elección, las recupera y una edición invalida la el
     firstOffer.getByRole("button", { name: "Oferta elegida" }),
   ).toHaveAttribute("aria-pressed", "true");
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
-    page.getByText("Comparación guardada con una oferta elegida", {
+    page.getByText("Comparison saved with a selected offer", {
       exact: false,
     }),
   ).toBeVisible();
@@ -36,9 +36,9 @@ test("guarda condiciones y elección, las recupera y una edición invalida la el
     .getByRole("button", { name: /Comparaciones guardadas \(1\)/ })
     .click();
   await expect(
-    page.getByText("oferta elegida", { exact: false }),
+    page.getByText("offer selected", { exact: false }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(page.getByLabel("Cantidad necesaria")).toHaveValue("10");
   await expect(page.getByTestId("total-0")).toHaveText("S/ 92.00");
   await expect(
@@ -54,11 +54,9 @@ test("guarda condiciones y elección, las recupera y una edición invalida la el
   await expect(page.getByRole("button", { name: "Elegir oferta" })).toHaveCount(
     2,
   );
-  await page
-    .getByRole("button", { name: "Guardar cambios de la comparación" })
-    .click();
+  await page.getByRole("button", { name: "Save comparison changes" }).click();
   await expect(
-    page.getByText("Comparación guardada. Los cambios posteriores", {
+    page.getByText("Comparison saved Los cambios posteriores", {
       exact: false,
     }),
   ).toBeVisible();
@@ -66,7 +64,7 @@ test("guarda condiciones y elección, las recupera y una edición invalida la el
   await page
     .getByRole("button", { name: /Comparaciones guardadas \(1\)/ })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(page.getByLabel("Cantidad necesaria")).toHaveValue("20");
   await expect(
     page.getByRole("button", { name: "Oferta elegida" }),
@@ -78,15 +76,15 @@ test("guarda condiciones y elección, las recupera y una edición invalida la el
     .getByRole("button", { name: "Restaurar ejemplo" })
     .click();
   await expect(
-    page.getByText("Comparación guardada. Los cambios posteriores", {
+    page.getByText("Comparison saved Los cambios posteriores", {
       exact: false,
     }),
   ).toHaveCount(0);
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
-    page.getByText("Comparación guardada. Los cambios posteriores", {
+    page.getByText("Comparison saved Los cambios posteriores", {
       exact: false,
     }),
   ).toBeVisible();
@@ -103,7 +101,7 @@ test("una oferta manual explica por qué no se puede guardar en la demo", async 
   await page.getByLabel("Proveedor", { exact: true }).fill("Proveedor manual");
   await page.getByRole("button", { name: "Guardar oferta" }).click();
   await expect(
-    page.getByRole("button", { name: "Guardar comparación", exact: true }),
+    page.getByRole("button", { name: "Save comparison", exact: true }),
   ).toBeDisabled();
   await expect(
     page
@@ -120,14 +118,14 @@ test("una cantidad inválida no se convierte en cantidad pendiente", async ({
   await page.goto("/?view=comparison");
   await page.getByLabel("Cantidad necesaria").fill("texto");
   await expect(
-    page.getByRole("button", { name: "Guardar comparación", exact: true }),
+    page.getByRole("button", { name: "Save comparison", exact: true }),
   ).toBeDisabled();
   await expect(
     page.getByText("Corrige la cantidad antes de guardar", { exact: false }),
   ).toBeVisible();
   await page.getByLabel("Cantidad necesaria").fill("");
   await expect(
-    page.getByRole("button", { name: "Guardar comparación", exact: true }),
+    page.getByRole("button", { name: "Save comparison", exact: true }),
   ).toBeEnabled();
 });
 
@@ -155,10 +153,10 @@ test("guarda una comparación de catálogo con cantidad pendiente y la recupera"
   await expect(page).toHaveURL(/view=comparison/);
   await expect(page.getByLabel("Cantidad necesaria")).toHaveValue("");
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
-    page.getByText("Comparación guardada. Los cambios posteriores", {
+    page.getByText("Comparison saved Los cambios posteriores", {
       exact: false,
     }),
   ).toBeVisible();
@@ -167,7 +165,7 @@ test("guarda una comparación de catálogo con cantidad pendiente y la recupera"
   await page
     .getByRole("button", { name: /Comparaciones guardadas \(1\)/ })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(page.getByLabel("Cantidad necesaria")).toHaveValue("");
   await page
     .getByRole("button", { name: "Editar Distribuidor A · ejemplo" })
@@ -175,7 +173,7 @@ test("guarda una comparación de catálogo con cantidad pendiente y la recupera"
   await page.getByLabel("Entrega por pedido", { exact: true }).fill("15");
   await page.getByRole("button", { name: "Guardar oferta" }).click();
   await expect(
-    page.getByRole("button", { name: "Guardar cambios de la comparación" }),
+    page.getByRole("button", { name: "Save comparison changes" }),
   ).toBeEnabled();
 });
 
@@ -198,7 +196,7 @@ test("una confirmación tardía no asocia el guardado al borrador restaurado", a
   ).toBeVisible();
   hold = true;
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect.poll(() => pending.length).toBeGreaterThan(0);
   await page.getByRole("button", { name: "Restaurar ejemplo" }).click();
@@ -212,14 +210,14 @@ test("una confirmación tardía no asocia el guardado al borrador restaurado", a
     page.getByText("Se guardó la comparación anterior.", { exact: false }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Guardar comparación", exact: true }),
+    page.getByRole("button", { name: "Save comparison", exact: true }),
   ).toBeEnabled();
   await expect(
-    page.getByRole("button", { name: "Guardar cambios de la comparación" }),
+    page.getByRole("button", { name: "Save comparison changes" }),
   ).toHaveCount(0);
   await page.getByLabel("Cantidad necesaria").fill("20");
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
     page.getByRole("button", { name: "Comparaciones guardadas (2)" }),

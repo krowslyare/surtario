@@ -49,7 +49,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   );
   await page.goto("/");
   await page.getByRole("button", { name: /Arroz · Lima/ }).click();
-  await page.getByRole("button", { name: "Revisar extracción" }).click();
+  await page.getByRole("button", { name: "Review extraction" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Unidad de la presentación").click();
   await dialog.getByRole("option", { name: "kg", exact: true }).click();
@@ -60,7 +60,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
       "Revisé el origen y confirmo los datos, incluidas mis correcciones",
     )
     .check();
-  await dialog.getByRole("button", { name: "Añadir al estudio" }).click();
+  await dialog.getByRole("button", { name: "Add to study" }).click();
   await expect(
     page.getByRole("button", { name: "Mi estudio 1", exact: true }),
   ).toBeVisible();
@@ -72,27 +72,21 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
       name: "Oferta en estudio: Distribuidora de ejemplo",
     }),
   ).toContainText("S/ 85.00");
-  await page
-    .getByRole("button", { name: "Guardar estudio", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Save study", exact: true }).click();
   await expect(
-    page.getByText("Estudio guardado con 1 opción", { exact: false }),
+    page.getByText("Study saved with 1 option", { exact: false }),
   ).toBeVisible();
   await page.reload();
   await page
     .getByRole("button", { name: "Guardados (1)", exact: true })
     .click();
-  await page
-    .getByRole("button", { name: "Abrir estudio", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(
     page.getByRole("article", {
       name: "Oferta en estudio: Distribuidora de ejemplo",
     }),
   ).toContainText("S/ 85.00");
-  await page
-    .getByRole("button", { name: "Comparar ofertas revisadas" })
-    .click();
+  await page.getByRole("button", { name: "Compare reviewed offers" }).click();
   await page.getByLabel("Cantidad necesaria").fill("10");
   await page
     .getByRole("button", { name: "Editar Distribuidora de ejemplo" })
@@ -115,10 +109,10 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   await expect(page.getByTestId("total-0")).toHaveText("S/ 100.00");
   await page.getByRole("button", { name: "Elegir oferta" }).click();
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
-    page.getByText("Comparación guardada con una oferta elegida", {
+    page.getByText("Comparison saved with a selected offer", {
       exact: false,
     }),
   ).toBeVisible();
@@ -126,7 +120,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   await page
     .getByRole("button", { name: "Comparaciones guardadas (1)" })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(page.getByTestId("total-0")).toHaveText("S/ 100.00");
   await expect(
     page.getByRole("button", { name: "Oferta elegida" }),
@@ -148,11 +142,9 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   await expect(
     page.getByRole("button", { name: "Oferta elegida" }),
   ).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Guardar cambios de la comparación" })
-    .click();
+  await page.getByRole("button", { name: "Save comparison changes" }).click();
   await expect(
-    page.getByText("Comparación guardada. Los cambios posteriores", {
+    page.getByText("Comparison saved Los cambios posteriores", {
       exact: false,
     }),
   ).toBeVisible();

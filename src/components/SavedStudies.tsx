@@ -62,7 +62,7 @@ export default function SavedStudies(props: {
     return (
       <p className="notice info">
         {storageError
-          ? "El navegador no permite conservar esta sesión. Puedes explorar, pero guardar requiere habilitar el almacenamiento del sitio."
+          ? "El navegador no permite conservar esta sesión. Puedes explorar, pero guardar requires habilitar el almacenamiento del sitio."
           : "Preparando la sesión de ejemplo…"}
       </p>
     );
@@ -160,7 +160,7 @@ function ConnectedStudies({
       }));
       if (latestDraft.current.fingerprint === submittedFingerprint) {
         setMessage(
-          `Estudio guardado con ${studyOptionCount(saved)} ${studyOptionCount(saved) === 1 ? "opción" : "opciones"}.`,
+          `Estudio guardado con ${studyOptionCount(saved)} ${studyOptionCount(saved) === 1 ? "option" : "options"}.`,
         );
         setMessageFingerprint(submittedFingerprint);
       }
@@ -182,7 +182,7 @@ function ConnectedStudies({
     ) && draft.region === "Lima";
   const status =
     count === 0
-      ? "Selecciona al menos una opción para guardar."
+      ? "Selecciona al less una option para guardar."
       : !supportedExample
         ? "El guardado de esta demo solo está disponible para arroz o abarrotes en Lima."
         : savedDraft.fingerprint === null
@@ -193,7 +193,7 @@ function ConnectedStudies({
   const visibleMessage =
     messageFingerprint === fingerprint && message ? message : status;
   return (
-    <section className="saved-studies" aria-label="Estudios guardados">
+    <section className="saved-studies" aria-label="Saved studies">
       <div className="saved-study-actions">
         <Button
           variant="primary"
@@ -203,7 +203,7 @@ function ConnectedStudies({
           busyLabel="Guardando…"
         >
           <Bookmark size={16} aria-hidden="true" />
-          {draft.id ? "Guardar cambios del estudio" : "Guardar estudio"}
+          {draft.id ? "Save study changes" : "Save study"}
         </Button>
         <Button
           variant="secondary"
@@ -235,7 +235,7 @@ function ConnectedStudies({
         </p>
       )}
       {expanded && (
-        <Dialog title="Estudios guardados" onClose={() => setExpanded(false)}>
+        <Dialog title="Saved studies" onClose={() => setExpanded(false)}>
           <div className="saved-study-list">
             {studies === undefined ? (
               <p role="status">Cargando estudios…</p>
@@ -250,9 +250,9 @@ function ConnectedStudies({
                     </strong>
                     <p>
                       {studyOptionCount(study)}{" "}
-                      {studyOptionCount(study) === 1 ? "opción" : "opciones"} ·
+                      {studyOptionCount(study) === 1 ? "option" : "options"} ·
                       Revisión {study.revision} ·{" "}
-                      {new Date(study.updatedAt).toLocaleString("es-PE")}
+                      {new Date(study.updatedAt).toLocaleString("en-US")}
                     </p>
                   </div>
                   <Button
@@ -274,7 +274,7 @@ function ConnectedStudies({
                       );
                     }}
                   >
-                    Abrir estudio
+                    Open study
                   </Button>
                 </article>
               ))

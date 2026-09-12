@@ -5,18 +5,16 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
 }) => {
   await page.goto("/");
   await page.getByText("Revisar una cotización", { exact: true }).click();
-  await page
-    .getByRole("button", { name: "Revisar ejemplo de cotización" })
-    .click();
+  await page.getByRole("button", { name: "Review sample quote" }).click();
   const dialog = page.getByRole("dialog");
   expect(await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
     true,
   );
   await expect(dialog).toContainText("El contenido de origen es ficticio");
   await expect(dialog).toContainText("Saco: S/ 80.00");
-  await expect(dialog.getByText("Original: Pendiente")).toHaveCount(2);
+  await expect(dialog.getByText("Original: Pending")).toHaveCount(2);
   await expect(
-    dialog.getByRole("button", { name: "Continuar a comparación" }),
+    dialog.getByRole("button", { name: "Continue to comparison" }),
   ).toBeDisabled();
 
   await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
@@ -28,10 +26,10 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
       "Revisé el origen y confirmo los datos, incluidas mis correcciones",
     )
     .check();
-  await dialog.getByRole("button", { name: "Continuar a comparación" }).click();
+  await dialog.getByRole("button", { name: "Continue to comparison" }).click();
 
   await expect(page.getByLabel("Cantidad necesaria")).toHaveValue("");
-  await expect(page.getByTestId("total-0")).toHaveText("Pendiente");
+  await expect(page.getByTestId("total-0")).toHaveText("Pending");
   await page.getByRole("button", { name: "Ver origen" }).click();
   const sourceDialog = page.getByRole("dialog");
   await expect(sourceDialog).toContainText("Distribuidora de ejemplo");
@@ -50,7 +48,7 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
   await page.goto("/");
   await page.getByText("Revisar una cotización", { exact: true }).click();
   const trigger = page.getByRole("button", {
-    name: "Revisar ejemplo de cotización",
+    name: "Review sample quote",
   });
   await trigger.click();
   const dialog = page.getByRole("dialog");

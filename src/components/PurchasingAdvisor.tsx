@@ -50,7 +50,7 @@ type Run = typeof savedAdvisorRun.type;
 function errorText(error: unknown) {
   return error instanceof ConvexError && typeof error.data === "string"
     ? error.data
-    : "No se confirmó la operación. Conserva el contexto y revisa la conexión.";
+    : "The operation was not confirmed. Keep the context and check your connection.";
 }
 export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
   const [copied, setCopied] = useState(false);
@@ -58,20 +58,20 @@ export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
   return (
     <div className="advisor-verdict">
       <div className="advisor-decision-row advisor-decision-primary">
-        <span>Qué haría</span>
+        <span>Recommended action</span>
         <p className="advisor-recommendation">{report.recommendation}</p>
       </div>
       <div className="advisor-decision-row">
-        <span>Impacto en este pedido</span>
+        <span>Impact on this order</span>
         <p>{report.impact}</p>
       </div>
       <div className="advisor-decision-row advisor-decision-condition">
-        <span>Condición para decidir</span>
+        <span>Decision condition</span>
         <p>{report.warning}</p>
       </div>
       {report.missing.length > 0 && (
         <details>
-          <summary>Datos que faltan</summary>
+          <summary>Missing data</summary>
           <ul>
             {report.missing.map((m, i) => (
               <li key={i}>{m}</li>
@@ -81,7 +81,7 @@ export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
       )}
       {report.negotiationDraft && (
         <details className="advisor-negotiation">
-          <summary>Preparar conversación con mi proveedor</summary>
+          <summary>Prepare supplier conversation</summary>
           <pre className="quotation-text">{report.negotiationDraft}</pre>
           <button
             className="button secondary"
@@ -98,8 +98,8 @@ export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
           </button>
           <p role="status">
             {copied
-              ? "Texto copiado. No se envió ningún mensaje."
-              : "Revisa el texto antes de enviarlo por tu canal habitual."}
+              ? "Text copied. No message was sent."
+              : "Review the text before sending it through your usual channel."}
           </p>
         </details>
       )}
@@ -115,7 +115,9 @@ function ScenarioDetails({
 }) {
   return (
     <details className="advisor-alternatives">
-      <summary>Ver caja, cobertura y pendientes por proveedor</summary>
+      <summary>
+        View cash outlay, coverage, and pending items by supplier
+      </summary>
       <ul>
         {report.alternatives.map((alternative) => {
           const currency = offers.find(
@@ -127,22 +129,22 @@ function ScenarioDetails({
                   style: "currency",
                   currency,
                 }).format(alternative.totalCents / 100)
-              : "Pendiente";
+              : "Pending";
           return (
             <li key={alternative.offerId}>
               <strong>{alternative.supplier}</strong>
               <p>
                 Desembolso: {total}. Cobertura:{" "}
                 {alternative.coverageDays === null
-                  ? "pendiente"
-                  : `${new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 }).format(alternative.coverageDays)} días`}
+                  ? "pending"
+                  : `${new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 }).format(alternative.coverageDays)} days`}
                 .
               </p>
               <p>
                 {alternative.affordable === null
-                  ? "Presupuesto sin evaluar."
+                  ? "Budget not evaluated."
                   : alternative.affordable
-                    ? "Dentro del presupuesto indicado."
+                    ? "Within the stated budget."
                     : "Supera el presupuesto indicado."}
               </p>
               {alternative.warnings.length > 0 && (
@@ -185,7 +187,7 @@ export default function PurchasingAdvisor(props: {
   if (!token)
     return (
       <p className="field-hint">
-        Guarda una comparación para conservar el análisis de compras.
+        Save a comparison to keep the purchasing analysis.
       </p>
     );
   return <Connected {...props} token={token} />;
@@ -255,13 +257,12 @@ function Connected({
   const matchingPersisted = runs?.find(matchesCurrent);
   const selected =
     matchingPersisted ??
-    (active && matchesCurrent(active) ? persistedActive ?? active : null) ??
+    (active && matchesCurrent(active) ? (persistedActive ?? active) : null) ??
     persistedActive ??
     active ??
     runs?.[0] ??
     null;
-  const stale =
-    !!selected && !matchesCurrent(selected);
+  const stale = !!selected && !matchesCurrent(selected);
   const invalid = Object.entries(raw).some(([k, value]) => {
     const n = k === "budgetCents" ? parseCents(value) : parseDecimal(value);
     return (
@@ -326,7 +327,7 @@ function Connected({
     const reportChangedFlow = () => {
       if (mounted.current && attempt.current === attemptId)
         setError(
-          "Los datos cambiaron durante la operación. La versión confirmada conserva su propio estado; vuelve a continuar cuando termines de editar.",
+          "The data changed during the operation. The confirmed version keeps its own state; continue again after you finish editing.",
         );
     };
     setBusy(true);
@@ -343,7 +344,7 @@ function Connected({
         }
         if (!saved) {
           setError(
-            "No se confirmó el guardado de la comparación. Conserva los datos y vuelve a intentar.",
+            "Saving the comparison was not confirmed. Keep the data and try again.",
           );
           return;
         }
@@ -391,26 +392,26 @@ function Connected({
       ? "Comprobando asesor…"
       : !comparisonCurrent
         ? enabled
-          ? "Guardar comparación y pedir análisis de IA"
-          : "Guardar comparación y escenario"
+          ? "Save comparison and request AI analysis"
+          : "Save comparison and scenario"
         : selected && !stale && selected.status === "calculated" && enabled
-          ? "Pedir análisis de IA"
+          ? "Request AI analysis"
           : enabled
-            ? "Guardar escenario y pedir análisis de IA"
-            : "Guardar escenario";
+            ? "Save scenario and request AI analysis"
+            : "Save scenario";
   return (
     <section className="advisor-panel" aria-label="Asesor de compras">
       <div className="advisor-heading">
         <div>
-          <h2>¿Qué conviene hacer ahora?</h2>
+          <h2>What should you do next?</h2>
           <p className="field-hint">
-            Contrasta el desembolso con tus prioridades. Elegir o copiar una
-            propuesta no realiza una compra.
+            Compare the cash outlay with your priorities. Selecting or copying a
+            recommendation does not place an order.
           </p>
         </div>
       </div>
       <details className="advisor-context">
-        <summary>Contexto de mi decisión · opcional</summary>
+        <summary>Decision context · optional</summary>
         <div className="advisor-fields">
           <label className="field">
             Prioridad
@@ -424,10 +425,10 @@ function Connected({
               }
             >
               <option value="balanced">
-                Equilibrar desembolso y precio unitario
+                Balance cash outlay and unit price
               </option>
               <option value="cash">Cuidar caja</option>
-              <option value="unit_price">Menor precio por unidad</option>
+              <option value="unit_price">Lowest unit price</option>
             </select>
           </label>
           <label className="field">
@@ -441,7 +442,7 @@ function Connected({
                 })
               }
             >
-              <option value="">Sin definir</option>
+              <option value="">Not set</option>
               {offers.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.supplier}
@@ -457,7 +458,7 @@ function Connected({
               ],
               ["dailyUsage", `Consumo diario confirmado (${request.unit})`],
               ["stockQuantity", `Stock actual confirmado (${request.unit})`],
-              ["maxCoverageDays", "Máximo de días de cobertura"],
+              ["maxCoverageDays", "Maximum coverage days"],
             ] as const
           ).map(([key, label]) => (
             <label className="field" key={key}>
@@ -475,30 +476,30 @@ function Connected({
                       ))
                 }
                 onChange={(e) => updateNumber(key, e.target.value)}
-                placeholder="Sin indicar"
+                placeholder="Not entered"
               />
             </label>
           ))}
         </div>
         <p className="field-hint">
-          Cobertura estimada con tu consumo constante, no una predicción. Dejar
-          stock vacío no equivale a cero. No calcula crédito ni costos
-          financieros.
+          Coverage is estimated from your constant usage; it is not a forecast.
+          Leaving inventory blank does not mean zero. This does not calculate
+          credit or financing costs.
         </p>
       </details>
       {invalid ? (
         <p role="alert" className="notice error">
-          Revisa los números del contexto antes de analizar. El resultado se
-          mostrará de nuevo cuando los corrijas.
+          Review the context values before analyzing. The result will appear
+          again after you correct them.
         </p>
       ) : (
         <>
           <p className="advisor-mode">
             {selected && !stale
               ? selected.narrative
-                ? "Escenario guardado e interpretado con sus fuentes"
-                : "Escenario guardado con cálculo verificable"
-              : "Escenario calculado con los datos visibles"}
+                ? "Scenario saved and interpreted with its sources"
+                : "Scenario saved with a verifiable calculation"
+              : "Scenario calculated from the visible data"}
           </p>
           <AdvisorVerdict report={displayedReport} />
           <ScenarioDetails
@@ -510,12 +511,11 @@ function Connected({
       {selected && stale && (
         <>
           <p role="status" className="notice info">
-            El análisis guardado está desactualizado respecto a esta vista. La
-            acción siguiente guardará la comparación visible y preparará un
-            escenario nuevo.
+            The saved analysis is out of date for this view. The next action
+            will save the visible comparison and prepare a escenario nuevo.
           </p>
           <details className="advisor-stale-evidence">
-            <summary>Ver el análisis guardado anterior</summary>
+            <summary>View the previous saved analysis</summary>
             <AdvisorVerdict report={selected.report} />
             <ScenarioDetails
               report={selected.report}
@@ -547,8 +547,8 @@ function Connected({
           {saveBlockedReason
             ? saveBlockedReason
             : enabled === false
-              ? "La IA no está configurada; guardarás el cálculo determinista y sus fuentes."
-              : "Una sola acción conserva la comparación y el contexto antes de consultar la IA. No envía mensajes ni registra una compra."}
+              ? "AI is not configured; the deterministic calculation and its sources will be saved."
+              : "One action saves the comparison and context before requesting AI analysis. It does not send messages or record a purchase."}
         </p>
       )}
       {error && (
@@ -560,13 +560,13 @@ function Connected({
         <div className="advisor-saved">
           {selected.status === "running" && (
             <p role="status">
-              El asesor está consultando los escenarios y sus fuentes…
+              The advisor is reviewing the scenarios and their sources…
             </p>
           )}
           {selected.error && !stale && <p role="alert">{selected.error}</p>}
           {selected.narrative && !stale && (
             <>
-              <h3>Interpretación de IA</h3>
+              <h3>AI interpretation</h3>
               <p>{selected.narrative.reasoning}</p>
               <ul>
                 {selected.narrative.questions.map((q, i) => (
@@ -579,7 +579,7 @@ function Connected({
                   {selected.narrative.sourceIds.map((id) => (
                     <li key={id}>
                       {selected.snapshot.sources[id].label} ·{" "}
-                      {selected.snapshot.sources[id].date || "Fecha pendiente"}
+                      {selected.snapshot.sources[id].date || "Date pending"}
                     </li>
                   ))}
                 </ul>
@@ -588,7 +588,7 @@ function Connected({
           )}
           {selected.status === "calculated" && (
             <p className="field-hint">
-              Cálculo guardado. No se ha ejecutado el análisis de IA.
+              Calculation saved. AI analysis was not run.
             </p>
           )}
         </div>

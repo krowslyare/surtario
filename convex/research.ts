@@ -577,6 +577,8 @@ export const readProduct = action({
       page = await readProductPage(
         reservation.run.sources[reservation.childIndex].url,
         env.FIRECRAWL_API_KEY,
+        undefined,
+        reservation.run.region,
       );
     } catch {
       return await ctx.runMutation(internal.research.finishProductRead, {

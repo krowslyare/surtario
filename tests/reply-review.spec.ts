@@ -72,15 +72,13 @@ for (const mode of ["new", "append"] as const)
     await page
       .getByRole("button", { name: "Comparaciones guardadas (1)" })
       .click();
-    await page.getByRole("button", { name: "Abrir comparación" }).click();
-    await page.getByRole("button", { name: "Ver solicitud" }).click();
-    await page
-      .getByRole("button", { name: "Revisar como nueva oferta" })
-      .click();
+    await page.getByRole("button", { name: "Open comparison" }).click();
+    await page.getByRole("button", { name: "View request" }).click();
+    await page.getByRole("button", { name: "Review as new offer" }).click();
     const dialog = page.getByRole("dialog");
     await expect(dialog).toContainText("Revisión manual");
     await expect(
-      dialog.getByRole("button", { name: "Continuar con nueva oferta" }),
+      dialog.getByRole("button", { name: "Continue with new offer" }),
     ).toBeDisabled();
     await dialog
       .getByLabel("Proveedor", { exact: true })
@@ -108,7 +106,7 @@ for (const mode of ["new", "append"] as const)
       .check();
     if (mode === "append") {
       await expect(
-        dialog.getByRole("button", { name: "Añadir a comparación actual" }),
+        dialog.getByRole("button", { name: "Add to current comparison" }),
       ).toBeDisabled();
       await dialog
         .getByLabel(
@@ -127,8 +125,8 @@ for (const mode of ["new", "append"] as const)
       .getByRole("button", {
         name:
           mode === "append"
-            ? "Añadir a comparación actual"
-            : "Continuar con nueva oferta",
+            ? "Add to current comparison"
+            : "Continue with new offer",
       })
       .click();
     await expect(
@@ -140,15 +138,12 @@ for (const mode of ["new", "append"] as const)
       ).toHaveCount(0);
     await page
       .getByRole("button", {
-        name:
-          mode === "append"
-            ? "Guardar cambios de la comparación"
-            : "Guardar comparación",
+        name: mode === "append" ? "Save comparison changes" : "Save comparison",
         exact: true,
       })
       .click();
     await expect(
-      page.getByText("Comparación guardada.", { exact: false }),
+      page.getByText("Comparison saved", { exact: false }),
     ).toBeVisible();
     await page.reload();
     await page
@@ -159,10 +154,7 @@ for (const mode of ["new", "append"] as const)
             : "Comparaciones guardadas (2)",
       })
       .click();
-    await page
-      .getByRole("button", { name: "Abrir comparación" })
-      .first()
-      .click();
+    await page.getByRole("button", { name: "Open comparison" }).first().click();
     if (mode === "append") {
       await expect(
         page.getByRole("button", { name: "Ver origen" }),
@@ -188,9 +180,7 @@ test("an open review receives a completed extraction without replacing edits", a
   context,
 }) => {
   await connectOnlyToLocalBackend(context);
-  const token = createHash("sha256")
-    .update(crypto.randomUUID())
-    .digest("hex");
+  const token = createHash("sha256").update(crypto.randomUUID()).digest("hex");
   const run = (fn: string, args: object) =>
     JSON.parse(runLocalConvex(["run", fn, JSON.stringify(args)]));
   const saved = run("comparisons:save", {
@@ -247,11 +237,9 @@ test("an open review receives a completed extraction without replacing edits", a
     await page
       .getByRole("button", { name: "Comparaciones guardadas (1)" })
       .click();
-    await page.getByRole("button", { name: "Abrir comparación" }).click();
-    await page.getByRole("button", { name: "Ver solicitud" }).click();
-    await page
-      .getByRole("button", { name: "Revisar como nueva oferta" })
-      .click();
+    await page.getByRole("button", { name: "Open comparison" }).click();
+    await page.getByRole("button", { name: "View request" }).click();
+    await page.getByRole("button", { name: "Review as new offer" }).click();
     const dialog = page.getByRole("dialog");
     await dialog.getByLabel("Proveedor", { exact: true }).fill("Mi corrección");
 
@@ -286,7 +274,7 @@ test("an open review receives a completed extraction without replacing edits", a
       "Mi corrección",
     );
     await expect(
-      dialog.getByRole("button", { name: "Aplicar sugerencia de IA" }),
+      dialog.getByRole("button", { name: "Apply AI suggestion" }),
     ).toBeVisible();
     await expect(
       dialog.getByLabel(

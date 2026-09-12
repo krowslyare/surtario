@@ -11,7 +11,7 @@ import { money, numberLabel } from "../numbers";
 import { Button } from "./ui/Button";
 
 export const marketDateLabel = (date: string) =>
-  new Intl.DateTimeFormat("es-PE", {
+  new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -20,10 +20,10 @@ export const marketDateLabel = (date: string) =>
 
 export const marketKindLabel = (result: MarketResult) =>
   result.kind === "catalog"
-    ? "Precio de catálogo"
+    ? "Catalog price"
     : result.kind === "distributor"
-      ? "Distribuidor sin precio"
-      : "Referencia general";
+      ? "Supplier without a price"
+      : "Market reference";
 
 export function MarketResultRow({
   result,
@@ -61,7 +61,7 @@ export function MarketResultRow({
           onClick={() => onSource(result)}
         >
           <FileText size={14} aria-hidden="true" />
-          Ver fuente de ejemplo{" "}
+          View example source{" "}
           <span>{marketDateLabel(result.source.observedAt)}</span>
         </Button>
       </div>
@@ -70,7 +70,7 @@ export function MarketResultRow({
           <>
             <strong className="normalized-price">
               {publishedUnitPrice(result) === null ? (
-                "Por confirmar"
+                "To confirm"
               ) : (
                 <>
                   {money(publishedUnitPrice(result), result.currency)}{" "}
@@ -81,7 +81,7 @@ export function MarketResultRow({
             <p className="package-price">
               {money(result.priceCents, result.currency)} por{" "}
               {result.packageContent === null
-                ? "presentación por confirmar"
+                ? "pack size to confirm"
                 : `${numberLabel(result.packageContent)} ${result.packageUnit}`}
             </p>
             <small>Stock, impuestos y entrega por confirmar.</small>
@@ -92,16 +92,16 @@ export function MarketResultRow({
             <p>
               {result.contact
                 ? "Contacto de ejemplo disponible"
-                : "Sin contacto confirmado"}
+                : "Contact not confirmed"}
             </p>
             <Button variant="text" onClick={() => onSource(result)}>
               <Mail size={15} aria-hidden="true" />
-              Ver contacto
+              View contact
             </Button>
           </>
         ) : (
           <>
-            <strong className="contact-heading">Contexto del mercado</strong>
+            <strong className="contact-heading">Market context</strong>
             <p>{result.note}</p>
           </>
         )}
@@ -117,11 +117,11 @@ export function MarketResultRow({
           ) : (
             <Bookmark size={16} aria-hidden="true" />
           )}
-          {selected ? "En mi estudio" : "Añadir a mi estudio"}
+          {selected ? "In my study" : "Add to study"}
         </Button>
         {result.kind !== "reference" && (
           <Button variant="text" onClick={() => onQuote(result)}>
-            Preparar consulta <ArrowRight size={15} aria-hidden="true" />
+            Prepare inquiry <ArrowRight size={15} aria-hidden="true" />
           </Button>
         )}
       </div>

@@ -134,7 +134,7 @@ function Connected({
         <div className="intake-batch" key={run.id}>
           <h3>
             {run.kind === "pdf" ? "PDF" : "Imagen"} ·{" "}
-            {new Date(run.createdAt).toLocaleString("es-PE")}
+            {new Date(run.createdAt).toLocaleString("en-US")}
           </h3>
           <button
             className="button text-button"

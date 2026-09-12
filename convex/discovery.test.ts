@@ -217,3 +217,29 @@ describe("prueba interna Firecrawl", () => {
     expect(request).toHaveBeenCalledOnce();
   });
 });
+
+it("uses explicit US geography without appending Peru", async () => {
+  const request = vi.fn(async () => Response.json({success:true,data:{web:[]}}));
+  await discoverSources({ingredient:"long grain white rice",region:"Portland, OR, US"},"synthetic-test",request);
+  const body = JSON.parse((request.mock.calls as unknown as [string, RequestInit][])[0][1].body as string);
+  expect(body.country).toBe("US");
+  expect(body.query).toBe("long grain white rice wholesale restaurant suppliers Portland, OR, US");
+  expect(body.query).not.toMatch(/Per[uú]/);
+});
+
+it("does not guess a country for an unspecified location", async () => {
+  const request = vi.fn(async () => Response.json({success:true,data:{web:[]}}));
+  await discoverSources({ingredient:"rice",region:"Springfield"},"synthetic-test",request);
+  const body = JSON.parse((request.mock.calls as unknown as [string, RequestInit][])[0][1].body as string);
+  expect(body.country).toBeUndefined();
+  expect(body.location).toBe("Springfield");
+});
+
+it("does not force Peru when reading a US product page", async () => {
+  const { readProductPage } = await import("./lib/firecrawl");
+  const url = "https://supplier.com/rice";
+  const request = vi.fn(async () => Response.json({success:true,data:{markdown:"Rice 25 lb",metadata:{url}}}));
+  await readProductPage(url,"synthetic-test",request,"Portland, OR, US");
+  const body = JSON.parse((request.mock.calls as unknown as [string, RequestInit][])[0][1].body as string);
+  expect(body.location).toEqual({country:"US",languages:["en"]});
+});

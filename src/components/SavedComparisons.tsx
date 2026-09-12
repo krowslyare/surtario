@@ -54,8 +54,7 @@ export function replyReviewsToAppend(
   return draft.offers
     .filter(
       (offer) =>
-        draft.sources[offer.id]?.replyReview &&
-        !persisted?.sources[offer.id],
+        draft.sources[offer.id]?.replyReview && !persisted?.sources[offer.id],
     )
     .map((offer) => ({
       review: {
@@ -108,8 +107,8 @@ const SavedComparisons = forwardRef<
     return (
       <p className="notice info">
         {storageError
-          ? "El navegador no permite conservar esta sesión. Puedes comparar, pero guardar requiere habilitar el almacenamiento del sitio."
-          : "Preparando la sesión de ejemplo…"}
+          ? "Your browser cannot keep this session. You can compare, but saving requires site storage."
+          : "Preparando la session de ejemplo…"}
       </p>
     );
   return (
@@ -133,10 +132,7 @@ const ConnectedComparisons = forwardRef<
       submitted: ComparisonDraft,
     ) => boolean;
   }
->(function ConnectedComparisons(
-  { token, draft, onOpen, onSaved },
-  ref,
-) {
+>(function ConnectedComparisons({ token, draft, onOpen, onSaved }, ref) {
   const comparisons = useQuery(api.comparisons.list, { token });
   const save = useMutation(api.comparisons.save);
   const connection = useConvexConnectionState();
@@ -220,15 +216,15 @@ const ConnectedComparisons = forwardRef<
       const stillCurrent = onSaved(saved, submitted.clientId, submitted);
       setMessage(
         stillCurrent
-          ? `Comparación guardada${saved.selectedOfferId ? " con una oferta elegida" : ""}. Los cambios posteriores requieren guardar de nuevo.`
-          : "Se guardó la comparación anterior. El borrador restaurado todavía no está guardado.",
+          ? `Comparison saved${saved.selectedOfferId ? " with a selected offer" : ""}. Save again after making changes.`
+          : "The previous comparison was saved. The restored draft is still unsaved.",
       );
       return { saved, submitted };
     } catch (cause) {
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
-          : "No se confirmó el guardado. La comparación sigue aquí; comprueba la conexión y vuelve a intentar.",
+          : "Saving was not confirmed. The comparison is still here; check your connection and try again.",
       );
       return null;
     } finally {
@@ -239,14 +235,14 @@ const ConnectedComparisons = forwardRef<
   useImperativeHandle(ref, () => ({ persist }), [persist]);
 
   return (
-    <section className="saved-studies" aria-label="Comparaciones guardadas">
+    <section className="saved-studies" aria-label="Saved comparisons">
       <div className="saved-study-actions">
         <button
           className="button secondary"
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
         >
-          Comparaciones guardadas {comparisons ? `(${comparisons.length})` : ""}
+          Saved comparisons {comparisons ? `(${comparisons.length})` : ""}
         </button>
         <button
           className="button primary"
@@ -254,23 +250,23 @@ const ConnectedComparisons = forwardRef<
           disabled={!draft.persistable || saving || !connected}
         >
           {saving
-            ? "Guardando…"
+            ? "Saving…"
             : draft.id
-              ? "Guardar cambios de la comparación"
-              : "Guardar comparación"}
+              ? "Save changes de la comparison"
+              : "Save comparison"}
         </button>
       </div>
       <p className="field-hint">
-        Comparaciones guardadas para esta sesión. Hasta 10; borrar los datos del
-        sitio pierde el acceso. Abrir una reemplaza el borrador actual.
+        Up to 10 comparisons are saved for this session. Clearing site data
+        removes access. Opening one replaces the current draft.
       </p>
       {draft.blockedReason && (
         <p className="notice info">{draft.blockedReason}</p>
       )}
       {!connected && (
         <p role="status">
-          Sin conexión al guardado. Puedes seguir comparando; todavía no se han
-          confirmado cambios.
+          Offline al saving. You can seguir comparando; still no se han
+          confirmed changes.
         </p>
       )}
       {message && <p role="status">{message}</p>}
@@ -282,9 +278,9 @@ const ConnectedComparisons = forwardRef<
       {expanded && (
         <div className="saved-study-list">
           {comparisons === undefined ? (
-            <p role="status">Cargando comparaciones…</p>
+            <p role="status">Loading comparaciones…</p>
           ) : comparisons.length === 0 ? (
-            <p>No tienes comparaciones guardadas en esta sesión.</p>
+            <p>You have no saved comparisons in this session.</p>
           ) : (
             comparisons.map((comparison) => (
               <article key={comparison.id} className="saved-study-row">
@@ -293,14 +289,14 @@ const ConnectedComparisons = forwardRef<
                     {comparison.request.ingredient} ·{" "}
                     {comparison.request.quantity > 0
                       ? `${comparison.request.quantity} ${comparison.request.unit}`
-                      : "cantidad pendiente"}
+                      : "quantity pending"}
                   </strong>
                   <p>
-                    {comparison.offers.length} ofertas · Revisión{" "}
+                    {comparison.offers.length} offers · Revision{" "}
                     {comparison.revision} ·{" "}
                     {comparison.selectedOfferId
-                      ? "oferta elegida"
-                      : "sin elección"}
+                      ? "selected offer"
+                      : "no selection"}
                   </p>
                 </div>
                 <button
@@ -312,18 +308,18 @@ const ConnectedComparisons = forwardRef<
                     setExpanded(false);
                     setError("");
                     setMessage(
-                      "Comparación recuperada. Reemplazó el borrador de esta vista.",
+                      "Comparison opened. It replaced the draft in this view.",
                     );
                   }}
                 >
-                  Abrir comparación
+                  Open comparison
                 </button>
               </article>
             ))
           )}
           <p className="field-hint">
-            Abrir otra comparación reemplaza esta vista. Guarda primero los
-            cambios que quieras conservar.
+            Opening another comparison replaces this view. Save any changes you
+            want to keep first.
           </p>
         </div>
       )}
@@ -344,14 +340,14 @@ class StorageBoundary extends Component<
       return (
         <div className="notice error" role="alert">
           <p>
-            No se pudieron cargar las comparaciones. El borrador actual sigue
-            disponible; el guardado no está confirmado.
+            Saved comparisons could not be loaded. The current draft is still
+            available; saving is not confirmed.
           </p>
           <button
             className="button secondary"
             onClick={() => this.setState({ failed: false })}
           >
-            Reintentar guardado
+            Retry saving
           </button>
         </div>
       );

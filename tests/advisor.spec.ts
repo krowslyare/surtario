@@ -18,8 +18,8 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
       const comparison = document.querySelector("#comparison");
       return Boolean(
         comparison &&
-          (advisorPanel.compareDocumentPosition(comparison) &
-            Node.DOCUMENT_POSITION_FOLLOWING),
+        advisorPanel.compareDocumentPosition(comparison) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
       );
     }),
   ).toBe(true);
@@ -29,13 +29,13 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
   await expect(advisor.getByLabel("Stock actual confirmado")).toHaveValue("");
   await expect(
     advisor.getByRole("button", {
-      name: "Guardar comparación y escenario",
+      name: "Save comparison and scenario",
     }),
   ).toBeEnabled();
   await expect(advisor.getByLabel("Prioridad")).toHaveValue("cash");
   await expect(advisor.getByLabel("Presupuesto disponible")).toHaveValue("60");
   await advisor
-    .getByRole("button", { name: "Guardar comparación y escenario" })
+    .getByRole("button", { name: "Save comparison and scenario" })
     .click();
   await expect(
     page.getByRole("button", { name: "Comparaciones guardadas (1)" }),
@@ -43,12 +43,14 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
   await expect(
     advisor.getByText("Escenario guardado con cálculo verificable"),
   ).toBeVisible();
-  await expect(advisor.locator(".advisor-verdict")).toContainText("Proveedor B");
+  await expect(advisor.locator(".advisor-verdict")).toContainText(
+    "Proveedor B",
+  );
   await page.reload();
   await page
     .getByRole("button", { name: "Comparaciones guardadas (1)" })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await advisor.getByText("Recuperar escenarios (1)").click();
   await advisor.getByRole("button", { name: /Escenario .* · Caja/ }).click();
   await advisor.getByText("Contexto de mi decisión · opcional").click();
@@ -61,7 +63,7 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
   await expect(advisor.getByRole("alert")).toContainText("Revisa los números");
   await expect(
     advisor.getByRole("button", {
-      name: "Guardar comparación y escenario",
+      name: "Save comparison and scenario",
     }),
   ).toBeDisabled();
   expect(errors).toEqual([]);
@@ -73,7 +75,7 @@ test("a matching saved scenario is restored without preparing another run", asyn
   await page.goto("/?view=comparison");
   const advisor = page.getByRole("region", { name: "Asesor de compras" });
   await advisor
-    .getByRole("button", { name: "Guardar comparación y escenario" })
+    .getByRole("button", { name: "Save comparison and scenario" })
     .click();
   await expect(
     advisor.getByText("Escenario guardado con cálculo verificable"),
@@ -84,7 +86,7 @@ test("a matching saved scenario is restored without preparing another run", asyn
   await page
     .getByRole("button", { name: "Comparaciones guardadas (1)" })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(
     advisor.getByText("Escenario guardado con cálculo verificable"),
   ).toBeVisible();
@@ -108,7 +110,7 @@ test("removing an offer before the first save keeps the new scenario current", a
     .click();
 
   await advisor
-    .getByRole("button", { name: "Guardar comparación y escenario" })
+    .getByRole("button", { name: "Save comparison and scenario" })
     .click();
   await expect(
     advisor.getByText("Escenario guardado con cálculo verificable"),
@@ -129,17 +131,17 @@ test("pending quantity stays blocked after the comparison is saved", async ({
   await page.getByLabel("Cantidad necesaria").fill("");
   await expect(
     advisor.getByRole("button", {
-      name: "Guardar comparación y escenario",
+      name: "Save comparison and scenario",
     }),
   ).toBeDisabled();
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
-    page.getByText("Comparación guardada", { exact: false }),
+    page.getByText("Comparison saved", { exact: false }),
   ).toBeVisible();
   await expect(
-    advisor.getByRole("button", { name: "Guardar escenario" }),
+    advisor.getByRole("button", { name: "Save scenario" }),
   ).toBeDisabled();
   await expect(advisor.getByText(/cantidad válida/i)).toBeVisible();
 });
@@ -157,12 +159,12 @@ for (const width of [390, 1280]) {
       .selectOption("rice-supplier-a");
     await advisor.getByLabel("Consumo diario confirmado").fill("1");
     await advisor.getByLabel("Stock actual confirmado").fill("2");
-    await advisor.getByText("Preparar conversación con mi proveedor").click();
+    await advisor.getByText("Prepare supplier conversation").click();
     await expect(advisor.locator(".quotation-text")).toContainText(
       "Proveedor B",
     );
     await advisor
-      .getByText("Ver caja, cobertura y pendientes por proveedor")
+      .getByText("View cash outlay, coverage, and pending items by supplier")
       .click();
     await expect(advisor.locator(".advisor-alternatives")).toContainText(
       "20 días",

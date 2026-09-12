@@ -50,7 +50,7 @@ export default function IngredientIntake({
               className="button text-button"
               onClick={() => setViewSource(true)}
             >
-              Ver origen de la lista
+              View source de la lista
             </button>
           </div>
           <p>
@@ -113,7 +113,7 @@ export default function IngredientIntake({
           onClose={() => setViewSource(false)}
         >
           <p>
-            {batch.sourceLabel ?? batch.file?.name ?? "Entrada manual"}
+            {batch.sourceLabel ?? batch.file?.name ?? "Manual entry"}
             {batch.sheet ? ` · ${batch.sheet}` : ""}
             {batch.column !== null
               ? ` · columna ${batch.column + 1} · ${batch.hasHeader ? "con encabezado" : "sin encabezado"}`
@@ -406,7 +406,7 @@ function IntakeDialog({
           )}
           <div className="dialog-actions">
             <button className="button secondary" onClick={onClose}>
-              Cancelar
+              Cancel
             </button>
             <button
               className="button primary"
@@ -429,7 +429,7 @@ function IntakeDialog({
               <div className="intake-review-row" key={row.id}>
                 <label className="field">
                   <span>
-                    Insumo {index + 1} · fila {row.line}
+                    Ingredient {index + 1} · fila {row.line}
                   </span>
                   <input
                     maxLength={120}

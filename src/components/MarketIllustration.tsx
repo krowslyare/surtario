@@ -56,7 +56,7 @@ export default function MarketIllustration() {
             fontSize="10"
             fontWeight="700"
           >
-            ACEITE
+            OIL
           </text>
           <path
             d="M118 151C115 175 115 180 115 183"
@@ -80,7 +80,7 @@ export default function MarketIllustration() {
           />
           <path d="M192 104L326 88L336 181L188 194Z" fill="#37375C" />
           <text x="206" y="132" fill="#F5F2D9" fontSize="12" fontWeight="500">
-            La despensa
+            The pantry
           </text>
           <text
             x="204"
@@ -90,7 +90,7 @@ export default function MarketIllustration() {
             fontWeight="700"
             letterSpacing="-1.5"
           >
-            Arroz
+            Rice
           </text>
           <text x="276" y="177" fill="#CDCBE9" fontSize="10">
             extra
@@ -130,10 +130,10 @@ export default function MarketIllustration() {
         <g transform="translate(305 310) rotate(-12)">
           <rect width="108" height="47" rx="3" fill="#37375C" />
           <text x="12" y="18" fill="#D7D5EC" fontSize="9">
-            Cada fuente cuenta.
+            Every source counts.
           </text>
           <text x="12" y="35" fill="white" fontSize="12" fontWeight="600">
-            Elegir con criterio.
+            Choose with confidence.
           </text>
         </g>
         <path
@@ -151,7 +151,7 @@ export default function MarketIllustration() {
           strokeLinejoin="round"
         />
       </svg>
-      <span className="art-caption">Una mirada más clara a tu despensa.</span>
+      <span className="art-caption">A clearer view of your pantry.</span>
     </div>
   );
 }

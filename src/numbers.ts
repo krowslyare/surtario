@@ -19,11 +19,11 @@ export function parseCents(value: string): number | null {
 }
 export const money = (cents: number | null, currency: string = "PEN") =>
   cents === null
-    ? "Pendiente"
-    : `${currency === "PEN" ? "S/" : "US$"} ${new Intl.NumberFormat("es-PE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cents / 100)}`;
+    ? "Pending"
+    : `${currency === "PEN" ? "S/" : "USD"} ${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(cents / 100)}`;
 export const numberLabel = (value: number | null) =>
   value === null
-    ? "Pendiente"
-    : new Intl.NumberFormat("es-PE", { maximumFractionDigits: 3 }).format(
+    ? "Pending"
+    : new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 }).format(
         value,
       );
