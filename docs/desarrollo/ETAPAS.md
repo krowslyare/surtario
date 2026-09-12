@@ -286,3 +286,5 @@ The requested stop is after this deployment. Provider keys/gates, production and
 Pounds and ounces are supported across calculation, extraction validation, advisor input and saved comparisons. Separate fictional US examples preserve server-owned source context; a study cannot be updated into another market or replayed with a changed context. Existing Peru examples remain supported.
 
 182 domain/backend tests and both frontend/backend TypeScript checks passed. Independent parent review identified a cross-market update that could preserve an incompatible result snapshot; the fix and regression passed. UI selectors, English workflows, live provider acceptance and public deployment are outside this backend PR. No stage is marked complete by these checks.
+
+La revisión automática del PR de unidades se atendió incluyendo lb/oz en todos los selectores de revisión y lb en la cantidad requerida. La interfaz y las explicaciones conservan juntas su idioma anterior hasta la entrega de frontend. El cambio de alcance autorizado quedó explícito en AGENTS y el plan.

@@ -309,3 +309,7 @@ Provider settings, production and private repository visibility were unchanged; 
 ### 2026-09-12 - working tree · US mass and sample-market contract
 Added lb/oz calculation and extraction validation with independent conversion checks, USD sample offers and market-bound persisted studies. Parent review found a saved-study cross-market update; the fix rejects mismatched updates and idempotent replays without changing the original study.
 182 tests and frontend/backend TypeScript checks passed. This PR does not change the current frontend language, deploy code or exercise external providers.
+
+
+### 2026-09-12 - working tree · unit PR review follow-up
+Addressed the automated review by wiring lb/oz into document, web, reply, and offer review selectors and lb into the requested quantity. Kept generated explanations in the existing interface language until the English frontend delivery; the authorized US example scope is now explicit in repository guidance. No deployment or provider call occurred.

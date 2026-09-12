@@ -29,6 +29,8 @@ const fieldCopy: Record<
       ["", "Pendiente"],
       ["kg", "kg"],
       ["g", "g"],
+      ["lb", "lb"],
+      ["oz", "oz"],
       ["L", "L"],
       ["ml", "ml"],
       ["unit", "unidad"],

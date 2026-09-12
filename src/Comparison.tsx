@@ -186,6 +186,8 @@ function OfferEditor({
             >
               <option value="">Por confirmar</option>
               <option value="kg">Kilogramos (kg)</option>
+              <option value="lb">Libras (lb)</option>
+              <option value="oz">Onzas (oz, peso)</option>
               <option value="g">Gramos (g)</option>
               <option value="L">Litros (L)</option>
               <option value="ml">Mililitros (ml)</option>
@@ -599,6 +601,7 @@ export default function Comparison({
                   }
                 >
                   <option value="kg">kg</option>
+                  <option value="lb">lb</option>
                   <option value="L">L</option>
                   <option value="unit">unid.</option>
                 </select>
