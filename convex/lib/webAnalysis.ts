@@ -55,7 +55,7 @@ export type WebAnalysis = {
 };
 
 export function webSourceText(source: { title: string; markdown: string }) {
-  return `Título de la página: ${source.title.replace(/\s+/g, " ").trim()}\n\n${source.markdown}`;
+  return `Page title: ${source.title.replace(/\s+/g, " ").trim()}\n\n${source.markdown}`;
 }
 
 export function sourceEvidenceLines(source: string): string[] {

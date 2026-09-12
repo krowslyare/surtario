@@ -67,7 +67,7 @@ export const reserve = internalMutation({
       .unique();
     if (existing) {
       if (existing.kind !== args.kind)
-        throw new ConvexError("La solicitud corresponde a otro archivo.");
+        throw new ConvexError("The request belongs to a different file.");
       return { fresh: false, run: view(existing) };
     }
     if (!enabled())
@@ -80,7 +80,7 @@ export const reserve = internalMutation({
     if (own.length >= 10)
       throw new ConvexError("Limit: 10 document reads per session.");
     if (own[0] && Date.now() - own[0].createdAt < 30000)
-      throw new ConvexError("Espera 30 segundos antes de otra lectura.");
+      throw new ConvexError("Wait 30 seconds before another document read.");
     if (
       (
         await ctx.db

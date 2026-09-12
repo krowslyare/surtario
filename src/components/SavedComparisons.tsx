@@ -265,8 +265,8 @@ const ConnectedComparisons = forwardRef<
       )}
       {!connected && (
         <p role="status">
-          Offline al saving. You can seguir comparando; still no se han
-          confirmed changes.
+          Offline while saving. You can keep comparing; changes have not been
+          confirmed.
         </p>
       )}
       {message && <p role="status">{message}</p>}

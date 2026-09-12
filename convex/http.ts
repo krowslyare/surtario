@@ -76,7 +76,7 @@ http.route({
         ? value.timestamp
         : new Date().toISOString();
     const text = (value.text as string | undefined) ?? "";
-    const truncationNotice = "\n[Respuesta truncada: consulta el correo original para ver el texto completo.]";
+    const truncationNotice = "\n[Reply truncated: see the original email for the full text.]";
     await ctx.runMutation(internal.quotationMail.recordReceived, {
       eventId: event.event_id as string,
       messageId: value.message_id as string,

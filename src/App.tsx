@@ -40,7 +40,7 @@ export default function App({
       <Suspense
         fallback={
           <main>
-            <p role="status">Abriendo la marca Surtario…</p>
+            <p role="status">Opening the Surtario brand guide…</p>
           </main>
         }
       >

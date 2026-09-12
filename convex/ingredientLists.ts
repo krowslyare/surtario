@@ -14,8 +14,8 @@ const MAX_GLOBAL = 100;
 
 function sourceLabel(sourceKind: "manual" | "spreadsheet") {
   return sourceKind === "manual"
-    ? "Entrada manual revisada"
-    : "XLSX o CSV revisado";
+    ? "Reviewed manual input"
+    : "Reviewed XLSX or CSV";
 }
 
 function publicList(list: Doc<"ingredientLists">) {
@@ -30,14 +30,14 @@ function publicList(list: Doc<"ingredientLists">) {
 
 function reviewedIngredients(values: string[]) {
   if (values.length < 1 || values.length > MAX_INGREDIENTS)
-    throw new ConvexError("Guarda entre 1 y 100 insumos revisados.");
+    throw new ConvexError("Save between 1 and 100 reviewed ingredients.");
   const ingredients = values.map((value) => value.trim());
   if (
     ingredients.some(
       (value) => value.length < 1 || value.length > MAX_INGREDIENT_LENGTH,
     )
   ) {
-    throw new ConvexError("Cada insumo debe tener entre 1 y 120 caracteres.");
+    throw new ConvexError("Each ingredient must be between 1 and 120 characters.");
   }
   return ingredients;
 }

@@ -45,7 +45,7 @@ export function SaveWebProspect({
         >
           <p>{title}</p>
           <a href={url} target="_blank" rel="noreferrer">
-            Review page de source
+            Review source page
           </a>
           <p>
             Confirm that the page is relevant to this ingredient. It does not
@@ -64,7 +64,7 @@ export function SaveWebProspect({
             />
           </label>
           <label className="field">
-            Contacto encontrado (opcional)
+            Contact found (optional)
             <input
               value={contact}
               maxLength={300}
@@ -77,7 +77,7 @@ export function SaveWebProspect({
           </label>
           <p className="field-hint">
             Add an email, phone number, or contact page only if it appears in
-            the source. Queda como dato revisado por ti; no autoriza mensajes.
+            the source. It remains data you reviewed; it does not authorize messages.
           </p>
           <label className="checkbox">
             <input

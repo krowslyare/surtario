@@ -41,7 +41,7 @@ test("a saved study can request a distributor catalog without any comparison or 
   ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.quotationMail.create, { ...args, resultId: "catalog-a" }),
-  ).rejects.toThrow(/distribuidor/);
+  ).rejects.toThrow(/distributor/);
   await expect(
     t.mutation(api.quotationMail.create, { token, clientId: args.clientId }),
   ).rejects.toThrow(/Choose one source/);

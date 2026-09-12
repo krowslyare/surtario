@@ -1,3 +1,4 @@
+import { reviewedWebEvidence } from "../domain/webEvidence";
 import { SaveWebProspect, WebProspectLibrary } from "./WebProspects";
 import {
   Component,
@@ -85,7 +86,7 @@ function observedLabel(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? "Date pending"
-    : new Intl.DateTimeFormat("es-PE", {
+    : new Intl.DateTimeFormat("en-US", {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -314,15 +315,15 @@ export function ResearchWorkspace({
       )}
 
       {runs && runs.length > 0 && (
-        <div className="research-history" aria-label="Investigaciones saveds">
+        <div className="research-history" aria-label="Saved searches">
           <p className="field-hint">
             {onReview
               ? "Your selection remains in My study when you open another search."
               : "Opening another search replaces the reviewed selection in this view."}{" "}
-            Up to 10 searches per browser; clearing site data removes acceso.
+            Up to 10 searches per browser; clearing site data removes access.
           </p>
           <span>
-            <History size={16} /> Investigaciones saveds
+            <History size={16} /> Saved searches
           </span>
           <div>
             {runs.map((run) => (
@@ -362,9 +363,9 @@ export function ResearchWorkspace({
         <div className="research-run">
           <div className="research-run-meta">
             <strong>
-              {active.ingredient} en {active.region}
+              {active.ingredient} in {active.region}
             </strong>
-            <span>Observado el {observedLabel(active.observedAt)}</span>
+            <span>Observed on {observedLabel(active.observedAt)}</span>
             {active.status === "running" && (
               <span role="status">
                 Search in progress. If interrupted, it will not retry
@@ -453,9 +454,7 @@ export function ResearchWorkspace({
               const extractionSource: ExtractionSource = {
                 id: sourceId,
                 title: source.title,
-                text: source.analysis
-                  ? `Page title: ${source.title.replace(/\s+/g, " ").trim()}\n\n${source.markdown ?? source.description}`
-                  : (source.markdown ?? source.description),
+                text: reviewedWebEvidence(source),
                 observedAt: source.observedAt ?? active.observedAt,
                 simulated: active.simulated,
                 ...(url ? { url } : {}),
@@ -469,7 +468,7 @@ export function ResearchWorkspace({
                     <span>
                       {isChild
                         ? `Product page read from ${parentTitle ?? "a candidate source"}`
-                        : "Web source candidata"}
+                        : "Candidate web source"}
                     </span>
                     <h3>{source.title}</h3>
                     <p>{source.description}</p>
@@ -564,7 +563,7 @@ export function ResearchWorkspace({
                     ) : !analysisIsProduct ? (
                       <p className="field-hint">
                         This source provides context or contact information, but
-                        not a offer de producto comparable.
+                        not a comparable product offer.
                       </p>
                     ) : awaitingAnalysis ? (
                       <p
@@ -585,7 +584,7 @@ export function ResearchWorkspace({
                         triggerLabel={
                           wasReviewed ? "Edit review" : "Review extraction"
                         }
-                        confirmLabel="Add al study"
+                        confirmLabel="Add to study"
                         confirmationNote="Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."
                         onPrepare={(seed) => {
                           const entry = seed.sources[sourceId];
@@ -608,7 +607,7 @@ export function ResearchWorkspace({
                           onClick={() => void extract(active, index)}
                         >
                           <FileSearch size={16} />
-                          {isExtracting ? "Analizando source…" : "Extraer data"}
+                          {isExtracting ? "Analyzing source…" : "Extract data"}
                         </button>
                         {!isExtracting && (
                           <p className="field-hint">
@@ -653,8 +652,8 @@ export function ResearchWorkspace({
               : "offers reviewed in My study"}
           </strong>
           <p>
-            Save the study to recover your corrections. Comparing a purchase es
-            opcional.
+            Save the study to recover your corrections. Comparing a purchase is
+            optional.
           </p>
           <button className="button primary" onClick={onOpenStudy}>
             View my study
@@ -678,8 +677,8 @@ export function ResearchWorkspace({
                 checked={equivalent}
                 onChange={(event) => setEquivalent(event.target.checked)}
               />
-              I confirm they match the same ingredient, specification, unit base
-              y moneda
+              I confirm they match the same ingredient, specification, base unit,
+              and currency.
             </label>
           )}
           <button
@@ -688,11 +687,11 @@ export function ResearchWorkspace({
             disabled={reviewed.length > 1 && !equivalent}
             onClick={compareReviewed}
           >
-            Comparar offers revisadas
+            Compare reviewed offers
           </button>
           <small>
-            Enter quantity when preparing the purchase; it is not muestran
-            totales.
+            Enter quantity when preparing the purchase; totals are not shown
+            yet.
           </small>
         </div>
       )}

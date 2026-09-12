@@ -48,11 +48,11 @@ test("rejects missing, mismatched and nonexistent references", () => {
       { ...referenced, price: { value: "80.00", evidenceLineNumber: null } },
       source,
     ),
-  ).toThrow(/evidencia/);
+  ).toThrow(/evidence/);
   expect(() =>
     validateReplyExtraction(
       { ...referenced, price: { value: "80.00", evidenceLineNumber: 20 } },
       source,
     ),
-  ).toThrow(/inexistente/);
+  ).toThrow(/nonexistent/);
 });

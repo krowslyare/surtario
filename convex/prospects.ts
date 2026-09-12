@@ -63,7 +63,7 @@ export const save = mutation({
       (source.readStatus && source.readStatus !== "complete")
     )
       throw new ConvexError(
-        "Esta fuente no aporta un distribuidor revisable para el insumo.",
+        "This source does not provide a reviewable distributor for the ingredient.",
       );
     const url = new URL(source.url);
     if (

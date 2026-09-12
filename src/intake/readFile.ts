@@ -15,12 +15,12 @@ export function readFile(
       if (error) reject(error);
       else resolve(sheets ?? []);
     };
-    const abort = () => finish(new Error("Lectura cancelada."));
+    const abort = () => finish(new Error("Reading canceled."));
     const timeout = setTimeout(
       () =>
         finish(
           new Error(
-            "La lectura tardó demasiado. Usa una copia más pequeña del archivo.",
+            "Reading took too long. Use a smaller copy of the file.",
           ),
         ),
       10000,
@@ -29,7 +29,7 @@ export function readFile(
       const result = event.data as { error?: string; sheets?: InputSheet[] };
       finish(
         result.error
-          ? new Error(`No se pudo importar: ${result.error}`)
+          ? new Error(`Import failed: ${result.error}`)
           : undefined,
         result.sheets,
       );
@@ -37,7 +37,7 @@ export function readFile(
     worker.onerror = () =>
       finish(
         new Error(
-          "No se pudo leer el archivo. Comprueba el formato e inténtalo de nuevo.",
+          "The file could not be read. Check its format and try again.",
         ),
       );
     signal.addEventListener("abort", abort, { once: true });

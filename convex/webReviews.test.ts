@@ -124,7 +124,7 @@ test("rejects foreign sources, missing extraction, malformed corrections and dup
       ...args,
       webReviews: [args.webReviews[0], args.webReviews[0]],
     }),
-  ).rejects.toThrow(/dos veces/);
+  ).rejects.toThrow(/twice/);
   for (const values of [
     { ...args.webReviews[0].values, price: "1,234.00" },
     { ...args.webReviews[0].values, supplier: "x".repeat(121) },
@@ -178,7 +178,35 @@ test("legacy extractions cannot bypass current source quality checks", async () 
       });
     });
     await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
-      /evidencia utilizable/,
+      /usable evidence/,
     );
   }
+});
+
+test("analyzed web evidence keeps the same source fingerprint after saving", async () => {
+  const { t, args, ref } = await setup(true);
+  await t.run(async ctx => {
+    const run = await ctx.db.get(args.webReviews[0].runId);
+    await ctx.db.patch(run!._id, {
+      sources: run!.sources.map(source => ({ ...source, analysis: {
+        kind: "product" as const, summary: "A synthetic rice quotation.",
+        evidence: ["Saco: S/ 80.00"], warnings: ["Pack weight requires review."],
+      } })),
+    });
+  });
+  const [run] = await t.query(api.research.list, { token });
+  const source = run.sources[0];
+  const { reviewedWebEvidence } = await import("../src/domain/webEvidence");
+  const clientSeed = extractionToPurchase({
+    id: ref, title: source.title, url: source.url,
+    text: reviewedWebEvidence(source),
+    observedAt: source.observedAt ?? run.observedAt, simulated: run.simulated,
+  }, source.extraction!, args.webReviews[0].values, true);
+  clientSeed.sources[ref].webReview = args.webReviews[0];
+  const saved = await t.mutation(api.comparisons.save, {
+    ...args, request: { ...clientSeed.request, quantity: 40 },
+    offers: clientSeed.offers, selectedOfferId: null,
+  });
+  expect(saved.sources[ref]).toEqual(clientSeed.sources[ref]);
+  expect(saved.sources[ref].marketSource?.evidence).toContain("Proposed source analysis (requires review): A synthetic rice quotation.");
 });

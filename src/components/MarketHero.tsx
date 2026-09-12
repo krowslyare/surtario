@@ -13,8 +13,8 @@ export default function MarketHero() {
       <div className="portrait-note" aria-hidden="true">
         <img src="/brand/surtario-symbol.svg" width="28" height="28" alt="" />
         <span>
-          Del mercado
-          <br />a tu cocina.
+          From the market
+          <br />to your kitchen.
         </span>
       </div>
       <div className="market-seal" aria-hidden="true">
@@ -25,9 +25,9 @@ export default function MarketHero() {
           />
         </svg>
         <span>
-          Todo empieza
+          It starts
           <br />
-          <strong>con criterio</strong>
+          <strong>with good judgment</strong>
         </span>
       </div>
     </figure>

@@ -41,7 +41,7 @@ export function MarketResultRow({
   return (
     <article
       className={`market-result ${result.kind} ${selected ? "is-selected" : ""}`}
-      aria-label={`Resultado: ${result.supplier}`}
+      aria-label={`Result: ${result.supplier}`}
     >
       <div className="result-main">
         <h3>{result.supplier}</h3>
@@ -79,19 +79,19 @@ export function MarketResultRow({
               )}
             </strong>
             <p className="package-price">
-              {money(result.priceCents, result.currency)} por{" "}
+              {money(result.priceCents, result.currency)} per{" "}
               {result.packageContent === null
                 ? "pack size to confirm"
                 : `${numberLabel(result.packageContent)} ${result.packageUnit}`}
             </p>
-            <small>Stock, impuestos y entrega por confirmar.</small>
+            <small>Stock, tax and delivery to confirm.</small>
           </>
         ) : result.kind === "distributor" ? (
           <>
-            <strong className="contact-heading">Precio por consultar</strong>
+            <strong className="contact-heading">Price on request</strong>
             <p>
               {result.contact
-                ? "Contacto de ejemplo disponible"
+                ? "Sample contact available"
                 : "Contact not confirmed"}
             </p>
             <Button variant="text" onClick={() => onSource(result)}>

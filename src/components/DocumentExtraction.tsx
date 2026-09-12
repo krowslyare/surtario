@@ -188,7 +188,7 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   render() {
     return this.state.failed ? (
       <p role="alert">
-        Document reading is unavailable. You can continue with entrada manual.
+        Document reading is unavailable. You can continue with manual entry.
       </p>
     ) : (
       this.props.children

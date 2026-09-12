@@ -75,7 +75,7 @@ async function reconstructWebReviews(
     new Set(reviews.map((review) => `${review.runId}:${review.sourceIndex}`))
       .size !== reviews.length
   )
-    throw new ConvexError("Una misma fuente no puede aparecer dos veces.");
+    throw new ConvexError("The same source cannot appear twice.");
   const seeds = [];
   for (const review of reviews)
     seeds.push(await reconstructWebReview(ctx, owner, review));
@@ -160,7 +160,7 @@ async function reconstructReply(
     .withIndex("by_messageId", (q) => q.eq("messageId", review.messageId))
     .unique();
   if (!reply || reply.requestId !== request._id)
-    throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+    throw new ConvexError("Reply not linked to this request.");
   let proposal: typeof emptyReplyProposal | undefined;
   if (review.extractionAttempt !== undefined) {
     if (
@@ -271,7 +271,7 @@ function validateScenario(
     request.quantity < 0 ||
     request.quantity > 1_000_000
   )
-    throw new ConvexError("Cantidad fuera del rango de la demo.");
+    throw new ConvexError("Quantity is outside the supported range.");
   for (const offer of offers) {
     const original = baseline.offers.find((o) => o.id === offer.id);
     if (
@@ -301,7 +301,7 @@ function validateScenario(
           ((key === "minimumPackages" || key === "packageContent") &&
             value === 0))
       )
-        throw new ConvexError("Condiciones fuera del rango de la demo.");
+        throw new ConvexError("Conditions are outside the supported range.");
     }
   }
   return Object.fromEntries(
@@ -370,7 +370,7 @@ export const save = mutation({
         .length > 1
     )
       throw new ConvexError(
-        "No mezcles referencias web, documentales y de respuesta en esta solicitud.",
+        "Do not mix web, document, and reply references in this request.",
       );
     const createdBaseline =
       !previous && args.webReviews
@@ -428,7 +428,7 @@ export const save = mutation({
       const chosen = args.offers.find((o) => o.id === args.selectedOfferId);
       if (!chosen || !evaluateOffer(args.request, chosen).eligibleForComparison)
         throw new ConvexError(
-          "Completa cantidad y condiciones antes de elegir esta oferta.",
+          "Complete the quantity and conditions before selecting this offer.",
         );
     }
     const content = {

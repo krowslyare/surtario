@@ -38,7 +38,7 @@ export default function IngredientIntake({
       <div className="intake-actions">
         <button className="button secondary" onClick={() => setOpen(true)}>
           <FilePlus2 size={17} />
-          {batch ? "Reemplazar ingredient list" : "Add list or file"}
+          {batch ? "Replace ingredient list" : "Add list or file"}
         </button>
         <span>Excel, CSV, photo/PDF, or manual entry</span>
       </div>
@@ -126,7 +126,7 @@ export default function IngredientIntake({
               <div key={row.id}>
                 <strong>{row.ingredient}</strong>
                 <p>
-                  Fila {row.line}: {row.original.join(" | ")}
+                  Row {row.line}: {row.original.join(" | ")}
                 </p>
               </div>
             ))}
@@ -244,8 +244,8 @@ function IntakeDialog({
   return (
     <Dialog title="Add ingredients" wide onClose={onClose}>
       <p className="field-hint">
-        Use sample files. They are read in this browser and are not uploaded al
-        servidor. Se pierden al recargar.
+        Use sample files. They are read in this browser and are not uploaded to the
+        server. They are lost when you reload.
       </p>
       {replacing && (
         <p className="notice info">
@@ -369,7 +369,7 @@ function IntakeDialog({
               </div>
               <p className="field-hint">
                 The selected sheet is imported. Other columns are kept as source
-                context. Formulas are not recalculated; review their valores.
+                context. Formulas are not recalculated; review their values.
               </p>
             </>
           ) : (

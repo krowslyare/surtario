@@ -111,7 +111,7 @@ test("foreign, non-quotation, incomplete and malformed document references are r
   ).rejects.toThrow(/Invalid/);
   await expect(
     t.mutation(api.comparisons.save, { ...args, webReviews: [] }),
-  ).rejects.toThrow(/No mezcles/);
+  ).rejects.toThrow(/Do not mix/);
   await t.run(async (ctx) => ctx.db.patch(id, { status: "running" }));
   await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
     /complete quote reading/,

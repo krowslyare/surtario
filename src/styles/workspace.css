@@ -929,3 +929,13 @@
 }
 .has-results { scroll-margin-top: 100px; }
 @media (max-width: 800px) { .has-results { scroll-margin-top: 80px; } }
+
+.missing-insight { margin: 24px 0; padding: 24px; border: 1px solid var(--color-border-subtle); border-left: 4px solid var(--color-primary); border-radius: 16px; background: var(--color-surface); }
+.missing-insight-heading { display: flex; align-items: center; gap: 12px; color: var(--color-primary); }
+.missing-insight-heading h2 { font-size: 20px; color: var(--color-text); }
+.missing-insight-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-top: 18px; }
+.missing-insight-row > div { min-width: 0; }
+.missing-insight-row h3 { font-size: 15px; margin-bottom: 6px; }
+.missing-insight-row p { font-size: 14px; line-height: 1.6; }
+.missing-insight-row .button { flex-shrink: 0; }
+@media (max-width: 700px) { .missing-insight { padding: 18px; } .missing-insight-row { align-items: stretch; flex-direction: column; gap: 12px; } }

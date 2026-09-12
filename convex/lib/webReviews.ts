@@ -1,3 +1,4 @@
+import { reviewedWebEvidence } from "../../src/domain/webEvidence";
 import { ConvexError } from "convex/values";
 import type { MutationCtx } from "../_generated/server";
 import type { Doc } from "../_generated/dataModel";
@@ -8,7 +9,6 @@ import {
   type ReviewedValues,
 } from "../../src/domain/extraction";
 import { inspectSource } from "./sourceQuality";
-import { webSourceText } from "./webAnalysis";
 
 export type WebReview = {
   runId: Doc<"researchRuns">["_id"];
@@ -41,7 +41,7 @@ export async function reconstructWebReview(
     (source.parentSourceIndex !== undefined && source.readStatus !== "complete")
   )
     throw new ConvexError(
-      "La fuente no contiene evidencia utilizable para comparar.",
+      "The source contains no usable evidence for comparison.",
     );
   if (source.analysis && source.analysis.kind !== "product")
     throw new ConvexError(
@@ -59,9 +59,7 @@ export async function reconstructWebReview(
         id: ref,
         url: source.url,
         title: source.title,
-        text: source.analysis
-          ? `${webSourceText({ title: source.title, markdown: source.markdown })}\n\nProposed source analysis (requires review): ${source.analysis.summary}\n${source.analysis.warnings.join("\n")}`
-          : source.markdown,
+        text: reviewedWebEvidence(source),
         observedAt: source.observedAt ?? run.observedAt,
         simulated: run.simulated ?? false,
       },

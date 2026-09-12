@@ -312,7 +312,7 @@ test("foreign and unlinked replies, missing confirmation and conflicting retries
       ...args,
       replyReview: { ...args.replyReview, messageId: "unmatched" },
     }),
-  ).rejects.toThrow(/no vinculada/);
+  ).rejects.toThrow(/not linked/);
   expect(() =>
     prepareReplyOffer(
       {

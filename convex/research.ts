@@ -38,9 +38,9 @@ function cleanInput(ingredient: string, region: string) {
   const cleanIngredient = ingredient.trim();
   const cleanRegion = region.trim();
   if (!cleanIngredient || cleanIngredient.length > 120)
-    throw new ConvexError("Indica un insumo de hasta 120 caracteres.");
+    throw new ConvexError("Enter an ingredient of up to 120 characters.");
   if (!cleanRegion || cleanRegion.length > 80)
-    throw new ConvexError("Indica una zona de hasta 80 caracteres.");
+    throw new ConvexError("Enter an area of up to 80 characters.");
   return { ingredient: cleanIngredient, region: cleanRegion };
 }
 
@@ -123,7 +123,7 @@ export const reserveSearch = internalMutation({
         existing.ingredient !== input.ingredient ||
         existing.region !== input.region
       )
-        throw new ConvexError("La solicitud ya existe con otros datos.");
+        throw new ConvexError("This request already exists with different data.");
       return { kind: "existing" as const, run: publicRun(existing) };
     }
     const own = await ctx.db

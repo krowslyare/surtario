@@ -75,7 +75,7 @@ export async function extractOfferWithAgent(
     // Agent requires a scope even for stateless calls. Never share context across runs.
     { userId: `stateless:${crypto.randomUUID()}` },
     {
-      prompt: `Fuente web guardada para extraer:\n${JSON.stringify(sourceText)}`,
+      prompt: `Saved web source to extract:\n${JSON.stringify(sourceText)}`,
       schema: extractedOfferSchema,
       maxRetries: 0,
       maxOutputTokens: 2000,

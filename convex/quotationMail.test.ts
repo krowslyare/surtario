@@ -60,7 +60,7 @@ test("creates an owned fixed draft without credentials and never accepts message
     clientId: "22222222-2222-4222-8222-222222222222",
   });
   expect(draft.recipient).toBeNull();
-  expect(draft.text).toContain("10 kg de Arroz");
+  expect(draft.text).toContain("10 kg of Arroz");
   expect(draft.text).toContain("Arroz blanco, misma calidad confirmada");
   expect(await t.query(api.quotationMail.status, {})).toEqual({
     enabled: false,
@@ -492,6 +492,6 @@ test("acknowledges and retains a visibly truncated signed long reply", async () 
   );
   expect(stored?.text.length).toBe(20_000);
   expect(stored?.text.startsWith("x".repeat(100))).toBe(true);
-  expect(stored?.text).toContain("Respuesta truncada");
+  expect(stored?.text).toContain("Reply truncated");
   expect(stored?.messageId).toBe("msg-long");
 });

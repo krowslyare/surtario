@@ -18,7 +18,7 @@ describe("prueba interna Firecrawl", () => {
         "synthetic-test",
         request,
       ),
-    ).rejects.toThrow("insumo");
+    ).rejects.toThrow("Enter an ingredient");
     expect(request).not.toHaveBeenCalled();
   });
   it("envía búsqueda acotada al host fijo y mantiene evidencia sin inventar precios", async () => {

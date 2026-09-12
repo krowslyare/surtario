@@ -54,10 +54,10 @@ export default function ExtractionReview({
   proposal = extractionExample,
   triggerLabel = "Review sample quote",
   onPrepare,
-  confirmLabel = "Continue a comparison",
+  confirmLabel = "Continue to comparison",
   confirmationNote = "Continuing prepares a comparison. It does not record a purchase or save the document.",
   originalPreview,
-  sourceTextLabel = "Texto original",
+  sourceTextLabel = "Original text",
 }: {
   confirmationNote?: string;
   originalPreview?: ReactNode;
@@ -142,12 +142,12 @@ export default function ExtractionReview({
               <pre>{source.text}</pre>
               {source.url && (
                 <a href={source.url} target="_blank" rel="noopener noreferrer">
-                  Open page de source
+                  Open source page
                 </a>
               )}
               <time dateTime={source.observedAt}>
                 Observed on{" "}
-                {new Intl.DateTimeFormat("es-PE", {
+                {new Intl.DateTimeFormat("en-US", {
                   day: "numeric",
                   month: "short",
                   year: "numeric",
@@ -216,7 +216,7 @@ export default function ExtractionReview({
                       </span>
                       {edited && (
                         <span className="extraction-edited">
-                          <PencilLine size={13} /> Corregido manualmente
+                          <PencilLine size={13} /> Manually corrected
                         </span>
                       )}
                     </div>

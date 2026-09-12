@@ -36,7 +36,7 @@ describe("entrada local de insumos", () => {
       [2, ""],
       [4, "Arroz"],
     ]);
-    expect(() => validateRows(rows)).toThrow("Completa o elimina");
+    expect(() => validateRows(rows)).toThrow("Complete or remove");
   });
   it("permite listas sin encabezado, no deduplica y conserva original al editar", () => {
     const rows = manualRows("Arroz\n\nArroz\nAceite");
@@ -51,7 +51,7 @@ describe("entrada local de insumos", () => {
     expect(() =>
       fileKind({ name: "data.csv", size: MAX_FILE_BYTES + 1 }),
     ).toThrow("3 MB");
-    expect(() => fileKind({ name: "data.csv", size: 0 })).toThrow("vacío");
+    expect(() => fileKind({ name: "data.csv", size: 0 })).toThrow("empty");
     expect(() =>
       normalizeSheet(
         "large",
@@ -67,10 +67,10 @@ describe("entrada local de insumos", () => {
     );
     expect(rows).toHaveLength(2);
     expect(rows[1].ingredient).toBe('=IMPORTXML("https://example.test")');
-    expect(() => validateRows([])).toThrow("al menos");
+    expect(() => validateRows([])).toThrow("at least");
     expect(() => validateRows(manualRows("x".repeat(121)))).toThrow("120");
     expect(() => rowsFromColumn(parseCsv("Arroz"), -1, false)).toThrow(
-      "columna",
+      "ingredient column",
     );
   });
 });

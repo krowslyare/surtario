@@ -70,7 +70,7 @@ test("one reservation per client id, owner isolation, conflict and cooldown", as
       ...draft,
       ingredient: "Otro",
     }),
-  ).rejects.toThrow(/otros datos/);
+  ).rejects.toThrow(/different data/);
   await expect(
     t.mutation(internal.research.reserveSearch, {
       ...draft,

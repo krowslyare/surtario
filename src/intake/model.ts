@@ -19,24 +19,24 @@ export type IntakeBatch = {
   sourceLabel?: string;
 };
 export function fileKind(file: Pick<File, "name" | "size">) {
-  if (!file.size) throw new Error("El archivo está vacío.");
+  if (!file.size) throw new Error("The file is empty.");
   if (file.size > MAX_FILE_BYTES)
-    throw new Error("Usa un archivo de hasta 3 MB.");
+    throw new Error("Use a file up to 3 MB.");
   const extension = file.name.split(".").pop()?.toLowerCase();
   if (extension === "xlsx" || extension === "csv") return extension;
   if (["png", "jpg", "jpeg", "webp", "pdf"].includes(extension ?? ""))
     return "document";
   throw new Error(
-    "Formato no admitido. Usa XLSX, CSV, PNG, JPG, WebP o PDF. Para XLS, guarda una copia como XLSX.",
+    "Unsupported format. Use XLSX, CSV, PNG, JPG, WebP or PDF. For XLS, save a copy as XLSX.",
   );
 }
 export function normalizeSheet(name: string, input: unknown[][]): InputSheet {
   if (input.length > MAX_ROWS + 1)
     throw new Error(
-      "Usa hasta 100 filas de datos por hoja, más el encabezado.",
+      "Use up to 100 data rows per sheet, plus the header.",
     );
   if (input.some((row) => row.length > 20))
-    throw new Error("Usa hasta 20 columnas por hoja.");
+    throw new Error("Use up to 20 columns per sheet.");
   const rows = input.map((row) =>
     row.map((cell) => {
       const value =
@@ -47,7 +47,7 @@ export function normalizeSheet(name: string, input: unknown[][]): InputSheet {
             : String(cell);
       if (value.length > 2000)
         throw new Error(
-          "Una celda supera los 2000 caracteres. Reduce su contenido.",
+          "A cell exceeds 2000 characters. Shorten its content.",
         );
       return value;
     }),
@@ -62,7 +62,7 @@ export function parseCsv(text: string): InputSheet {
   // A one-column ingredient list needs no delimiter. All syntax errors remain fatal.
   if (parsed.errors.some((error) => error.code !== "UndetectableDelimiter"))
     throw new Error(
-      "No se pudo leer el CSV. Revisa comillas y separadores o expórtalo de nuevo en UTF-8.",
+      "The CSV could not be read. Check quotes and separators or export it again as UTF-8.",
     );
   const rows = parsed.data;
   while (rows.length && rows.at(-1)?.every((cell) => !cell.trim())) rows.pop();
@@ -74,7 +74,7 @@ export function rowsFromColumn(
   header: boolean,
 ): IntakeRow[] {
   if (!Number.isInteger(column) || column < 0 || column >= 20)
-    throw new Error("Elige la columna de insumos.");
+    throw new Error("Choose the ingredient column.");
   const rows = sheet.rows.flatMap((original, index) => {
     if (header && index === 0) return [];
     if (original.every((cell) => !cell.trim())) return [];
@@ -88,7 +88,7 @@ export function rowsFromColumn(
     ];
   });
   if (rows.length > MAX_ROWS)
-    throw new Error("Usa hasta 100 insumos por lista.");
+    throw new Error("Use up to 100 ingredients per list.");
   return rows;
 }
 export function manualRows(text: string): IntakeRow[] {
@@ -102,15 +102,15 @@ export function manualRows(text: string): IntakeRow[] {
   );
 }
 export function validateRows(rows: IntakeRow[]) {
-  if (!rows.length) throw new Error("Añade al menos un insumo.");
+  if (!rows.length) throw new Error("Add at least one ingredient.");
   if (rows.length > MAX_ROWS)
-    throw new Error("Usa hasta 100 insumos por lista.");
+    throw new Error("Use up to 100 ingredients per list.");
   if (
     rows.some(
       (row) => !row.ingredient.trim() || row.ingredient.trim().length > 120,
     )
   )
     throw new Error(
-      "Cada insumo debe tener entre 1 y 120 caracteres. Completa o elimina las filas vacías.",
+      "Each ingredient must be between 1 and 120 characters. Complete or remove empty rows.",
     );
 }

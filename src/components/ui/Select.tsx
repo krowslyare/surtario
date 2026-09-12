@@ -112,7 +112,7 @@ export function Select({
           aria-describedby={ariaDescribedBy}
           aria-invalid={ariaInvalid}
         >
-          <SelectPrimitive.Value placeholder="Selecciona una opción">
+          <SelectPrimitive.Value placeholder="Choose an option">
             {selectedOption?.label}
           </SelectPrimitive.Value>
           <SelectPrimitive.Icon className="surtario-select-icon" aria-hidden>

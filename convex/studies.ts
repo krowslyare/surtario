@@ -134,7 +134,7 @@ export const save = mutation({
     const requestedExampleContext = findMarketExampleContext(term, region);
     if (!context && !requestedExampleContext)
       throw new ConvexError(
-        "Por ahora solo se guardan estudios del ejemplo o fuentes web revisadas.",
+        "For now, only studies from the sample or reviewed web sources can be saved.",
       );
     if (
       args.selectedIds.length > 4 ||
@@ -180,7 +180,7 @@ export const save = mutation({
           ))
       )
         throw new ConvexError(
-          "Este estudio conserva un insumo, una zona y sus fuentes. Inicia otro estudio para cambiar de mercado.",
+          "This study retains one ingredient, area, and its sources. Start another study to change markets.",
         );
       // Preserve the original source snapshot when updating selection.
       await ctx.db.patch("studies", study._id, {

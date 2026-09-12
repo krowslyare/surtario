@@ -1,3 +1,4 @@
+import MissingConditionInsight from "./components/MissingConditionInsight";
 import Brand from "./components/Brand";
 import { Select } from "./components/ui/Select";
 import PurchasingAdvisor, {
@@ -51,7 +52,7 @@ const initialSources = (): Record<string, Source> =>
       },
     ]),
   );
-const unitName = (unit: string) => (unit === "unit" ? "unid." : unit);
+const unitName = (unit: string) => (unit === "unit" ? "units" : unit);
 const displayDate = (date: string) => {
   const value = new Date(`${date}T12:00:00Z`);
   if (!Number.isFinite(value.getTime())) return "Date pending";
@@ -66,11 +67,13 @@ const displayDate = (date: string) => {
 function OfferEditor({
   offer,
   request,
+  defaultCurrency,
   onSave,
   onClose,
 }: {
   offer?: SupplierOffer;
   request: ProcurementRequest;
+  defaultCurrency: SupplierOffer["currency"];
   onSave: (offer: SupplierOffer) => void;
   onClose: () => void;
 }) {
@@ -186,6 +189,8 @@ function OfferEditor({
               options={[
                 { value: "", label: "To confirm" },
                 { value: "kg", label: "Kilograms (kg)" },
+                { value: "lb", label: "Pounds (lb)" },
+                { value: "oz", label: "Ounces (oz, weight)" },
                 { value: "g", label: "Grams (g)" },
                 { value: "L", label: "Liters (L)" },
                 { value: "ml", label: "Milliliters (ml)" },
@@ -204,7 +209,7 @@ function OfferEditor({
             <Select
               aria-label="Currency"
               name="currency"
-              defaultValue={offer?.currency ?? "PEN"}
+              defaultValue={offer?.currency ?? defaultCurrency}
               options={[
                 { value: "PEN", label: "Peruvian soles (PEN)" },
                 { value: "USD", label: "US dollars (USD)" },
@@ -601,6 +606,7 @@ export default function Comparison({
                   }
                   options={[
                     { value: "kg", label: "kg" },
+                    { value: "lb", label: "lb" },
                     { value: "L", label: "L" },
                     { value: "unit", label: "unid." },
                   ]}
@@ -659,6 +665,7 @@ export default function Comparison({
             </button>
           </aside>
         </div>
+        <MissingConditionInsight key={currentFingerprint} request={effectiveRequest} offers={offers} onEdit={setEditing} />
         {persistenceEnabled && (
           <PurchasingAdvisor
             key={clientId}
@@ -740,7 +747,7 @@ export default function Comparison({
                               : `${lowest.map((offer) => offer.supplier).join(" y ")} requires ${money(difference, currency)} less${count > 2 ? " than the highest order total" : ""}`}
                           </h3>
                           <p>
-                            Para {numberLabel(effectiveRequest.quantity)} {unit}
+                            For {numberLabel(effectiveRequest.quantity)} {unit}
                             . Includes delivery and final amounts. Also check the quantity received. Comparing {count} complete offers in {currency}.
                           </p>
                         </div>
@@ -795,7 +802,7 @@ export default function Comparison({
                     <article
                       className="offer"
                       key={offer.id}
-                      aria-label={`Oferta de ${offer.supplier}`}
+                      aria-label={`Offer from ${offer.supplier}`}
                     >
                       <div className="offer-heading">
                         <div className="supplier-avatar">
@@ -811,7 +818,7 @@ export default function Comparison({
                         </div>
                         <button
                           className="icon-button"
-                          aria-label={`Editar ${offer.supplier}`}
+                          aria-label={`Edit ${offer.supplier}`}
                           onClick={() => setEditing(offer.id)}
                         >
                           <Pencil size={17} />
@@ -869,7 +876,7 @@ export default function Comparison({
                         </div>
                         <div className="detail-separator">
                           <dt>
-                            Precio por {unit}
+                            Price per {unit}
                             <small>Excluding delivery</small>
                           </dt>
                           <dd>
@@ -1049,6 +1056,7 @@ export default function Comparison({
       {(modal === "new" || editingOffer) && (
         <OfferEditor
           offer={editingOffer}
+          defaultCurrency={offers[0]?.currency ?? "USD"}
           request={request}
           onSave={saveOffer}
           onClose={() => {

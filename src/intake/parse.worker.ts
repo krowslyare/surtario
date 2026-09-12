@@ -13,7 +13,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
         parseNumber: (value) => value,
       });
       if (workbook.length > 10)
-        throw new Error("Usa un archivo con hasta 10 hojas.");
+        throw new Error("Use a file with up to 10 sheets.");
       self.postMessage({
         sheets: workbook.map((sheet) =>
           normalizeSheet(sheet.sheet, sheet.data),
@@ -21,12 +21,12 @@ self.onmessage = async (event: MessageEvent<File>) => {
       });
     } else
       throw new Error(
-        "Este documento necesita transcripción manual o extracción con OpenAI.",
+        "This document requires manual transcription or OpenAI extraction.",
       );
   } catch (error) {
     self.postMessage({
       error:
-        error instanceof Error ? error.message : "No se pudo leer el archivo.",
+        error instanceof Error ? error.message : "The file could not be read.",
     });
   }
 };

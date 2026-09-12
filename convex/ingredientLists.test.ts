@@ -20,7 +20,7 @@ test("stores only reviewed names, derives read-only labels, and retries idempote
   expect(saved).toMatchObject({
     ingredients: ["Arroz", "Aceite vegetal"],
     sourceKind: "spreadsheet",
-    sourceLabel: "XLSX o CSV revisado",
+    sourceLabel: "Reviewed XLSX or CSV",
   });
   expect(saved).not.toHaveProperty("ownerHash");
   expect(saved).not.toHaveProperty("clientId");

@@ -39,7 +39,7 @@ const SEND_FAILED =
 const SEND_UNCERTAIN =
   "The send result could not be confirmed. It will not retry automatically.";
 const REPLY_EXTRACTION_ERROR =
-  "No se obtuvo una sugerencia verificable. Puedes completar los campos manualmente o volver a intentarlo una vez.";
+  "No verifiable suggestion was produced. Complete the fields manually or try once more.";
 
 function normalizedSender(value: string) {
   return (
@@ -178,7 +178,7 @@ export const reserveReplyExtraction = internalMutation({
       .withIndex("by_messageId", (q) => q.eq("messageId", args.messageId))
       .unique();
     if (!reply || reply.requestId !== request._id)
-      throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+      throw new ConvexError("Reply not linked to this request.");
     const status = reply.extractionStatus ?? "idle";
     const attempts = reply.extractionAttempts ?? 0;
     if (!Number.isSafeInteger(attempts) || attempts < 0)
@@ -243,7 +243,7 @@ export const failReplyExtraction = internalMutation({
         extractionStatus: "failed",
         extractionError:
           (reply.extractionAttempts ?? 0) >= 2
-            ? "No se obtuvo una sugerencia verificable en dos intentos. Completa los campos manualmente."
+            ? "No verifiable suggestion was produced in two attempts. Complete the fields manually."
             : REPLY_EXTRACTION_ERROR,
       });
     return publicReply((await ctx.db.get(replyId))!);
@@ -347,7 +347,7 @@ export const create = mutation({
     );
     if (study && !distributor)
       throw new ConvexError(
-        "El distribuidor debe pertenecer al estudio guardado.",
+        "The distributor must belong to the saved study.",
       );
     const existing = await ctx.db
       .query("quotationRequests")
@@ -362,7 +362,7 @@ export const create = mutation({
         existing.resultId !== args.resultId ||
         existing.prospectId !== args.prospectId
       )
-        throw new ConvexError("La solicitud ya existe con otros datos.");
+        throw new ConvexError("This request already exists with different data.");
       return await publicRequest(ctx, existing);
     }
     const own = await ctx.db
@@ -376,7 +376,7 @@ export const create = mutation({
       );
     if (own[0] && Date.now() - own[0].createdAt < COOLDOWN_MS)
       throw new ConvexError(
-        "Espera 30 segundos antes de crear otra solicitud.",
+        "Wait 30 seconds before creating another request.",
       );
     const global = await ctx.db
       .query("quotationRequests")
@@ -390,7 +390,7 @@ export const create = mutation({
     const quantity =
       comparison && comparison.request.quantity > 0
         ? `${comparison.request.quantity} ${comparison.request.unit}`
-        : "una cantidad por definir";
+        : "a quantity to be determined";
     const ingredient =
       comparison?.request.ingredient ??
       prospect?.ingredient ??
@@ -398,31 +398,31 @@ export const create = mutation({
     const subject = `Quote request: ${ingredient}`;
     const text = prospect
       ? [
-          "Hola,",
+          "Hello,",
           "",
-          `Catalog request for ${prospect.supplier}: ${ingredient} en ${prospect.region}.`,
+          `Catalog request for ${prospect.supplier}: ${ingredient} in ${prospect.region}.`,
           "Quantity is still to be determined. This is not a purchase order.",
           "Please provide package options, prices, tax, minimum order, and delivery area.",
-          "Gracias.",
+          "Thank you.",
         ].join("\n")
       : study
         ? [
-            "Hola,",
+            "Hello,",
             "",
-            `Catalog request for ${distributor!.supplier}: ${ingredient} en ${study.region}.`,
+            `Catalog request for ${distributor!.supplier}: ${ingredient} in ${study.region}.`,
             "Quantity is still to be determined. This is not a purchase order.",
             "Please provide package options, prices, tax, minimum order, and delivery area.",
-            "Gracias.",
+            "Thank you.",
           ].join("\n")
         : [
-            "Hola,",
+            "Hello,",
             "",
-            `I would like to request a quote for ${quantity} de ${comparison!.request.ingredient}.`,
+            `I would like to request a quote for ${quantity} of ${comparison!.request.ingredient}.`,
             `Specification: ${comparison!.request.specification}.`,
             "",
             "Please provide package size, price, minimum order, and delivery terms.",
             "",
-            "Gracias.",
+            "Thank you.",
           ].join("\n");
     const now = Date.now();
     const id = await ctx.db.insert("quotationRequests", {

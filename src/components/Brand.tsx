@@ -3,7 +3,7 @@ export default function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <div
       className={`brand${compact ? " brand-compact" : ""}`}
-      aria-label="Surtario, mercado para tu cocina"
+      aria-label="Surtario, sourcing for your kitchen"
     >
       <img
         className="brand-symbol"
@@ -17,9 +17,9 @@ export default function Brand({ compact = false }: { compact?: boolean }) {
       </span>
       {!compact && (
         <span className="brand-description">
-          Mercado para
+          Sourcing for
           <br />
-          tu cocina
+          your kitchen
         </span>
       )}
     </div>
