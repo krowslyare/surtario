@@ -19,7 +19,7 @@
 - Comparar inicialmente un ingrediente/especificación por solicitud. Mostrar presentación, mínimo, excedente y desembolso, además de precio por unidad.
 - Cálculos deterministas y comprobables. La IA extrae datos y propone correspondencias; el usuario confirma. Conservar fuente y fecha.
 - Sin ventas y demás costos no hay utilidad real ni ahorro mensual probado. Recetas son una extensión opcional.
-- Interfaz inicial móvil en español y PEN; moneda y unidades explícitas. No agregar multi-país ni fiscalidad automática.
+- La experiencia inicial es móvil y en inglés, con el ejemplo sintético de arroz en Portland, Oregon, expresado en USD y lb. El mismo producto conserva los ejemplos de Perú en español, PEN y unidades métricas. Moneda, unidad y mercado siempre son explícitos y no se mezclan entre estudios. No construir conversión de divisas, fiscalidad automática ni un motor general multi-país.
 
 ## Implementación y límites
 

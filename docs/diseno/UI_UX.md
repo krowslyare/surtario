@@ -4,6 +4,8 @@ Versión 1.2 · Surtario elegido por el usuario el 10 de septiembre de 2026. Ide
 
 Esta guía aplica a la aplicación y demo. Complementa el [plan de producto](../producto/PLAN_PRODUCTO.md). La dirección, historia y activos se documentan en [MARCA.md](MARCA.md).
 
+**Dirección activa · 12 de septiembre de 2026:** la interfaz predeterminada usa inglés de EE. UU. y el ejemplo sintético `Rice` en `Portland, OR, US`, con USD y lb. El recorrido de Perú permanece disponible con español, PEN y unidades métricas. La UI debe mantener visible el contexto activo y nunca combinar monedas o unidades incompatibles. Esta dirección sustituye la regla anterior de interfaz exclusivamente en español; la evidencia histórica fechada más abajo conserva el alcance de la versión que se verificó en su momento.
+
 ## 1. Alcance
 
 Mantener colores, tipografía, espacios y componentes consistentes. La interfaz debe ayudar al encargado a conocer alternativas de mercado y, cuando decida comprar, entender qué pagaría.
@@ -52,7 +54,7 @@ Al preparar una compra mostrar, en este orden:
 4. **Respaldo:** fecha, documento y dato original.
 5. **Acción:** pedir aclaración, solicitar otra oferta o registrar una decisión.
 
-Mostrar el precio por kg junto a su etiqueta. No permitir que una cifra grande sin contexto se confunda con el total del pedido. En la primera sesión, la ausencia de historial o recetas no produce alertas ni una configuración bloqueante.
+Mostrar el precio por la unidad base de la solicitud —por ejemplo, USD/lb o PEN/kg— junto a su etiqueta. No permitir que una cifra grande sin contexto se confunda con el total del pedido. En la primera sesión, la ausencia de historial o recetas no produce alertas ni una configuración bloqueante.
 
 ## 4. Tres pantallas de referencia
 
@@ -80,7 +82,7 @@ Orden por defecto estable al llegar nuevas respuestas. No mover filas mientras e
 
 Acción «Registrar decisión» abre una selección explícita; no compra. Antes de enviar correo, mostrar destinatarios, cantidad y mensaje. Elegir una oferta y registrar una compra realizada son acciones distintas.
 
-**Ejemplo que gobierna el diseño:** para 10 kg, A cuesta S/95 y entrega 18 kg; B cuesta S/50 y entrega 10 kg. A tiene menor precio por kg, pero B requiere menos desembolso. La pantalla debe permitir entender ambas cosas sin llamar «mejor proveedor» a ninguno automáticamente.
+**Ejemplo que gobierna el diseño:** para 25 lb de arroz en Portland, el proveedor A ofrece un saco de 25 lb por $20 y el proveedor B uno de 50 lb por $35. A requiere menos desembolso; B tiene menor precio por lb y deja 25 lb de excedente. La pantalla debe permitir entender ambas cosas sin llamar “best supplier” a ninguno automáticamente. Son precios ficticios: no incluyen ni estiman flete, impuestos, mínimo de pedido o disponibilidad.
 
 Recetas aparece como extensión después de la comparación: «Ver impacto en platos». No forma parte del onboarding obligatorio.
 
@@ -103,16 +105,16 @@ Una actualización reactiva no debe robar foco, reiniciar un formulario ni despl
 
 ## 6. Voz y microcopy
 
-Español claro y directo, con «tú». Familiaridad sin jerga de chat en la interfaz. Usar «insumo», «cotización», «presentación», «entrega» y «cantidad». Explicar términos poco habituales en contexto. Evitar «RFQ», «escandallo», «pipeline», «mutation» y nombres de sponsors dentro del trabajo del restaurante.
+En el recorrido predeterminado, usar inglés de EE. UU. claro y directo. Usar “ingredient”, “quote”, “package”, “delivery” y “quantity”; explicar términos poco habituales en contexto. Cuando el usuario active el contexto de Perú, usar español claro y directo, con «tú», y conservar PEN y unidades métricas. Evitar “RFQ”, “pipeline”, “mutation”, «escandallo» y nombres de sponsors dentro del trabajo del restaurante.
 
 | Usar | Evitar |
 | --- | --- |
-| «Para comprar 10 kg, pagarías S/50 con esta oferta» | «Ahorra S/45 garantizados» |
-| «Falta confirmar el costo de entrega» | «Datos inválidos» sin explicación |
-| «No encontramos el peso de la caja» | «La IA tiene baja confianza» sin acción |
-| «Oferta recibida el 7 sep 2026» | «Precio actual» sin fecha |
-| «Registraste esta decisión» | «Compra completada» si solo se eligió una oferta |
-| «Referencia de mercado; condiciones distintas» | «Precio verdadero del mercado» |
+| “For 25 lb, you would pay $20 with this offer” | “Guaranteed $15 savings” |
+| “Delivery cost still needs confirmation” | “Invalid data” without an explanation |
+| “We couldn't find the case weight” | “The AI has low confidence” without an action |
+| “Offer received Sep 12, 2026” | “Current price” without a date |
+| “You recorded this decision” | “Purchase complete” when an offer was only selected |
+| “Market reference; conditions may differ” | “The true market price” |
 
 Fechas legibles y sin ambigüedad. Moneda y unidades consistentes; no mezclar separadores decimales dentro de la misma pantalla. En inputs, interpretar separadores con reglas explícitas y mostrar el valor entendido antes de confirmar. No convertir automáticamente una coma ambigua en un importe distinto.
 

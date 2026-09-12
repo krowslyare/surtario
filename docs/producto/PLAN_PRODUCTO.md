@@ -4,6 +4,8 @@ Plan de producto y hackatón · 7 de septiembre de 2026 · v1.2. La exploración
 
 Este documento define el producto objetivo, no acredita funciones terminadas. El código existente y su evidencia se registran en [ETAPAS.md](../desarrollo/ETAPAS.md). Ya existen exploración sintética, estudios persistentes en Convex local y comparación manual; búsqueda web y proveedores reales aún no están conectados.
 
+**Dirección activa · 12 de septiembre de 2026:** la experiencia predeterminada es en inglés y parte del ejemplo sintético `Rice` en `Portland, OR, US`, con USD y lb. El producto conserva los fixtures de Perú, PEN y unidades métricas como un segundo contexto compatible. Cada estudio pertenece a un solo contexto de ingrediente, zona, moneda y unidad; no se mezclan mercados. Este cambio de dirección sustituye el anterior valor predeterminado Perú/español, pero no convierte Surtario en un motor general multi-país ni habilita conversión de divisas, impuestos o proveedores en vivo. Ver [US_MARKET.md](../desarrollo/US_MARKET.md) para el contrato y sus límites de verificación.
+
 ## 1. La apuesta
 
 **Ayudar a restaurantes a conocer el mercado de sus insumos: descubrir distribuidores, entender precios y condiciones y, cuando lo necesiten, contrastarlos con su operación o preparar una compra.**
@@ -20,14 +22,14 @@ El estudio ya entrega valor si permite reconocer alternativas relevantes y recup
 
 | Perspectiva | Resultado buscado | Evidencia necesaria |
 | --- | --- | --- |
-| Negocio | Investigación útil en Perú, con proveedores relevantes, fuentes trazables y una razón para volver | Estudios reales comparados con el proceso actual; utilidad y vigencia de contactos; segundo uso y disposición a pagar |
+| Negocio | Investigación útil en el mercado elegido, con proveedores relevantes, fuentes trazables y una razón para volver | Estudios reales comparados con el proceso actual; utilidad y vigencia de contactos; segundo uso y disposición a pagar. La demo de EE. UU. y la hipótesis de piloto en Perú se validan por separado |
 | Hackatón | Exploración autónoma → comparación trazable → cotización y respuesta vinculadas, usando las integraciones de verdad | Convex persistente/reactivo, búsqueda y extracción web reales, OpenAI con revisión y AgentMail en buzones de prueba; demo reproducible |
 
 Un prototipo con fixtures prueba interacción y reglas. No demuestra cobertura del mercado, búsquedas en vivo, adopción, ahorro o demanda. Aún no hay restaurante piloto; esto no bloquea desarrollar, pero sí afirmar preparación comercial.
 
 ## 2. Cliente inicial y expansión
 
-**Cliente inicial propuesto:** restaurante independiente de un local en Lima, compras frecuentes y una persona responsable que investiga insumos y proveedores y puede confirmar equivalencias cuando prepara una compra. Puede trabajar con papel, Excel, fotos y WhatsApp; no necesita POS ni recetas documentadas. Una carta repetible es requisito solo para habilitar la etapa de costeo por plato.
+**Hipótesis comercial anterior, aún por validar:** restaurante independiente de un local en Lima, compras frecuentes y una persona responsable que investiga insumos y proveedores y puede confirmar equivalencias cuando prepara una compra. Puede trabajar con papel, Excel, fotos y WhatsApp; no necesita POS ni recetas documentadas. Una carta repetible es requisito solo para habilitar la etapa de costeo por plato. La experiencia predeterminada de producto ahora usa el escenario de EE. UU.; eso no acredita un cliente inicial en ninguno de los dos mercados.
 
 El dueño o administrador paga; el encargado de compras usa la herramienta. El chef interviene si se habilitan recetas o si una equivalencia exige validar calidad/rendimiento. En algunos restaurantes será la misma persona.
 
@@ -35,9 +37,9 @@ Priorizar acceso real sobre una cocina elegida por estética. Una cocina criolla
 
 Explorar sin documentos ni precios propios sí encaja. Quedan fuera inicialmente grandes cadenas que requieren integrar su ERP desde el primer día y servicios de inventario o compra automática. No tener porciones estandarizadas impide costear platos, pero no impide comparar insumos equivalentes.
 
-**Perú primero significa:** interfaz móvil en español, soles, unidades métricas, nombres locales y presentaciones por proveedor, fechas locales y captura de fotos/PDF/texto. No implica construir facturación SUNAT, contabilidad ni una plataforma para toda Latam.
+**Dirección de entrega actual:** interfaz móvil en inglés, USD y unidades de masa de EE. UU. para el ejemplo predeterminado. Los fixtures de Perú siguen disponibles en español, PEN y unidades métricas para preservar ese recorrido y su evidencia. Moneda, zona, unidad y procedencia son datos explícitos; una comparación no cruza esos contextos.
 
-**Global después, condicionado:** guardar moneda, zona horaria, unidad y procedencia como datos; evitar valores fijos desperdigados por el código. Una moneda por restaurante, sin conversión de divisas. No construir traducciones completas, países, motores tributarios o marketplaces ahora. Explorar otro mercado cuando varios locales sostengan el uso durante varias semanas y paguen; primero replicar en el mismo segmento.
+**Límite del alcance:** soportar dos recorridos conocidos dentro del mismo producto no implica traducciones completas, cobertura de países, conversión de divisas, motores tributarios, facturación SUNAT ni un marketplace. Cada oferta conserva sus impuestos, flete, disponibilidad y cobertura como datos confirmados o pendientes; nunca se infieren a partir del idioma o la ubicación.
 
 ## 3. Diferenciación que todavía hay que demostrar
 
@@ -67,7 +69,7 @@ Guardar el vínculo aprobado «artículo del proveedor → ingrediente → prese
 
 ### Cálculo mínimo de compra y extensión a recetas
 
-La aritmética corre en funciones deterministas, no en texto generado por IA. Cantidades base en gramos/mililitros/unidades; importes con precisión definida y redondeo solo al presentar totales.
+La aritmética corre en funciones deterministas, no en texto generado por IA. Las cantidades se normalizan dentro de dimensiones compatibles: kg, g, lb y oz para masa; L y ml para volumen; `unit` para conteo. Las conversiones de masa usan constantes exactas y los importes conservan precisión interna, con redondeo solo al presentar totales.
 
 En la entrada sin recetas: precio por unidad comprada = importe de mercancía / contenido total confirmado. Para cantidad necesaria `Q` y empaque de contenido `E`: paquetes = redondear hacia arriba `Q/E`, aumentando hasta cumplir el mínimo y múltiplo de compra declarado por el proveedor; excedente = paquetes × `E` − `Q`; desembolso = importe de esos paquetes + cargos de pedido conocidos. Si existe un mínimo monetario u otra condición que no podemos resolver, marcar oferta pendiente en vez de suponer que aplica. El ejemplo completo está en la sección 9. Comparar producto con la misma especificación no requiere estimar merma culinaria. Si las presentaciones difieren en rendimiento útil, no declarar equivalencia sin validarlo.
 
