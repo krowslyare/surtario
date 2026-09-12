@@ -20,7 +20,10 @@ import {
 import { ownerHash } from "./lib/demoSession";
 import { reconstructWebReview, type WebReview } from "./lib/webReviews";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
-import { marketExamples } from "../fixtures/market";
+import {
+  findMarketExampleContextByIds,
+  marketExamples,
+} from "../fixtures/market";
 import {
   preparePurchaseFromCatalog,
   type PurchaseSeed,
@@ -221,7 +224,12 @@ function validateScenario(
     throw new ConvexError(
       "Selecciona entre una y cuatro ofertas de ejemplo distintas.",
     );
-  const catalog = preparePurchaseFromCatalog(marketExamples, true);
+  const exampleContext = findMarketExampleContextByIds(
+    offers.map((offer) => offer.id),
+  );
+  const catalog = exampleContext
+    ? preparePurchaseFromCatalog(exampleContext.results, true)
+    : preparePurchaseFromCatalog(marketExamples, true);
   const rice: PurchaseSeed = {
     request: riceRequest,
     offers: riceOffers,

@@ -54,7 +54,11 @@ export function extractionToPurchase(
       );
   if (!["PEN", "USD"].includes(values.currency))
     throw new Error("Confirma la moneda: PEN o USD.");
-  if (!["kg", "g", "L", "ml", "unit"].includes(values.packageUnit))
+  if (
+    !["kg", "g", "lb", "oz", "L", "ml", "unit"].includes(
+      values.packageUnit,
+    )
+  )
     throw new Error("Confirma la unidad de la presentación.");
   const content = parseDecimal(values.packageContent);
   const price = parseCents(values.price);
@@ -100,9 +104,11 @@ export function extractionToPurchase(
       unit:
         offer.packageUnit === "g"
           ? "kg"
+          : offer.packageUnit === "oz"
+            ? "lb"
           : offer.packageUnit === "ml"
             ? "L"
-            : (offer.packageUnit as "kg" | "L" | "unit"),
+            : (offer.packageUnit as "kg" | "lb" | "L" | "unit"),
     },
     offers: [offer],
     sources: {
