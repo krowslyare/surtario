@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FilePlus2, ListPlus, X } from "lucide-react";
 import { Dialog } from "./Dialog";
+import Select from "./ui/Select";
 import {
   fileKind,
   manualRows,
@@ -263,45 +264,45 @@ function IntakeDialog({
               <div className="form-grid intake-mapping">
                 <label className="field">
                   <span>Hoja</span>
-                  <select
+                  <Select
                     aria-label="Hoja"
-                    value={sheetIndex}
-                    onChange={(event) => {
-                      setSheetIndex(Number(event.target.value));
+                    value={String(sheetIndex)}
+                    onValueChange={(value) => {
+                      setSheetIndex(Number(value));
                       setColumn(-1);
                     }}
-                  >
-                    {sheets.map((item, index) => (
-                      <option key={index} value={index}>
-                        {item.name}
-                      </option>
-                    ))}
-                  </select>
+                    options={sheets.map((item, index) => ({
+                      value: String(index),
+                      label: item.name,
+                    }))}
+                  />
                 </label>
                 <label className="field">
                   <span>Columna de insumos</span>
-                  <select
-                    value={column}
-                    onChange={(event) => setColumn(Number(event.target.value))}
-                  >
-                    <option value={-1}>Elige una columna</option>
-                    {Array.from(
-                      {
-                        length: Math.max(
-                          0,
-                          ...sheet.rows.map((row) => row.length),
-                        ),
-                      },
-                      (_, index) => (
-                        <option key={index} value={index}>
-                          Columna {index + 1}
-                          {sheet.rows[0]?.[index]
-                            ? `: ${sheet.rows[0][index].slice(0, 60)}`
-                            : ""}
-                        </option>
+                  <Select
+                    aria-label="Columna de insumos"
+                    value={String(column)}
+                    onValueChange={(value) => setColumn(Number(value))}
+                    options={[
+                      { value: "-1", label: "Elige una columna" },
+                      ...Array.from(
+                        {
+                          length: Math.max(
+                            0,
+                            ...sheet.rows.map((row) => row.length),
+                          ),
+                        },
+                        (_, index) => ({
+                          value: String(index),
+                          label: `Columna ${index + 1}${
+                            sheet.rows[0]?.[index]
+                              ? `: ${sheet.rows[0][index].slice(0, 60)}`
+                              : ""
+                          }`,
+                        }),
                       ),
-                    )}
-                  </select>
+                    ]}
+                  />
                 </label>
               </div>
               <label className="checkbox">

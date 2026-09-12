@@ -1,3 +1,5 @@
+import { Select } from "./components/ui/Select";
+import Brand from "./components/Brand";
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
@@ -9,7 +11,6 @@ import {
   ArrowRight,
   Check,
   CircleHelp,
-  ClipboardList,
   FileText,
   Info,
   Package,
@@ -169,17 +170,18 @@ function OfferEditor({
           )}
           <label className="field">
             <span>Unidad del contenido</span>
-            <select
+            <Select
               aria-label="Unidad del contenido"
               name="unit"
               defaultValue={offer?.packageUnit ?? request.unit}
-            >
-              <option value="kg">Kilogramos (kg)</option>
-              <option value="g">Gramos (g)</option>
-              <option value="L">Litros (L)</option>
-              <option value="ml">Mililitros (ml)</option>
-              <option value="unit">Unidades</option>
-            </select>
+              options={[
+                { value: "kg", label: "Kilogramos (kg)" },
+                { value: "g", label: "Gramos (g)" },
+                { value: "L", label: "Litros (L)" },
+                { value: "ml", label: "Mililitros (ml)" },
+                { value: "unit", label: "Unidades" },
+              ]}
+            />
           </label>
           {field(
             "price",
@@ -189,14 +191,15 @@ function OfferEditor({
           )}
           <label className="field">
             <span>Moneda</span>
-            <select
+            <Select
               aria-label="Moneda"
               name="currency"
               defaultValue={offer?.currency ?? "PEN"}
-            >
-              <option value="PEN">Soles (PEN)</option>
-              <option value="USD">Dólares (USD)</option>
-            </select>
+              options={[
+                { value: "PEN", label: "Soles (PEN)" },
+                { value: "USD", label: "Dólares (USD)" },
+              ]}
+            />
           </label>
           {field(
             "minimum",
@@ -212,17 +215,19 @@ function OfferEditor({
           )}
           <label className="field full-width">
             <span>Impuestos del precio y la entrega</span>
-            <select
+            <Select
               aria-label="Impuestos del precio y la entrega"
               name="tax"
               defaultValue={offer?.taxStatus ?? "unknown"}
-            >
-              <option value="unknown">Por confirmar</option>
-              <option value="included">
-                Importes finales, impuestos incluidos
-              </option>
-              <option value="excluded">Faltan impuestos por sumar</option>
-            </select>
+              options={[
+                { value: "unknown", label: "Por confirmar" },
+                {
+                  value: "included",
+                  label: "Importes finales, impuestos incluidos",
+                },
+                { value: "excluded", label: "Faltan impuestos por sumar" },
+              ]}
+            />
           </label>
           <label className="checkbox full-width">
             <input
@@ -452,14 +457,7 @@ export default function Comparison({
         Ir a la comparación
       </a>
       <header className="topbar">
-        <div className="brand">
-          <span className="brand-icon">
-            <ClipboardList size={22} />
-          </span>
-          <span>
-            Compras <span className="brand-description">para restaurantes</span>
-          </span>
-        </div>
+        <Brand />
         <button
           className="button text-button"
           aria-label="Cómo comparar"
@@ -469,16 +467,17 @@ export default function Comparison({
           <span>Cómo comparar</span>
         </button>
       </header>
-      <main>
-        {onBack && (
-          <button className="button text-button" onClick={onBack}>
-            Volver al estudio de mercado
-          </button>
-        )}
+      <main id="comparison-main" className="comparison-main workspace-enter">
         <div className="workspace-nav">
-          <span>
-            <Scale size={16} /> Comparación de insumos
-          </span>
+          {onBack ? (
+            <button className="button text-button" onClick={onBack}>
+              Volver al estudio de mercado
+            </button>
+          ) : (
+            <span>
+              <Scale size={16} /> Comparación de insumos
+            </span>
+          )}
           <span className="demo-badge">
             {hasWebSources
               ? "Fuentes web revisadas"
@@ -489,7 +488,7 @@ export default function Comparison({
         </div>
         <div className="page-title">
           <div>
-            <h1>Compara antes de comprar</h1>
+            <h1 tabIndex={-1}>Compara antes de comprar</h1>
             <p>
               Añade cantidad y confirma condiciones para calcular el pedido.
             </p>
@@ -502,35 +501,6 @@ export default function Comparison({
             {seed ? "Restaurar selección" : "Restaurar ejemplo"}
           </button>
         </div>
-        {persistenceEnabled ? (
-          <SavedComparisons
-            draft={{
-              clientId,
-              id: savedId,
-              expectedRevision: savedRevision,
-              request: { ...request, quantity: parseDecimal(quantity) ?? 0 },
-              offers,
-              sources,
-              selectedOfferId: activeSelection,
-              persistable,
-              blockedReason,
-            }}
-            onOpen={openSaved}
-            onSaved={(saved, submittedClientId) => {
-              // Update only persistence metadata: edits made while the request was
-              // in flight remain the visible draft.
-              if (submittedClientId !== currentClientId.current) return false;
-              setSavedId(saved.id);
-              setSavedRevision(saved.revision);
-              return true;
-            }}
-          />
-        ) : (
-          <p className="notice info">
-            El guardado de comparaciones no está configurado. Puedes usar el
-            ejemplo durante esta visita.
-          </p>
-        )}
         <section className="request-panel" aria-label="Tu necesidad de compra">
           <div className="request-title">
             <Package size={21} />
@@ -572,16 +542,18 @@ export default function Comparison({
             </label>
             <label className="field unit">
               <span>Unidad</span>
-              <select
+              <Select
+                aria-label="Unidad"
                 value={request.unit}
-                onChange={(e) =>
-                  setRequest({ ...request, unit: e.target.value as BaseUnit })
+                onValueChange={(unit) =>
+                  setRequest({ ...request, unit: unit as BaseUnit })
                 }
-              >
-                <option value="kg">kg</option>
-                <option value="L">L</option>
-                <option value="unit">unid.</option>
-              </select>
+                options={[
+                  { value: "kg", label: "kg" },
+                  { value: "L", label: "L" },
+                  { value: "unit", label: "unid." },
+                ]}
+              />
             </label>
           </div>
           {!validQuantity ? (
@@ -596,6 +568,38 @@ export default function Comparison({
             </p>
           )}
         </section>
+
+        <div className="comparison-library">
+          {persistenceEnabled ? (
+            <SavedComparisons
+              draft={{
+                clientId,
+                id: savedId,
+                expectedRevision: savedRevision,
+                request: { ...request, quantity: parseDecimal(quantity) ?? 0 },
+                offers,
+                sources,
+                selectedOfferId: activeSelection,
+                persistable,
+                blockedReason,
+              }}
+              onOpen={openSaved}
+              onSaved={(saved, submittedClientId) => {
+                // Update only persistence metadata: edits made while the request was
+                // in flight remain the visible draft.
+                if (submittedClientId !== currentClientId.current) return false;
+                setSavedId(saved.id);
+                setSavedRevision(saved.revision);
+                return true;
+              }}
+            />
+          ) : (
+            <p className="notice info">
+              El guardado de comparaciones no está configurado. Puedes usar el
+              ejemplo durante esta visita.
+            </p>
+          )}
+        </div>
 
         <section
           id="comparison"
@@ -711,7 +715,7 @@ export default function Comparison({
                   const sourceInfo = sources[offer.id];
                   return (
                     <article
-                      className="offer"
+                      className={`offer${activeSelection === offer.id ? " is-chosen" : ""}`}
                       key={offer.id}
                       aria-label={`Oferta de ${offer.supplier}`}
                     >

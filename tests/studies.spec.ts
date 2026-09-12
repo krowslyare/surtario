@@ -36,9 +36,17 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await page
     .getByRole("button", { name: "Guardar estudio", exact: true })
     .click();
-  await expect(page.getByRole("status")).toContainText(
-    "Estudio guardado con 2 opciones",
-  );
+  await expect(
+    page
+      .getByRole("region", { name: "Estudios guardados", exact: true })
+      .getByRole("status"),
+  ).toContainText("Estudio guardado con 2 opciones");
+  await cards.nth(0).getByRole("button", { name: "En mi estudio" }).click();
+  await expect(
+    page
+      .getByRole("region", { name: "Estudios guardados", exact: true })
+      .getByRole("status"),
+  ).toHaveText("Cambios sin guardar");
   await page.reload();
   await page.getByRole("button", { name: "Guardados (1)" }).click();
   await page
@@ -53,6 +61,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
     "Dirección ficticia sin verificar",
   );
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
 
   const otherTab = await context.newPage();
   await otherTab.goto("/");
@@ -68,11 +77,15 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await page
     .getByRole("button", { name: "Guardar cambios del estudio" })
     .click();
-  await expect(page.getByRole("status")).toContainText(
-    "Estudio guardado con 1 opción",
-  );
+  await expect(
+    page
+      .getByRole("region", { name: "Estudios guardados", exact: true })
+      .getByRole("status"),
+  ).toContainText("Estudio guardado con 1 opción");
   await otherTab.getByRole("button", { name: "Guardados (1)" }).click();
   await expect(otherTab.getByText(/Revisión 2/)).toBeVisible();
+  await otherTab.keyboard.press("Escape");
+  await expect(otherTab.getByRole("dialog")).toHaveCount(0);
   // A reactive library update must not silently replace an open draft.
   await expect(otherTab.getByText("2 opciones en tu estudio")).toBeVisible();
   await otherTab
@@ -81,6 +94,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await expect(otherTab.getByRole("alert")).toContainText(
     "cambió en otra vista",
   );
+  await otherTab.getByRole("button", { name: "Guardados (1)" }).click();
   await otherTab
     .getByRole("button", { name: "Abrir estudio", exact: true })
     .click();
@@ -136,10 +150,20 @@ test("volver al ejemplo después de una búsqueda vacía conserva la selección"
     .first()
     .getByRole("button", { name: "Añadir a mi estudio" })
     .click();
+  await page
+    .getByRole("button", { name: "Cambiar búsqueda", exact: true })
+    .click();
   await page.getByLabel("Insumo o categoría").fill("Pescado");
   await page
     .getByRole("button", { name: "Explorar ejemplo", exact: true })
     .click();
+  await expect(
+    page
+      .getByRole("region", { name: "Estudios guardados", exact: true })
+      .getByRole("status"),
+  ).toHaveText(
+    "El guardado de esta demo solo está disponible para arroz o abarrotes en Lima.",
+  );
   await page.getByRole("button", { name: "Ver ejemplo de arroz" }).click();
   await expect(
     page
@@ -168,6 +192,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       "Este ejemplo no procede de una búsqueda real",
     );
     await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     for (const card of (await page.getByRole("article").all()).slice(0, 3)) {
       await card.getByRole("button", { name: "Añadir a mi estudio" }).click();
     }
@@ -176,9 +201,11 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     await page
       .getByRole("button", { name: "Guardar estudio", exact: true })
       .click();
-    await expect(page.getByRole("status")).toContainText(
-      "Estudio guardado con 3 opciones",
-    );
+    await expect(
+      page
+        .getByRole("region", { name: "Estudios guardados", exact: true })
+        .getByRole("status"),
+    ).toContainText("Estudio guardado con 3 opciones");
     await page.reload();
     await page.getByRole("button", { name: "Guardados (1)" }).click();
     await page
@@ -195,6 +222,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       "Dirección ficticia sin verificar",
     );
     await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     await directory.getByRole("button", { name: "Preparar consulta" }).click();
     await expect(page.getByLabel("Mensaje editable")).toHaveValue(
       /aún no tengo una cantidad/,
@@ -203,6 +231,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       "Este texto solo se copia; no envía correo.",
     );
     await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
   });
   await test.step("Continuar a compra conservando condiciones pendientes", async () => {
     await page
@@ -232,7 +261,13 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
         .fill(freight);
       await page
         .getByLabel("Impuestos del precio y la entrega", { exact: true })
-        .selectOption("included");
+        .click();
+      await page
+        .getByRole("option", {
+          name: "Importes finales, impuestos incluidos",
+          exact: true,
+        })
+        .click();
       await page
         .getByRole("checkbox", {
           name: "El proveedor puede entregar cuando lo necesito",
@@ -248,6 +283,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     );
     await expect(page.getByRole("dialog")).toContainText("S/ 80.00");
     await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
     await page.getByLabel("Cantidad necesaria").fill("20");
     await expect(page.getByTestId("total-0")).toHaveText("S/ 175.00");
     await expect(page.getByTestId("total-1")).toHaveText("S/ 100.00");

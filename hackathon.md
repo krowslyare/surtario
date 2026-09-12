@@ -1,18 +1,18 @@
 # Hackathon log
 
-- **Project:** restaurant-procurement
+- **Project:** Surtario (repository: restaurant-procurement)
 - **Event:** Convex All Gas Hackathon
-- **What it does:** Explora ejemplos de precios y distribuidores sin exigir documentos ni cantidad; guarda estudios sintéticos por sesión de navegador y permite preparar una comparación opcional.
+- **What it does:** Supports ingredient market research without purchase history or recipes, preserves reviewed sources, and optionally compares supplier offers with explicit purchase conditions.
 - **Live app:** not deployed
 - **Repo:** private
 - **Frontend:** not deployed
 - **Convex deployment:** not deployed
 - **Components:** @convex-dev/agent
-- **Convex features:** schema, indexes, queries, mutations, internal action, realtime queries (local)
-- **Auth:** Other (capacidad anónima de demo; sin cuentas)
+- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, realtime queries (local; external calls not verified)
+- **Auth:** Other (isolated anonymous demo sessions; no user accounts)
 - **AI models:** none
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-09T13:14:48Z
+- **Last updated:** 2026-09-12T04:47:32Z
 
 ## Log
 
@@ -139,3 +139,38 @@ Sin lectura automática del correo por OpenAI ni envíos reales. No combina auto
 La revisión de una respuesta permite añadirla a la comparación guardada actual con confirmación explícita de equivalencia. Se conservan cantidad y fuentes anteriores, se elimina la elección y se exige guardar los cambios. El servidor reconstruye el correo de la sesión y comprueba identidad, moneda, duplicados, límite de cuatro fuentes y revisión vigente.
 94 tests de dominio/backend, 42 E2E y build satisfactorios. Recorridos locales con correo sintético prueban ambas opciones: comparación nueva e incorporación a la existente, guardado y recarga con procedencia. Revisión adversarial local de propiedad, validación de equivalencia, historial y elección; revisión móvil sin desbordamiento horizontal.
 La lectura del correo sigue siendo manual. No hubo envíos ni llamadas externas, despliegue o habilitación de documentos privados. Contrato actualizado en `docs/desarrollo/RESPUESTA_A_OFERTA.md`.
+
+
+### 2026-09-09 - bfd940e · reviewed PRs merged into main
+PRs #1 and #2 were merged into main at 846a01d and bfd940e after Codex reviewed their final commits without major findings. Five fixes preserve unknown package units and minimums, compare complete offers by currency, prevent accidental dialog dismissal, and record manual source dates in the local calendar.
+The integrated PR #2 revision passed 53 domain/backend tests, build, and 11 comparison/extraction E2E tests in an isolated checkout. These are the reviewed subset checks; the earlier 94-test and 42-E2E results above cover the later implementation branch.
+PRs #3–#13 remain drafts. This branch retains their implementation log; the review fixes were integrated through main and are not yet incorporated into this branch. No deployment, real sponsor API call, or private-data enablement was performed.
+
+
+### 2026-09-10 - working tree · identidad de producto y elección de Surtario
+Se propuso y aplicó Ronda: relato de marca, paleta berenjena/rábano/ají, tipografía local, símbolo y logotipos SVG, favicon, fotografía editorial generada y kit 16:9/4:5/9:16. La entrada prioriza búsqueda y ejemplo en 1920 × 1080; resultados con herramientas laterales, adaptación móvil y movimientos breves con preferencia reducida respetada. Guía interactiva en `/?view=brand` y contrato en `docs/diseno/MARCA.md`.
+94 tests y build satisfactorios. En 43 E2E, 39 pasaron en paralelo; cuatro agotaron el tiempo y pasaron aislados con un worker sin cambiar aserciones ni límites. Se verificaron reflujo hasta 1920 px, foco, assets y controles de la guía. La investigación de nombre y dominio se amplió después, como se documenta a continuación; sin validación con restaurantes ni auditoría completa de accesibilidad.
+Imagen generada realmente con la herramienta integrada imagegen; no acredita una llamada OpenAI de la aplicación. Sin modificaciones de backend, correos, llamadas reales de sponsors, push o despliegue. Los tests de persistencia usaron datos sintéticos en el backend local existente. Se preservó el registro previo de revisión e integración de PRs.
+
+Investigación preliminar posterior en `docs/diseno/NAMING.md`: Ronda tiene coincidencias cercanas en software de hostelería. Se prepararon Cestuma, Surtario y Buenavío con una comparación visual independiente en `docs/diseno/naming/alternativas.html`, sin cambiar la marca de la aplicación. Los tres .com fueron ofrecidos para registro en Porkbun y devolvieron HTTP 404 en RDAP de Verisign; no se compró ni reservó ninguno. Pendientes elección del usuario y búsqueda registral de marcas. Selector y reflujo comprobados en navegador a 1920 y 390 px.
+
+El usuario eligió Surtario. Se aplicó el nombre en app, metadatos, guía y documentación; se adaptó el relato a surtir la cocina con criterio, manteniendo exploración sin inventario ni compras previas. Logotipos en contornos y piezas 16:9/4:5/9:16 regenerados, kit actualizado; se conservaron símbolo, paleta, tipografías, fotografía y prompt original. Build/tipos y nueve E2E de exploración satisfactorios; revisión visual a 1920 × 1080 y 320 px, descarga de variantes y coincidencia de los 15 archivos servidos con el kit verificadas. Dominio sin comprar; sin cambio de backend, commit, push ni despliegue.
+
+
+### 2026-09-11 - working tree · flujos, componentes y movimiento de Surtario
+Se separaron resultados, resumen del estudio y herramientas opcionales. Listas y cotizaciones se despliegan conservando borradores; comparación diferencia necesidad, guardado y ofertas. Todas las selecciones usan un control compartido con menú propio, teclado, foco y pendientes. Filtros y desplegables usan Motion; diálogos y controles comparten estados y movimiento reducido. La guía de marca incorpora los componentes reales.
+94 tests, 46 E2E con un worker y build satisfactorios. Tras uniformizar la transcripción desplegable, cinco E2E de documentos/interacción y build volvieron a pasar. Revisión visual a 1920 × 1080 y móvil; pruebas de Escape por capas, formularios, conservación de correcciones y reflujo. Se corrigieron desbordamiento auxiliar, posicionamiento del menú y scroll al explorar, sin relajar resultados de negocio ni ampliar timeouts.
+Revisión final local de contratos; el agente de revisión independiente alcanzó su límite antes de completarla. Vite advierte un bloque principal de aproximadamente 612 kB (192 kB gzip); rendimiento en dispositivos reales pendiente. Decisiones y evidencia en `docs/diseno/INTERACCION.md`. Sin cambios de backend, llamadas reales de sponsors, correos, commit, push ni despliegue; persistencia probada con datos sintéticos locales.
+
+
+### 2026-09-11 - working tree · refinamiento de exploración con Impeccable
+Se aplicaron las guías de Impeccable 4.3.1, instalado con origen fijado y licencias, sin ejecutar el motor de detección. PRODUCT.md y DESIGN.md enlazan el contexto existente. Exploración y guardado comparten Button; resultados reúnen fuentes y acciones, el resumen muestra proveedores seleccionados y prioriza guardar. Acceso móvil al resumen con foco, anuncios accesibles y movimiento reducido.
+94 tests, 47 E2E con un worker y build satisfactorios. Se corrigieron desbordamiento tablet y etiqueta móvil; las pruebas de persistencia conservan sus aserciones, ahora acotadas a la región de guardado. Tras ajustar el contraste del contador activo se volvió a compilar. Revisión visual local; rendimiento físico pendiente y aviso de bundle cercano a 612 kB.
+Sin cambios de backend, llamadas reales de sponsors, correos, commit, push ni despliegue. Datos sintéticos en Convex local para E2E; se preservó el trabajo previo del repositorio.
+
+
+### 2026-09-11 - working tree · segunda pasada de exploración y guardado
+Búsqueda compacta, filas de mercado compartidas y biblioteca de estudios en diálogo. Guardado distingue cambios pendientes y descarta respuestas tardías de otra sesión. Se preservó el acabado posterior de Gemini; revisión de interacción delegada a Sol e integración local. Context y detector de Impeccable ejecutados en esta pasada; detector sin hallazgos, sin acreditar auditoría completa.
+Build y 17 E2E enfocados satisfactorios: 13 de exploración/interacción y 4 de persistencia/demo. Los de persistencia fallaron con backend apagado y pasaron tras levantar Convex local, cuyo binario actualizó el CLI. Capturas de escritorio/móvil revisadas; aviso ResizeObserver en prueba de selector y tamaño del bundle registrados en INTERACCION.md.
+Sin cambios de funciones Convex, commit, push, despliegue remoto ni llamadas reales de sponsors. Pruebas con datos sintéticos locales.
+Auditoría visual final de Luna sobre exploración sin hallazgos graves; se aumentó de 11 a 12 px el texto de acciones móvil. Comparación fuera de esta auditoría.

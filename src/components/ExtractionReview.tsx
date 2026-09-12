@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode, type ChangeEvent } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { FileSearch, PencilLine } from "lucide-react";
 import {
   draftValues,
@@ -12,6 +12,7 @@ import {
 import type { PurchaseSeed } from "../domain/market";
 import { extractionExample, extractionSource } from "../../fixtures/extraction";
 import { Dialog } from "./Dialog";
+import Select from "./ui/Select";
 import "../styles/extraction.css";
 
 const fieldCopy: Record<
@@ -77,13 +78,11 @@ export default function ExtractionReview({
     setError("");
   }, [source.id, proposalKey]);
 
-  const setField =
-    (field: ExtractionField) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setValues((current) => ({ ...current, [field]: event.target.value }));
-      setConfirmed(false);
-      setError("");
-    };
+  const setField = (field: ExtractionField, value: string) => {
+    setValues((current) => ({ ...current, [field]: value }));
+    setConfirmed(false);
+    setError("");
+  };
 
   const requiredReady =
     values.supplier.trim() !== "" &&
@@ -169,20 +168,23 @@ export default function ExtractionReview({
                     <label className="field">
                       <span>{copy.label}</span>
                       {copy.kind === "select" ? (
-                        <select
+                        <Select
+                          aria-label={copy.label}
+                          options={
+                            copy.options?.map(([value, label]) => ({
+                              value,
+                              label,
+                            })) ?? []
+                          }
                           value={values[field]}
-                          onChange={setField(field)}
-                        >
-                          {copy.options?.map(([value, label]) => (
-                            <option value={value} key={value || "pending"}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
+                          onValueChange={(value) => setField(field, value)}
+                        />
                       ) : (
                         <input
                           value={values[field]}
-                          onChange={setField(field)}
+                          onChange={(event) =>
+                            setField(field, event.target.value)
+                          }
                           maxLength={
                             field === "price" || field === "packageContent"
                               ? 24

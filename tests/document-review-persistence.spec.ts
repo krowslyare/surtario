@@ -63,9 +63,13 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     token,
   );
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Cotizaciones y documentos", exact: true })
+    .click();
   await page.getByRole("button", { name: "Revisar datos leídos" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
+  await dialog.getByLabel("Unidad de la presentación").click();
+  await dialog.getByRole("option", { name: "kg", exact: true }).click();
   await dialog.getByLabel("Contenido por presentación").fill("18");
   await dialog.getByLabel("Precio por presentación").fill("85");
   await dialog
@@ -82,7 +86,13 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
   await page.getByLabel("Entrega por pedido", { exact: true }).fill("15");
   await page
     .getByLabel("Impuestos del precio y la entrega", { exact: true })
-    .selectOption("included");
+    .click();
+  await page
+    .getByRole("option", {
+      name: "Importes finales, impuestos incluidos",
+      exact: true,
+    })
+    .click();
   await page
     .getByLabel("El proveedor puede entregar cuando lo necesito")
     .check();
@@ -115,6 +125,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     page.getByRole("link", { name: "Abrir documento original" }),
   ).toHaveAttribute("href", "/examples/cotizacion-demo.pdf");
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByLabel("Cantidad necesaria").fill("20");
   await expect(
     page.getByRole("button", { name: "Oferta elegida" }),

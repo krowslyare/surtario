@@ -5,6 +5,9 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
 }) => {
   await page.goto("/");
   await page
+    .getByRole("button", { name: "Cotizaciones y documentos", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: "Revisar ejemplo de cotización" })
     .click();
   const dialog = page.getByRole("dialog");
@@ -18,7 +21,8 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
     dialog.getByRole("button", { name: "Continuar a comparación" }),
   ).toBeDisabled();
 
-  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
+  await dialog.getByLabel("Unidad de la presentación").click();
+  await dialog.getByRole("option", { name: "kg", exact: true }).click();
   await dialog.getByLabel("Contenido por presentación").fill("18");
   await dialog.getByLabel("Precio por presentación").fill("85");
   await expect(dialog.getByText("Corregido manualmente")).toHaveCount(3);
@@ -47,6 +51,9 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
 }) => {
   await page.setViewportSize({ width: 320, height: 760 });
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Cotizaciones y documentos", exact: true })
+    .click();
   const trigger = page.getByRole("button", {
     name: "Revisar ejemplo de cotización",
   });

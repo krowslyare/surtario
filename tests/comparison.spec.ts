@@ -32,7 +32,10 @@ test("edición manual distingue dato desconocido, entrega incluida y moneda dife
   await expect(page.getByTestId("total-0")).toHaveText("Pendiente");
   await page.getByRole("button", { name: "Editar Proveedor A" }).click();
   await page.getByLabel("Entrega por pedido", { exact: true }).fill("0");
-  await page.getByLabel("Moneda", { exact: true }).selectOption("USD");
+  await page.getByLabel("Moneda", { exact: true }).click();
+  await page
+    .getByRole("option", { name: "Dólares (USD)", exact: true })
+    .click();
   await page.getByRole("button", { name: "Guardar oferta" }).click();
   await expect(page.getByTestId("total-0")).toHaveText("US$ 80.00");
   await expect(

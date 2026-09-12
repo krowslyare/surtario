@@ -6,6 +6,8 @@ import type { documentRun } from "../../convex/documentValidators";
 import type { PurchaseSeed } from "../domain/market";
 import ExtractionReview from "./ExtractionReview";
 import { Dialog } from "./Dialog";
+import Select from "./ui/Select";
+import { Disclosure } from "./ui/Disclosure";
 
 type Run = Infer<typeof documentRun>;
 const fileUrl = (kind: Run["kind"]) =>
@@ -91,14 +93,16 @@ function Connected({
       </p>
       <label className="field">
         Archivo de ejemplo
-        <select
+        <Select
+          aria-label="Archivo de ejemplo"
           value={kind}
           disabled={busy}
-          onChange={(e) => setKind(e.target.value as Run["kind"])}
-        >
-          <option value="image">Imagen de cotización · PNG</option>
-          <option value="pdf">Cotización PDF · 1 página</option>
-        </select>
+          onValueChange={(value) => setKind(value as Run["kind"])}
+          options={[
+            { value: "image", label: "Imagen de cotización · PNG" },
+            { value: "pdf", label: "Cotización PDF · 1 página" },
+          ]}
+        />
       </label>
       <div className="intake-actions">
         <button className="button secondary" onClick={() => setPreview(kind)}>
@@ -217,10 +221,9 @@ export function DocumentReview({
           }
           .
         </p>
-        <details>
-          <summary>Ver transcripción propuesta por el modelo</summary>
+        <Disclosure title="Ver transcripción propuesta">
           <pre className="quotation-text">{run.result.transcript}</pre>
-        </details>
+        </Disclosure>
         <p className="field-hint">
           Las citas se contrastan con la transcripción del modelo. Comprueba
           también el archivo original, especialmente cifras y unidades.

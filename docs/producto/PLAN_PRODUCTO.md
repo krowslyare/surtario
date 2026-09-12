@@ -207,7 +207,7 @@ Reglas verificadas el 7/9/2026: app nueva desde el 25/8; backend Convex e integr
 
 No hay pesos numéricos publicados: no inventar puntuaciones ni probabilidades de ganar. La utilidad, originalidad, profundidad de Convex, uso de sponsors, acceso al producto, video y actividad social son los frentes de evaluación.
 
-**Presentación sin pricing del SaaS:** en las reglas oficiales revisadas no se encontró requisito de mostrar tarifas, implementar cobros o tener clientes pagos, ni prohibición explícita de mostrar tarifas. Decisión de producto para esta entrega: sin sección de planes, checkout ni pago para recorrer la demo. CTA «Probar ejemplo». Los precios de insumos y cotizaciones sí se muestran porque son el contenido central. Mantener colores, tipografía y calidad de interfaz; aplazar branding hasta la versión comercial, sin anunciar una oferta comercial no validada. Esta decisión no afirma que el producto será gratuito para siempre.
+**Presentación sin pricing del SaaS:** en las reglas oficiales revisadas no se encontró requisito de mostrar tarifas, implementar cobros o tener clientes pagos, ni prohibición explícita de mostrar tarifas. Decisión de producto para esta entrega: sin sección de planes, checkout ni pago para recorrer la demo. CTA «Probar ejemplo». Los precios de insumos y cotizaciones sí se muestran porque son el contenido central. Mantener colores, tipografía y calidad de interfaz. El 10 de septiembre de 2026 el usuario amplió el alcance para incluir identidad y activos; después de la investigación preliminar eligió Surtario, documentado en `docs/diseno/MARCA.md`; esto no anuncia una oferta comercial validada. Esta decisión no afirma que el producto será gratuito para siempre.
 
 **Guion objetivo de 2:40:**
 

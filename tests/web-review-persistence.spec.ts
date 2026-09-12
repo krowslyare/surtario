@@ -68,7 +68,8 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   await page.getByRole("button", { name: /Arroz · Lima/ }).click();
   await page.getByRole("button", { name: "Revisar extracción" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
+  await dialog.getByLabel("Unidad de la presentación").click();
+  await dialog.getByRole("option", { name: "kg", exact: true }).click();
   await dialog.getByLabel("Contenido por presentación").fill("18");
   await dialog.getByLabel("Precio por presentación").fill("85");
   await dialog
@@ -88,7 +89,13 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   await page.getByLabel("Entrega por pedido", { exact: true }).fill("15");
   await page
     .getByLabel("Impuestos del precio y la entrega", { exact: true })
-    .selectOption("included");
+    .click();
+  await page
+    .getByRole("option", {
+      name: "Importes finales, impuestos incluidos",
+      exact: true,
+    })
+    .click();
   await page
     .getByLabel("El proveedor puede entregar cuando lo necesito")
     .check();
@@ -121,6 +128,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     page.getByRole("link", { name: "Abrir fuente web original" }),
   ).toHaveAttribute("href", "https://supplier.test/rice");
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByLabel("Cantidad necesaria").fill("20");
   await expect(
     page.getByRole("button", { name: "Oferta elegida" }),

@@ -9,6 +9,9 @@ test("CSV revisable conserva fila y origen sin subir documentos", async ({
     if (request.method() !== "GET") writes.push(request.url());
   });
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Lista de insumos", exact: true })
+    .click();
   await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Archivo de insumos").setInputFiles({
@@ -16,7 +19,8 @@ test("CSV revisable conserva fila y origen sin subir documentos", async ({
     mimeType: "text/csv",
     buffer: Buffer.from("Insumo;Precio\nArroz;4,50\n;80\nAceite;"),
   });
-  await dialog.getByLabel("Columna de insumos").selectOption("0");
+  await dialog.getByLabel("Columna de insumos").click();
+  await dialog.getByRole("option", { name: /^Columna 1/ }).click();
   await dialog.getByRole("button", { name: "Revisar insumos" }).click();
   await dialog.getByRole("button", { name: "Confirmar 3 insumos" }).click();
   await expect(dialog.getByRole("alert")).toContainText("Completa o elimina");
@@ -37,13 +41,18 @@ test("XLSX elige segunda hoja y columna, conserva valor almacenado", async ({
   page,
 }) => {
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Lista de insumos", exact: true })
+    .click();
   await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
   const dialog = page.getByRole("dialog");
   await dialog
     .getByLabel("Archivo de insumos")
     .setInputFiles(path.resolve("tests/fixtures/insumos-ejemplo.xlsx"));
-  await dialog.getByLabel("Hoja", { exact: true }).selectOption("1");
-  await dialog.getByLabel("Columna de insumos").selectOption("1");
+  await dialog.getByLabel("Hoja", { exact: true }).click();
+  await dialog.getByRole("option", { name: "Insumos", exact: true }).click();
+  await dialog.getByLabel("Columna de insumos").click();
+  await dialog.getByRole("option", { name: /^Columna 2/ }).click();
   await expect(dialog).toContainText("Las fórmulas no se recalculan");
   await dialog.getByRole("button", { name: "Revisar insumos" }).click();
   await expect(
@@ -61,6 +70,9 @@ test("foto sin OCR permite transcripción y cancelar reemplazo conserva lista", 
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Lista de insumos", exact: true })
+    .click();
   await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Archivo de insumos").setInputFiles({
@@ -105,6 +117,9 @@ test("manual sin archivo y archivo inválido permiten recuperación", async ({
   page,
 }) => {
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Lista de insumos", exact: true })
+    .click();
   await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Archivo de insumos").setInputFiles({
@@ -126,6 +141,9 @@ test("otro insumo exige separar el estudio y no arrastra su selección", async (
   page,
 }) => {
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Lista de insumos", exact: true })
+    .click();
   await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Escribe o pega insumos").fill("Arroz\nAceite");

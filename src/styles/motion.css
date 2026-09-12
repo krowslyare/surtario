@@ -1,0 +1,133 @@
+/* Interaction motion only: opening, closing, and intentional state changes. */
+.dialog {
+  transform-origin: center top;
+  animation: dialog-open var(--motion-dialog) var(--ease-settle) backwards;
+}
+
+.dialog[data-state="closing"] {
+  animation: dialog-close var(--motion-dialog) ease both;
+  pointer-events: none;
+}
+
+.dialog[data-state="closing"]::backdrop {
+  animation: dialog-backdrop-close var(--motion-dialog) ease both;
+}
+
+.disclosure {
+  min-width: 0;
+}
+
+.disclosure-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: var(--control-min-height);
+  padding: 0.625rem 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-weight: 650;
+  text-align: left;
+  transition:
+    color var(--motion-control) ease,
+    border-color var(--motion-control) ease,
+    transform var(--motion-control) ease;
+}
+
+.disclosure-trigger-copy {
+  display: grid;
+  gap: 0.125rem;
+}
+
+.disclosure-trigger-description {
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 450;
+}
+
+.disclosure-trigger:hover {
+  color: var(--color-primary-hover);
+}
+
+.disclosure-trigger svg {
+  color: var(--color-text-muted);
+  transition: transform var(--motion-selection) var(--ease-settle);
+}
+
+.disclosure[data-state="open"] .disclosure-trigger svg {
+  transform: rotate(180deg);
+}
+
+.disclosure-panel {
+  overflow: hidden;
+}
+
+.disclosure-panel-inner {
+  padding-top: var(--space-4);
+}
+
+@keyframes dialog-open {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dialog-close {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(5px) scale(0.99);
+  }
+}
+
+@keyframes dialog-backdrop-close {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .dialog[data-state="closing"] {
+    animation: none;
+  }
+
+  .disclosure-trigger,
+  .disclosure-trigger svg {
+    transition: none;
+  }
+}
+
+.workspace-enter {
+  animation: workspace-arrive var(--motion-dialog) var(--ease-settle) backwards;
+}
+@keyframes workspace-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-enter {
+    animation: none;
+  }
+}

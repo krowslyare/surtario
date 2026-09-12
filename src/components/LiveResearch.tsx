@@ -7,13 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import {
-  ExternalLink,
-  FileSearch,
-  Globe2,
-  History,
-  Search,
-} from "lucide-react";
+import { ExternalLink, FileSearch, History, Search } from "lucide-react";
 import { useAction, useQuery } from "convex/react";
 import type { Id } from "../../convex/_generated/dataModel";
 import { api } from "../../convex/_generated/api";
@@ -205,6 +199,9 @@ export function ResearchWorkspace({
 
   if (!status)
     return <p className="notice info">Comprobando la búsqueda web…</p>;
+
+  // MarketStudy explains availability next to the search controls.
+  if (!status.searchEnabled && runs?.length === 0 && !localRun) return null;
 
   return (
     <section className="live-research" aria-labelledby="live-research-title">

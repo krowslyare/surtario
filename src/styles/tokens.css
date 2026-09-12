@@ -1,28 +1,29 @@
 /* Fuente única de tokens de UI. No usar estados para declarar un ganador global. */
 :root {
   color-scheme: light;
-  --color-canvas: #f6f6fa;
+  --color-canvas: #fafaf7;
   --color-surface: #ffffff;
-  --color-text: #292943;
-  --color-text-muted: #626278;
-  --color-primary: #42416f;
-  --color-primary-hover: #302e59;
+  --color-text: #42202d;
+  --color-text-muted: #72616a;
+  --color-primary: #42202d;
+  --color-primary-hover: #5c2a40;
   --color-on-primary: #ffffff;
-  --color-success: #42416f;
-  --color-success-surface: #eeedf7;
+  --color-success: #42202d;
+  --color-success-surface: #f9edf1;
   --color-warning: #8a4b08;
   --color-warning-surface: #fff4d6;
   --color-danger: #b42318;
   --color-danger-surface: #feece9;
   --color-info: #175cd3;
   --color-info-surface: #eff8ff;
-  --color-border: #dddde8;
-  --color-control-border: #8b8b9e;
+  --color-border: #e0d9db;
+  --color-control-border: #99858d;
   --color-focus: #175cd3;
 
   --font-sans:
     "Manrope Variable", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Bricolage Grotesque Variable", var(--font-sans);
   --text-meta: 0.75rem;
   --text-label: 0.875rem;
   --text-body: 1rem;
@@ -39,14 +40,30 @@
   --space-6: 1.5rem;
   --space-8: 2rem;
   --space-12: 3rem;
-  --radius-control: 0.75rem;
-  --radius-panel: 1.25rem;
+  --radius-control: 0.625rem;
+  --radius-panel: 1rem;
   --control-min-height: 2.75rem;
-  --content-max-width: 75rem;
+  --content-max-width: 96rem;
+  --content-reading-width: 80rem;
   --focus-width: 2px;
   --focus-offset: 2px;
-  --shadow-overlay: 0 24px 80px rgb(41 41 67 / 16%);
-  --color-hero: #eae9f3;
-  --color-accent: #d77158;
-  --shadow-panel: 0 8px 32px rgb(41 41 67 / 4%);
+  --shadow-overlay: 0 24px 80px rgb(66 32 45 / 18%);
+  --color-hero: #eec6d0;
+  --color-accent: #ba3527;
+  --color-lime: #e4ef9b;
+  --color-surface-subtle: #fcfbfa;
+  --color-surface-hover: #f7f3f5;
+  --color-border-subtle: #eee9eb;
+  --shadow-panel: 0 8px 32px rgb(66 32 45 / 4%);
+  --shadow-sm: 0 1px 2px rgba(66, 32, 45, 0.04);
+  --shadow-card: 0 2px 4px rgba(66, 32, 45, 0.03), 0 10px 28px -4px rgba(66, 32, 45, 0.06);
+  --shadow-card-hover: 0 4px 8px -1px rgba(66, 32, 45, 0.05), 0 16px 36px -4px rgba(66, 32, 45, 0.1);
+  --shadow-badge: 0 1px 2px rgba(66, 32, 45, 0.06);
+  --radius-card: 1rem;
+  --radius-badge: 9999px;
+  --motion-control: 140ms;
+  --motion-selection: 180ms;
+  --motion-dialog: 200ms;
+  --motion-entrance: 500ms;
+  --ease-settle: cubic-bezier(0.2, 0.7, 0.2, 1);
 }

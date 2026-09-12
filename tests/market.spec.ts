@@ -95,7 +95,11 @@ test("búsqueda vacía y falta de cobertura del ejemplo se explican", async ({
     }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Ver ejemplo de arroz" }).click();
-  await page.getByLabel("Zona de interés").selectOption("Cusco");
+  await page
+    .getByRole("button", { name: "Cambiar búsqueda", exact: true })
+    .click();
+  await page.getByLabel("Zona de interés").click();
+  await page.getByRole("option", { name: "Cusco", exact: true }).click();
   await page
     .getByRole("button", { name: "Explorar ejemplo", exact: true })
     .click();
@@ -134,9 +138,9 @@ test("prepara una consulta de mercado editable sin enviar mensajes", async ({
   expect(writes).toEqual([]);
 });
 
-for (const width of [320, 390, 768, 1280]) {
+for (const width of [320, 390, 768, 1280, 1920]) {
   test(`exploración y fuentes legibles a ${width}px`, async ({ page }) => {
-    await page.setViewportSize({ width, height: 900 });
+    await page.setViewportSize({ width, height: width === 1920 ? 1080 : 900 });
     await page.goto("/");
     expect(
       await page.evaluate(

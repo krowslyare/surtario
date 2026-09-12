@@ -1,4 +1,8 @@
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { Button } from "./ui/Button";
+import { Disclosure } from "./ui/Disclosure";
+import { Dialog } from "./Dialog";
+import { Bookmark, FolderOpen } from "lucide-react";
+import { Component, useEffect, useRef, useState, type ReactNode } from "react";
 import { useConvexConnectionState, useMutation, useQuery } from "convex/react";
 import { ConvexError, type Infer } from "convex/values";
 import { api } from "../../convex/_generated/api";
@@ -15,6 +19,16 @@ export type StudyDraft = {
   selectedIds: string[];
 };
 const SESSION_KEY = "procurement-demo-session-v1";
+
+function draftFingerprint(
+  draft: Pick<StudyDraft, "term" | "region" | "selectedIds">,
+) {
+  return JSON.stringify([
+    draft.term.trim(),
+    draft.region,
+    [...draft.selectedIds].sort(),
+  ]);
+}
 
 export default function SavedStudies(props: {
   draft: StudyDraft;
@@ -80,7 +94,29 @@ function ConnectedStudies({
   const [expanded, setExpanded] = useState(false);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageFingerprint, setMessageFingerprint] = useState<string | null>(
+    null,
+  );
   const [error, setError] = useState("");
+  const fingerprint = draftFingerprint(draft);
+  const latestDraft = useRef({ clientId: draft.clientId, fingerprint });
+  latestDraft.current = { clientId: draft.clientId, fingerprint };
+  const saveSequence = useRef(0);
+  const [savedDraft, setSavedDraft] = useState(() => ({
+    clientId: draft.clientId,
+    fingerprint: draft.id ? fingerprint : null,
+  }));
+  if (savedDraft.clientId !== draft.clientId) {
+    saveSequence.current += 1;
+    setSavedDraft({
+      clientId: draft.clientId,
+      fingerprint: draft.id ? fingerprint : null,
+    });
+    setSaving(false);
+    setMessage("");
+    setMessageFingerprint(null);
+    setError("");
+  }
   const eligible =
     draft.selectedIds.length > 0 &&
     ["arroz", "abarrotes", "abarrotes secos"].includes(
@@ -89,105 +125,148 @@ function ConnectedStudies({
     draft.region === "Lima";
   async function persist() {
     if (saving || !connected) return;
+    const submittedFingerprint = fingerprint;
+    const submittedClientId = draft.clientId;
+    const operation = ++saveSequence.current;
+    const isCurrentDraft = () =>
+      saveSequence.current === operation &&
+      latestDraft.current.clientId === submittedClientId;
     setSaving(true);
     setError("");
     setMessage("");
     try {
       const saved = await save({ token, ...draft });
+      if (!isCurrentDraft()) return;
       onSaved(saved);
-      setMessage(
-        `Estudio guardado con ${saved.selectedIds.length} ${saved.selectedIds.length === 1 ? "opción" : "opciones"}. Los cambios posteriores requieren guardar de nuevo.`,
-      );
+      setSavedDraft((current) => ({
+        ...current,
+        fingerprint: submittedFingerprint,
+      }));
+      if (latestDraft.current.fingerprint === submittedFingerprint) {
+        setMessage(
+          `Estudio guardado con ${saved.selectedIds.length} ${saved.selectedIds.length === 1 ? "opción" : "opciones"}.`,
+        );
+        setMessageFingerprint(submittedFingerprint);
+      }
     } catch (cause) {
+      if (!isCurrentDraft()) return;
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
           : "No se confirmó el guardado. Tu selección sigue aquí; comprueba la conexión y vuelve a intentar.",
       );
     } finally {
-      setSaving(false);
+      if (isCurrentDraft()) setSaving(false);
     }
   }
+  const dirty = savedDraft.fingerprint !== fingerprint;
+  const supportedExample =
+    ["arroz", "abarrotes", "abarrotes secos"].includes(
+      draft.term.toLowerCase(),
+    ) && draft.region === "Lima";
+  const status =
+    draft.selectedIds.length === 0
+      ? "Selecciona al menos una opción para guardar."
+      : !supportedExample
+        ? "El guardado de esta demo solo está disponible para arroz o abarrotes en Lima."
+        : savedDraft.fingerprint === null
+          ? "Sin guardar"
+          : dirty
+            ? "Cambios sin guardar"
+            : "Guardado";
+  const visibleMessage =
+    messageFingerprint === fingerprint && message ? message : status;
   return (
     <section className="saved-studies" aria-label="Estudios guardados">
       <div className="saved-study-actions">
-        <button
-          className="button secondary"
+        <Button
+          variant="primary"
+          onClick={persist}
+          disabled={!eligible || !connected}
+          busy={saving}
+          busyLabel="Guardando…"
+        >
+          <Bookmark size={16} aria-hidden="true" />
+          {draft.id ? "Guardar cambios del estudio" : "Guardar estudio"}
+        </Button>
+        <Button
+          variant="secondary"
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
         >
-          Guardados {studies ? `(${studies.length})` : ""}
-        </button>
-        <button
-          className="button primary"
-          onClick={persist}
-          disabled={!eligible || saving || !connected}
-        >
-          {saving
-            ? "Guardando…"
-            : draft.id
-              ? "Guardar cambios del estudio"
-              : "Guardar estudio"}
-        </button>
+          <FolderOpen size={16} aria-hidden="true" /> Guardados{" "}
+          {studies ? `(${studies.length})` : ""}
+        </Button>
       </div>
-      <p className="field-hint">
-        Estudios de ejemplo guardados para este navegador. Hasta 10; borrar los
-        datos del sitio pierde el acceso. Guarda antes de recargar.
+      <p className="field-hint" role="status">
+        {visibleMessage}
       </p>
+      <Disclosure title="Cómo se guarda">
+        <p className="field-hint">
+          Se conserva en la sesión de este navegador, hasta 10 estudios. Borrar
+          los datos del sitio elimina el acceso.
+        </p>
+      </Disclosure>
       {!connected && (
         <p role="status">
           Sin conexión al guardado. Puedes seguir explorando; todavía no se han
           confirmado cambios.
         </p>
       )}
-      {message && <p role="status">{message}</p>}
       {error && (
         <p className="notice error" role="alert">
           {error}
         </p>
       )}
       {expanded && (
-        <div className="saved-study-list">
-          {studies === undefined ? (
-            <p role="status">Cargando estudios…</p>
-          ) : studies.length === 0 ? (
-            <p>No tienes estudios guardados en esta sesión.</p>
-          ) : (
-            studies.map((study) => (
-              <article key={study.id} className="saved-study-row">
-                <div>
-                  <strong>
-                    {study.term} en {study.region}
-                  </strong>
-                  <p>
-                    {study.selectedIds.length}{" "}
-                    {study.selectedIds.length === 1 ? "opción" : "opciones"} ·
-                    Revisión {study.revision} ·{" "}
-                    {new Date(study.updatedAt).toLocaleString("es-PE")}
-                  </p>
-                </div>
-                <button
-                  className="button secondary"
-                  disabled={saving}
-                  onClick={() => {
-                    onOpen(study);
-                    setExpanded(false);
-                    setError("");
-                    setMessage(
-                      "Estudio recuperado. La selección abierta reemplazó el borrador de esta vista.",
-                    );
-                  }}
-                >
-                  Abrir estudio
-                </button>
-              </article>
-            ))
-          )}
-          <p className="field-hint">
-            Abrir otro estudio reemplaza la selección de esta vista. Guarda
-            primero los cambios que quieras conservar.
-          </p>
-        </div>
+        <Dialog title="Estudios guardados" onClose={() => setExpanded(false)}>
+          <div className="saved-study-list">
+            {studies === undefined ? (
+              <p role="status">Cargando estudios…</p>
+            ) : studies.length === 0 ? (
+              <p>No tienes estudios guardados en esta sesión.</p>
+            ) : (
+              studies.map((study) => (
+                <article key={study.id} className="saved-study-row">
+                  <div>
+                    <strong>
+                      {study.term} en {study.region}
+                    </strong>
+                    <p>
+                      {study.selectedIds.length}{" "}
+                      {study.selectedIds.length === 1 ? "opción" : "opciones"} ·
+                      Revisión {study.revision} ·{" "}
+                      {new Date(study.updatedAt).toLocaleString("es-PE")}
+                    </p>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    disabled={saving}
+                    onClick={() => {
+                      onOpen(study);
+                      setExpanded(false);
+                      setError("");
+                      setMessage("");
+                      setMessageFingerprint(
+                        draftFingerprint({
+                          term: study.term,
+                          region: study.region,
+                          selectedIds: study.selectedIds,
+                        }),
+                      );
+                    }}
+                  >
+                    Abrir estudio
+                  </Button>
+                </article>
+              ))
+            )}
+            <p className="field-hint">
+              Abrir otro estudio reemplaza la selección de esta vista. Guarda
+              primero los cambios que quieras conservar.
+            </p>
+          </div>
+        </Dialog>
       )}
     </section>
   );
@@ -209,12 +288,12 @@ class StorageBoundary extends Component<
             No se pudieron cargar los estudios. La selección actual sigue
             disponible; el guardado no está confirmado.
           </p>
-          <button
-            className="button secondary"
+          <Button
+            variant="secondary"
             onClick={() => this.setState({ failed: false })}
           >
             Reintentar guardado
-          </button>
+          </Button>
         </div>
       );
     return this.props.children;

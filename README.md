@@ -1,6 +1,6 @@
-# restaurant-procurement
+# Surtario
 
-Nombre de trabajo. Producto para investigar precios y distribuidores de insumos, conservar estudios y preparar compras cuando haga falta. Los documentos propios, historial y recetas aportan contexto opcional.
+**Mercado para tu cocina.** Nombre de marca elegido; nombre técnico del repositorio: `restaurant-procurement`. Producto para investigar precios y distribuidores de insumos, conservar estudios y preparar compras cuando haga falta. Los documentos propios, historial y recetas aportan contexto opcional.
 
 **Estado:** exploración local implementada con ejemplos ficticios de arroz y abarrotes en Lima. Permite revisar precios y contactos sin precio, seleccionar opciones y continuar opcionalmente a una comparación por cantidad. No requiere documentos ni inventario. La captura manual sigue disponible como alternativa.
 
@@ -45,7 +45,7 @@ npm run test:backend
 
 Las pruebas de persistencia de navegador requieren el backend local anterior y crean estudios sintéticos en sesiones independientes. Sus conexiones WebSocket están restringidas a localhost; no se ejecutan contra un backend remoto.
 
-Verificado: 94 pruebas de dominio/backend y 42 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Interfaz con Manrope local, búsqueda protagonista, lista compacta y precios por unidad destacados; sin nuevas llamadas externas. No se han probado dispositivos físicos ni accesibilidad completa.
+Verificado: 94 pruebas de dominio/backend y 42 pruebas de navegador (incluido el ensayo completo de demo) (incluyen 320, 390, 768 y 1280 px), build/tipos y consultas reales locales para 10/18/20 kg, dato faltante y límite de ofertas. Esa evidencia corresponde al flujo previo a la identidad Surtario; la verificación visual vigente figura a continuación. No se han probado dispositivos físicos ni accesibilidad completa.
 
 El [ensayo de demo](docs/desarrollo/ENSAYO_DEMO.md) documenta el recorrido reproducible y las partes del video aún pendientes. No se ha grabado un video de entrega.
 
@@ -115,7 +115,7 @@ Remoto: [krowslyare/restaurant-procurement](https://github.com/krowslyare/restau
 
 ## Herramientas del agente
 
-- [Frontend Design de Anthropic](.agents/skills/frontend-design/SKILL.md): usar junto con la guía UI/UX existente; branding comercial aplazado.
+- [Frontend Design de Anthropic](.agents/skills/frontend-design/SKILL.md): usar junto con la guía UI/UX y la dirección de marca Surtario.
 - [Skill del concurso](.agents/skills/convex-hackathon-skill/SKILL.md): `/hackathon` actualiza el registro. Si el comando no está disponible, leer y seguir el skill directamente.
 - Plugin global oficial Convex cargado. El MCP responde, pero su consulta de estado requiere autenticación; la CLI y las consultas HTTP públicas locales funcionan. AI files del proyecto instalados por la CLI; no se redistribuye el plugin global.
 - Hosting elegido: `convex.site`. Configurar el componente oficial en la etapa de hosting.
@@ -137,3 +137,33 @@ Las revisiones de foto/PDF de ejemplo también admiten «Guardar comparación»:
 Las fuentes web también pueden guardarse como distribuidores candidatos sin precio ni extracción: nombre/contacto revisados, URL/fecha y consulta autorizada al buzón de prueba. [Recorrido y límites](docs/desarrollo/DISTRIBUIDORES_WEB.md).
 
 Una respuesta vinculada permite preparar una oferta mediante revisión manual y guardarla como comparación nueva o añadirla a la comparación actual tras confirmar equivalencia, con procedencia del correo conservada en Convex y nueva elección requerida. [Respuesta a oferta](docs/desarrollo/RESPUESTA_A_OFERTA.md).
+
+
+## Identidad de producto: Surtario
+
+Identidad elegida y aplicada localmente: **Buen criterio. Buenos insumos.** Paleta berenjena/rábano/ají, titulares Bricolage Grotesque y cuerpo Manrope, símbolos y logotipos SVG, favicon y fotografía editorial generada para la marca. Las fuentes y la imagen viajan con la app; no requieren un servicio externo al abrirla.
+
+- Producto: `http://127.0.0.1:5173/`.
+- Página de marca con historia, colores copiables, variantes y motion: `http://127.0.0.1:5173/?view=brand`.
+- [Kit descargable](public/brand/surtario-brand-kit.zip): SVG en color, negativo y una tinta; portada 1920 × 1080 (16:9), pieza 1080 × 1350 (4:5), historia 1080 × 1920 (9:16), imagen WebP, licencia y prompt.
+- [Dirección, uso y evidencia](docs/diseno/MARCA.md), [contrato de interfaz](docs/diseno/UI_UX.md) y [procedencia de assets](public/brand/README.md).
+
+Escritorio de referencia 1920 × 1080; contenedor de 1536 px. El flujo se recompone en portátil y móvil. El branding no altera cálculos, ofertas, sesiones ni compras. Surtario fue elegido tras la [investigación preliminar de nombres](docs/diseno/NAMING.md). El dominio se mostró disponible para registro en esa consulta, pero no se compró; búsqueda registral de marcas pendiente.
+
+Verificación de esta entrega: 94 tests y build/tipos satisfactorios. De 43 E2E, 39 pasaron en paralelo; cuatro agotaron el tiempo y pasaron aislados con `--workers=1`, sin cambiar aserciones ni límites. Prueba adicional de reflujo a 1920 × 1080, revisión visual, movimiento reducido y controles de la guía. Sin push, despliegue ni llamadas reales a los sponsors del backend. La generación de la imagen de marca sí se ejecutó con la herramienta integrada `imagegen`.
+
+Cambio posterior de nombre a Surtario: build/tipos y los nueve E2E de exploración correctos. Logos, kit y piezas revisados en sus ratios originales; referencia desktop 1920 × 1080 y cabecera móvil a 320 px verificadas. La elección no compró ni vinculó un dominio.
+
+
+## Interfaz e interacción: Surtario 1.2
+
+Exploración y estudio con zonas de trabajo diferenciadas; lista de insumos y documentos en secciones opcionales que conservan sus borradores. Los selectores de todas las pantallas comparten menú, teclado, foco y estados pendientes. Filtros, selección, desplegables y diálogos responden con movimiento breve y respetan movimiento reducido. La página de marca permite probar los componentes reales. [Contrato y decisiones](docs/diseno/INTERACCION.md).
+
+Verificación actual: `npm test` (94), `npm run test:e2e -- --workers=1` (46) y `npm run build` satisfactorios. Tras el último ajuste de transcripción desplegable, cinco E2E de documentos/interacción y build volvieron a pasar. Referencia visual 1920 × 1080 y móvil; reflujo automatizado desde 320 px. El build advierte un bloque principal de aproximadamente 612 kB (192 kB gzip); queda medir rendimiento en dispositivos reales. Sin cambios de backend, push ni despliegue.
+
+
+## Refinamiento de exploración con Impeccable
+
+Skill 4.3.1 instalado localmente y fijado por commit; procedencia en `.agents/skills/impeccable/ORIGIN.md`. Disponible para las siguientes tareas. Esta entrega aplicó sus guías mediante lectura directa, sin ejecutar el motor de detección. `PRODUCT.md` y `DESIGN.md` remiten al contexto de producto y diseño del repositorio.
+
+Exploración con botones compartidos, resultados compactos, fuentes junto a acciones, selección visible en el resumen y acceso móvil con foco. Guardar tiene prioridad sobre preparar una compra. Decisiones y verificación en [INTERACCION.md](docs/diseno/INTERACCION.md). Se mantiene la URL local y los comandos existentes.

@@ -22,7 +22,7 @@ Bloque de persistencia completado localmente: selección y fuentes recuperables,
 
 Siguientes hitos: ejecutar descubrimiento/extracción contra proveedores reales y el recorrido de correo de prueba autorizado. El código de búsqueda, revisión persistente y cotizaciones está preparado; faltan pruebas con credenciales. OpenAI, Firecrawl y AgentMail siguen aplazados por decisión del usuario. Se puede preparar el código sin claves, pero etapas 2–4 no se completan sin ejecutar las integraciones. Ver [exploración](./EXPLORACION_MERCADO.md) y [primera comparación](./PRIMERA_ENTREGA.md).
 
-Revisión visual aplicada: Manrope local y tokens índigo/lavanda; búsqueda protagonista, resultados compactos, precio normalizado destacado y acceso persistente al estudio. La portada ilustrada fue retirada. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
+Identidad Surtario aplicada por ampliación de alcance del usuario: marca y relato, fotografía generada, logos SVG, favicon, kit y página de marca; entrada 60/40 para 1920 × 1080, resultados con herramientas laterales y adaptación móvil. 94 tests y build satisfactorios; de 43 E2E, 39 pasaron en paralelo y los cuatro timeouts pasaron aislados sin modificar pruebas. [Guía y evidencia](../diseno/UI_UX.md), [dirección de marca](../diseno/MARCA.md). La [investigación preliminar de nombre](../diseno/NAMING.md) encontró coincidencias cercanas con Ronda y presentó tres alternativas con .com ofrecidos para registro; el usuario eligió Surtario. Logotipos, piezas, kit y relato adaptados; el dominio no se compró y la búsqueda registral de marcas está pendiente. Sin cambios de backend ni integraciones; no modifica el estado de las etapas ni habilita publicación.
 
 Ensayo del guion actual completado en navegador: explorar → guardar/recuperar → consulta sin envío → compra opcional → totales comprobados. 36 pruebas de dominio/backend y 19 de navegador, build y smoke de cálculo local satisfactorios. [Guion y brechas de concurso](./ENSAYO_DEMO.md); video no grabado, integraciones y publicación pendientes.
 
@@ -140,3 +140,20 @@ Lectura de PNG/PDF sintéticos preparada con revisión visual y clasificación d
 Fuentes web sin precio conectadas a una biblioteca de candidatos revisados y consultas persistentes. [Contrato y evidencia](DISTRIBUIDORES_WEB.md). Búsqueda externa y correo real pendientes; no se habilitan envíos a contactos encontrados.
 
 Respuesta revisada incorporable a la comparación actual tras confirmar equivalencia, conservando cantidad y fuentes y dejando pendiente una nueva elección. [Contrato y verificación local](RESPUESTA_A_OFERTA.md). No completa el recorrido externo de correo.
+
+
+## Mejora de interfaz e interacción · 11 de septiembre de 2026
+
+Surtario 1.2 separa resultados, resumen del estudio y herramientas opcionales, unifica selectores y añade movimiento a filtros, secciones y diálogos. Necesidad y ofertas quedan diferenciadas en comparación; guía de marca con componentes reales. 94 tests, 46 E2E con un worker y build satisfactorios; cinco E2E de documentos/interacción y build repetidos después del último ajuste. Revisión visual a 1920 × 1080 y móvil, teclado, menús dentro de diálogos y conservación de borradores. [Contrato y evidencia](../diseno/INTERACCION.md). El aviso de tamaño del bloque principal (aproximadamente 612 kB, 192 kB gzip) queda registrado; rendimiento en dispositivos reales pendiente. No cambia el estado de las etapas, el backend ni la habilitación de datos privados. Sin push ni despliegue.
+
+
+## Refinamiento de exploración · 11 de septiembre de 2026
+
+Botones compartidos, filas compactas con fuente y acciones, selección explícita en el lateral y acceso móvil al resumen. Se aplicaron las guías de Impeccable 4.3.1 conservando identidad y reglas de negocio. No cambia el estado de las etapas ni acredita integraciones o hosting. Decisiones en `docs/diseno/INTERACCION.md`.
+
+Verificación: 94 tests de dominio/backend, 47 E2E con un worker (incluido ensayo completo, persistencia y reflujo de 320 a 1920 px) y build/tipos satisfactorios. Revisión visual de escritorio, tablet y móvil; teclado y movimiento reducido cubiertos. Tras la comprobación completa se ajustó únicamente el contraste del contador activo y se volvió a compilar. El bloque principal continúa cerca de 612 kB (192 kB gzip); rendimiento físico y auditoría completa de accesibilidad pendientes. Sin cambios de backend, llamadas reales de sponsors, correos, commit, push ni despliegue. Los E2E usaron datos sintéticos en Convex local.
+
+
+### Segunda pasada de exploración y guardado
+
+Búsqueda compacta, biblioteca en diálogo y estado de guardado resistente a respuestas tardías, preservando el acabado de tarjetas y comparación incorporado por Gemini. Build y 17 E2E enfocados satisfactorios sobre el estado combinado; persistencia verificada tras reiniciar Convex local. Capturas a 1440/390 px y reflujo de 320 a 1920 px. Evidencia y límites en [INTERACCION.md](../diseno/INTERACCION.md). No cambia el estado de las etapas; sin publicación remota.

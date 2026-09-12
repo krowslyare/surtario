@@ -114,11 +114,13 @@ for (const mode of ["new", "append"] as const)
       .fill("18");
     await dialog
       .getByLabel("Unidad de la presentación", { exact: true })
-      .selectOption("kg");
+      .click();
+    await dialog.getByRole("option", { name: "kg", exact: true }).click();
     await dialog
       .getByLabel("Precio por presentación", { exact: true })
       .fill("85");
-    await dialog.getByLabel("Moneda", { exact: true }).selectOption("PEN");
+    await dialog.getByLabel("Moneda", { exact: true }).click();
+    await dialog.getByRole("option", { name: "PEN", exact: true }).click();
     await dialog
       .getByLabel(
         "Confirmo que estos datos corresponden a una oferta de esta respuesta",

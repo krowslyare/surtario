@@ -3,6 +3,7 @@ import { draftValues, extractionFields } from "../domain/extraction";
 import { emptyReplyProposal, prepareReplyOffer } from "../domain/replyReview";
 import type { PurchaseSeed } from "../domain/market";
 import { Dialog } from "./Dialog";
+import Select from "./ui/Select";
 const labels = {
   supplier: "Proveedor",
   ingredient: "Insumo",
@@ -47,25 +48,22 @@ export default function ReplyOfferReview({
           <label className="field" key={key}>
             {labels[key]}
             {key === "currency" || key === "packageUnit" ? (
-              <select
+              <Select
                 aria-label={labels[key]}
                 value={values[key]}
-                onChange={(e) => {
-                  setValues({ ...values, [key]: e.target.value });
+                onValueChange={(value) => {
+                  setValues({ ...values, [key]: value });
                   setConfirmed(false);
                   setEquivalent(false);
                 }}
-              >
-                <option value="">Pendiente</option>
-                {(key === "currency"
-                  ? ["PEN", "USD"]
-                  : ["kg", "g", "L", "ml", "unit"]
-                ).map((value) => (
-                  <option key={value} value={value}>
-                    {value}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: "", label: "Pendiente" },
+                  ...(key === "currency"
+                    ? ["PEN", "USD"]
+                    : ["kg", "g", "L", "ml", "unit"]
+                  ).map((value) => ({ value, label: value })),
+                ]}
+              />
             ) : (
               <input
                 maxLength={120}

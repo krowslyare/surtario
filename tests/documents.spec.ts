@@ -10,6 +10,9 @@ test("document examples are inspectable but no extraction runs without configura
     socket.connectToServer();
   });
   await page.goto("/");
+  await page
+    .getByRole("button", { name: "Cotizaciones y documentos", exact: true })
+    .click();
   const section = page.getByRole("region", { name: "Lectura de foto y PDF" });
   await expect(
     section.getByRole("button", { name: "Leer con OpenAI" }),
@@ -18,7 +21,10 @@ test("document examples are inspectable but no extraction runs without configura
   await section.getByRole("button", { name: "Ver archivo de ejemplo" }).click();
   await expect(page.getByRole("dialog").getByRole("img")).toBeVisible();
   await page.keyboard.press("Escape");
-  await section.getByLabel("Archivo de ejemplo").selectOption("pdf");
+  await section.getByLabel("Archivo de ejemplo").click();
+  await page
+    .getByRole("option", { name: "Cotización PDF · 1 página", exact: true })
+    .click();
   await expect(
     section.getByRole("link", { name: "Descargar ejemplo" }),
   ).toHaveAttribute("href", "/examples/cotizacion-demo.pdf");

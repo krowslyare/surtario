@@ -1,0 +1,237 @@
+/* Shared control contract. Keep Radix Select styling in its own layer. */
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select
+) {
+  width: 100%;
+  min-height: var(--control-min-height);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-control);
+  padding: 0.625rem 0.75rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-body);
+  line-height: 1.4;
+  transition:
+    border-color var(--motion-control) ease,
+    background-color var(--motion-control) ease,
+    box-shadow var(--motion-control) ease;
+}
+
+:where(textarea) {
+  min-height: 7rem;
+  resize: vertical;
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select
+)::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.82;
+}
+
+:where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    textarea,
+    select
+  ):hover:not(:disabled):not(:focus-visible) {
+  border-color: var(--color-primary);
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select
+):focus {
+  border-color: var(--color-focus);
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select
+):focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+  box-shadow: 0 0 0 4px rgb(23 92 211 / 16%);
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select
+):disabled {
+  border-color: var(--color-border);
+  background: color-mix(in srgb, var(--color-canvas) 72%, var(--color-surface));
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+:where(
+  input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+  textarea,
+  select
+)[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+:where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    textarea,
+    select
+  )[aria-invalid="true"]:focus-visible {
+  outline-color: var(--color-danger);
+  box-shadow: 0 0 0 4px rgb(180 35 24 / 16%);
+}
+
+:where(input[type="checkbox"], input[type="radio"]) {
+  width: 1.25rem;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  min-height: 1.25rem;
+  margin: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+  transition: box-shadow var(--motion-control) ease;
+}
+
+:where(input[type="checkbox"], input[type="radio"]):focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+  box-shadow: 0 0 0 4px rgb(23 92 211 / 16%);
+}
+
+:where(input[type="checkbox"], input[type="radio"]):disabled {
+  cursor: not-allowed;
+}
+
+.button {
+  min-height: var(--control-min-height);
+  transition:
+    background-color var(--motion-control) ease,
+    border-color var(--motion-control) ease,
+    color var(--motion-control) ease,
+    box-shadow var(--motion-control) ease,
+    transform var(--motion-control) ease;
+}
+
+.button:focus-visible,
+.icon-button:focus-visible,
+.disclosure-trigger:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+  box-shadow: 0 0 0 4px rgb(23 92 211 / 16%);
+}
+
+.button:not(:disabled):active,
+.icon-button:not(:disabled):active,
+.disclosure-trigger:not(:disabled):active {
+  transform: translateY(1px);
+}
+
+.button[aria-pressed="true"],
+.button.selected-button {
+  border-color: var(--color-primary);
+  background: var(--color-success-surface);
+  color: var(--color-primary);
+}
+
+.button[aria-busy="true"] {
+  cursor: progress;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+    textarea,
+    select,
+    input[type="checkbox"],
+    input[type="radio"],
+    .button,
+    .icon-button,
+    .disclosure-trigger
+  ) {
+    transition: none;
+  }
+}
+
+.field input,
+.field textarea {
+  border-radius: var(--radius-control);
+  min-height: var(--control-min-height);
+}
+
+/* Shared Button: the resting label reserves space while a request is pending. */
+.ui-button {
+  position: relative;
+  isolation: isolate;
+  font-weight: 650;
+}
+.button-content,
+.button-progress {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.button-content > svg,
+.button-progress > svg {
+  flex: none;
+}
+.ui-button[aria-busy="true"] .button-content {
+  visibility: hidden;
+}
+.button-progress {
+  position: absolute;
+  inset: 0;
+}
+.ui-button[aria-busy="true"] {
+  opacity: 1;
+}
+.button-progress svg {
+  animation: button-working 800ms linear infinite;
+}
+.ui-button.secondary:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  background: var(--color-success-surface);
+}
+.ui-button[aria-pressed="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+}
+.ui-button:disabled:not([aria-busy="true"]) {
+  opacity: 1;
+  background: var(--color-canvas);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+}
+@keyframes button-working {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .button-progress svg {
+    animation: none;
+  }
+  .ui-button:active {
+    transform: none;
+  }
+}
+.ui-button[aria-pressed="true"]:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+  color: var(--color-on-primary);
+}
+/* Legacy topbar rules hide helper spans; the button label must stay visible. */
+.market-topbar .ui-button .button-content {
+  display: inline-flex;
+}
+.ui-button[aria-pressed="true"] .selection-count {
+  color: var(--color-primary);
+}

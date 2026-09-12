@@ -67,7 +67,8 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
   await page.getByRole("button", { name: "Revisar extracción" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("Extracción automática");
-  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
+  await dialog.getByLabel("Unidad de la presentación").click();
+  await dialog.getByRole("option", { name: "kg", exact: true }).click();
   await dialog.getByLabel("Contenido por presentación").fill("18");
   await dialog
     .getByLabel(
