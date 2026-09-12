@@ -69,6 +69,33 @@ test("US studies persist only the matching server-owned context", async () => {
   await expect(
     t.mutation(api.studies.save, {
       ...draft,
+      id: saved.id,
+      expectedRevision: 1,
+      term: "Arroz",
+      region: "Lima",
+      selectedIds: ["catalog-a"],
+    }),
+  ).rejects.toThrow(/conserva un insumo, una zona y sus fuentes/);
+  expect(
+    (await t.query(api.studies.list, { token }))[0],
+  ).toMatchObject({
+    term: "Rice",
+    region: "Portland, OR, US",
+    selectedIds: draft.selectedIds,
+    results: usMarketExamples,
+    revision: 1,
+  });
+  await expect(
+    t.mutation(api.studies.save, {
+      ...draft,
+      term: "Arroz",
+      region: "Lima",
+      selectedIds: ["catalog-a"],
+    }),
+  ).rejects.toThrow(/otra selección/);
+  await expect(
+    t.mutation(api.studies.save, {
+      ...draft,
       clientId: crypto.randomUUID(),
       selectedIds: ["us-catalog-a", "catalog-a"],
     }),

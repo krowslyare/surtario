@@ -165,6 +165,23 @@ export const save = mutation({
         throw new ConvexError(
           "El estudio cambió en otra vista. Ábrelo desde Guardados antes de actualizar.",
         );
+      const savedExampleContext = findMarketExampleContext(
+        study.term,
+        study.region,
+      );
+      const sameSavedContext = savedExampleContext
+        ? requestedExampleContext === savedExampleContext
+        : term === study.term && region === study.region;
+      if (
+        !sameSavedContext ||
+        (selectedExampleContext &&
+          !selectedExampleContext.results.every((result) =>
+            study.results.some((saved) => saved.id === result.id),
+          ))
+      )
+        throw new ConvexError(
+          "Este estudio conserva un insumo, una zona y sus fuentes. Inicia otro estudio para cambiar de mercado.",
+        );
       // Preserve the original source snapshot when updating selection.
       await ctx.db.patch("studies", study._id, {
         term,
