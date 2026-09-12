@@ -1,5 +1,5 @@
-export type BaseUnit = "kg" | "L" | "unit";
-export type PackageUnit = BaseUnit | "g" | "ml";
+export type BaseUnit = "kg" | "lb" | "L" | "unit";
+export type PackageUnit = BaseUnit | "g" | "oz" | "ml";
 export type Currency = "PEN" | "USD";
 export type TaxStatus = "included" | "excluded" | "unknown";
 
@@ -82,14 +82,18 @@ export interface ProcurementComparison {
   needsAlternative: boolean;
 }
 
-const unitDefinition: Record<PackageUnit, { base: BaseUnit; factor: number }> =
-  {
-    kg: { base: "kg", factor: 1 },
-    g: { base: "kg", factor: 0.001 },
-    L: { base: "L", factor: 1 },
-    ml: { base: "L", factor: 0.001 },
-    unit: { base: "unit", factor: 1 },
-  };
+const unitDefinition: Record<
+  PackageUnit,
+  { dimension: "mass" | "volume" | "count"; canonicalFactor: number }
+> = {
+  kg: { dimension: "mass", canonicalFactor: 1 },
+  g: { dimension: "mass", canonicalFactor: 0.001 },
+  lb: { dimension: "mass", canonicalFactor: 0.45359237 },
+  oz: { dimension: "mass", canonicalFactor: 0.028349523125 },
+  L: { dimension: "volume", canonicalFactor: 1 },
+  ml: { dimension: "volume", canonicalFactor: 0.001 },
+  unit: { dimension: "count", canonicalFactor: 1 },
+};
 
 function issue(
   field: string,
@@ -241,7 +245,10 @@ export function evaluateOffer(
         "Falta confirmar la unidad del empaque.",
       ),
     );
-  } else if (unitDefinition[offer.packageUnit].base !== request.unit) {
+  } else if (
+    unitDefinition[offer.packageUnit].dimension !==
+    unitDefinition[request.unit].dimension
+  ) {
     comparisonExclusions.push(
       issue(
         "offer.packageUnit",
@@ -255,7 +262,9 @@ export function evaluateOffer(
     offer.packageContent > 0
   ) {
     normalizedPackageContent =
-      offer.packageContent * unitDefinition[offer.packageUnit].factor;
+      (offer.packageContent *
+        unitDefinition[offer.packageUnit].canonicalFactor) /
+      unitDefinition[request.unit].canonicalFactor;
   }
 
   if (offer.priceCents === null) {

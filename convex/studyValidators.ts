@@ -37,7 +37,12 @@ export const marketResultValidator = v.union(
     kind: v.literal("catalog"),
     specification: v.string(),
     packageContent: nullableNumber,
-    packageUnit: v.union(v.literal("kg"), v.literal("L"), v.literal("unit")),
+    packageUnit: v.union(
+      v.literal("kg"),
+      v.literal("lb"),
+      v.literal("L"),
+      v.literal("unit"),
+    ),
     priceCents: v.number(),
     currency: v.union(v.literal("PEN"), v.literal("USD")),
     minimumPackages: nullableNumber,
