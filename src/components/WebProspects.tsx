@@ -124,7 +124,7 @@ export function SaveWebProspect({
                 }
               }}
             >
-              {busy ? "Saving…" : "Save candidato"}
+              {busy ? "Saving…" : "Save candidate"}
             </button>
           )}
         </Dialog>
@@ -146,8 +146,8 @@ export function WebProspectLibrary({
   const prospects = useQuery(api.prospects.list, { token });
   if (!prospects?.length) return null;
   return (
-    <section className="saved-studies" aria-label="Distribuidores web savings">
-      <h2>Distribuidores web savings</h2>
+    <section className="saved-studies" aria-label="Saved web distributors">
+      <h2>Saved web distributors</h2>
       <p>
         Candidate reviewed by you. Price, availability, and service area need
         consultar.
@@ -166,7 +166,7 @@ export function WebProspectLibrary({
             {item.sourceTitle}
           </a>
           <p className="field-hint">
-            Source observada el{" "}
+            Source observed on{" "}
             {new Date(item.observedAt).toLocaleDateString("es-PE")}. Contacto
             not independently verified.
           </p>

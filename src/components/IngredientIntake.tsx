@@ -34,18 +34,18 @@ export default function IngredientIntake({
   const [savedId, setSavedId] = useState<Id<"ingredientLists"> | null>(null);
   const [viewSource, setViewSource] = useState(false);
   return (
-    <section className="ingredient-intake" aria-label="Entrada de insumos">
+    <section className="ingredient-intake" aria-label="Ingredient intake">
       <div className="intake-actions">
         <button className="button secondary" onClick={() => setOpen(true)}>
           <FilePlus2 size={17} />
           {batch ? "Reemplazar ingredient list" : "Add list or file"}
         </button>
-        <span>Excel, CSV, foto/PDF o escritura manual</span>
+        <span>Excel, CSV, photo/PDF, or manual entry</span>
       </div>
       {batch && (
         <div className="intake-batch">
           <div className="intake-batch-heading">
-            <h2>{batch.rows.length} insumos revisados</h2>
+            <h2>{batch.rows.length} ingredients reviewed</h2>
             <button
               className="button text-button"
               onClick={() => setViewSource(true)}
@@ -270,7 +270,7 @@ function IntakeDialog({
             />
           </label>
           <p className="field-hint">
-            Hasta 3 MB; XLSX/CSV de hasta 100 insumos, 20 columnas y 10 hojas.
+            Up to 3 MB; XLSX/CSV with up to 100 ingredients, 20 columns, and 10 sheets.
             CSV en UTF-8. XLS antiguo no admitido.
           </p>
           {busy && <p role="status">Reading file in your browser…</p>}
@@ -295,9 +295,9 @@ function IntakeDialog({
             <>
               <div className="form-grid intake-mapping">
                 <label className="field">
-                  <span>Hoja</span>
+                  <span>Sheet</span>
                   <Select
-                    aria-label="Hoja"
+                    aria-label="Sheet"
                     value={String(sheetIndex)}
                     onValueChange={(value) => {
                       setSheetIndex(Number(value));
@@ -310,9 +310,9 @@ function IntakeDialog({
                   />
                 </label>
                 <label className="field">
-                  <span>Columna de insumos</span>
+                  <span>Ingredient column</span>
                   <Select
-                    aria-label="Columna de insumos"
+                    aria-label="Ingredient column"
                     value={String(column)}
                     onValueChange={(value) => setColumn(Number(value))}
                     options={[
@@ -326,7 +326,7 @@ function IntakeDialog({
                         },
                         (_, index) => ({
                           value: String(index),
-                          label: `Columna ${index + 1}${
+                          label: `Column ${index + 1}${
                             sheet.rows[0]?.[index]
                               ? `: ${sheet.rows[0][index].slice(0, 60)}`
                               : ""
@@ -352,8 +352,8 @@ function IntakeDialog({
               >
                 <table>
                   <caption>
-                    Primeras 5 filas. Elige la columna; no inferimos precios ni
-                    unidades.
+                    First 5 rows. Choose the column; we do not infer prices or
+                    units.
                   </caption>
                   <tbody>
                     {sheet.rows.slice(0, 5).map((row, index) => (

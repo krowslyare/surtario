@@ -241,7 +241,7 @@ function ConnectedStudies({
         <Dialog title="Saved studies" onClose={() => setExpanded(false)}>
           <div className="saved-study-list">
             {studies === undefined ? (
-              <p role="status">Cargando estudios…</p>
+              <p role="status">Loading studies…</p>
             ) : studies.length === 0 ? (
               <p>You have no saved studies in this session.</p>
             ) : (
@@ -313,7 +313,7 @@ class StorageBoundary extends Component<
             variant="secondary"
             onClick={() => this.setState({ failed: false })}
           >
-            Reintentar guardado
+            Retry save
           </Button>
         </div>
       );

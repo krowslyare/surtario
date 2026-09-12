@@ -166,7 +166,7 @@ export function ResearchWorkspace({
           setError(
             cause instanceof ConvexError && typeof cause.data === "string"
               ? cause.data
-              : "Could not completar la search. Vuelve a trylo.",
+              : "Could not complete the search. Try again.",
           );
       })
       .finally(() => current && setSearching(false));
@@ -289,7 +289,7 @@ export function ResearchWorkspace({
     }
   }
 
-  if (!status) return <p className="notice info">Comprobando la search web…</p>;
+  if (!status) return <p className="notice info">Checking web search…</p>;
 
   // Keep the status subscription mounted without an empty duplicate search panel.
   if (!searching && !active && !error && !runs?.length) return null;
@@ -304,7 +304,7 @@ export function ResearchWorkspace({
             treating them as supplier offers.
           </p>
         </div>
-        {searching && <span role="status">Buscando sources…</span>}
+        {searching && <span role="status">Searching sources…</span>}
       </div>
 
       {!status.searchEnabled && (
@@ -388,7 +388,7 @@ export function ResearchWorkspace({
               {active.discarded}{" "}
               {active.discarded === 1
                 ? "result was discarded"
-                : "resultados se descartaron"}{" "}
+                : "results were discarded"}{" "}
               for not meeting the search limits.
             </p>
           )}
@@ -649,8 +649,8 @@ export function ResearchWorkspace({
           <strong>
             {reviewed.length}{" "}
             {reviewed.length === 1
-              ? "offer revisada en Mi study"
-              : "offers revisadas en Mi study"}
+              ? "offer reviewed in My study"
+              : "offers reviewed in My study"}
           </strong>
           <p>
             Save the study to recover your corrections. Comparing a purchase es
@@ -665,7 +665,7 @@ export function ResearchWorkspace({
         <div className="reviewed-research">
           <strong>
             {reviewed.length}{" "}
-            {reviewed.length === 1 ? "offer revisada" : "offers revisadas"}
+            {reviewed.length === 1 ? "offer reviewed" : "offers reviewed"}
           </strong>
           <p>
             Corrections in this selection are kept when you save the comparison.

@@ -83,7 +83,7 @@ function Connected({
       visible[index] = local;
   }
   return (
-    <section className="ingredient-intake" aria-label="Lectura de foto y PDF">
+    <section className="ingredient-intake" aria-label="Photo and PDF extraction">
       <h2>Read a quote from a photo or PDF</h2>
       <p>
         Use synthetic documents. Check the extracted data against the original

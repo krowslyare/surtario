@@ -109,7 +109,7 @@ export default function ExtractionReview({
   }
 
   return (
-    <section className="extraction-entry" aria-label="Revision de quote">
+    <section className="extraction-entry" aria-label="Quote review">
       <button className="button secondary" onClick={() => setOpen(true)}>
         <FileSearch size={17} />
         {triggerLabel}
@@ -117,7 +117,7 @@ export default function ExtractionReview({
 
       {open && (
         <Dialog
-          title="Review data de la quote"
+          title="Review quote data"
           wide
           onClose={() => setOpen(false)}
         >
@@ -146,7 +146,7 @@ export default function ExtractionReview({
                 </a>
               )}
               <time dateTime={source.observedAt}>
-                Observado el{" "}
+                Observed on{" "}
                 {new Intl.DateTimeFormat("es-PE", {
                   day: "numeric",
                   month: "short",
@@ -227,7 +227,7 @@ export default function ExtractionReview({
           </div>
 
           <div className="extraction-pending">
-            <strong>Condiciones adicionales pendientes</strong>
+            <strong>Additional terms pending</strong>
             <p>
               This extraction does not confirm minimum order, delivery cost, or
               tax status. Review them separately in the comparison.

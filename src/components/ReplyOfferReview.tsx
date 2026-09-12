@@ -256,15 +256,15 @@ export default function ReplyOfferReview({
             )}
             {displayedProposal && (
               <small>
-                Propuesta original de IA: «
-                {displayedProposal[key].value ?? "Pending"}» · Evidencia
-                original: «{displayedProposal[key].evidence ?? "No evidence"}»
+                Original AI suggestion: “
+                {displayedProposal[key].value ?? "Pending"}” · Original
+                evidence: “{displayedProposal[key].evidence ?? "No evidence"}”
               </small>
             )}
             {displayedProposal &&
               values[key] !== (displayedProposal[key].value ?? "") && (
                 <small>
-                  Current manual correction: «{values[key] || "Pending"}»
+                  Current manual correction: “{values[key] || "Pending"}”
                 </small>
               )}
           </label>

@@ -252,7 +252,7 @@ const ConnectedComparisons = forwardRef<
           {saving
             ? "Saving…"
             : draft.id
-              ? "Save changes de la comparison"
+              ? "Save comparison changes"
               : "Save comparison"}
         </button>
       </div>
@@ -278,7 +278,7 @@ const ConnectedComparisons = forwardRef<
       {expanded && (
         <div className="saved-study-list">
           {comparisons === undefined ? (
-            <p role="status">Loading comparaciones…</p>
+            <p role="status">Loading comparisons…</p>
           ) : comparisons.length === 0 ? (
             <p>You have no saved comparisons in this session.</p>
           ) : (

@@ -10,9 +10,9 @@ import { Dialog } from "./Dialog";
 
 type Quotation = Infer<typeof savedQuotationValidator>;
 const labels = {
-  draft: "Borrador",
+  draft: "Draft",
   sending: "Sending",
-  sent: "Aceptado por AgentMail",
+  sent: "Accepted by AgentMail",
   uncertain: "Send unconfirmed",
   failed: "Send failed",
 };
@@ -241,7 +241,7 @@ function Connected({
             </p>
           )}
           <p>
-            <strong>Destinatario de prueba:</strong>{" "}
+            <strong>Test recipient:</strong>{" "}
             {active.recipient ??
               "Not configured; create another request after it is configured."}
           </p>
@@ -301,7 +301,7 @@ function Connected({
             </button>
           </div>
           {notice && <p role="status">{notice}</p>}
-          <h3>Respuestas vinculadas</h3>
+          <h3>Linked replies</h3>
           {active.replies.length === 0 ? (
             <p>No replies are linked yet.</p>
           ) : (

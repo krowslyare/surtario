@@ -94,7 +94,7 @@ export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
               }
             }}
           >
-            Copiar propuesta
+            Copy proposal
           </button>
           <p role="status">
             {copied
@@ -134,7 +134,7 @@ function ScenarioDetails({
             <li key={alternative.offerId}>
               <strong>{alternative.supplier}</strong>
               <p>
-                Desembolso: {total}. Cobertura:{" "}
+                Cash outlay: {total}. Coverage:{" "}
                 {alternative.coverageDays === null
                   ? "pending"
                   : `${new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 }).format(alternative.coverageDays)} days`}
@@ -386,10 +386,10 @@ function Connected({
     (selected.status === "calculated" && enabled === true);
   const actionLabel = busy
     ? enabled === true
-      ? "Guardando y analizando…"
-      : "Guardando escenario…"
+      ? "Saving and analyzing…"
+      : "Saving scenario…"
     : enabled === undefined
-      ? "Comprobando asesor…"
+      ? "Checking advisor…"
       : !comparisonCurrent
         ? enabled
           ? "Save comparison and request AI analysis"
@@ -427,7 +427,7 @@ function Connected({
               <option value="balanced">
                 Balance cash outlay and unit price
               </option>
-              <option value="cash">Cuidar caja</option>
+              <option value="cash">Preserve cash</option>
               <option value="unit_price">Lowest unit price</option>
             </select>
           </label>
@@ -454,10 +454,10 @@ function Connected({
             [
               [
                 "budgetCents",
-                `Presupuesto disponible (${offers[0]?.currency ?? "PEN"})`,
+                `Available budget (${offers[0]?.currency ?? "PEN"})`,
               ],
-              ["dailyUsage", `Consumo diario confirmado (${request.unit})`],
-              ["stockQuantity", `Stock actual confirmado (${request.unit})`],
+              ["dailyUsage", `Confirmed daily usage (${request.unit})`],
+              ["stockQuantity", `Confirmed current stock (${request.unit})`],
               ["maxCoverageDays", "Maximum coverage days"],
             ] as const
           ).map(([key, label]) => (
@@ -512,7 +512,7 @@ function Connected({
         <>
           <p role="status" className="notice info">
             The saved analysis is out of date for this view. The next action
-            will save the visible comparison and prepare a escenario nuevo.
+            will save the visible comparison and prepare a new scenario.
           </p>
           <details className="advisor-stale-evidence">
             <summary>View the previous saved analysis</summary>
@@ -574,7 +574,7 @@ function Connected({
                 ))}
               </ul>
               <details>
-                <summary>Fuentes consultadas</summary>
+                <summary>Sources reviewed</summary>
                 <ul>
                   {selected.narrative.sourceIds.map((id) => (
                     <li key={id}>
@@ -595,7 +595,7 @@ function Connected({
       )}
       {!!runs?.length && (
         <details>
-          <summary>Recuperar escenarios ({runs.length})</summary>
+          <summary>Restore scenarios ({runs.length})</summary>
           {runs.map((run) => (
             <button
               key={run.id}
@@ -606,12 +606,12 @@ function Connected({
                 setRaw({});
               }}
             >
-              Escenario {new Date(run.createdAt).toLocaleString("es-PE")} ·{" "}
+              Scenario {new Date(run.createdAt).toLocaleString("en-US")} ·{" "}
               {run.context.priority === "cash"
-                ? "Caja"
+                ? "Cash"
                 : run.context.priority === "unit_price"
                   ? "Unit price"
-                  : "Equilibrio"}
+                  : "Balanced"}
             </button>
           ))}
         </details>
