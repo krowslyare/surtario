@@ -17,7 +17,8 @@ test("guarda nombres revisados y recupera la cola después de recargar", async (
     token,
   );
 
-  await page.goto("/");
+  await page.goto("/?example=pe");
+  await page.getByText("Ingredient list", { exact: true }).click();
   await page.getByRole("button", { name: "Add list or file" }).click();
   const dialog = page.getByRole("dialog");
   await dialog
@@ -31,11 +32,12 @@ test("guarda nombres revisados y recupera la cola después de recargar", async (
   ).toBeVisible();
 
   await page.reload();
+  await page.getByText("Ingredient list", { exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "2 reviewed ingredients" }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "Saved lists (1)" }).click();
-  await expect(page.getByText("Entrada manual revisada")).toBeVisible();
+  await expect(page.getByText("Reviewed manual input")).toBeVisible();
   await page.getByRole("button", { name: "Open list" }).click();
   await expect(
     page.getByRole("button", { name: "Arroz sintético", exact: true }),
@@ -43,9 +45,9 @@ test("guarda nombres revisados y recupera la cola después de recargar", async (
   await expect(
     page.getByRole("button", { name: "Aceite sintético", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Ver origen de la lista" }).click();
+  await page.getByRole("button", { name: "View list source" }).click();
   await expect(page.getByRole("dialog")).toContainText(
-    "Lista guardada · Entrada manual revisada",
+    "Lista guardada · Reviewed manual input",
   );
   await expect(page.getByRole("dialog")).not.toContainText(/archivo|precio/i);
 });
@@ -65,14 +67,15 @@ test("a late confirmation does not mark a replacement list as saved", async ({
       else socket.send(message);
     });
   });
-  await page.goto("/");
+  await page.goto("/?example=pe");
+  await page.getByText("Ingredient list", { exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Saved lists (0)" }),
   ).toBeVisible();
   async function enterList(name: string, replacing: boolean) {
     await page
       .getByRole("button", {
-        name: replacing ? "Reemplazar lista" : "Add list or file",
+        name: replacing ? "Replace ingredient list" : "Add list or file",
       })
       .click();
     const dialog = page.getByRole("dialog");

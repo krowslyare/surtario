@@ -6,19 +6,20 @@ test("document examples are inspectable but no extraction runs without configura
   context,
 }) => {
   await connectOnlyToLocalBackend(context);
-  await page.goto("/");
-  await page.getByText("Revisar una cotización", { exact: true }).click();
-  const section = page.getByRole("region", { name: "Lectura de foto y PDF" });
+  await page.goto("/?example=pe");
+  await page.getByText("Quotes and documents", { exact: true }).click();
+  const section = page.getByRole("region", { name: "Photo and PDF extraction" });
   await expect(
-    section.getByRole("button", { name: "Leer con OpenAI" }),
+    section.getByRole("button", { name: "Read with OpenAI" }),
   ).toBeDisabled();
-  await expect(section).toContainText("Lectura automática sin configurar");
-  await section.getByRole("button", { name: "Ver archivo de ejemplo" }).click();
+  await expect(section).toContainText("Automatic reading is not configured");
+  await section.getByRole("button", { name: "View sample file" }).click();
   await expect(page.getByRole("dialog").getByRole("img")).toBeVisible();
   await page.keyboard.press("Escape");
-  await section.getByLabel("Archivo de ejemplo").selectOption("pdf");
+  await section.getByLabel("Sample file").click();
+  await page.getByRole("option", { name: "Quote PDF · 1 page", exact: true }).click();
   await expect(
-    section.getByRole("link", { name: "Descargar ejemplo" }),
+    section.getByRole("link", { name: "Download sample" }),
   ).toHaveAttribute("href", "/examples/cotizacion-demo.pdf");
   const file = await page.request.get("/examples/cotizacion-demo.pdf");
   expect((await file.body()).subarray(0, 5).toString()).toBe("%PDF-");
@@ -80,22 +81,22 @@ test("a simulated reading keeps the original visible, requires review and opens 
   await page.getByRole("button", { name: "Review extracted data" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("img")).toBeVisible();
-  await expect(dialog).toContainText("Transcripción propuesta");
+  await expect(dialog).toContainText("Proposed transcript");
   await expect(
     dialog.getByRole("button", { name: "Continue to comparison" }),
   ).toBeDisabled();
   await dialog
-    .getByLabel("Precio por presentación", { exact: true })
+    .getByLabel("Price per package", { exact: true })
     .fill("85.00");
   await dialog.getByRole("checkbox").check();
   await page.screenshot({ path: "/tmp/document-review-mobile.png" });
   await dialog.getByRole("button", { name: "Continue to comparison" }).click();
   await expect(
-    page.getByText("Desde tu estudio de ejemplo", { exact: true }),
+    page.getByText("From your sample study", { exact: true }),
   ).toBeVisible();
   await expect(page.getByText(/páginas públicas/)).toHaveCount(0);
   await expect(
-    page.getByLabel("Cantidad necesaria", { exact: true }),
+    page.getByLabel("Required quantity", { exact: true }),
   ).toHaveValue("");
   await expect(
     page.getByText("S/ 85.00", { exact: false }).first(),

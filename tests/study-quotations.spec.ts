@@ -5,20 +5,22 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   context,
 }) => {
   await connectOnlyToLocalBackend(context);
-  await page.goto("/");
-  await page.getByRole("button", { name: "Explorar ejemplo de arroz" }).click();
+  await page.goto("/?example=pe");
+  await page.getByRole("button", { name: "Explore rice example" }).click();
   await page
     .getByRole("article")
     .nth(2)
-    .getByRole("button", { name: "Añadir a mi estudio" })
+    .getByRole("button", { name: "Add to study" })
     .click();
   await page.getByRole("button", { name: "Save study", exact: true }).click();
   await expect(
     page.getByText("Study saved with 1 option", { exact: false }),
   ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Prepare test request" })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: /Ask Northwest/ })).toHaveCount(0);
   await page.getByRole("button", { name: "Prepare test request" }).click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog).toContainText("cantidad todavía está por definir");
+  await expect(dialog).toContainText("Quantity is still to be determined");
   await expect(dialog).toContainText("Not configured");
   await expect(dialog.getByRole("checkbox")).not.toBeChecked();
   await expect(
@@ -26,9 +28,9 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   ).toBeDisabled();
   await page.keyboard.press("Escape");
   await page.reload();
-  await page.getByRole("button", { name: "Guardados (1)" }).click();
+  await page.getByRole("button", { name: "Saved (1)" }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await page.getByRole("button", { name: "View request" }).click();
-  await expect(page.getByRole("dialog")).toContainText("Borrador");
-  await expect(page.getByRole("dialog")).toContainText("Consulta de catálogo");
+  await expect(page.getByRole("dialog")).toContainText("Draft");
+  await expect(page.getByRole("dialog")).toContainText("Catalog request");
 });

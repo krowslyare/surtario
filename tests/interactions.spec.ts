@@ -3,27 +3,19 @@ import { expect, test } from "@playwright/test";
 test("selector con teclado y Escape dentro de un diálogo conserva foco y formulario", async ({
   page,
 }) => {
-  await page.goto("/");
-  const zone = page.getByRole("combobox", { name: "Zona de interés" });
+  await page.goto("/?example=pe");
+  const zone = page.getByRole("combobox", { name: "Delivery area" });
   await zone.focus();
-  await page.keyboard.press("Enter");
-  await expect(
-    page.getByRole("option", { name: "Lima", exact: true }),
-  ).toBeFocused();
-  await page.keyboard.press("End");
-  await expect(
-    page.getByRole("option", { name: "Cusco", exact: true }),
-  ).toBeFocused();
-  await page.keyboard.press("Enter");
-  await expect(zone).toContainText("Cusco");
+  await zone.fill("Austin, TX, US");
+  await expect(zone).toHaveValue("Austin, TX, US");
   await expect(zone).toBeFocused();
 
-  await page.goto("/?view=comparison");
-  const opener = page.getByRole("button", { name: "Editar Proveedor A" });
+  await page.goto("/?view=comparison&example=pe");
+  const opener = page.getByRole("button", { name: "Edit Proveedor A" });
   await opener.click();
   const dialog = page.getByRole("dialog");
   const currency = dialog.getByRole("combobox", {
-    name: "Moneda",
+    name: "Currency",
     exact: true,
   });
   await currency.focus();
@@ -35,20 +27,20 @@ test("selector con teclado y Escape dentro de un diálogo conserva foco y formul
   await expect(currency).toBeFocused();
   await currency.press("Enter");
   await expect(
-    dialog.getByRole("option", { name: "Soles (PEN)", exact: true }),
+    dialog.getByRole("option", { name: "Peruvian soles (PEN)", exact: true }),
   ).toBeFocused();
   await page.keyboard.press("End");
   await expect(
-    dialog.getByRole("option", { name: "Dólares (USD)", exact: true }),
+    dialog.getByRole("option", { name: "US dollars (USD)", exact: true }),
   ).toBeFocused();
   await page.keyboard.press("Enter");
-  await expect(currency).toContainText("Dólares (USD)");
-  await dialog.getByRole("button", { name: "Guardar oferta" }).click();
-  await expect(page.getByTestId("total-0")).toHaveText("US$ 95.00");
+  await expect(currency).toContainText("US dollars (USD)");
+  await dialog.getByRole("button", { name: "Save offer" }).click();
+  await expect(page.getByTestId("total-0")).toHaveText("USD 95.00");
   await opener.click();
   await expect(
-    dialog.getByRole("combobox", { name: "Moneda", exact: true }),
-  ).toContainText("Dólares (USD)");
+    dialog.getByRole("combobox", { name: "Currency", exact: true }),
+  ).toContainText("US dollars (USD)");
   // Padding is part of the panel, not its backdrop.
   await dialog.click({ position: { x: 5, y: 5 } });
   await expect(dialog).toBeVisible();
@@ -60,9 +52,9 @@ test("selector con teclado y Escape dentro de un diálogo conserva foco y formul
 test("contraer herramientas retira controles del teclado y conserva correcciones", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?example=pe");
   const tools = page.getByRole("button", {
-    name: "Cotizaciones y documentos",
+    name: "Quotes and documents",
     exact: true,
   });
   const review = page.getByRole("button", {
@@ -72,14 +64,14 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
   await tools.click();
   await review.click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Contenido por presentación").fill("27");
+  await dialog.getByLabel("Package size").fill("27");
   const unit = dialog.getByRole("combobox", {
-    name: "Unidad de la presentación",
+    name: "Package unit",
   });
   await unit.click();
   await dialog.getByRole("option", { name: "kg", exact: true }).click();
   await unit.click();
-  await dialog.getByRole("option", { name: "Pendiente", exact: true }).click();
+  await dialog.getByRole("option", { name: "Pending", exact: true }).click();
   await expect(
     dialog.getByRole("button", { name: "Continue to comparison" }),
   ).toBeDisabled();
@@ -90,16 +82,16 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
   await expect(review).toHaveCount(0);
   await tools.press("Tab");
   await expect(
-    page.getByRole("link", { name: "Conoce la marca Surtario" }),
+    page.getByRole("link", { name: "About Surtario" }),
   ).toBeFocused();
   await tools.click();
   await review.click();
-  await expect(dialog.getByLabel("Contenido por presentación")).toHaveValue(
+  await expect(dialog.getByLabel("Package size")).toHaveValue(
     "27",
   );
   await expect(
-    dialog.getByRole("combobox", { name: "Unidad de la presentación" }),
-  ).toContainText("Pendiente");
+    dialog.getByRole("combobox", { name: "Package unit" }),
+  ).toContainText("Pending");
 });
 
 test("menú y diálogo funcionan con movimiento reducido a 320 px", async ({
@@ -107,11 +99,11 @@ test("menú y diálogo funcionan con movimiento reducido a 320 px", async ({
 }) => {
   await page.setViewportSize({ width: 320, height: 760 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/?view=comparison");
-  await page.getByRole("button", { name: "Editar Proveedor A" }).click();
+  await page.goto("/?view=comparison&example=pe");
+  await page.getByRole("button", { name: "Edit Proveedor A" }).click();
   const dialog = page.getByRole("dialog");
   await dialog
-    .getByRole("combobox", { name: "Impuestos del precio y la entrega" })
+    .getByRole("combobox", { name: "Tax on goods and delivery" })
     .click();
   const menu = page.getByRole("listbox");
   await expect(menu).toBeVisible();
@@ -126,10 +118,10 @@ test("menú y diálogo funcionan con movimiento reducido a 320 px", async ({
     }),
   ).toBe(true);
   await menu
-    .getByRole("option", { name: "Faltan impuestos por sumar" })
+    .getByRole("option", { name: "Tax still needs to be added" })
     .click();
-  await dialog.getByRole("button", { name: "Guardar oferta" }).click();
-  await expect(page.getByTestId("total-0")).toHaveText("Pendiente");
+  await dialog.getByRole("button", { name: "Save offer" }).click();
+  await expect(page.getByTestId("total-0")).toHaveText("Pending");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -142,31 +134,31 @@ test("selección móvil anuncia el cambio y lleva al resumen sin iniciar una com
 }) => {
   await page.setViewportSize({ width: 320, height: 760 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?example=pe");
   await expect(
-    page.getByRole("button", { name: "Mi estudio", exact: true }),
+    page.getByRole("button", { name: "My study", exact: true }),
   ).toBeVisible();
-  await page.getByRole("button", { name: "Explorar ejemplo de arroz" }).click();
-  await page.getByRole("button", { name: "Sin precio", exact: true }).click();
+  await page.getByRole("button", { name: "Explore rice example" }).click();
+  await page.getByRole("button", { name: "No price", exact: true }).click();
   await page
     .getByRole("article")
-    .getByRole("button", { name: "Añadir a mi estudio" })
+    .getByRole("button", { name: "Add to study" })
     .click();
   await expect(
-    page.getByRole("status", { name: "Selección del estudio" }),
-  ).toContainText("añadido al estudio");
+    page.getByRole("status", { name: "Study selection" }),
+  ).toContainText("added to study");
   await page
-    .getByRole("button", { name: "Ver resumen 1", exact: true })
+    .getByRole("button", { name: "View summary 1", exact: true })
     .press("Enter");
   await expect(
-    page.getByRole("heading", { name: "Tu estudio", exact: true }),
+    page.getByRole("heading", { name: "Your study", exact: true }),
   ).toBeFocused();
-  const picks = page.getByRole("list", { name: "Opciones seleccionadas" });
+  const picks = page.getByRole("list", { name: "Selected options" });
   await expect(picks).toContainText("Distribuidor C");
   await expect(
-    page.getByRole("button", { name: "Preparar compra", exact: true }),
+    page.getByRole("button", { name: "Plan purchase", exact: true }),
   ).toBeDisabled();
-  await expect(page.getByLabel("Cantidad necesaria")).toHaveCount(0);
+  await expect(page.getByLabel("Required quantity")).toHaveCount(0);
   expect(
     await picks
       .locator("li")

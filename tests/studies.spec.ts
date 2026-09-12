@@ -9,7 +9,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   context,
   browser,
 }) => {
-  await page.goto("/");
+  await page.goto("/?example=pe");
   await page.getByRole("button", { name: "Explore rice example" }).click();
   const cards = page.getByRole("article");
   await cards.nth(0).getByRole("button", { name: "Add to study" }).click();
@@ -28,9 +28,9 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
     page
       .getByRole("region", { name: "Saved studies", exact: true })
       .getByRole("status"),
-  ).toHaveText("Cambios sin guardar");
+  ).toHaveText("Unsaved changes");
   await page.reload();
-  await page.getByRole("button", { name: "Guardados (1)" }).click();
+  await page.getByRole("button", { name: "Saved (1)" }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "My market study" }),
@@ -38,14 +38,14 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await expect(page.getByRole("article")).toHaveCount(2);
   await page.getByRole("button", { name: "View contact", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText(
-    "Dirección ficticia sin verificar",
+    "Fictional address",
   );
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
 
   const otherTab = await context.newPage();
   await otherTab.goto("/");
-  await otherTab.getByRole("button", { name: "Guardados (1)" }).click();
+  await otherTab.getByRole("button", { name: "Saved (1)" }).click();
   await otherTab
     .getByRole("button", { name: "Open study", exact: true })
     .click();
@@ -60,17 +60,17 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
       .getByRole("region", { name: "Saved studies", exact: true })
       .getByRole("status"),
   ).toContainText("Study saved with 1 option");
-  await otherTab.getByRole("button", { name: "Guardados (1)" }).click();
-  await expect(otherTab.getByText(/Revisión 2/)).toBeVisible();
+  await otherTab.getByRole("button", { name: "Saved (1)" }).click();
+  await expect(otherTab.getByText(/Revision 2/)).toBeVisible();
   await otherTab.keyboard.press("Escape");
   await expect(otherTab.getByRole("dialog")).toHaveCount(0);
   // A reactive library update must not silently replace an open draft.
   await expect(otherTab.getByText("2 options in your study")).toBeVisible();
   await otherTab.getByRole("button", { name: "Save study changes" }).click();
   await expect(otherTab.getByRole("alert")).toContainText(
-    "cambió en otra vista",
+    "changed in another view",
   );
-  await otherTab.getByRole("button", { name: "Guardados (1)" }).click();
+  await otherTab.getByRole("button", { name: "Saved (1)" }).click();
   await otherTab
     .getByRole("button", { name: "Open study", exact: true })
     .click();
@@ -80,9 +80,9 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await connectOnlyToLocalBackend(independent);
   const visitor = await independent.newPage();
   await visitor.goto("/");
-  await visitor.getByRole("button", { name: "Guardados (0)" }).click();
+  await visitor.getByRole("button", { name: "Saved (0)" }).click();
   await expect(
-    visitor.getByText("No tienes estudios guardados en esta sesión."),
+    visitor.getByText("You have no saved studies in this session."),
   ).toBeVisible();
   await independent.close();
   await otherTab.close();
@@ -92,7 +92,7 @@ test("sin conexión conserva el borrador y no declara guardado", async ({
   page,
   context,
 }) => {
-  await page.goto("/");
+  await page.goto("/?example=pe");
   await page.getByRole("button", { name: "Explore rice example" }).click();
   await page
     .getByRole("article")
@@ -107,7 +107,7 @@ test("sin conexión conserva el borrador y no declara guardado", async ({
     page.getByRole("button", { name: "Save study", exact: true }),
   ).toBeDisabled();
   await expect(
-    page.getByText("Sin conexión al guardado.", { exact: false }),
+    page.getByText("Saving is offline.", { exact: false }),
   ).toBeVisible();
   await expect(page.getByText("1 option in your study")).toBeVisible();
   await context.setOffline(false);
@@ -119,7 +119,7 @@ test("sin conexión conserva el borrador y no declara guardado", async ({
 test("volver al ejemplo después de una búsqueda vacía conserva la selección", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/?example=pe");
   await page.getByRole("button", { name: "Explore rice example" }).click();
   await page
     .getByRole("article")
@@ -127,7 +127,7 @@ test("volver al ejemplo después de una búsqueda vacía conserva la selección"
     .getByRole("button", { name: "Add to study" })
     .click();
   await page
-    .getByRole("button", { name: "Cambiar búsqueda", exact: true })
+    .getByRole("button", { name: "Change search", exact: true })
     .click();
   await page.getByLabel("Ingredient or category").fill("Pescado");
   await page
@@ -138,7 +138,7 @@ test("volver al ejemplo después de una búsqueda vacía conserva la selección"
       .getByRole("region", { name: "Saved studies", exact: true })
       .getByRole("status"),
   ).toHaveText(
-    "El guardado de esta demo solo está disponible para arroz o abarrotes en Lima.",
+    "This demo can save only the available sample markets.",
   );
   await page.getByRole("button", { name: "View rice example" }).click();
   await expect(
@@ -155,7 +155,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await test.step("Explorar sin documentos y revisar evidencia", async () => {
-    await page.goto("/");
+    await page.goto("/?example=pe");
     await page.getByRole("button", { name: "Explore rice example" }).click();
     await expect(page.getByLabel("Required quantity")).toHaveCount(0);
     await page
@@ -163,7 +163,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       .first()
       .click();
     await expect(page.getByRole("dialog")).toContainText(
-      "Este ejemplo no procede de una búsqueda real",
+      "This is sample data, not a live search result.",
     );
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -179,7 +179,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
         .getByRole("status"),
     ).toContainText("Study saved with 3 options");
     await page.reload();
-    await page.getByRole("button", { name: "Guardados (1)" }).click();
+    await page.getByRole("button", { name: "Saved (1)" }).click();
     await page.getByRole("button", { name: "Open study", exact: true }).click();
     await expect(page.getByRole("article")).toHaveCount(3);
   });
@@ -189,16 +189,16 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       .filter({ hasText: "Distribuidor C" });
     await directory.getByRole("button", { name: "View contact" }).click();
     await expect(page.getByRole("dialog")).toContainText(
-      "Dirección ficticia sin verificar",
+      "Fictional address",
     );
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await directory.getByRole("button", { name: "Prepare inquiry" }).click();
     await expect(page.getByLabel("Edit message")).toHaveValue(
-      /aún no tengo una cantidad/,
+      /I have not set a purchase quantity/,
     );
     await expect(page.getByRole("dialog")).toContainText(
-      "Este texto solo se copia; no envía correo.",
+      "Copying this text does not send an email.",
     );
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
@@ -222,7 +222,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       ["Distribuidor A · ejemplo", "15"],
       ["Distribuidor B · ejemplo", "0"],
     ]) {
-      await page.getByRole("button", { name: `Editar ${supplier}` }).click();
+      await page.getByRole("button", { name: `Edit ${supplier}` }).click();
       await page.getByLabel("Minimum packs", { exact: true }).fill("1");
       await page
         .getByLabel("Delivery per order", { exact: true })
@@ -247,7 +247,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     await expect(page.getByTestId("total-1")).toHaveText("S/ 50.00");
     await page.getByRole("button", { name: "View source" }).first().click();
     await expect(page.getByRole("dialog")).toContainText(
-      "Aquí conservamos los valores de entrada",
+      "The original values are preserved here",
     );
     await expect(page.getByRole("dialog")).toContainText("S/ 80.00");
     await page.keyboard.press("Escape");

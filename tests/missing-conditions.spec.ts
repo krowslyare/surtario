@@ -16,9 +16,8 @@ async function confirmOfferTerms(
   await dialog
     .getByLabel("Delivery per order", { exact: true })
     .fill(freight ?? "");
-  await dialog
-    .getByLabel("Tax on goods and delivery")
-    .selectOption("included");
+  await dialog.getByLabel("Tax on goods and delivery", { exact: true }).click();
+  await page.getByRole("option", { name: "Final amounts, including tax", exact: true }).click();
   await dialog
     .getByLabel("The supplier can deliver when I need it")
     .check();
@@ -67,10 +66,10 @@ test("a missing delivery quote stays hypothetical until its terms are confirmed"
     name: "Resolve the delivery cost",
   });
   await scenario.getByLabel("Try a delivery amount (USD)").fill("8");
-  await expect(scenario.getByRole("status")).toContainText(
+  await expect(scenario.getByRole("status").filter({ hasText: "Hypothetical order:" })).toContainText(
     "Hypothetical order: USD 43.00",
   );
-  await expect(scenario.getByRole("status")).toContainText(
+  await expect(scenario.getByRole("status").filter({ hasText: "Hypothetical order:" })).toContainText(
     "USD 3.00 above the lowest complete order",
   );
   await expect(page.getByTestId("total-1")).toHaveText("Pending");

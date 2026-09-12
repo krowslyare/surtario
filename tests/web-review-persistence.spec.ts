@@ -42,34 +42,36 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     runId: reserved.run.id,
     sourceIndex: 0,
     offer: extractionExample,
+    analysis: { kind: "product", summary: "Synthetic rice listing for review.", evidence: ["Saco: S/ 80.00"], warnings: ["Package weight needs review."] },
   });
   await context.addInitScript(
     (value) => localStorage.setItem("procurement-demo-session-v1", value),
     token,
   );
-  await page.goto("/");
+  await page.goto("/?example=pe");
+  await page.getByRole("button", { name: "Saved research", exact: true }).click();
   await page.getByRole("button", { name: /Arroz · Lima/ }).click();
   await page.getByRole("button", { name: "Review extraction" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Unidad de la presentación").click();
+  await dialog.getByLabel("Package unit").click();
   await dialog.getByRole("option", { name: "kg", exact: true }).click();
-  await dialog.getByLabel("Contenido por presentación").fill("18");
-  await dialog.getByLabel("Precio por presentación").fill("85");
+  await dialog.getByLabel("Package size").fill("18");
+  await dialog.getByLabel("Price per package").fill("85");
   await dialog
     .getByLabel(
-      "Revisé el origen y confirmo los datos, incluidas mis correcciones",
+      "I reviewed the source and confirm the data, including my corrections",
     )
     .check();
   await dialog.getByRole("button", { name: "Add to study" }).click();
   await expect(
-    page.getByRole("button", { name: "Mi estudio 1", exact: true }),
+    page.getByRole("button", { name: "My study 1", exact: true }),
   ).toBeVisible();
   await page
     .getByRole("button", { name: "View my study", exact: true })
     .click();
   await expect(
     page.getByRole("article", {
-      name: "Oferta en estudio: Distribuidora de ejemplo",
+      name: "Offer in study: Distribuidora de ejemplo",
     }),
   ).toContainText("S/ 85.00");
   await page.getByRole("button", { name: "Save study", exact: true }).click();
@@ -78,36 +80,36 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   ).toBeVisible();
   await page.reload();
   await page
-    .getByRole("button", { name: "Guardados (1)", exact: true })
+    .getByRole("button", { name: "Saved (1)", exact: true })
     .click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(
     page.getByRole("article", {
-      name: "Oferta en estudio: Distribuidora de ejemplo",
+      name: "Offer in study: Distribuidora de ejemplo",
     }),
   ).toContainText("S/ 85.00");
   await page.getByRole("button", { name: "Compare reviewed offers" }).click();
-  await page.getByLabel("Cantidad necesaria").fill("10");
+  await page.getByLabel("Required quantity").fill("10");
   await page
-    .getByRole("button", { name: "Editar Distribuidora de ejemplo" })
+    .getByRole("button", { name: "Edit Distribuidora de ejemplo" })
     .click();
-  await page.getByLabel("Mínimo de presentaciones", { exact: true }).fill("1");
-  await page.getByLabel("Entrega por pedido", { exact: true }).fill("15");
+  await page.getByLabel("Minimum packs", { exact: true }).fill("1");
+  await page.getByLabel("Delivery per order", { exact: true }).fill("15");
   await page
-    .getByLabel("Impuestos del precio y la entrega", { exact: true })
+    .getByLabel("Tax on goods and delivery", { exact: true })
     .click();
   await page
     .getByRole("option", {
-      name: "Importes finales, impuestos incluidos",
+      name: "Final amounts, including tax",
       exact: true,
     })
     .click();
   await page
-    .getByLabel("El proveedor puede entregar cuando lo necesito")
+    .getByLabel("The supplier can deliver when I need it")
     .check();
-  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await page.getByRole("button", { name: "Save offer" }).click();
   await expect(page.getByTestId("total-0")).toHaveText("S/ 100.00");
-  await page.getByRole("button", { name: "Elegir oferta" }).click();
+  await page.getByRole("button", { name: "Choose offer" }).click();
   await page
     .getByRole("button", { name: "Save comparison", exact: true })
     .click();
@@ -116,35 +118,39 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
       exact: false,
     }),
   ).toBeVisible();
+  const advisor = page.getByRole("region", { name: "Purchasing advisor" });
+  await advisor.getByRole("button", { name: "Save scenario", exact: true }).click();
+  await expect(advisor.getByText("Scenario saved with a verifiable calculation")).toBeVisible();
+  await expect(advisor.getByText(/out of date for this view/i)).toHaveCount(0);
   await page.reload();
   await page
-    .getByRole("button", { name: "Comparaciones guardadas (1)" })
+    .getByRole("button", { name: "Saved comparisons (1)" })
     .click();
   await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(page.getByTestId("total-0")).toHaveText("S/ 100.00");
   await expect(
-    page.getByRole("button", { name: "Oferta elegida" }),
+    page.getByRole("button", { name: "Selected offer" }),
   ).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "Ver origen" }).click();
+  await page.getByRole("button", { name: "View source" }).click();
   await expect(page.getByRole("dialog")).toContainText(
-    "Documento sintético revisado",
+    "Reviewed synthetic document",
   );
   await expect(page.getByRole("dialog")).toContainText(
-    "Precio por presentación: 80.00",
+    "Price per package: 80.00",
   );
-  await expect(page.getByRole("dialog")).toContainText("corrección manual: 85");
+  await expect(page.getByRole("dialog")).toContainText("manual correction: 85");
   await expect(
-    page.getByRole("link", { name: "Abrir fuente original" }),
+    page.getByRole("link", { name: "Open original source" }),
   ).toHaveAttribute("href", "https://supplier.test/rice");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);
-  await page.getByLabel("Cantidad necesaria").fill("20");
+  await page.getByLabel("Required quantity").fill("20");
   await expect(
-    page.getByRole("button", { name: "Oferta elegida" }),
+    page.getByRole("button", { name: "Selected offer" }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "Save comparison changes" }).click();
   await expect(
-    page.getByText("Comparison saved Los cambios posteriores", {
+    page.getByText("Comparison saved. Save again after making changes.", {
       exact: false,
     }),
   ).toBeVisible();

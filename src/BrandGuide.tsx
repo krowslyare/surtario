@@ -9,18 +9,18 @@ import "./styles/brand-guide.css";
 
 const palette = [
   {
-    name: "Berenjena",
+    name: "Aubergine",
     hex: "#42202D",
-    role: "La voz de la marca",
+    role: "The brand voice",
     light: true,
   },
-  { name: "Rábano", hex: "#EEC6D0", role: "Su lado más cercano", light: false },
-  { name: "Ají", hex: "#BA3527", role: "Un acento con carácter", light: true },
-  { name: "Lima", hex: "#E4EF9B", role: "Un detalle fresco", light: false },
+  { name: "Radish", hex: "#EEC6D0", role: "A welcoming touch", light: false },
+  { name: "Chili", hex: "#BA3527", role: "An accent with character", light: true },
+  { name: "Lime", hex: "#E4EF9B", role: "A fresh detail", light: false },
   {
-    name: "Porcelana",
+    name: "Porcelain",
     hex: "#FAFAF7",
-    role: "Espacio para trabajar",
+    role: "Room to work",
     light: false,
   },
 ] as const;
@@ -34,31 +34,31 @@ export default function BrandGuide() {
   async function copyColor(hex: string) {
     try {
       await navigator.clipboard.writeText(hex);
-      setCopied(`Copiado: ${hex}`);
+      setCopied(`Copied: ${hex}`);
     } catch {
-      setCopied(`Copia este color: ${hex}`);
+      setCopied(`Copy this color: ${hex}`);
     }
   }
   return (
     <>
       <a className="skip-link" href="#brand-story">
-        Ir a la historia de marca
+        Skip to the brand story
       </a>
       <header className="topbar">
         <Brand />
         <a className="button secondary" href="/">
-          Abrir producto
+          Open Surtario
         </a>
       </header>
       <main className="brand-guide">
         <div className="brand-guide-intro">
-          <p>Identidad de producto / Surtario 1.2</p>
+          <p>Product identity / Surtario 1.2</p>
           <a
             className="button text-button"
             href="/brand/surtario-brand-kit.zip"
             download
           >
-            <Download size={16} /> Descargar kit de marca
+            <Download size={16} /> Download original brand kit
           </a>
         </div>
         <section
@@ -75,28 +75,28 @@ export default function BrandGuide() {
               height="120"
             />
             <h1 id="brand-story-title">
-              La cocina empieza
+              Every kitchen starts
               <br />
-              en el mercado.
+              at the market.
             </h1>
             <p>
-              Antes del fuego, están los ingredientes. Y antes de los
-              ingredientes, las preguntas: de dónde vienen, cuánto cuestan, cómo
-              llegan.
+              Before the heat come the ingredients. And before the ingredients
+              come the questions: where they come from, what they cost, and
+              how they reach your kitchen.
             </p>
             <p>
-              Surtario acompaña lo que hace posible cada servicio: surtir la
-              cocina con criterio. Reúne fuentes, conoce alternativas y prepara
-              tu próxima compra con las condiciones claras.
+              Surtario helps you prepare for every service by sourcing with care.
+              Gather evidence, understand your options, and plan your next
+              purchase with clear terms.
             </p>
             <span className="manifesto-signature">
-              Buen criterio. Buenos insumos.
+              Good judgment. Good ingredients.
             </span>
           </div>
           <img
             className="manifesto-photo"
             src="/brand/market-still-life.webp"
-            alt="Arroz, ajíes, tomates y limones sobre una superficie rosa; fotografía de marca generada."
+            alt="Rice, chilies, tomatoes, and limes on a pink surface; generated brand photography."
             width="1122"
             height="1402"
           />
@@ -105,33 +105,33 @@ export default function BrandGuide() {
         <section className="brand-chapter" aria-labelledby="brand-name-title">
           <div>
             <h2 id="brand-name-title">
-              Surtir la cocina.
+              Stock the kitchen.
               <br />
-              Muchas buenas preguntas.
+              Ask good questions.
             </h2>
           </div>
           <div className="brand-prose">
             <p>
-              <strong>Surtario</strong> nace de surtir y del ritmo diario de una
-              cocina. Cada insumo tiene una presentación, una procedencia y unas
-              condiciones. Conocerlas es el primer paso para elegir bien.
+              <strong>Surtario</strong> takes its name from the Spanish verb
+              <em> surtir</em>: to supply. Every ingredient has a pack size, an
+              origin, and a set of terms. Understanding them comes before choosing.
             </p>
             <p>
-              El descriptor <strong>Mercado para tu cocina</strong> explica su
-              territorio. Hablamos al encargado de compras y al equipo de
-              cocina: gente que necesita entender una oferta antes de elegirla.
+              <strong>Sourcing for your kitchen</strong> describes our purpose.
+              We speak to purchasing managers and kitchen teams who need to
+              understand an offer before choosing it.
             </p>
             <p className="brand-small">
-              Puedes explorar el mercado sin inventario, documentos propios ni
-              compras anteriores. El estudio empieza con una pregunta.
+              You can explore without inventory, your own documents, or purchase
+              history. A market study starts with a question.
             </p>
           </div>
         </section>
 
         <section className="brand-colors" aria-labelledby="brand-colors-title">
           <div className="brand-section-title">
-            <h2 id="brand-colors-title">Una paleta que abre el apetito.</h2>
-            <p>Pulsa un color para copiarlo.</p>
+            <h2 id="brand-colors-title">A palette with an appetite.</h2>
+            <p>Select a color to copy it.</p>
           </div>
           <div className="brand-swatches">
             {palette.map((color) => (
@@ -140,7 +140,7 @@ export default function BrandGuide() {
                 className={`brand-swatch${color.light ? " light-ink" : ""}`}
                 style={{ "--swatch": color.hex } as CSSProperties}
                 onClick={() => void copyColor(color.hex)}
-                aria-label={`Copiar ${color.name}, ${color.hex}`}
+                aria-label={`Copy ${color.name}, ${color.hex}`}
               >
                 <span className="swatch-name">
                   {color.name}
@@ -155,33 +155,33 @@ export default function BrandGuide() {
             {copied}
           </p>
           <p className="brand-small">
-            Porcelana y blanco sostienen la lectura. Berenjena conduce; rosa y
-            ají dan personalidad. Lima aparece en detalles. Los colores de marca
-            no califican proveedores ni sustituyen estados con texto.
+            Porcelain and white make room for reading. Aubergine leads; pink
+            and chili add character. Lime appears in the details. Brand colors
+            never rate suppliers or replace written status labels.
           </p>
         </section>
 
         <section className="brand-chapter" aria-labelledby="brand-logo-title">
           <div>
             <h2 id="brand-logo-title">
-              Un símbolo
+              A familiar symbol,
               <br />
-              para volver a reconocer.
+              wherever you return.
             </h2>
             <p className="brand-small">
-              Un cuenco redondo y dos granos. El origen de lo que llega a la
-              cocina. Logotipo de contornos vectoriales: conserva su forma sin
-              depender de una fuente instalada.
+              A round bowl and two grains: the beginning of what reaches the
+              kitchen. The vector wordmark retains its shape without depending
+              on an installed font.
             </p>
             <SegmentedControl
-              label="Variante del logotipo"
+              label="Wordmark variant"
               value={variant}
               onValueChange={setVariant}
               options={
                 [
                   { value: "dark", label: "Color" },
-                  { value: "light", label: "Negativo" },
-                  { value: "mono", label: "Una tinta" },
+                  { value: "light", label: "Reversed" },
+                  { value: "mono", label: "One color" },
                 ] as const
               }
             />
@@ -190,7 +190,7 @@ export default function BrandGuide() {
               href={`/brand/surtario-wordmark-${variant}.svg`}
               download
             >
-              <Download size={16} /> Descargar logotipo SVG
+              <Download size={16} /> Download SVG wordmark
             </a>
           </div>
           <div className={`brand-logo-proof proof-${variant}`}>
@@ -199,44 +199,44 @@ export default function BrandGuide() {
               src={`/brand/surtario-symbol${variant === "light" ? "-light" : variant === "mono" ? "-mono" : ""}.svg`}
               width="100"
               height="100"
-              alt="Símbolo Surtario"
+              alt="Surtario symbol"
             />
             <img
               className="proof-wordmark"
               src={`/brand/surtario-wordmark-${variant}.svg`}
               width="360"
               height="140"
-              alt={`Logotipo Surtario, ${variant === "light" ? "negativo" : variant === "mono" ? "una tinta" : "color"}`}
+              alt={`Surtario wordmark, ${variant === "light" ? "reversed" : variant === "mono" ? "one color" : "color"}`}
             />
-            <span>Mercado para tu cocina</span>
+            <span>Sourcing for your kitchen</span>
           </div>
         </section>
 
         <section className="brand-type" aria-labelledby="brand-type-title">
           <div className="brand-section-title">
-            <h2 id="brand-type-title">Carácter al hablar. Claridad al leer.</h2>
+            <h2 id="brand-type-title">Character in the voice. Clarity on the page.</h2>
           </div>
           <div className="brand-type-pair">
             <div className="display-specimen">
-              <p>Bricolage Grotesque / Titulares</p>
+              <p>Bricolage Grotesque / Headlines</p>
               <strong>
-                Arroz, ají
-                <br />y buen ojo.
+                Rice, chili
+                <br />and a good eye.
               </strong>
-              <span>Una voz expresiva para las ideas grandes.</span>
+              <span>An expressive voice for the big ideas.</span>
             </div>
             <div className="body-specimen">
-              <p>Manrope / Interfaz</p>
-              <h3>Las condiciones, sobre la mesa.</h3>
+              <p>Manrope / Interface</p>
+              <h3>The terms, on the table.</h3>
               <p>
-                Presentación de 18 kg. Precio de ejemplo por unidad, fuente
-                conservada y entrega por confirmar.
+                A 25 lb bag. An example unit price, preserved source evidence,
+                and delivery still to be confirmed.
               </p>
               <strong>
-                S/ 4.44 <small>/ kg</small>
+                USD 0.80 <small>/ lb</small>
               </strong>
               <span>
-                Moneda explícita. Cifras tabulares. Pendientes visibles.
+                Explicit currency. Tabular figures. Visible unknowns.
               </span>
             </div>
           </div>
@@ -245,23 +245,23 @@ export default function BrandGuide() {
         <section className="brand-chapter" aria-labelledby="brand-motion-title">
           <div>
             <h2 id="brand-motion-title">
-              Movimiento
+              Motion
               <br />
-              que responde.
+              that responds.
             </h2>
             <p className="brand-small">
-              La selección cambia de estado en 180 ms. Los diálogos entran en
-              200 ms. Una única entrada de imagen de 500 ms. Sin bucles, sin
-              contar dinero desde cero, con movimiento reducido respetado.
+              Selections respond in 180 ms. Dialogs enter in 200 ms. The image
+              appears once over 500 ms. No loops or counting money from zero;
+              reduced-motion preferences are respected.
             </p>
           </div>
           <div className="brand-motion-example">
             <p className="brand-small">
-              Prueba de interacción; no guarda un estudio.
+              Try the interaction; this does not save a study.
             </p>
             <div className={`motion-result ${selected ? "is-selected" : ""}`}>
               <span>
-                Arroz extra <small>Ejemplo de catálogo</small>
+                Long-grain rice <small>Catalog example</small>
               </span>
               <button
                 className={`button ${selected ? "selected-button" : "secondary"}`}
@@ -269,7 +269,7 @@ export default function BrandGuide() {
                 onClick={() => setSelected(!selected)}
               >
                 {selected ? <Check size={18} /> : <Bookmark size={18} />}
-                {selected ? "En tu estudio" : "Añadir al estudio"}
+                {selected ? "In your study" : "Add to study"}
               </button>
             </div>
           </div>
@@ -281,62 +281,63 @@ export default function BrandGuide() {
         >
           <div>
             <h2 id="brand-controls-title">
-              El mismo cuidado.
+              The same care.
               <br />
-              En cada interacción.
+              In every interaction.
             </h2>
             <p className="brand-small">
-              Selecciona, despliega y revisa. Estos controles son los que usas
-              al explorar el mercado y comparar ofertas.
+              Select, expand, and review. These are the same controls you use
+              to explore suppliers and compare offers.
             </p>
           </div>
           <div className="brand-component-samples">
             <label className="field">
-              <span>Unidad de presentación de ejemplo</span>
+              <span>Example pack unit</span>
               <Select
-                aria-label="Unidad de presentación de ejemplo"
+                aria-label="Example pack unit"
                 value={sampleUnit}
                 onValueChange={setSampleUnit}
                 options={[
-                  { value: "", label: "Pendiente de confirmar" },
-                  { value: "kg", label: "Kilogramos (kg)" },
-                  { value: "L", label: "Litros (L)" },
-                  { value: "unit", label: "Unidades" },
+                  { value: "", label: "Pending confirmation" },
+                  { value: "lb", label: "Pounds (lb)" },
+                  { value: "oz", label: "Ounces (oz, weight)" },
+                  { value: "kg", label: "Kilograms (kg)" },
+                  { value: "L", label: "Liters (L)" },
+                  { value: "unit", label: "Units" },
                 ]}
               />
             </label>
             <Disclosure
-              title="Condiciones de la oferta"
-              description="Una sección que se abre cuando la necesitas."
+              title="Offer terms"
+              description="A section that opens when you need it."
             >
               <p className="brand-small">
-                El peso, la entrega y los impuestos quedan pendientes hasta
-                confirmarlos. Al cerrar una sección, las correcciones
-                permanecen.
+                Weight, delivery, and taxes remain pending until confirmed.
+                Closing a section preserves your corrections.
               </p>
             </Disclosure>
             <button
               className="button secondary"
               onClick={() => setSampleDialog(true)}
             >
-              Abrir diálogo de ejemplo
+              Open example dialog
             </button>
             <p className="brand-small">
-              Prueba de interfaz. No registra datos ni prepara una compra.
+              An interface example. It does not save data or prepare a purchase.
             </p>
           </div>
         </section>
 
         <section className="brand-voice" aria-labelledby="brand-voice-title">
-          <h2 id="brand-voice-title">Hablamos como quien conoce su cocina.</h2>
+          <h2 id="brand-voice-title">We speak like someone who knows the kitchen.</h2>
           <div className="brand-voice-lines">
-            <p>“Falta confirmar la entrega.”</p>
-            <p>“Revisa la presentación antes de comparar.”</p>
-            <p>“Elegiste una oferta. Aún no registraste una compra.”</p>
+            <p>“Delivery still needs confirmation.”</p>
+            <p>“Check the pack size before comparing.”</p>
+            <p>“You selected an offer. You have not recorded a purchase.”</p>
           </div>
           <p>
-            Concreto, cercano y honesto. Cada frase ayuda a tomar el siguiente
-            paso. La marca no promete ahorros que todavía no se han medido.
+            Clear, approachable, and honest. Every sentence helps with the
+            next step. We do not promise savings that have not been measured.
           </p>
         </section>
 
@@ -346,38 +347,38 @@ export default function BrandGuide() {
         >
           <div>
             <h2 id="brand-formats-title">
-              El mismo criterio.
+              The same judgment.
               <br />
-              En cada formato.
+              In every format.
             </h2>
             <p className="brand-small">
-              Escritorio de referencia: 1920 × 1080, 16:9. Contenido de 1536 px,
-              con márgenes de 192 px. La aplicación se recompone en portátil y
-              móvil, sin comprimir una captura.
+              Desktop reference: 1920 × 1080, 16:9. Content spans 1536 px with
+              192 px margins. The application reflows on laptops and phones.
+              Original downloadable artwork retains its Spanish brand copy.
             </p>
           </div>
           <div className="brand-downloads">
             <a href="/brand/surtario-cover-1920x1080.svg" download>
               <span>
-                Portada de presentación<strong>1920 × 1080 / 16:9</strong>
+                Presentation cover<strong>1920 × 1080 / 16:9</strong>
               </span>
               <Download size={20} />
             </a>
             <a href="/brand/surtario-social-1080x1350.svg" download>
               <span>
-                Pieza vertical<strong>1080 × 1350 / 4:5</strong>
+                Portrait artwork<strong>1080 × 1350 / 4:5</strong>
               </span>
               <Download size={20} />
             </a>
             <a href="/brand/surtario-story-1080x1920.svg" download>
               <span>
-                Historia<strong>1080 × 1920 / 9:16</strong>
+                Story artwork<strong>1080 × 1920 / 9:16</strong>
               </span>
               <Download size={20} />
             </a>
             <a href="/brand/market-still-life.webp" download>
               <span>
-                Fotografía editorial generada<strong>1122 × 1402 / WebP</strong>
+                Generated editorial photograph<strong>1122 × 1402 / WebP</strong>
               </span>
               <Download size={20} />
             </a>
@@ -386,31 +387,33 @@ export default function BrandGuide() {
         <footer>
           <Brand compact />
           <p>
-            Identidad Surtario aplicada al producto local. Assets, licencias y
-            prompt incluidos en el kit.
+            The Surtario identity, applied to the product. The original kit
+            includes assets, licenses, and the image prompt.
           </p>
         </footer>
       </main>
       {sampleDialog && (
         <Dialog
-          title="Las condiciones, claras."
+          title="The terms, clearly."
           onClose={() => setSampleDialog(false)}
         >
           <p>
-            Elige una unidad o deja el dato pendiente. Escape cierra primero el
-            menú y después este diálogo.
+            Choose a unit or leave it pending. Escape closes the menu first,
+            then this dialog.
           </p>
           <label className="field brand-dialog-field">
-            <span>Unidad del ejemplo</span>
+            <span>Example unit</span>
             <Select
-              aria-label="Unidad del ejemplo"
+              aria-label="Example unit"
               value={sampleUnit}
               onValueChange={setSampleUnit}
               options={[
-                { value: "", label: "Pendiente de confirmar" },
-                { value: "kg", label: "Kilogramos (kg)" },
-                { value: "L", label: "Litros (L)" },
-                { value: "unit", label: "Unidades" },
+                { value: "", label: "Pending confirmation" },
+                { value: "lb", label: "Pounds (lb)" },
+                  { value: "oz", label: "Ounces (oz, weight)" },
+                  { value: "kg", label: "Kilograms (kg)" },
+                { value: "L", label: "Liters (L)" },
+                { value: "unit", label: "Units" },
               ]}
             />
           </label>

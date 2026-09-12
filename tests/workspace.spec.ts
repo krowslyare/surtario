@@ -8,37 +8,33 @@ test("mobile document tools remain reachable by keyboard and preserve the review
   await connectOnlyToLocalBackend(context);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/?example=pe");
   expect(
     await page
       .locator(".market-intro")
       .evaluate((element) => getComputedStyle(element).animationName),
   ).toBe("none");
 
-  const shortcut = page.getByRole("link", { name: "Usar lista o archivo" });
-  await shortcut.focus();
+  const listTools = page.getByRole("button", { name: "Ingredient list", exact: true });
+  await listTools.focus();
   await page.keyboard.press("Enter");
-  await expect(
-    page.getByRole("button", { name: "Add list or file" }),
-  ).toBeInViewport();
-
-  const disclosure = page
-    .locator("summary")
-    .filter({ hasText: "Revisar una cotización" });
+  await page.getByRole("button", { name: "Add list or file" }).focus();
+  await expect(page.getByRole("button", { name: "Add list or file" })).toBeInViewport();
+  const disclosure = page.getByRole("button", { name: "Quotes and documents", exact: true });
   await disclosure.focus();
   await page.keyboard.press("Enter");
   const trigger = page.getByRole("button", {
     name: "Review sample quote",
   });
   await trigger.click();
-  await page.getByLabel("Contenido por presentación").fill("18");
+  await page.getByLabel("Package size").fill("18");
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   await disclosure.click();
   await expect(trigger).not.toBeVisible();
   await disclosure.click();
   await trigger.click();
-  await expect(page.getByLabel("Contenido por presentación")).toHaveValue("18");
+  await expect(page.getByLabel("Package size")).toHaveValue("18");
   expect(
     await page
       .getByRole("dialog")
@@ -64,56 +60,59 @@ test("Enter uses enabled web research while the example remains an explicit sepa
       }`,
     }),
   );
-  await page.goto("/");
-  await page.getByRole("button", { name: "Explorar ejemplo de arroz" }).click();
+  await page.goto("/?example=pe");
+  await page.getByRole("button", { name: "Explore rice example" }).click();
   await page
     .getByRole("article")
     .first()
-    .getByRole("button", { name: "Añadir a mi estudio" })
+    .getByRole("button", { name: "Add to study" })
     .click();
-  await page.getByLabel("Insumo o categoría").fill("Pescado");
+  await page.getByRole("button", { name: "Change search", exact: true }).click();
+  await page.getByLabel("Ingredient or category").fill("Pescado");
   const search = page.getByRole("button", {
-    name: "Buscar en la web",
+    name: "Search suppliers",
     exact: true,
   });
   await expect(search).toBeEnabled();
-  await page.getByLabel("Insumo o categoría").press("Enter");
+  await page.getByLabel("Ingredient or category").press("Enter");
   await expect(page.getByLabel("Test web request")).toHaveText(
     JSON.stringify({ id: 1, ingredient: "Pescado", region: "Lima" }),
   );
   await expect(
-    page.getByRole("heading", { name: "Arroz en Lima" }),
+    page.getByRole("heading", { name: "Arroz in Lima" }),
   ).toHaveCount(0);
   await expect(page.getByRole("article")).toHaveCount(0);
-  await page.getByRole("link", { name: "Ir a los resultados" }).focus();
+  await page.getByRole("link", { name: "Skip to content" }).focus();
   await page.keyboard.press("Enter");
   await expect(page.locator("#market-results")).toBeFocused();
 
-  await page.getByRole("button", { name: "Mi estudio", exact: false }).click();
+  await page.getByRole("button", { name: "My study", exact: false }).click();
   await expect(
-    page.getByRole("heading", { name: "Mi estudio de mercado" }),
+    page.getByRole("heading", { name: "My market study" }),
   ).toBeVisible();
   await expect(page.getByRole("article")).toHaveCount(1);
-  await page.getByRole("button", { name: /Ver fuente de ejemplo/ }).click();
+  await page.getByRole("button", { name: /View example source/ }).click();
   await expect(page.getByRole("dialog")).toContainText("Ficha de arroz A");
   await expect(page.getByRole("dialog")).toContainText(
-    "Este ejemplo no procede de una búsqueda real.",
+    "This is sample data, not a live search result.",
   );
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Volver a resultados" }).click();
+  await page.getByRole("button", { name: "Back to results" }).click();
   await expect(page.getByLabel("Test web request")).toBeVisible();
   await expect(page.getByRole("article")).toHaveCount(0);
 
+  await page.getByRole("button", { name: "Change search", exact: true }).click();
   await page
-    .getByRole("button", { name: "Explorar ejemplo", exact: true })
+    .getByRole("button", { name: "Explore example", exact: true })
     .click();
   await expect(
-    page.getByRole("heading", { name: "No hay ejemplos para esta búsqueda" }),
+    page.getByRole("heading", { name: "No examples match this search" }),
   ).toBeVisible();
   await expect(page.getByLabel("Test web request")).toHaveText(
     JSON.stringify({ id: 1, ingredient: "Pescado", region: "Lima" }),
   );
-  await page.getByLabel("Insumo o categoría").fill("Arroz");
+  await page.getByRole("button", { name: "Change search", exact: true }).click();
+  await page.getByLabel("Ingredient or category").fill("Arroz");
   await search.click();
   await expect(page.getByLabel("Test web request")).toHaveText(
     JSON.stringify({ id: 2, ingredient: "Arroz", region: "Lima" }),

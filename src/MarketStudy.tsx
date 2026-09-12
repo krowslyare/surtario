@@ -57,8 +57,9 @@ export default function MarketStudy({
   const [study, setStudy] = useState<{
     id: Id<"studies"> | null;
     revision: number;
+    savedResultIds: string[];
     clientId: string;
-  }>(() => ({ id: null, revision: 0, clientId: crypto.randomUUID() }));
+  }>(() => ({ id: null, revision: 0, savedResultIds: [], clientId: crypto.randomUUID() }));
   const [webStatus, setWebStatus] = useState<ResearchStatus | undefined>();
   const [webRequest, setWebRequest] = useState<WebSearchRequest | null>(null);
   const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
@@ -156,7 +157,7 @@ export default function MarketStudy({
     setSelectedIds([]);
     setWebSelections([]);
     setProspects([]);
-    setStudy({ id: null, revision: 0, clientId: crypto.randomUUID() });
+    setStudy({ id: null, revision: 0, savedResultIds: [], clientId: crypto.randomUUID() });
     setTerm(ingredient);
     setSearch({ term: ingredient, region });
     setResultsView("example");
@@ -227,6 +228,7 @@ export default function MarketStudy({
     setStudy({
       id: saved.id,
       revision: saved.revision,
+      savedResultIds: saved.results.map(result => result.id),
       clientId: crypto.randomUUID(),
     });
     setShowStudy(true);
@@ -451,10 +453,9 @@ export default function MarketStudy({
                   Explore example
                 </Button>
                 <Button
-                  type="button"
+                  type="submit"
                   variant={webStatus?.searchEnabled ? "primary" : "secondary"}
                   disabled={!webStatus?.searchEnabled || !term.trim() || !region.trim()}
-                  onClick={searchWeb}
                 >
                   Search suppliers
                 </Button>
@@ -685,7 +686,7 @@ export default function MarketStudy({
                   onSaved={(saved) =>
                     setStudy((current) =>
                       current.clientId === study.clientId
-                        ? { ...current, id: saved.id, revision: saved.revision }
+                        ? { ...current, id: saved.id, revision: saved.revision, savedResultIds: saved.results.map(result => result.id) }
                         : current,
                     )
                   }
@@ -735,7 +736,7 @@ export default function MarketStudy({
         {persistenceEnabled &&
           study.id &&
           catalog
-            .filter((item) => item.kind === "distributor")
+            .filter((item) => item.kind === "distributor" && study.savedResultIds.includes(item.id))
             .map((item) => (
               <div key={`${study.id}:${item.id}`}>
                 <h3>Ask {item.supplier}</h3>

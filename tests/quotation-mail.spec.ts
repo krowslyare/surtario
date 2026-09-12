@@ -7,7 +7,7 @@ test("prepara correo desde comparación guardada sin enviar al faltar configurac
 }) => {
   await connectOnlyToLocalBackend(context);
   await context.grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.goto("/?view=comparison");
+  await page.goto("/?view=comparison&example=pe");
   await expect(
     page.getByRole("button", { name: "Prepare test request" }),
   ).toBeDisabled();
@@ -29,9 +29,9 @@ test("prepara correo desde comparación guardada sin enviar al faltar configurac
   await expect(
     dialog.getByRole("button", { name: "Send test request" }),
   ).toBeDisabled();
-  await dialog.getByRole("button", { name: "Copiar para WhatsApp" }).click();
+  await dialog.getByRole("button", { name: "Copy for WhatsApp" }).click();
   await expect(dialog).toContainText(
-    "Texto copiado. No se envió ningún mensaje.",
+    "Text copied. No message was sent.",
   );
   expect(await page.evaluate(() => navigator.clipboard.readText())).toContain(
     "Arroz",
@@ -50,12 +50,12 @@ test("prepara correo desde comparación guardada sin enviar al faltar configurac
   await page.keyboard.press("Escape");
   await page.reload();
   await page
-    .getByRole("button", { name: "Comparaciones guardadas (1)" })
+    .getByRole("button", { name: "Saved comparisons (1)" })
     .click();
   await page.getByRole("button", { name: "Open comparison" }).click();
   await page.getByRole("button", { name: "View request" }).click();
-  await expect(page.getByRole("dialog")).toContainText("Borrador");
+  await expect(page.getByRole("dialog")).toContainText("Draft");
   await expect(page.getByRole("dialog")).toContainText(
-    "Todavía no hay respuestas vinculadas",
+    "No replies are linked yet",
   );
 });
