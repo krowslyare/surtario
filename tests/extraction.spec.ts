@@ -4,9 +4,7 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
   page,
 }) => {
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Cotizaciones y documentos", exact: true })
-    .click();
+  await page.getByText("Revisar una cotización", { exact: true }).click();
   await page
     .getByRole("button", { name: "Revisar ejemplo de cotización" })
     .click();
@@ -14,15 +12,14 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
   expect(await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
     true,
   );
-  await expect(dialog).toContainText("No hace una llamada de IA");
+  await expect(dialog).toContainText("El contenido de origen es ficticio");
   await expect(dialog).toContainText("Saco: S/ 80.00");
   await expect(dialog.getByText("Original: Pendiente")).toHaveCount(2);
   await expect(
     dialog.getByRole("button", { name: "Continuar a comparación" }),
   ).toBeDisabled();
 
-  await dialog.getByLabel("Unidad de la presentación").click();
-  await dialog.getByRole("option", { name: "kg", exact: true }).click();
+  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
   await dialog.getByLabel("Contenido por presentación").fill("18");
   await dialog.getByLabel("Precio por presentación").fill("85");
   await expect(dialog.getByText("Corregido manualmente")).toHaveCount(3);
@@ -51,9 +48,7 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
 }) => {
   await page.setViewportSize({ width: 320, height: 760 });
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Cotizaciones y documentos", exact: true })
-    .click();
+  await page.getByText("Revisar una cotización", { exact: true }).click();
   const trigger = page.getByRole("button", {
     name: "Revisar ejemplo de cotización",
   });

@@ -1,4 +1,10 @@
 import { defineConfig } from "vitest/config";
 export default defineConfig({
-  test: { include: ["src/**/*.test.ts", "convex/**/*.test.ts"] },
+  test: {
+    include: [
+      "src/**/*.test.ts",
+      "convex/**/*.test.ts",
+      "scripts/rehearsal/*.test.ts",
+    ],
+  },
 });

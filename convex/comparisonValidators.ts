@@ -42,12 +42,14 @@ export const documentReviewValidator = v.object({
 export const replyReviewInputValidator = v.object({
   requestId: v.id("quotationRequests"),
   messageId: v.string(),
+  extractionAttempt: v.optional(v.number()),
   values: reviewedValuesValidator,
   confirmed: v.literal(true),
 });
 export const replyReviewValidator = v.object({
   requestId: v.string(),
   messageId: v.string(),
+  extractionAttempt: v.optional(v.number()),
   values: reviewedValuesValidator,
   confirmed: v.literal(true),
 });

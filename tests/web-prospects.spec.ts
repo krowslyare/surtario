@@ -1,34 +1,16 @@
 import { expect, test } from "@playwright/test";
-import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { connectOnlyToLocalBackend, runLocalConvex } from "./e2e-local";
 
 test("fuente web sin precio se guarda como candidato y recupera su consulta", async ({
   page,
   context,
 }) => {
-  // Only internal synthetic setup, on the project's anonymous local backend.
-  const target = readFileSync(".env.local", "utf8")
-    .split("\n")
-    .find((line) => line.startsWith("CONVEX_DEPLOYMENT="));
-  if (
-    process.env.CONVEX_DEPLOY_KEY ||
-    target !== "CONVEX_DEPLOYMENT=anonymous:anonymous-convexhackaton"
-  )
-    throw new Error("Web review E2E requires the anonymous local backend.");
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname))
-      throw new Error("Only local WebSockets allowed.");
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) =>
     b.toString(16).padStart(2, "0"),
   ).join("");
   const run = (fn: string, args: object) =>
-    JSON.parse(
-      execFileSync("npx", ["convex", "run", fn, JSON.stringify(args)], {
-        encoding: "utf8",
-      }),
-    );
+    JSON.parse(runLocalConvex(["run", fn, JSON.stringify(args)]));
   const reserved = run("research:reserveSearch", {
     token,
     clientId: crypto.randomUUID(),
@@ -48,6 +30,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     ],
     discarded: 0,
     warning: false,
+    simulated: true,
   });
   await context.addInitScript(
     (value) => localStorage.setItem("procurement-demo-session-v1", value),
@@ -72,8 +55,14 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   await review
     .getByRole("button", { name: "Guardar candidato", exact: true })
     .click();
-  await expect(review).toContainText("Candidato guardado.");
-  await page.keyboard.press("Escape");
+  await expect(review).not.toBeVisible();
+  await page.getByRole("button", { name: "Mi estudio 1", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Guardar estudio", exact: true })
+    .click();
+  await expect(
+    page.getByText("Estudio guardado con 1 opción", { exact: false }),
+  ).toBeVisible();
   await page.reload();
   const library = page.getByRole("region", {
     name: "Distribuidores web guardados",
@@ -91,7 +80,17 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     ),
   ).toBe(true);
   await page.screenshot({ path: "/tmp/web-prospect-mobile.png" });
-  await library
+  await page
+    .getByRole("button", { name: "Guardados (1)", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Abrir estudio", exact: true })
+    .click();
+  const candidate = page.getByRole("article", {
+    name: "Distribuidor en estudio: Distribuidor candidato E2E",
+  });
+  await expect(candidate).toContainText("Precio por consultar");
+  await candidate
     .getByRole("button", { name: "Preparar solicitud de prueba" })
     .click();
   const mail = page.getByRole("dialog");
@@ -104,6 +103,12 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   ).toBeDisabled();
   await page.keyboard.press("Escape");
   await page.reload();
-  await library.getByRole("button", { name: "Ver solicitud" }).click();
+  await page
+    .getByRole("button", { name: "Guardados (1)", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Abrir estudio", exact: true })
+    .click();
+  await candidate.getByRole("button", { name: "Ver solicitud" }).click();
   await expect(page.getByRole("dialog")).toContainText("Borrador");
 });

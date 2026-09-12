@@ -12,16 +12,26 @@ import {
   type IntakeRow,
 } from "../intake/model";
 import { readFile } from "../intake/readFile";
+import SavedIngredientLists, {
+  type SavedIngredientList,
+} from "./SavedIngredientLists";
+import type { Id } from "../../convex/_generated/dataModel";
+import { batchFromSavedList } from "../intake/saved";
 
 export default function IngredientIntake({
   onExplore,
   activeIngredient,
+  persistenceEnabled,
 }: {
   onExplore: (ingredient: string) => void;
   activeIngredient: string | null;
+  persistenceEnabled: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [batch, setBatch] = useState<IntakeBatch | null>(null);
+  const [clientId, setClientId] = useState(() => crypto.randomUUID());
+  const currentClientId = useRef(clientId);
+  const [savedId, setSavedId] = useState<Id<"ingredientLists"> | null>(null);
   const [viewSource, setViewSource] = useState(false);
   return (
     <section className="ingredient-intake" aria-label="Entrada de insumos">
@@ -44,8 +54,8 @@ export default function IngredientIntake({
             </button>
           </div>
           <p>
-            Investiga un insumo a la vez en la zona elegida. La lista y su
-            archivo solo duran en esta pestaña; «Guardar estudio» no los guarda.
+            Investiga un insumo a la vez en la zona elegida. Guardar la lista
+            conserva solo sus nombres revisados; el archivo permanece local.
           </p>
           <div className="ingredient-queue">
             {batch.rows.map((row) => (
@@ -63,12 +73,35 @@ export default function IngredientIntake({
           </div>
         </div>
       )}
+      {persistenceEnabled && (
+        <SavedIngredientLists
+          batch={batch}
+          clientId={clientId}
+          savedId={savedId}
+          onSaved={(id, submittedClientId) => {
+            if (currentClientId.current !== submittedClientId) return false;
+            setSavedId(id);
+            return true;
+          }}
+          onOpen={(list: SavedIngredientList) => {
+            setBatch(batchFromSavedList(list));
+            const nextClientId = crypto.randomUUID();
+            currentClientId.current = nextClientId;
+            setClientId(nextClientId);
+            setSavedId(list.id);
+          }}
+        />
+      )}
       {open && (
         <IntakeDialog
           replacing={!!batch}
           onClose={() => setOpen(false)}
           onConfirm={(next) => {
             setBatch(next);
+            const nextClientId = crypto.randomUUID();
+            currentClientId.current = nextClientId;
+            setClientId(nextClientId);
+            setSavedId(null);
             setOpen(false);
           }}
         />
@@ -80,7 +113,7 @@ export default function IngredientIntake({
           onClose={() => setViewSource(false)}
         >
           <p>
-            {batch.file?.name ?? "Entrada manual"}
+            {batch.sourceLabel ?? batch.file?.name ?? "Entrada manual"}
             {batch.sheet ? ` · ${batch.sheet}` : ""}
             {batch.column !== null
               ? ` · columna ${batch.column + 1} · ${batch.hasHeader ? "con encabezado" : "sin encabezado"}`
@@ -429,7 +462,7 @@ function IntakeDialog({
               Volver a la entrada
             </button>
             <button className="button primary" onClick={confirm}>
-              Confirmar {rows.length} insumos
+              Confirmar {rows.length} {rows.length === 1 ? "insumo" : "insumos"}
             </button>
           </div>
         </>

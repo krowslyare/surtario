@@ -53,9 +53,11 @@ export default function ExtractionReview({
   triggerLabel = "Revisar ejemplo de cotización",
   onPrepare,
   confirmLabel = "Continuar a comparación",
+  confirmationNote = "Continuar prepara una comparación. No registra una compra ni guarda el documento.",
   originalPreview,
   sourceTextLabel = "Texto original",
 }: {
+  confirmationNote?: string;
   originalPreview?: ReactNode;
   sourceTextLabel?: string;
   source?: ExtractionSource;
@@ -119,11 +121,11 @@ export default function ExtractionReview({
         >
           <div className="extraction-intro">
             <span className="extraction-simulation">
-              {source.simulated ? "Ejemplo sintético" : "Extracción automática"}
+              {source.simulated ? "Ejemplo sintético" : "Fuente para revisión"}
             </span>
             <p>
               {source.simulated
-                ? "Esta revisión simula un resultado ya extraído. No hace una llamada de IA ni sube un documento."
+                ? "El contenido de origen es ficticio. Revisa la propuesta y confirma los datos antes de continuar."
                 : "Compara cada propuesta con el texto recuperado de la fuente antes de usarla."}
             </p>
           </div>
@@ -241,10 +243,7 @@ export default function ExtractionReview({
             />
             Revisé el origen y confirmo los datos, incluidas mis correcciones
           </label>
-          <p className="extraction-boundary">
-            Continuar prepara una comparación. No registra una compra ni guarda
-            el documento.
-          </p>
+          <p className="extraction-boundary">{confirmationNote}</p>
 
           {error && (
             <p className="notice error" role="alert">

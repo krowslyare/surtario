@@ -1,0 +1,67 @@
+{
+  "date": "2026-09-10",
+  "scope": "Live Firecrawl calls and real Luna CLI interpretation through isolated local Convex. Not direct OpenAI API acceptance.",
+  "discovery": {
+    "query": "Arroz Brilhante 50 kg",
+    "region": "Lima",
+    "observedAt": "2026-09-10T13:23:34.920Z",
+    "elapsedMs": 10059,
+    "maxAgeMs": 3600000,
+    "sourceCount": 3,
+    "sources": [
+      {
+        "url": "https://mundoabarrotes.com/producto/arroz-brilhante-extra-50kg/",
+        "markdownCharacters": 6330,
+        "truncated": false
+      },
+      {
+        "url": "https://mundoabarrotes.com/producto/arroz-brilhante-parbolizado-50-kg/",
+        "markdownCharacters": 7468,
+        "truncated": false
+      },
+      {
+        "url": "https://www.vega.pe/arroz-extra-ferrenafano-premium-azul-saco-50kg-62022750/p%3Fsrsltid%3DAfmBOooabUN8oB__hwBi6Quct6RxRBfYMHHgrkHwMlZn-98It1LR3bFC",
+        "markdownCharacters": 9780,
+        "truncated": false
+      }
+    ]
+  },
+  "selectedProduct": {
+    "url": "https://mundoabarrotes.com/producto/arroz-brilhante-extra-50kg/",
+    "observedAt": "2026-09-10T13:23:55.938Z",
+    "elapsedMs": 21017,
+    "markdownCharacters": 7005,
+    "markdownSha256": "a73d5d9451184387ca1fb7c4008cb0fc3d2414918c87eabc82f51fcce5ecca01",
+    "maxAgeMs": 0,
+    "country": "PE",
+    "languages": [
+      "es-PE",
+      "es"
+    ]
+  },
+  "model": {
+    "transport": "Luna CLI via local Convex Agent and AI SDK",
+    "model": "gpt-5.6-luna",
+    "observedAt": "2026-09-10T13:36:18.447Z",
+    "elapsedMs": 12353,
+    "kind": "product",
+    "values": {
+      "currency": "PEN",
+      "ingredient": "Arroz Brilhante",
+      "packageContent": "50",
+      "packageUnit": "kg",
+      "price": "208.00",
+      "specification": "Extra",
+      "supplier": "Mundo Abarrotes"
+    },
+    "firstPass": {
+      "elapsedMs": 13732,
+      "limitation": "Price value included S/; numeric-only instruction was clarified and a separate explicit run returned 208.00."
+    }
+  },
+  "limits": [
+    "No proof of stock, current supplier price, delivery coverage or equivalence among discovery results.",
+    "Two Firecrawl requests; the page body was reused for two model generations.",
+    "No direct OpenAI API call, real email, cloud deployment or contest submission in this pass."
+  ]
+}

@@ -1,4 +1,8 @@
-import { mergeReplyOffer, prepareReplyOffer } from "../src/domain/replyReview";
+import {
+  emptyReplyProposal,
+  mergeReplyOffer,
+  prepareReplyOffer,
+} from "../src/domain/replyReview";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
@@ -14,6 +18,7 @@ import {
   supplierOfferValidator,
 } from "./validators";
 import { ownerHash } from "./lib/demoSession";
+import { reconstructWebReview, type WebReview } from "./lib/webReviews";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
 import { marketExamples } from "../fixtures/market";
 import {
@@ -56,13 +61,6 @@ function sameValue(a: unknown, b: unknown): boolean {
   );
 }
 
-type WebReview = {
-  runId: Doc<"researchRuns">["_id"];
-  sourceIndex: number;
-  values: ReviewedValues;
-  confirmed: true;
-};
-
 async function reconstructWebReviews(
   ctx: MutationCtx,
   owner: string,
@@ -70,54 +68,14 @@ async function reconstructWebReviews(
 ): Promise<PurchaseSeed> {
   if (!reviews.length || reviews.length > 3)
     throw new ConvexError("Selecciona entre una y tres fuentes web revisadas.");
-  const refs = new Set<string>();
-  const seeds: PurchaseSeed[] = [];
-  for (const review of reviews) {
-    if (
-      !Number.isSafeInteger(review.sourceIndex) ||
-      review.sourceIndex < 0 ||
-      extractionFields.some((key) => review.values[key].length > 120)
-    )
-      throw new ConvexError("Revisión web no válida.");
-    const ref = `${review.runId}:${review.sourceIndex}`;
-    if (refs.has(ref))
-      throw new ConvexError("Una misma fuente no puede aparecer dos veces.");
-    refs.add(ref);
-    const run = await ctx.db.get("researchRuns", review.runId);
-    if (!run || run.ownerHash !== owner)
-      throw new ConvexError("Búsqueda no disponible en esta sesión.");
-    if (run.status !== "complete")
-      throw new ConvexError("La búsqueda todavía no está completa.");
-    const source = run.sources[review.sourceIndex];
-    if (!source) throw new ConvexError("Fuente no válida.");
-    if (
-      source.extractionStatus !== "complete" ||
-      !source.extraction ||
-      !source.markdown
-    )
-      throw new ConvexError("La extracción de esta fuente no está completa.");
-    try {
-      const seed = extractionToPurchase(
-        {
-          id: ref,
-          url: source.url,
-          title: source.title,
-          text: source.markdown,
-          observedAt: run.observedAt,
-          simulated: false,
-        },
-        source.extraction,
-        review.values,
-        review.confirmed,
-      );
-      seed.sources[ref].webReview = { ...review };
-      seeds.push(seed);
-    } catch (error) {
-      throw new ConvexError(
-        error instanceof Error ? error.message : "Revisión web no válida.",
-      );
-    }
-  }
+  if (
+    new Set(reviews.map((review) => `${review.runId}:${review.sourceIndex}`))
+      .size !== reviews.length
+  )
+    throw new ConvexError("Una misma fuente no puede aparecer dos veces.");
+  const seeds = [];
+  for (const review of reviews)
+    seeds.push(await reconstructWebReview(ctx, owner, review));
   try {
     return combineReviewedOffers(seeds, true);
   } catch (error) {
@@ -154,7 +112,7 @@ async function reconstructDocumentReview(
         title: `Transcripción automática · cotización sintética · ${run.kind}`,
         text: run.result.transcript,
         observedAt: new Date(run.createdAt).toISOString().slice(0, 10),
-        simulated: false,
+        simulated: true,
         url: `/examples/cotizacion-demo.${run.kind === "pdf" ? "pdf" : "png"}`,
       },
       run.result.offer,
@@ -176,6 +134,7 @@ async function reconstructReply(
   review: {
     requestId: Doc<"quotationRequests">["_id"];
     messageId: string;
+    extractionAttempt?: number;
     values: ReviewedValues;
     confirmed: true;
   },
@@ -183,6 +142,10 @@ async function reconstructReply(
   if (
     !review.messageId ||
     review.messageId.length > 500 ||
+    (review.extractionAttempt !== undefined &&
+      (!Number.isSafeInteger(review.extractionAttempt) ||
+        review.extractionAttempt < 1 ||
+        review.extractionAttempt > 2)) ||
     extractionFields.some((key) => review.values[key].length > 120)
   )
     throw new ConvexError("Revisión de respuesta no válida.");
@@ -195,6 +158,18 @@ async function reconstructReply(
     .unique();
   if (!reply || reply.requestId !== request._id)
     throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+  let proposal: typeof emptyReplyProposal | undefined;
+  if (review.extractionAttempt !== undefined) {
+    if (
+      reply.extractionStatus !== "complete" ||
+      !reply.extraction ||
+      reply.extractionAttempt !== review.extractionAttempt
+    )
+      throw new ConvexError(
+        "La propuesta de IA cambió o no está completa. Abre de nuevo la respuesta antes de confirmar.",
+      );
+    proposal = reply.extraction;
+  }
   try {
     return prepareReplyOffer(
       {
@@ -202,9 +177,12 @@ async function reconstructReply(
         messageId: reply.messageId,
         text: reply.text,
         receivedAt: reply.receivedAt,
+        simulated: request.simulated ?? false,
       },
       review.values,
       review.confirmed,
+      proposal,
+      review.extractionAttempt,
     );
   } catch (error) {
     throw new ConvexError(

@@ -48,6 +48,7 @@ export type ComparisonSource = {
   replyReview?: {
     requestId: string;
     messageId: string;
+    extractionAttempt?: number;
     values: ReviewedValues;
     confirmed: true;
   };

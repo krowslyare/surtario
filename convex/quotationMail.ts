@@ -1,8 +1,13 @@
 import { ConvexError, v } from "convex/values";
 import {
+  providerFetch,
+  providerRehearsalEnabled,
+} from "./lib/providerTransport";
+import {
   action,
   env,
   internalMutation,
+  internalQuery,
   mutation,
   query,
 } from "./_generated/server";
@@ -10,14 +15,22 @@ import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { ownerHash } from "./lib/demoSession";
+import { extractReplyOfferWithAgent } from "./lib/replyExtraction";
 import {
+  quotationReplyValidator,
   savedQuotationValidator,
+  type QuotationReply,
   type SavedQuotation,
 } from "./quotationValidators";
+import {
+  extractedOfferValidator,
+  type ExtractedOffer,
+} from "./researchValidators";
 
 const MAX_PER_SESSION = 10;
 const MAX_GLOBAL = 100;
 const MAX_REPLIES = 10;
+const MAX_RECOVERY_ITEMS = 100;
 const COOLDOWN_MS = 30_000;
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -25,6 +38,22 @@ const SEND_FAILED =
   "AgentMail rechazó el envío. Crea una solicitud nueva para volver a intentarlo.";
 const SEND_UNCERTAIN =
   "No se pudo confirmar el resultado del envío. No se reintentará automáticamente.";
+const REPLY_EXTRACTION_ERROR =
+  "No se obtuvo una sugerencia verificable. Puedes completar los campos manualmente o volver a intentarlo una vez.";
+
+function normalizedSender(value: string) {
+  return (
+    value
+      .trim()
+      .toLowerCase()
+      .match(/<([^>]+)>$/)?.[1] ?? value.trim().toLowerCase()
+  );
+}
+
+function assertProviderId(value: string, maximum: number) {
+  if (value.length === 0 || value.length > maximum)
+    throw new ConvexError("Provider identifier is invalid.");
+}
 
 function configured() {
   const recipient = env.AGENTMAIL_TEST_RECIPIENT?.trim().toLowerCase() || null;
@@ -40,6 +69,27 @@ function configured() {
   };
 }
 
+function replyExtractorConfigured() {
+  return (
+    env.REPLY_EXTRACTION_ENABLED === "true" &&
+    !!env.OPENAI_API_KEY?.trim() &&
+    !!env.OPENAI_EXTRACTION_MODEL?.trim()
+  );
+}
+
+function publicReply(doc: Doc<"quotationReplies">): QuotationReply {
+  return {
+    messageId: doc.messageId,
+    text: doc.text,
+    receivedAt: doc.receivedAt,
+    extraction: doc.extraction ?? null,
+    extractionStatus: doc.extractionStatus ?? "idle",
+    extractionError: doc.extractionError ?? null,
+    extractionAttempts: doc.extractionAttempts ?? 0,
+    extractionAttempt: doc.extractionAttempt ?? null,
+  };
+}
+
 async function publicRequest(
   ctx: QueryCtx | MutationCtx,
   doc: Doc<"quotationRequests">,
@@ -51,6 +101,7 @@ async function publicRequest(
     .take(MAX_REPLIES);
   return {
     id: doc._id,
+    simulated: doc.simulated ?? false,
     ...(doc.comparisonId ? { comparisonId: doc.comparisonId } : {}),
     ...(doc.studyId ? { studyId: doc.studyId, resultId: doc.resultId } : {}),
     ...(doc.prospectId ? { prospectId: doc.prospectId } : {}),
@@ -62,11 +113,7 @@ async function publicRequest(
     receipt: doc.receipt,
     failure: doc.failure,
     createdAt: doc.createdAt,
-    replies: replies.map((reply) => ({
-      messageId: reply.messageId,
-      text: reply.text,
-      receivedAt: reply.receivedAt,
-    })),
+    replies: replies.map(publicReply),
   };
 }
 
@@ -75,10 +122,15 @@ export const status = query({
   returns: v.object({
     enabled: v.boolean(),
     recipient: v.union(v.string(), v.null()),
+    extractionEnabled: v.boolean(),
   }),
   handler: async () => {
     const value = configured();
-    return { enabled: value.enabled, recipient: value.recipient };
+    return {
+      enabled: value.enabled,
+      recipient: value.recipient,
+      extractionEnabled: replyExtractorConfigured(),
+    };
   },
 });
 
@@ -93,6 +145,167 @@ export const list = query({
       .order("desc")
       .take(MAX_PER_SESSION);
     return await Promise.all(docs.map((doc) => publicRequest(ctx, doc)));
+  },
+});
+
+const replyExtractionReservation = v.union(
+  v.object({ kind: v.literal("complete"), reply: quotationReplyValidator }),
+  v.object({ kind: v.literal("running") }),
+  v.object({
+    kind: v.literal("reserved"),
+    replyId: v.id("quotationReplies"),
+    text: v.string(),
+    attempt: v.number(),
+  }),
+);
+
+export const reserveReplyExtraction = internalMutation({
+  args: {
+    token: v.string(),
+    requestId: v.id("quotationRequests"),
+    messageId: v.string(),
+  },
+  returns: replyExtractionReservation,
+  handler: async (ctx, args) => {
+    const hash = await ownerHash(args.token);
+    if (!args.messageId || args.messageId.length > 500)
+      throw new ConvexError("Respuesta no válida.");
+    const request = await ctx.db.get(args.requestId);
+    if (!request || request.ownerHash !== hash)
+      throw new ConvexError("Solicitud no disponible en esta sesión.");
+    const reply = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_messageId", (q) => q.eq("messageId", args.messageId))
+      .unique();
+    if (!reply || reply.requestId !== request._id)
+      throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+    const status = reply.extractionStatus ?? "idle";
+    const attempts = reply.extractionAttempts ?? 0;
+    if (!Number.isSafeInteger(attempts) || attempts < 0)
+      throw new Error("Invalid reply extraction state.");
+    if (status === "complete" && reply.extraction)
+      return { kind: "complete" as const, reply: publicReply(reply) };
+    if (status === "running") return { kind: "running" as const };
+    if (attempts >= 2)
+      throw new ConvexError(
+        "Esta respuesta alcanzó el máximo de dos intentos. Completa los campos manualmente.",
+      );
+    await ctx.db.patch(reply._id, {
+      extraction: null,
+      extractionStatus: "running",
+      extractionError: null,
+      extractionAttempts: attempts + 1,
+      extractionAttempt: null,
+    });
+    return {
+      kind: "reserved" as const,
+      replyId: reply._id,
+      text: reply.text,
+      attempt: attempts + 1,
+    };
+  },
+});
+
+export const finishReplyExtraction = internalMutation({
+  args: {
+    replyId: v.id("quotationReplies"),
+    attempt: v.number(),
+    offer: extractedOfferValidator,
+  },
+  returns: quotationReplyValidator,
+  handler: async (ctx, { replyId, attempt, offer }) => {
+    const reply = await ctx.db.get(replyId);
+    if (
+      !reply ||
+      reply.extractionStatus !== "running" ||
+      reply.extractionAttempts !== attempt
+    )
+      throw new Error("Missing reserved reply extraction.");
+    await ctx.db.patch(replyId, {
+      extraction: offer,
+      extractionStatus: "complete",
+      extractionError: null,
+      extractionAttempt: attempt,
+    });
+    return publicReply((await ctx.db.get(replyId))!);
+  },
+});
+
+export const failReplyExtraction = internalMutation({
+  args: { replyId: v.id("quotationReplies") },
+  returns: quotationReplyValidator,
+  handler: async (ctx, { replyId }) => {
+    const reply = await ctx.db.get(replyId);
+    if (!reply) throw new Error("Missing reserved reply extraction.");
+    if (reply.extractionStatus === "running")
+      await ctx.db.patch(replyId, {
+        extraction: null,
+        extractionStatus: "failed",
+        extractionError:
+          (reply.extractionAttempts ?? 0) >= 2
+            ? "No se obtuvo una sugerencia verificable en dos intentos. Completa los campos manualmente."
+            : REPLY_EXTRACTION_ERROR,
+      });
+    return publicReply((await ctx.db.get(replyId))!);
+  },
+});
+
+export const extractReply = action({
+  args: {
+    token: v.string(),
+    requestId: v.id("quotationRequests"),
+    messageId: v.string(),
+  },
+  returns: quotationReplyValidator,
+  handler: async (ctx, args): Promise<QuotationReply> => {
+    if (!replyExtractorConfigured())
+      throw new ConvexError("La extracción de respuestas no está habilitada.");
+    const reservation:
+      | { kind: "complete"; reply: QuotationReply }
+      | { kind: "running" }
+      | {
+          kind: "reserved";
+          replyId: Id<"quotationReplies">;
+          text: string;
+          attempt: number;
+        } = await ctx.runMutation(
+      internal.quotationMail.reserveReplyExtraction,
+      args,
+    );
+    if (reservation.kind === "complete") return reservation.reply;
+    if (reservation.kind === "running")
+      throw new ConvexError(
+        "La extracción de esta respuesta ya está en curso o requiere revisión del operador.",
+      );
+    let offer: ExtractedOffer;
+    try {
+      offer = await extractReplyOfferWithAgent(
+        ctx,
+        reservation.text,
+        env.OPENAI_API_KEY!,
+        env.OPENAI_EXTRACTION_MODEL!,
+      );
+    } catch {
+      return await ctx.runMutation(internal.quotationMail.failReplyExtraction, {
+        replyId: reservation.replyId,
+      });
+    }
+    // If persistence is uncertain, keep the paid reservation running so a retry
+    // cannot issue a second provider call.
+    try {
+      return await ctx.runMutation(
+        internal.quotationMail.finishReplyExtraction,
+        {
+          replyId: reservation.replyId,
+          attempt: reservation.attempt,
+          offer,
+        },
+      );
+    } catch {
+      throw new ConvexError(
+        "La extracción respondió, pero no se confirmó su guardado. No repitas la llamada; requiere revisión del operador.",
+      );
+    }
   },
 });
 
@@ -287,6 +500,7 @@ export const reserveSend = internalMutation({
       );
     await ctx.db.patch(doc._id, {
       state: "sending",
+      simulated: providerRehearsalEnabled(),
       revision: doc.revision + 1,
       updatedAt: Date.now(),
     });
@@ -363,7 +577,7 @@ export const send = action({
       | { kind: "failed" }
       | { kind: "uncertain" };
     try {
-      const response = await fetch(
+      const response = await providerFetch(
         `https://api.agentmail.to/v0/inboxes/${encodeURIComponent(reservation.inboxId)}/messages/send`,
         {
           method: "POST",
@@ -451,6 +665,233 @@ export const send = action({
   },
 });
 
+const recoveryRequestValidator = v.object({
+  id: v.id("quotationRequests"),
+  state: v.union(v.literal("sending"), v.literal("uncertain")),
+  revision: v.number(),
+  clientId: v.string(),
+  inboxId: v.union(v.string(), v.null()),
+  recipient: v.union(v.string(), v.null()),
+  subject: v.string(),
+  idempotencyKey: v.string(),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+});
+
+const recoveryEventValidator = v.object({
+  id: v.id("quotationUnmatchedEvents"),
+  eventId: v.string(),
+  messageId: v.string(),
+  inboxId: v.string(),
+  threadId: v.string(),
+  from: v.string(),
+  text: v.string(),
+  receivedAt: v.string(),
+  createdAt: v.number(),
+});
+
+export const inspectRecoveryQueue = internalQuery({
+  args: { limit: v.number() },
+  returns: v.object({
+    requests: v.array(recoveryRequestValidator),
+    unmatchedEvents: v.array(recoveryEventValidator),
+  }),
+  handler: async (ctx, { limit }) => {
+    if (!Number.isSafeInteger(limit) || limit < 1 || limit > MAX_RECOVERY_ITEMS)
+      throw new ConvexError("Recovery limit must be an integer from 1 to 100.");
+    const [sending, uncertain, unmatched] = await Promise.all([
+      ctx.db
+        .query("quotationRequests")
+        .withIndex("by_state", (q) => q.eq("state", "sending"))
+        .order("desc")
+        .take(limit),
+      ctx.db
+        .query("quotationRequests")
+        .withIndex("by_state", (q) => q.eq("state", "uncertain"))
+        .order("desc")
+        .take(limit),
+      ctx.db
+        .query("quotationUnmatchedEvents")
+        .withIndex("by_creation_time")
+        .order("desc")
+        .take(limit),
+    ]);
+    const requests = [...sending, ...uncertain]
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .slice(0, limit)
+      .map((request) => ({
+        id: request._id,
+        state: request.state as "sending" | "uncertain",
+        revision: request.revision,
+        clientId: request.clientId,
+        inboxId: request.inboxId,
+        recipient: request.recipient,
+        subject: request.subject,
+        idempotencyKey: request.idempotencyKey,
+        createdAt: request.createdAt,
+        updatedAt: request.updatedAt,
+      }));
+    return {
+      requests,
+      unmatchedEvents: unmatched.map((event) => ({
+        id: event._id,
+        eventId: event.eventId,
+        messageId: event.messageId,
+        inboxId: event.inboxId,
+        threadId: event.threadId,
+        from: event.from,
+        text: event.text,
+        receivedAt: event.receivedAt,
+        createdAt: event._creationTime,
+      })),
+    };
+  },
+});
+
+export const recordVerifiedSentReceipt = internalMutation({
+  args: {
+    requestId: v.id("quotationRequests"),
+    expectedRevision: v.number(),
+    inboxId: v.string(),
+    messageId: v.string(),
+    threadId: v.string(),
+    operatorVerified: v.literal(true),
+  },
+  returns: v.union(v.literal("recorded"), v.literal("existing")),
+  handler: async (ctx, args) => {
+    assertProviderId(args.inboxId, 300);
+    assertProviderId(args.messageId, 500);
+    assertProviderId(args.threadId, 500);
+    const request = await ctx.db.get(args.requestId);
+    if (!request) throw new ConvexError("Quotation request was not found.");
+    if (request.inboxId !== args.inboxId)
+      throw new ConvexError(
+        "Verified inbox does not match the frozen request.",
+      );
+    if (
+      request.state === "sent" &&
+      request.receipt?.messageId === args.messageId &&
+      request.receipt.threadId === args.threadId
+    )
+      return "existing" as const;
+    if (
+      !Number.isSafeInteger(args.expectedRevision) ||
+      request.revision !== args.expectedRevision
+    )
+      throw new ConvexError("Quotation request revision changed.");
+    if (request.state !== "sending" && request.state !== "uncertain")
+      throw new ConvexError(
+        "Only sending or uncertain requests can be reconciled.",
+      );
+    if (request.receipt)
+      throw new ConvexError(
+        "Quotation request already has a different receipt.",
+      );
+    const messageCollision = await ctx.db
+      .query("quotationRequests")
+      .withIndex("by_inboxId_and_receipt_messageId", (q) =>
+        q.eq("inboxId", args.inboxId).eq("receipt.messageId", args.messageId),
+      )
+      .take(1);
+    if (messageCollision.length > 0)
+      throw new ConvexError(
+        "Verified message is already assigned to another request.",
+      );
+    const collision = await ctx.db
+      .query("quotationRequests")
+      .withIndex("by_inboxId_and_receipt_threadId", (q) =>
+        q.eq("inboxId", args.inboxId).eq("receipt.threadId", args.threadId),
+      )
+      .take(1);
+    if (collision.length > 0)
+      throw new ConvexError(
+        "Verified thread is already assigned to another request.",
+      );
+    await ctx.db.patch(request._id, {
+      state: "sent",
+      receipt: { messageId: args.messageId, threadId: args.threadId },
+      failure: null,
+      revision: request.revision + 1,
+      updatedAt: Date.now(),
+    });
+    return "recorded" as const;
+  },
+});
+
+export const linkVerifiedUnmatchedReply = internalMutation({
+  args: {
+    requestId: v.id("quotationRequests"),
+    eventId: v.string(),
+    operatorVerified: v.literal(true),
+  },
+  returns: v.union(v.literal("linked"), v.literal("existing")),
+  handler: async (ctx, args) => {
+    assertProviderId(args.eventId, 300);
+    const existing = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_eventId", (q) => q.eq("eventId", args.eventId))
+      .unique();
+    if (existing) {
+      if (existing.requestId !== args.requestId)
+        throw new ConvexError("Reply is already linked to another request.");
+      return "existing" as const;
+    }
+    const event = await ctx.db
+      .query("quotationUnmatchedEvents")
+      .withIndex("by_eventId", (q) => q.eq("eventId", args.eventId))
+      .unique();
+    if (!event) throw new ConvexError("Quarantined event was not found.");
+    const request = await ctx.db.get(args.requestId);
+    if (
+      !request ||
+      request.state !== "sent" ||
+      !request.receipt ||
+      !request.inboxId ||
+      !request.recipient
+    )
+      throw new ConvexError("Request does not have a frozen sent route.");
+    if (
+      event.inboxId !== request.inboxId ||
+      event.threadId !== request.receipt.threadId ||
+      normalizedSender(event.from) !== request.recipient
+    )
+      throw new ConvexError(
+        "Quarantined event does not match the frozen route.",
+      );
+    const candidates = await ctx.db
+      .query("quotationRequests")
+      .withIndex("by_inboxId_and_receipt_threadId", (q) =>
+        q.eq("inboxId", event.inboxId).eq("receipt.threadId", event.threadId),
+      )
+      .take(2);
+    if (candidates.length !== 1 || candidates[0]._id !== request._id)
+      throw new ConvexError("Frozen route is ambiguous.");
+    const duplicateMessage = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_messageId", (q) => q.eq("messageId", event.messageId))
+      .unique();
+    if (duplicateMessage)
+      throw new ConvexError("Provider message is already linked.");
+    const replies = await ctx.db
+      .query("quotationReplies")
+      .withIndex("by_requestId", (q) => q.eq("requestId", request._id))
+      .take(MAX_REPLIES);
+    if (replies.length >= MAX_REPLIES)
+      throw new ConvexError("Quotation request already has 10 replies.");
+    await ctx.db.insert("quotationReplies", {
+      requestId: request._id,
+      eventId: event.eventId,
+      messageId: event.messageId,
+      threadId: event.threadId,
+      from: normalizedSender(event.from),
+      text: event.text,
+      receivedAt: event.receivedAt,
+    });
+    await ctx.db.delete(event._id);
+    return "linked" as const;
+  },
+});
+
 export const recordReceived = internalMutation({
   args: {
     eventId: v.string(),
@@ -498,11 +939,7 @@ export const recordReceived = internalMutation({
         .withIndex("by_messageId", (q) => q.eq("messageId", args.messageId))
         .unique());
     if (duplicateMessage) return "duplicate" as const;
-    const sender =
-      args.from
-        .trim()
-        .toLowerCase()
-        .match(/<([^>]+)>$/)?.[1] ?? args.from.trim().toLowerCase();
+    const sender = normalizedSender(args.from);
     const candidates = await ctx.db
       .query("quotationRequests")
       .withIndex("by_inboxId_and_receipt_threadId", (q) =>

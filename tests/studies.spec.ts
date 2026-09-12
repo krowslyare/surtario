@@ -1,18 +1,8 @@
-import { expect, test, type BrowserContext } from "@playwright/test";
+import { expect, test } from "@playwright/test";
+import { connectOnlyToLocalBackend } from "./e2e-local";
 
 // These tests write synthetic studies. Never connect them to a remote backend.
-async function restrictToLocalBackend(context: BrowserContext) {
-  await context.routeWebSocket(/.*/, (socket) => {
-    const url = new URL(socket.url());
-    if (!["127.0.0.1", "localhost"].includes(url.hostname)) {
-      socket.close();
-      throw new Error("Persistence E2E is restricted to a local backend.");
-    }
-    socket.connectToServer();
-  });
-}
-
-test.beforeEach(async ({ context }) => restrictToLocalBackend(context));
+test.beforeEach(async ({ context }) => connectOnlyToLocalBackend(context));
 
 test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navegador", async ({
   page,
@@ -101,7 +91,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await expect(otherTab.getByText("1 opción en tu estudio")).toBeVisible();
 
   const independent = await browser.newContext();
-  await restrictToLocalBackend(independent);
+  await connectOnlyToLocalBackend(independent);
   const visitor = await independent.newPage();
   await visitor.goto("/");
   await visitor.getByRole("button", { name: "Guardados (0)" }).click();

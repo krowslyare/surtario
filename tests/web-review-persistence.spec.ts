@@ -1,35 +1,17 @@
 import { expect, test } from "@playwright/test";
-import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 import { extractionExample, extractionSource } from "../fixtures/extraction";
+import { connectOnlyToLocalBackend, runLocalConvex } from "./e2e-local";
 
 test("revisión web guardada recupera evidencia, condiciones y elección en Convex local", async ({
   page,
   context,
 }) => {
-  // Only internal synthetic setup, on the project's anonymous local backend.
-  const target = readFileSync(".env.local", "utf8")
-    .split("\n")
-    .find((line) => line.startsWith("CONVEX_DEPLOYMENT="));
-  if (
-    process.env.CONVEX_DEPLOY_KEY ||
-    target !== "CONVEX_DEPLOYMENT=anonymous:anonymous-convexhackaton"
-  )
-    throw new Error("Web review E2E requires the anonymous local backend.");
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname))
-      throw new Error("Only local WebSockets allowed.");
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) =>
     b.toString(16).padStart(2, "0"),
   ).join("");
   const run = (fn: string, args: object) =>
-    JSON.parse(
-      execFileSync("npx", ["convex", "run", fn, JSON.stringify(args)], {
-        encoding: "utf8",
-      }),
-    );
+    JSON.parse(runLocalConvex(["run", fn, JSON.stringify(args)]));
   const reserved = run("research:reserveSearch", {
     token,
     clientId: crypto.randomUUID(),
@@ -49,6 +31,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     ],
     discarded: 0,
     warning: false,
+    simulated: true,
   });
   run("research:reserveExtraction", {
     token,
@@ -78,6 +61,35 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     )
     .check();
   await dialog.getByRole("button", { name: "Añadir al estudio" }).click();
+  await expect(
+    page.getByRole("button", { name: "Mi estudio 1", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Ver mi estudio", exact: true })
+    .click();
+  await expect(
+    page.getByRole("article", {
+      name: "Oferta en estudio: Distribuidora de ejemplo",
+    }),
+  ).toContainText("S/ 85.00");
+  await page
+    .getByRole("button", { name: "Guardar estudio", exact: true })
+    .click();
+  await expect(
+    page.getByText("Estudio guardado con 1 opción", { exact: false }),
+  ).toBeVisible();
+  await page.reload();
+  await page
+    .getByRole("button", { name: "Guardados (1)", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Abrir estudio", exact: true })
+    .click();
+  await expect(
+    page.getByRole("article", {
+      name: "Oferta en estudio: Distribuidora de ejemplo",
+    }),
+  ).toContainText("S/ 85.00");
   await page
     .getByRole("button", { name: "Comparar ofertas revisadas" })
     .click();
@@ -121,11 +133,14 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   ).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Ver origen" }).click();
   await expect(page.getByRole("dialog")).toContainText(
+    "Documento sintético revisado",
+  );
+  await expect(page.getByRole("dialog")).toContainText(
     "Precio por presentación: 80.00",
   );
   await expect(page.getByRole("dialog")).toContainText("corrección manual: 85");
   await expect(
-    page.getByRole("link", { name: "Abrir fuente web original" }),
+    page.getByRole("link", { name: "Abrir fuente original" }),
   ).toHaveAttribute("href", "https://supplier.test/rice");
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).toHaveCount(0);

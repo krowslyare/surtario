@@ -50,6 +50,11 @@ export default function App({
   }
   return (
     <>
+      {import.meta.env.DEV && import.meta.env.VITE_REHEARSAL === "true" && (
+        <aside className="rehearsal-notice" aria-label="Modo de ensayo">
+          Ensayo local · IA por Luna CLI · Web y correo simulados · Datos ficticios
+        </aside>
+      )}
       <div hidden={view !== "market"}>
         <MarketStudy
           persistenceEnabled={persistenceEnabled}

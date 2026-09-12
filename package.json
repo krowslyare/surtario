@@ -12,7 +12,10 @@
     "preview": "vite preview --host 127.0.0.1",
     "test:e2e": "playwright test",
     "test:backend": "node scripts/verify-backend.mjs",
-    "test:demo": "playwright test tests/studies.spec.ts --grep \"ensayo de demo\""
+    "test:demo": "playwright test tests/studies.spec.ts --grep \"ensayo de demo\"",
+    "check:hosting": "npm run build && node scripts/verify-hosting-build.mjs",
+    "deploy:hosting": "npx @convex-dev/static-hosting deploy",
+    "deploy:hosting:dev": "npx @convex-dev/static-hosting upload --dev --build-command \"npm run check:hosting\""
   },
   "engines": {
     "node": ">=22.12.0"
@@ -20,6 +23,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^4.0.60",
     "@convex-dev/agent": "^0.7.1",
+    "@convex-dev/static-hosting": "^0.2.1",
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
     "@radix-ui/react-select": "^2.3.7",
@@ -37,6 +41,7 @@
   "devDependencies": {
     "@edge-runtime/vm": "^5.0.0",
     "@playwright/test": "^1.63.0",
+    "@types/node": "^22.20.2",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

@@ -81,10 +81,16 @@ function Connected({
   const create = useMutation(api.quotationMail.create);
   const send = useAction(api.quotationMail.send);
   const [reviewReply, setReviewReply] = useState<{
-    requestId: string;
+    requestId: Id<"quotationRequests">;
     messageId: string;
     text: string;
     receivedAt: string;
+    simulated: boolean;
+    extraction: Quotation["replies"][number]["extraction"];
+    extractionStatus: Quotation["replies"][number]["extractionStatus"];
+    extractionError: string | null;
+    extractionAttempts: number;
+    extractionAttempt: number | null;
   } | null>(null);
   const [activeId, setActiveId] = useState<Quotation["id"] | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -111,6 +117,11 @@ function Connected({
     localActive && (!persisted || localActive.revision > persisted.revision)
       ? localActive
       : (persisted ?? localActive);
+  const liveReviewReply = reviewReply
+    ? requests
+        ?.find((request) => request.id === reviewReply.requestId)
+        ?.replies.find((reply) => reply.messageId === reviewReply.messageId)
+    : undefined;
   useEffect(() => {
     setActiveId(null);
     setReviewReply(null);
@@ -306,7 +317,18 @@ function Connected({
                   <button
                     className="button secondary"
                     onClick={() => {
-                      setReviewReply({ requestId: active.id, ...reply });
+                      setReviewReply({
+                        requestId: active.id,
+                        messageId: reply.messageId,
+                        text: reply.text,
+                        receivedAt: reply.receivedAt,
+                        simulated: active.simulated,
+                        extraction: reply.extraction,
+                        extractionStatus: reply.extractionStatus,
+                        extractionError: reply.extractionError,
+                        extractionAttempts: reply.extractionAttempts,
+                        extractionAttempt: reply.extractionAttempt,
+                      });
                       setActiveId(null);
                       setConfirmed(false);
                     }}
@@ -333,7 +355,20 @@ function Connected({
       )}
       {reviewReply && onPrepare && (
         <ReplyOfferReview
-          reply={reviewReply}
+          reply={{
+            ...reviewReply,
+            ...(liveReviewReply
+              ? {
+                  extraction: liveReviewReply.extraction,
+                  extractionStatus: liveReviewReply.extractionStatus,
+                  extractionError: liveReviewReply.extractionError,
+                  extractionAttempts: liveReviewReply.extractionAttempts,
+                  extractionAttempt: liveReviewReply.extractionAttempt,
+                }
+              : {}),
+          }}
+          token={token}
+          aiEnabled={status?.extractionEnabled ?? false}
           onClose={() => setReviewReply(null)}
           onPrepare={onPrepare}
           onAdd={onAddReply}

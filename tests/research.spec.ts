@@ -6,7 +6,7 @@ test("sin configuración ofrece ejemplos y no simula búsqueda web", async ({
 }) => {
   await page.goto("/");
   await expect(
-    page.getByText("Búsqueda web no configurada.", { exact: false }),
+    page.getByText("La búsqueda web aún no está habilitada.", { exact: false }),
   ).toBeVisible();
   await page.getByLabel("Insumo o categoría").fill("Arroz");
   await expect(
@@ -66,9 +66,8 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
   });
   await page.getByRole("button", { name: "Revisar extracción" }).click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog).toContainText("Extracción automática");
-  await dialog.getByLabel("Unidad de la presentación").click();
-  await dialog.getByRole("option", { name: "kg", exact: true }).click();
+  await expect(dialog).toContainText("Revisar datos de la cotización");
+  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
   await dialog.getByLabel("Contenido por presentación").fill("18");
   await dialog
     .getByLabel(
@@ -83,6 +82,111 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
   await expect(page.getByTestId("total-0")).toHaveText("Pendiente");
   await page.getByRole("button", { name: "Ver origen" }).click();
   await expect(page.getByRole("dialog")).toContainText("Catálogo de prueba");
+  expect(errors).toEqual([]);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test("clasifica una fuente, conserva la ficha elegida y revisa la lectura como evidencia separada", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.route(/\/__source_quality_test(?:\?.*)?$/, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: `<html><head><script type="module">import RefreshRuntime from "/@react-refresh"; RefreshRuntime.injectIntoGlobalHook(window); window.$RefreshReg$ = () => {}; window.$RefreshSig$ = () => (type) => type; window.__vite_plugin_react_preamble_installed__ = true;</script></head><body><div id="root"></div><script type="module" src="/__source_quality_test.tsx"></script></body></html>`,
+    }),
+  );
+  await page.route("**/__source_quality_test.tsx", async (route) => {
+    const code = `import React from 'react';import ReactDOM from'react-dom/client';const {useState}=React;const {createRoot}=ReactDOM;import{ResearchWorkspace}from'/src/components/LiveResearch.tsx';import'/src/styles/tokens.css';import'/src/styles/app.css';
+const proposal=${JSON.stringify(extractionExample)};
+const root={url:'https://supplier.test/catalogo',title:'Catálogo del distribuidor',description:'Listado general de abarrotes',markdown:'Catálogo de productos',contentTruncated:false,analysis:{kind:'catalog',summary:'Es un listado general, no una ficha con presentación y precio confirmados.',evidence:['Catálogo de productos para restaurantes'],warnings:['Falta confirmar precio y presentación.']},inspection:{state:'readable',reason:null,links:[{url:'https://supplier.test/arroz-general',label:'Arroz a granel'},{url:'https://supplier.test/arroz-5kg',label:'Arroz extra 5 kg'}]},extraction:proposal,extractionStatus:'complete',extractionError:null,observedAt:'2026-09-08T16:00:00Z',readStatus:'complete',readError:null};
+const run={id:'quality-run',simulated:false,ingredient:'Arroz',region:'Lima',observedAt:'2026-09-08T16:00:00Z',status:'complete',error:null,warning:false,discarded:0,sources:[root]};
+const child={url:'https://supplier.test/arroz-5kg',title:'Arroz extra\\n5 kg',description:'Ficha individual leída',markdown:'Arroz extra\\nBolsa de 5 kg\\nS/ 28',contentTruncated:false,analysis:{kind:'product',summary:'Ficha individual con presentación y precio visibles.',evidence:['Bolsa de 5 kg','S/ 28'],warnings:[]},inspection:{state:'readable',reason:null,links:[]},parentSourceIndex:0,observedAt:'2026-09-10T18:30:00Z',readStatus:'complete',readError:null,extraction:proposal,extractionStatus:'complete',extractionError:null};
+const unrelated={...root,url:'https://supplier.test/nosotros',title:'Historia de la empresa',description:'Página institucional',markdown:'Nuestra historia',analysis:{kind:'irrelevant',summary:'No presenta el insumo buscado.',evidence:['Nuestra historia'],warnings:[]},inspection:{state:'unrelated',reason:'No encontramos coincidencias textuales suficientes con el insumo buscado.',links:[]},extraction:null,extractionStatus:'idle'};
+const shownRun=location.search.includes('unusable')?{...run,sources:[unrelated]}:run;
+function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',sources:[]}]);return <ResearchWorkspace status={{searchEnabled:true,extractionEnabled:true}} runs={runs} request={{id:1,ingredient:'Arroz',region:'Lima'}} onStatus={()=>{}} onSearch={async()=>shownRun} onExtract={async()=>proposal} onRead={async(_runId,_sourceIndex,url)=>{window.__readUrl=url;setRuns([{...run}]);await new Promise(resolve=>setTimeout(resolve,120));setRuns([{...run,sources:[root,{...child,markdown:null,analysis:undefined,extraction:null,extractionStatus:'idle',readStatus:'running'}]}]);await new Promise(resolve=>setTimeout(resolve,80));return{...run,sources:[root,child]}}} onPrepare={()=>{}}/>};createRoot(document.getElementById('root')).render(<Harness/>);`;
+    const { transform } = await import("esbuild");
+    const mainModule = await (await page.request.get("/src/main.tsx")).text();
+    const reactUrl = mainModule.match(/"([^" ]*\/react\.js[^" ]*)"/)![1];
+    const domUrl = mainModule.match(
+      /"([^" ]*\/react-dom_client\.js[^" ]*)"/,
+    )![1];
+    await route.fulfill({
+      contentType: "application/javascript",
+      body: (await transform(code, { loader: "tsx", jsx: "transform" })).code
+        .replaceAll('from "react"', `from "${reactUrl}"`)
+        .replaceAll('from "react-dom/client"', `from "${domUrl}"`)
+        .replaceAll(
+          'from "react/jsx-runtime"',
+          'from "/node_modules/.vite/deps/react_jsx-runtime.js"',
+        ),
+    });
+  });
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/__source_quality_test");
+  await expect(page.getByText("Catálogo general", { exact: true })).toBeVisible();
+  const evidence = page.getByText("Catálogo de productos para restaurantes", {
+    exact: false,
+  });
+  await expect(evidence).not.toBeVisible();
+  await page.getByText("Ver evidencia (1)", { exact: true }).click();
+  await expect(
+    evidence,
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Revisar extracción" }),
+  ).toHaveCount(0);
+
+  const picker = page.getByLabel("Página a leer");
+  await picker.selectOption("https://supplier.test/arroz-5kg");
+  await page.getByRole("button", { name: "Leer ficha del producto" }).click();
+  await expect(picker).toHaveValue("https://supplier.test/arroz-5kg");
+  await expect(page.getByText("Leyendo la ficha seleccionada", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("Ficha leída desde Catálogo del distribuidor", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("Ficha leída. Revisa la nueva fuente", { exact: false }),
+  ).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => (window as Window & { __readUrl?: string }).__readUrl,
+    ),
+  ).toBe(
+    "https://supplier.test/arroz-5kg",
+  );
+  await page.screenshot({
+    path: "/tmp/research-source-quality-mobile.png",
+    fullPage: true,
+  });
+
+  await page.getByRole("button", { name: "Revisar extracción" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.locator("time")).toHaveAttribute(
+    "datetime",
+    "2026-09-10T18:30:00Z",
+  );
+  await expect(dialog.getByText("Título de la página: Arroz extra 5 kg")).toBeVisible();
+  await page.goto("/__source_quality_test?unusable=1");
+  await expect(
+    page.getByText("Ninguna fuente quedó lista para analizar como oferta", {
+      exact: false,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Ver página de origen" }),
+  ).toHaveAttribute("href", "https://supplier.test/nosotros");
+  await expect(page.getByRole("button", { name: "Extraer datos" })).toHaveCount(
+    0,
+  );
   expect(errors).toEqual([]);
   expect(
     await page.evaluate(

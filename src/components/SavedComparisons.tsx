@@ -1,4 +1,13 @@
-import { Component, useEffect, useState, type ReactNode } from "react";
+import {
+  Component,
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useConvexConnectionState, useMutation, useQuery } from "convex/react";
 import { ConvexError, type Infer } from "convex/values";
 import { api } from "../../convex/_generated/api";
@@ -19,16 +28,67 @@ export type ComparisonDraft = {
   persistable: boolean;
   blockedReason: string | null;
 };
+export type SavedComparisonsHandle = {
+  persist: () => Promise<{
+    saved: SavedComparison;
+    submitted: ComparisonDraft;
+  } | null>;
+};
 
 const SESSION_KEY = "procurement-demo-session-v1";
 
-export default function SavedComparisons(props: {
-  draft: ComparisonDraft;
-  onOpen: (comparison: SavedComparison) => void;
-  onSaved: (comparison: SavedComparison, clientId: string) => boolean;
-}) {
+export function newestComparison(
+  queried: SavedComparison | undefined,
+  confirmed: SavedComparison | undefined,
+) {
+  return !queried || (confirmed && confirmed.revision > queried.revision)
+    ? confirmed
+    : queried;
+}
+
+export function replyReviewsToAppend(
+  draft: ComparisonDraft,
+  persisted: SavedComparison | undefined,
+) {
+  if (!draft.id) return [];
+  return draft.offers
+    .filter(
+      (offer) =>
+        draft.sources[offer.id]?.replyReview &&
+        !persisted?.sources[offer.id],
+    )
+    .map((offer) => ({
+      review: {
+        ...draft.sources[offer.id].replyReview!,
+        requestId: draft.sources[offer.id].replyReview!
+          .requestId as Id<"quotationRequests">,
+      },
+      equivalent: true as const,
+    }));
+}
+
+const SavedComparisons = forwardRef<
+  SavedComparisonsHandle,
+  {
+    draft: ComparisonDraft;
+    onOpen: (comparison: SavedComparison) => void;
+    onSaved: (
+      comparison: SavedComparison,
+      clientId: string,
+      submitted: ComparisonDraft,
+    ) => boolean;
+  }
+>(function SavedComparisons(props, ref) {
   const [token, setToken] = useState<string | null>(null);
   const [storageError, setStorageError] = useState(false);
+  const connectedRef = useRef<SavedComparisonsHandle>(null);
+  useImperativeHandle(
+    ref,
+    () => ({
+      persist: () => connectedRef.current?.persist() ?? Promise.resolve(null),
+    }),
+    [],
+  );
   useEffect(() => {
     try {
       let stored = localStorage.getItem(SESSION_KEY);
@@ -54,22 +114,29 @@ export default function SavedComparisons(props: {
     );
   return (
     <StorageBoundary>
-      <ConnectedComparisons {...props} token={token} />
+      <ConnectedComparisons {...props} token={token} ref={connectedRef} />
     </StorageBoundary>
   );
-}
+});
 
-function ConnectedComparisons({
-  token,
-  draft,
-  onOpen,
-  onSaved,
-}: {
-  token: string;
-  draft: ComparisonDraft;
-  onOpen: (comparison: SavedComparison) => void;
-  onSaved: (comparison: SavedComparison, clientId: string) => boolean;
-}) {
+export default SavedComparisons;
+
+const ConnectedComparisons = forwardRef<
+  SavedComparisonsHandle,
+  {
+    token: string;
+    draft: ComparisonDraft;
+    onOpen: (comparison: SavedComparison) => void;
+    onSaved: (
+      comparison: SavedComparison,
+      clientId: string,
+      submitted: ComparisonDraft,
+    ) => boolean;
+  }
+>(function ConnectedComparisons(
+  { token, draft, onOpen, onSaved },
+  ref,
+) {
   const comparisons = useQuery(api.comparisons.list, { token });
   const save = useMutation(api.comparisons.save);
   const connection = useConvexConnectionState();
@@ -78,6 +145,8 @@ function ConnectedComparisons({
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const confirmed = useRef(new Map<string, SavedComparison>());
+  const savingRef = useRef(false);
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
     window.addEventListener("online", update);
@@ -87,31 +156,24 @@ function ConnectedComparisons({
       window.removeEventListener("offline", update);
     };
   }, []);
+  useEffect(() => {
+    setMessage("");
+    setError("");
+  }, [draft.clientId]);
   const connected = online && connection.isWebSocketConnected;
 
-  async function persist() {
-    if (saving || !connected || !draft.persistable) return;
+  const persist = useCallback(async () => {
+    if (savingRef.current || !connected || !draft.persistable) return null;
+    savingRef.current = true;
     setSaving(true);
     setError("");
     setMessage("");
     const submitted = draft;
-    const persisted = comparisons?.find((item) => item.id === submitted.id);
-    const newReplies = submitted.id
-      ? submitted.offers
-          .filter(
-            (offer) =>
-              submitted.sources[offer.id]?.replyReview &&
-              !persisted?.sources[offer.id],
-          )
-          .map((offer) => ({
-            review: {
-              ...submitted.sources[offer.id].replyReview!,
-              requestId: submitted.sources[offer.id].replyReview!
-                .requestId as Id<"quotationRequests">,
-            },
-            equivalent: true as const,
-          }))
-      : [];
+    const queried = comparisons?.find((item) => item.id === submitted.id);
+    const persisted = submitted.id
+      ? newestComparison(queried, confirmed.current.get(submitted.id))
+      : undefined;
+    const newReplies = replyReviewsToAppend(submitted, persisted);
     try {
       const saved = await save({
         token,
@@ -154,22 +216,27 @@ function ConnectedComparisons({
             }
           : {}),
       });
-      const stillCurrent = onSaved(saved, submitted.clientId);
+      confirmed.current.set(saved.id, saved);
+      const stillCurrent = onSaved(saved, submitted.clientId, submitted);
       setMessage(
         stillCurrent
           ? `Comparación guardada${saved.selectedOfferId ? " con una oferta elegida" : ""}. Los cambios posteriores requieren guardar de nuevo.`
           : "Se guardó la comparación anterior. El borrador restaurado todavía no está guardado.",
       );
+      return { saved, submitted };
     } catch (cause) {
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
           : "No se confirmó el guardado. La comparación sigue aquí; comprueba la conexión y vuelve a intentar.",
       );
+      return null;
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
-  }
+  }, [comparisons, connected, draft, onSaved, save, token]);
+  useImperativeHandle(ref, () => ({ persist }), [persist]);
 
   return (
     <section className="saved-studies" aria-label="Comparaciones guardadas">
@@ -240,6 +307,7 @@ function ConnectedComparisons({
                   className="button secondary"
                   disabled={saving}
                   onClick={() => {
+                    confirmed.current.set(comparison.id, comparison);
                     onOpen(comparison);
                     setExpanded(false);
                     setError("");
@@ -261,7 +329,7 @@ function ConnectedComparisons({
       )}
     </section>
   );
-}
+});
 
 class StorageBoundary extends Component<
   { children: ReactNode },

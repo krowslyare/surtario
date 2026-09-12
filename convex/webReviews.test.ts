@@ -7,7 +7,7 @@ import { extractionExample, extractionSource } from "../fixtures/extraction";
 import { draftValues, extractionToPurchase } from "../src/domain/extraction";
 const modules = import.meta.glob("./**/*.ts");
 const token = "a".repeat(64);
-async function setup() {
+async function setup(simulated = false) {
   const t = convexTest(schema, modules);
   const reserved = await t.mutation(internal.research.reserveSearch, {
     token,
@@ -28,6 +28,7 @@ async function setup() {
     ],
     discarded: 0,
     warning: false,
+    simulated,
   });
   await t.mutation(internal.research.reserveExtraction, {
     token,
@@ -106,6 +107,13 @@ test("web review preserves source proposal, correction, conditions and idempoten
     }),
   ).rejects.toThrow(/otra vista/);
 });
+test("synthetic provenance survives the saved run after rehearsal configuration is gone", async () => {
+  const { t, args, ref } = await setup(true);
+  const run = (await t.query(api.research.list, { token }))[0];
+  expect(run.simulated).toBe(true);
+  const saved = await t.mutation(api.comparisons.save, args);
+  expect(saved.sources[ref].marketSource?.simulated).toBe(true);
+});
 test("rejects foreign sources, missing extraction, malformed corrections and duplicate source refs", async () => {
   const { t, args } = await setup();
   await expect(
@@ -155,4 +163,22 @@ test("same offer values cannot disguise changed review evidence on create retry"
       ],
     }),
   ).rejects.toThrow(/otros datos/);
+});
+
+test("legacy extractions cannot bypass current source quality checks", async () => {
+  const { t, args } = await setup();
+  for (const markdown of [
+    "Ha habido un error crítico en esta web.",
+    "Arbitraje de consumo y registro de proveedores.",
+  ]) {
+    await t.run(async (ctx) => {
+      const run = (await ctx.db.get(args.webReviews[0].runId))!;
+      await ctx.db.patch(run._id, {
+        sources: run.sources.map((source) => ({ ...source, markdown })),
+      });
+    });
+    await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
+      /evidencia utilizable/,
+    );
+  }
 });

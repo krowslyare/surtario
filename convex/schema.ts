@@ -6,11 +6,29 @@ import {
   extractedOfferValidator,
   extractionStatusValidator,
   researchStatusValidator,
+  sourceExtensionFields,
 } from "./researchValidators";
 
 import { documentKind, documentResult } from "./documentValidators";
 import { prospectContent } from "./prospectValidators";
+import { advisorRunContent } from "./advisorValidators";
 export default defineSchema({
+  ingredientLists: defineTable({
+    ownerHash: v.string(),
+    clientId: v.string(),
+    ingredients: v.array(v.string()),
+    sourceKind: v.union(v.literal("manual"), v.literal("spreadsheet")),
+    updatedAt: v.number(),
+  })
+    .index("by_ownerHash", ["ownerHash"])
+    .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
+  advisorRuns: defineTable({
+    ownerHash: v.string(),
+    clientId: v.string(),
+    ...advisorRunContent,
+  })
+    .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"])
+    .index("by_comparisonId", ["comparisonId"]),
   webProspects: defineTable({ ownerHash: v.string(), ...prospectContent })
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_runId_and_sourceIndex", [
@@ -47,6 +65,7 @@ export default defineSchema({
   researchRuns: defineTable({
     ownerHash: v.string(),
     clientId: v.string(),
+    simulated: v.optional(v.boolean()),
     ingredient: v.string(),
     region: v.string(),
     observedAt: v.string(),
@@ -55,6 +74,7 @@ export default defineSchema({
     error: v.union(v.string(), v.null()),
     sources: v.array(
       v.object({
+        ...sourceExtensionFields,
         url: v.string(),
         title: v.string(),
         description: v.string(),
@@ -74,6 +94,7 @@ export default defineSchema({
   quotationRequests: defineTable({
     ownerHash: v.string(),
     clientId: v.string(),
+    simulated: v.optional(v.boolean()),
     comparisonId: v.optional(v.id("comparisons")),
     studyId: v.optional(v.id("studies")),
     prospectId: v.optional(v.id("webProspects")),
@@ -101,6 +122,8 @@ export default defineSchema({
   })
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"])
+    .index("by_state", ["state"])
+    .index("by_inboxId_and_receipt_messageId", ["inboxId", "receipt.messageId"])
     .index("by_inboxId_and_receipt_threadId", ["inboxId", "receipt.threadId"]),
   quotationReplies: defineTable({
     requestId: v.id("quotationRequests"),
@@ -110,6 +133,12 @@ export default defineSchema({
     from: v.string(),
     text: v.string(),
     receivedAt: v.string(),
+    // Optional while existing replies migrate; public reads expose explicit defaults.
+    extraction: v.optional(v.union(extractedOfferValidator, v.null())),
+    extractionStatus: v.optional(extractionStatusValidator),
+    extractionError: v.optional(v.union(v.string(), v.null())),
+    extractionAttempts: v.optional(v.number()),
+    extractionAttempt: v.optional(v.union(v.number(), v.null())),
   })
     .index("by_requestId", ["requestId"])
     .index("by_eventId", ["eventId"])

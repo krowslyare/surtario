@@ -1,7 +1,8 @@
 import { httpRouter } from "convex/server";
+import { registerStaticRoutes } from "@convex-dev/static-hosting";
 import { Webhook } from "svix";
 import { env, httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 
 const http = httpRouter();
 
@@ -74,17 +75,24 @@ http.route({
       typeof value.timestamp === "string"
         ? value.timestamp
         : new Date().toISOString();
+    const text = (value.text as string | undefined) ?? "";
+    const truncationNotice = "\n[Respuesta truncada: consulta el correo original para ver el texto completo.]";
     await ctx.runMutation(internal.quotationMail.recordReceived, {
       eventId: event.event_id as string,
       messageId: value.message_id as string,
       inboxId: value.inbox_id as string,
       threadId: value.thread_id as string,
       from: value.from as string,
-      text: (value.text as string | undefined) ?? "",
+      text: text.length > 20_000
+        ? text.slice(0, 20_000 - truncationNotice.length) + truncationNotice
+        : text,
       receivedAt,
     });
     return new Response("Accepted", { status: 200 });
   }),
 });
+
+// Exact application routes must be registered before the SPA fallback.
+registerStaticRoutes(http, components.staticHosting);
 
 export default http;

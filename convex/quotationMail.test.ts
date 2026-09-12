@@ -2,6 +2,7 @@
 import { convexTest } from "convex-test";
 import { afterEach, expect, test, vi } from "vitest";
 import { Webhook } from "svix";
+import http from "./http";
 import schema from "./schema";
 import { api, internal } from "./_generated/api";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
@@ -13,6 +14,16 @@ afterEach(() => {
   vi.unstubAllEnvs();
   vi.unstubAllGlobals();
   vi.clearAllMocks();
+});
+
+test("keeps the disabled AgentMail webhook ahead of the static fallback", async () => {
+  expect(http.lookup("/agentmail/webhook", "POST")).toBeDefined();
+  expect(http.lookup("/demo/route", "GET")).toBeDefined();
+
+  const t = convexTest(schema, modules);
+  const response = await t.fetch("/agentmail/webhook", { method: "POST" });
+  expect(response.status).toBe(503);
+  expect(await response.text()).toBe("Webhook disabled");
 });
 
 async function comparison(t: ReturnType<typeof convexTest>) {
@@ -34,6 +45,12 @@ function enableMail() {
   vi.stubEnv("AGENTMAIL_TEST_RECIPIENT", "buyer@example.test");
 }
 
+function enableRehearsal() {
+  vi.stubEnv("CONVEX_CLOUD_URL", "http://127.0.0.1:3240");
+  vi.stubEnv("REHEARSAL_BRIDGE_URL", "http://127.0.0.1:8789");
+  vi.stubEnv("REHEARSAL_BRIDGE_TOKEN", "r".repeat(64));
+}
+
 test("creates an owned fixed draft without credentials and never accepts message text", async () => {
   const t = convexTest(schema, modules);
   const saved = await comparison(t);
@@ -48,6 +65,7 @@ test("creates an owned fixed draft without credentials and never accepts message
   expect(await t.query(api.quotationMail.status, {})).toEqual({
     enabled: false,
     recipient: null,
+    extractionEnabled: false,
   });
   expect(
     await t.query(api.quotationMail.list, { token: "b".repeat(64) }),
@@ -101,6 +119,7 @@ test("reserves once, sends the frozen payload with idempotency, and prevents dup
     confirmed: true,
   });
   expect(sent.state).toBe("sent");
+  expect(sent.simulated).toBe(false);
   expect(sent.receipt).toEqual({ messageId: "msg-out", threadId: "thread-1" });
   expect(
     (
@@ -113,6 +132,32 @@ test("reserves once, sends the frozen payload with idempotency, and prevents dup
     ).state,
   ).toBe("sent");
   expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+test("send reservation freezes validated rehearsal provenance on the request", async () => {
+  enableMail();
+  enableRehearsal();
+  const t = convexTest(schema, modules);
+  const saved = await comparison(t);
+  const draft = await t.mutation(api.quotationMail.create, {
+    token,
+    comparisonId: saved.id,
+    clientId: "22222222-2222-4222-8222-222222222222",
+  });
+  await t.mutation(internal.quotationMail.reserveSend, {
+    token,
+    id: draft.id,
+    expectedRevision: 1,
+    confirmed: true,
+  });
+  vi.stubEnv("REHEARSAL_BRIDGE_URL", "");
+  vi.stubEnv("REHEARSAL_BRIDGE_TOKEN", "");
+  expect((await t.query(api.quotationMail.list, { token }))[0].simulated).toBe(
+    true,
+  );
+  await t.run(async (ctx) => {
+    expect((await ctx.db.get(draft.id))?.simulated).toBe(true);
+  });
 });
 
 test("network ambiguity is terminal for the public API", async () => {
@@ -188,6 +233,11 @@ test("verified replies require frozen inbox, thread and sender; duplicates are h
         messageId: "msg-in",
         text: "S/ 92 por saco",
         receivedAt: event.receivedAt,
+        extraction: null,
+        extractionStatus: "idle",
+        extractionError: null,
+        extractionAttempts: 0,
+        extractionAttempt: null,
       },
     ],
   );
@@ -409,4 +459,39 @@ test("a shared provider thread cannot route a reply to an arbitrary request", as
   expect((await t.query(api.quotationMail.list, { token }))[0].replies).toEqual(
     [],
   );
+});
+
+test("acknowledges and retains a visibly truncated signed long reply", async () => {
+  const t = convexTest(schema, modules);
+  const secret = `whsec_${btoa("01234567890123456789012345678901")}`;
+  vi.stubEnv("AGENTMAIL_WEBHOOK_SECRET", secret);
+  const payload = JSON.stringify({
+    event_type: "message.received",
+    event_id: "evt-long",
+    message: {
+      message_id: "msg-long",
+      inbox_id: "other",
+      thread_id: "other",
+      from: "sender@example.test",
+      text: "x".repeat(30_000),
+    },
+  });
+  const now = new Date();
+  const response = await t.fetch("/agentmail/webhook", {
+    method: "POST",
+    body: payload,
+    headers: {
+      "svix-id": "delivery-long",
+      "svix-timestamp": String(Math.floor(now.getTime() / 1000)),
+      "svix-signature": new Webhook(secret).sign("delivery-long", now, payload),
+    },
+  });
+  expect(response.status).toBe(200);
+  const stored = await t.run(async (ctx) =>
+    ctx.db.query("quotationUnmatchedEvents").first(),
+  );
+  expect(stored?.text.length).toBe(20_000);
+  expect(stored?.text.startsWith("x".repeat(100))).toBe(true);
+  expect(stored?.text).toContain("Respuesta truncada");
+  expect(stored?.messageId).toBe("msg-long");
 });

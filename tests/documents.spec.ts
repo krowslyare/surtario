@@ -1,18 +1,13 @@
 import { expect, test } from "@playwright/test";
+import { connectOnlyToLocalBackend } from "./e2e-local";
 
 test("document examples are inspectable but no extraction runs without configuration", async ({
   page,
   context,
 }) => {
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["localhost", "127.0.0.1"].includes(new URL(socket.url()).hostname))
-      throw new Error("Local backend only");
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Cotizaciones y documentos", exact: true })
-    .click();
+  await page.getByText("Revisar una cotización", { exact: true }).click();
   const section = page.getByRole("region", { name: "Lectura de foto y PDF" });
   await expect(
     section.getByRole("button", { name: "Leer con OpenAI" }),
@@ -21,10 +16,7 @@ test("document examples are inspectable but no extraction runs without configura
   await section.getByRole("button", { name: "Ver archivo de ejemplo" }).click();
   await expect(page.getByRole("dialog").getByRole("img")).toBeVisible();
   await page.keyboard.press("Escape");
-  await section.getByLabel("Archivo de ejemplo").click();
-  await page
-    .getByRole("option", { name: "Cotización PDF · 1 página", exact: true })
-    .click();
+  await section.getByLabel("Archivo de ejemplo").selectOption("pdf");
   await expect(
     section.getByRole("link", { name: "Descargar ejemplo" }),
   ).toHaveAttribute("href", "/examples/cotizacion-demo.pdf");
@@ -98,6 +90,10 @@ test("a simulated reading keeps the original visible, requires review and opens 
   await dialog.getByRole("checkbox").check();
   await page.screenshot({ path: "/tmp/document-review-mobile.png" });
   await dialog.getByRole("button", { name: "Continuar a comparación" }).click();
+  await expect(
+    page.getByText("Desde tu estudio de ejemplo", { exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText(/páginas públicas/)).toHaveCount(0);
   await expect(
     page.getByLabel("Cantidad necesaria", { exact: true }),
   ).toHaveValue("");

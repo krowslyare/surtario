@@ -1,0 +1,203 @@
+{
+  "observedAt": "2026-09-10T05:13:27.479Z",
+  "scope": "Real Firecrawl product read; recorded real source replay through local Convex Agent/SDK with real Luna CLI. Not OpenAI API or hosted acceptance.",
+  "productRead": {
+    "url": "https://mundoabarrotes.com/producto/arroz-brilhante-extra-50kg/",
+    "observedAt": "2026-09-10T04:53:50.453Z",
+    "elapsedMs": 10154,
+    "characters": 6331,
+    "sha256": "59badf43ded8939a78b60ca80749ccb964b55ce55ab49a1b8be594dd98844dd1",
+    "contentTruncated": false,
+    "maxAge": 0
+  },
+  "inspection": [
+    {
+      "id": "rice",
+      "url": "https://www.costenoalimentos.com.pe/venta-corporativa?page=11",
+      "state": "readable",
+      "productLinkCount": 0
+    },
+    {
+      "id": "rice",
+      "url": "https://mundoabarrotes.com/etiqueta/arroz-50-kilos/",
+      "state": "readable",
+      "productLinkCount": 12
+    },
+    {
+      "id": "rice",
+      "url": "https://www.makro.plazavea.com.pe/abarrotes/arroz",
+      "state": "readable",
+      "productLinkCount": 12
+    },
+    {
+      "id": "oil",
+      "url": "https://www.facebook.com/groups/269072867397386/posts/1688604078777584/",
+      "state": "unreadable",
+      "productLinkCount": 0
+    },
+    {
+      "id": "oil",
+      "url": "https://grupomontesolperu.com/",
+      "state": "readable",
+      "productLinkCount": 5
+    },
+    {
+      "id": "oil",
+      "url": "https://pe.kompass.com/a/aceites-comestibles/03880/",
+      "state": "readable",
+      "productLinkCount": 5
+    },
+    {
+      "id": "chicken",
+      "url": "https://avigroup-peru.com/",
+      "state": "blocked",
+      "productLinkCount": 0
+    },
+    {
+      "id": "chicken",
+      "url": "https://www.instagram.com/reypolloperu/?hl=en",
+      "state": "unreadable",
+      "productLinkCount": 0
+    },
+    {
+      "id": "chicken",
+      "url": "https://www.redondos.com.pe/producto/linea-pollo/pollo-brasa/",
+      "state": "readable",
+      "productLinkCount": 12
+    },
+    {
+      "id": "potato",
+      "url": "https://www.facebook.com/DRDARHCO/posts/precios-de-papa-al-por-mayor-y-de-primera-calidad-ciudades-de-lima-y-hu%C3%A1nuco/1179110884389823/",
+      "state": "unreadable",
+      "productLinkCount": 0
+    },
+    {
+      "id": "potato",
+      "url": "https://bottatocompany.com/Papahuayro",
+      "state": "readable",
+      "productLinkCount": 0
+    },
+    {
+      "id": "potato",
+      "url": "https://www.facebook.com/EmpresaMunicipaldeMercados/videos/papa-yungay/823089158098018/",
+      "state": "unreadable",
+      "productLinkCount": 0
+    },
+    {
+      "id": "negative",
+      "url": "https://www.grupomathiesen.com/peru/",
+      "state": "unrelated",
+      "productLinkCount": 0
+    },
+    {
+      "id": "negative",
+      "url": "https://repositorio.promperu.gob.pe/bitstreams/e4ab017f-b910-4086-9666-c45c4b5e0a98/download",
+      "state": "unrelated",
+      "productLinkCount": 0
+    },
+    {
+      "id": "negative",
+      "url": "https://consumidor.gob.pe/wp-content/uploads/2020/07/Registro_Proveedores_Adheridos_Arbitraje_2023.pdf",
+      "state": "unrelated",
+      "productLinkCount": 0
+    }
+  ],
+  "modelCases": [
+    {
+      "id": "rice-catalog",
+      "observedAt": "2026-09-10T05:09:25.847Z",
+      "elapsedMs": 13088,
+      "kind": "catalog",
+      "summary": "La fuente presenta un catálogo de múltiples productos de arroz extra en sacos de 49 o 50 kg, con precios en soles y algunos artículos agotados. Se debe seleccionar una marca y presentación específica antes de solicitar confirmación al proveedor.",
+      "warnings": [
+        "La fuente mezcla presentaciones de 49 kg y 50 kg.",
+        "Hay productos con precios promocionales y precios originales.",
+        "Algunos productos figuran como agotados.",
+        "La página indica 40 resultados, pero solo muestra 1–12."
+      ],
+      "fields": {
+        "currency": null,
+        "ingredient": null,
+        "packageContent": null,
+        "packageUnit": null,
+        "price": null,
+        "specification": null,
+        "supplier": null
+      },
+      "literalEvidenceValidation": "passed",
+      "model": "gpt-5.6-luna"
+    },
+    {
+      "id": "rice-product",
+      "observedAt": "2026-09-10T05:09:39.147Z",
+      "elapsedMs": 13297,
+      "kind": "product",
+      "summary": "La fuente presenta como producto principal el Arroz Brilhante Extra en saco de 50 kg, con precio de S/208. No informa explícitamente disponibilidad ni condiciones de entrega; conviene confirmarlas con el proveedor.",
+      "warnings": [
+        "Los productos relacionados incluyen presentaciones de 49 kg y 50 kg, pero no corresponden al producto principal."
+      ],
+      "fields": {
+        "currency": "PEN",
+        "ingredient": "Arroz Brilhante Extra",
+        "packageContent": "50",
+        "packageUnit": "kg",
+        "price": "208.00",
+        "specification": "Arroz blanco largo fino",
+        "supplier": "Mundo Abarrotes"
+      },
+      "literalEvidenceValidation": "passed",
+      "model": "gpt-5.6-luna"
+    },
+    {
+      "id": "rice-ambiguous",
+      "observedAt": "2026-09-10T04:55:13.578Z",
+      "elapsedMs": 11327,
+      "kind": "catalog",
+      "summary": "La fuente es un catálogo de arroz con múltiples marcas, calidades y presentaciones; no permite elegir inequívocamente una sola oferta. Próximo paso: especificar la marca, tipo y presentación requeridos.",
+      "warnings": [
+        "El contenido está truncado.",
+        "Se muestran precios originales y promocionales en varias ofertas.",
+        "Hay presentaciones de 49 kg y 50 kg, además de múltiples tamaños menores."
+      ],
+      "fields": {
+        "currency": null,
+        "ingredient": null,
+        "packageContent": null,
+        "packageUnit": null,
+        "price": null,
+        "specification": null,
+        "supplier": null
+      },
+      "literalEvidenceValidation": "passed",
+      "model": "gpt-5.6-luna"
+    },
+    {
+      "id": "oil-contact",
+      "observedAt": "2026-09-10T04:55:40.122Z",
+      "elapsedMs": 12011,
+      "kind": "catalog",
+      "summary": "La fuente presenta varios formatos de aceite vegetal Montesol, pero no muestra una presentación de 20 L ni un precio para el insumo solicitado. Próximo paso: revisar el catálogo completo o contactar al proveedor para confirmar disponibilidad y cotización de aceite vegetal de 20 L.",
+      "warnings": [
+        "La fuente enumera varias presentaciones y no permite elegir inequívocamente una oferta de 20 L."
+      ],
+      "fields": {
+        "currency": null,
+        "ingredient": null,
+        "packageContent": null,
+        "packageUnit": null,
+        "price": null,
+        "specification": null,
+        "supplier": null
+      },
+      "literalEvidenceValidation": "passed",
+      "model": "gpt-5.6-luna"
+    }
+  ],
+  "limitations": [
+    "Initial catalog and product calls failed literal quotation validation; numbered evidence references fixed the reproduction.",
+    "Intermediate output mistook split lines for truncation and over-expanded a specification; final catalog/product reruns corrected both.",
+    "Makro and Monte Sol results use the earlier literal-quote schema; the final numbered-reference schema was run on the catalog and product cases.",
+    "Literal evidence is not semantic validation; fields and equivalence still require user confirmation.",
+    "No new email, cloud deployment, production mutation or publication."
+  ]
+}

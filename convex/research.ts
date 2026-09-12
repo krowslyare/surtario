@@ -3,11 +3,19 @@ import { action, env, internalMutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
 import { ownerHash } from "./lib/demoSession";
-import { discoverSources, type DiscoveryResult } from "./lib/firecrawl";
-import { extractOfferWithAgent } from "./lib/agentExtraction";
+import {
+  discoverSources,
+  readProductPage,
+  type DiscoveryResult,
+} from "./lib/firecrawl";
+import { analyzeWebSourceWithAgent } from "./lib/agentExtraction";
+import { inspectSource } from "./lib/sourceQuality";
+import type { WebAnalysis } from "./lib/webAnalysis";
+import { providerRehearsalEnabled } from "./lib/providerTransport";
 import {
   extractedOfferValidator,
   savedResearchValidator,
+  sourceAnalysisValidator,
   type ExtractedOffer,
   type SavedResearch,
 } from "./researchValidators";
@@ -39,13 +47,17 @@ function cleanInput(ingredient: string, region: string) {
 function publicRun(run: Doc<"researchRuns">): SavedResearch {
   return {
     id: run._id,
+    simulated: run.simulated ?? false,
     ingredient: run.ingredient,
     region: run.region,
     observedAt: run.observedAt,
     status: run.status,
     error: run.error,
     sources: run.sources.map(
-      ({ extractionAttempts: _attempts, ...source }) => source,
+      ({ extractionAttempts: _attempts, ...source }) => ({
+        ...source,
+        inspection: inspectSource(source, run.ingredient),
+      }),
     ),
     discarded: run.discarded,
     warning: run.warning,
@@ -167,6 +179,7 @@ export const finishSearch = internalMutation({
     ),
     discarded: v.number(),
     warning: v.boolean(),
+    simulated: v.boolean(),
   },
   returns: savedResearchValidator,
   handler: async (ctx, args) => {
@@ -195,6 +208,7 @@ export const finishSearch = internalMutation({
         })),
         discarded: args.discarded,
         warning: args.warning,
+        simulated: args.simulated,
       });
     return publicRun((await ctx.db.get(run._id))!);
   },
@@ -238,6 +252,7 @@ export const search = action({
       return await ctx.runMutation(internal.research.finishSearch, {
         id: reservation.run.id,
         ...result,
+        simulated: providerRehearsalEnabled(),
       });
     } catch {
       return await ctx.runMutation(internal.research.failSearch, {
@@ -250,7 +265,14 @@ export const search = action({
 const extractionReservation = v.union(
   v.object({ kind: v.literal("complete"), offer: extractedOfferValidator }),
   v.object({ kind: v.literal("running") }),
-  v.object({ kind: v.literal("reserved"), markdown: v.string() }),
+  v.object({
+    kind: v.literal("reserved"),
+    markdown: v.string(),
+    ingredient: v.string(),
+    title: v.string(),
+    url: v.string(),
+    contentTruncated: v.boolean(),
+  }),
 );
 
 export const reserveExtraction = internalMutation({
@@ -273,6 +295,11 @@ export const reserveExtraction = internalMutation({
     if (!source) throw new ConvexError("Fuente no válida.");
     if (!source.markdown)
       throw new ConvexError("Esta fuente no contiene texto para extraer.");
+    if (source.readStatus && source.readStatus !== "complete")
+      throw new ConvexError("La lectura de esta ficha no está completa.");
+    const inspection = inspectSource(source, run.ingredient);
+    if (inspection.state !== "readable")
+      throw new ConvexError(inspection.reason!);
     if (source.extractionStatus === "complete" && source.extraction)
       return { kind: "complete" as const, offer: source.extraction };
     if (source.extractionStatus === "running")
@@ -287,7 +314,14 @@ export const reserveExtraction = internalMutation({
       extractionAttempts: source.extractionAttempts + 1,
     };
     await ctx.db.patch(run._id, { sources });
-    return { kind: "reserved" as const, markdown: source.markdown };
+    return {
+      kind: "reserved" as const,
+      markdown: source.markdown,
+      ingredient: run.ingredient,
+      title: source.title,
+      url: source.url,
+      contentTruncated: source.contentTruncated,
+    };
   },
 });
 
@@ -296,6 +330,7 @@ export const finishExtraction = internalMutation({
     runId: v.id("researchRuns"),
     sourceIndex: v.number(),
     offer: extractedOfferValidator,
+    analysis: v.optional(sourceAnalysisValidator),
   },
   returns: extractedOfferValidator,
   handler: async (ctx, args) => {
@@ -309,6 +344,7 @@ export const finishExtraction = internalMutation({
       extraction: args.offer,
       extractionStatus: "complete",
       extractionError: null,
+      ...(args.analysis ? { analysis: args.analysis } : {}),
     };
     await ctx.db.patch(run._id, { sources });
     return args.offer;
@@ -351,18 +387,28 @@ export const extract = action({
     const reservation:
       | { kind: "complete"; offer: ExtractedOffer }
       | { kind: "running" }
-      | { kind: "reserved"; markdown: string } = await ctx.runMutation(
-      internal.research.reserveExtraction,
-      args,
-    );
+      | {
+          kind: "reserved";
+          markdown: string;
+          ingredient: string;
+          title: string;
+          url: string;
+          contentTruncated: boolean;
+        } = await ctx.runMutation(internal.research.reserveExtraction, args);
     if (reservation.kind === "complete") return reservation.offer;
     if (reservation.kind === "running")
       throw new ConvexError("La extracción de esta fuente ya está en curso.");
-    let offer: ExtractedOffer;
+    let result: WebAnalysis;
     try {
-      offer = await extractOfferWithAgent(
+      result = await analyzeWebSourceWithAgent(
         ctx,
-        reservation.markdown,
+        {
+          markdown: reservation.markdown,
+          ingredient: reservation.ingredient,
+          title: reservation.title,
+          url: reservation.url,
+          contentTruncated: reservation.contentTruncated,
+        },
         env.OPENAI_API_KEY,
         env.OPENAI_EXTRACTION_MODEL,
       );
@@ -378,12 +424,172 @@ export const extract = action({
       return await ctx.runMutation(internal.research.finishExtraction, {
         runId: args.runId,
         sourceIndex: args.sourceIndex,
-        offer,
+        offer: result.offer,
+        analysis: result.analysis,
       });
     } catch {
       throw new ConvexError(
         "La extracción respondió, pero no se confirmó su guardado. No repitas la llamada; requiere revisión del operador.",
       );
     }
+  },
+});
+
+const readArgs = {
+  token: v.string(),
+  runId: v.id("researchRuns"),
+  sourceIndex: v.number(),
+  url: v.string(),
+};
+export const reserveProductRead = internalMutation({
+  args: { ...readArgs, simulated: v.boolean() },
+  returns: v.object({
+    kind: v.union(v.literal("reserved"), v.literal("existing")),
+    run: savedResearchValidator,
+    childIndex: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    const hash = await ownerHash(args.token);
+    const run = await ctx.db.get(args.runId);
+    if (!run || run.ownerHash !== hash)
+      throw new ConvexError("Búsqueda no disponible en esta sesión.");
+    if (run.status !== "complete")
+      throw new ConvexError("La búsqueda todavía no está completa.");
+    if ((run.simulated ?? false) !== args.simulated)
+      throw new ConvexError(
+        "Esta búsqueda pertenece a otro modo de proveedores. Inicia una búsqueda nueva.",
+      );
+    if (!Number.isSafeInteger(args.sourceIndex) || args.sourceIndex < 0)
+      throw new ConvexError("Fuente no válida.");
+    const parent = run.sources[args.sourceIndex];
+    if (!parent || parent.parentSourceIndex !== undefined)
+      throw new ConvexError(
+        "Selecciona una fuente original; no se recorren enlaces en cadena.",
+      );
+    const choice = inspectSource(parent, run.ingredient).links.find(
+      (link) => link.url === args.url,
+    );
+    if (!choice)
+      throw new ConvexError("Selecciona un enlace de producto de esta fuente.");
+    const existing = run.sources.findIndex(
+      (source) => source.parentSourceIndex === args.sourceIndex,
+    );
+    if (existing >= 0) {
+      if (run.sources[existing].url !== choice.url)
+        throw new ConvexError("Esta fuente ya tiene una ficha seleccionada.");
+      return {
+        kind: "existing" as const,
+        run: publicRun(run),
+        childIndex: existing,
+      };
+    }
+    if (run.sources.length >= 6)
+      throw new ConvexError("Esta búsqueda alcanzó el máximo de fichas.");
+    const sources = [
+      ...run.sources,
+      {
+        url: choice.url,
+        title: choice.label,
+        description: "",
+        markdown: null,
+        contentTruncated: false,
+        extraction: null,
+        extractionStatus: "idle" as const,
+        extractionError: null,
+        extractionAttempts: 0,
+        parentSourceIndex: args.sourceIndex,
+        observedAt: new Date().toISOString(),
+        readStatus: "running" as const,
+        readError: null,
+      },
+    ];
+    await ctx.db.patch(run._id, { sources });
+    return {
+      kind: "reserved" as const,
+      run: publicRun((await ctx.db.get(run._id))!),
+      childIndex: sources.length - 1,
+    };
+  },
+});
+
+export const finishProductRead = internalMutation({
+  args: {
+    runId: v.id("researchRuns"),
+    childIndex: v.number(),
+    page: v.union(
+      v.object({
+        url: v.string(),
+        title: v.string(),
+        description: v.string(),
+        markdown: v.union(v.string(), v.null()),
+        contentTruncated: v.boolean(),
+      }),
+      v.null(),
+    ),
+  },
+  returns: savedResearchValidator,
+  handler: async (ctx, { runId, childIndex, page }) => {
+    const run = await ctx.db.get(runId);
+    const source = run?.sources[childIndex];
+    if (!run || !source || source.parentSourceIndex === undefined)
+      throw new Error("Missing reserved product read.");
+    if (source.readStatus !== "running") return publicRun(run);
+    if (
+      page &&
+      (page.url !== source.url ||
+        page.title.length > 300 ||
+        page.description.length > 2000 ||
+        (page.markdown?.length ?? 0) > 20000)
+    )
+      throw new Error("Product read exceeds limits.");
+    const sources = [...run.sources];
+    sources[childIndex] = {
+      ...source,
+      ...(page ?? {}),
+      observedAt: new Date().toISOString(),
+      readStatus: page ? "complete" : "failed",
+      readError: page
+        ? null
+        : "No se pudo leer la ficha. La llamada puede haber consumido créditos; no se repite automáticamente.",
+    };
+    await ctx.db.patch(runId, { sources });
+    return publicRun((await ctx.db.get(runId))!);
+  },
+});
+
+export const readProduct = action({
+  args: readArgs,
+  returns: savedResearchValidator,
+  handler: async (ctx, args): Promise<SavedResearch> => {
+    if (!enabled(env.LIVE_RESEARCH_ENABLED) || !env.FIRECRAWL_API_KEY?.trim())
+      throw new ConvexError("La lectura web no está habilitada.");
+    const reservation: {
+      kind: "reserved" | "existing";
+      run: SavedResearch;
+      childIndex: number;
+    } = await ctx.runMutation(internal.research.reserveProductRead, {
+      ...args,
+      simulated: providerRehearsalEnabled(),
+    });
+    if (reservation.kind === "existing") return reservation.run;
+    let page;
+    try {
+      page = await readProductPage(
+        reservation.run.sources[reservation.childIndex].url,
+        env.FIRECRAWL_API_KEY,
+      );
+    } catch {
+      return await ctx.runMutation(internal.research.finishProductRead, {
+        runId: args.runId,
+        childIndex: reservation.childIndex,
+        page: null,
+      });
+    }
+    // A failed commit leaves the reservation running; it never authorizes another paid call.
+    return await ctx.runMutation(internal.research.finishProductRead, {
+      runId: args.runId,
+      childIndex: reservation.childIndex,
+      page,
+    });
   },
 });

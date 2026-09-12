@@ -5,7 +5,15 @@ import schema from "./schema";
 import { api, internal } from "./_generated/api";
 import { extractionExample } from "../fixtures/extraction";
 vi.mock("./lib/agentExtraction", () => ({
-  extractOfferWithAgent: vi.fn(async () => extractionExample),
+  analyzeWebSourceWithAgent: vi.fn(async () => ({
+    offer: extractionExample,
+    analysis: {
+      kind: "product",
+      summary: "Oferta de arroz para revisar.",
+      evidence: ["Saco: S/ 80.00"],
+      warnings: [],
+    },
+  })),
 }));
 const modules = import.meta.glob("./**/*.ts");
 const draft = {
@@ -80,12 +88,13 @@ test("one reservation per client id, owner isolation, conflict and cooldown", as
     }),
   ).rejects.toThrow(/no disponible/);
   expect(first.run).not.toHaveProperty("ownerHash");
+  expect(first.run.simulated).toBe(false);
 });
 test("mocked provider search persists source and retry never repeats paid call", async () => {
   enable();
   const t = convexTest(schema, modules);
   const fetch = vi.fn(
-    async () =>
+    async (_url: unknown) =>
       new Response(
         JSON.stringify({
           success: true,
@@ -96,6 +105,7 @@ test("mocked provider search persists source and retry never repeats paid call",
   vi.stubGlobal("fetch", fetch);
   const run = await t.action(api.research.search, draft);
   expect(run.status).toBe("complete");
+  expect(run.simulated).toBe(false);
   expect(run.sources).toHaveLength(1);
   expect(run.sources[0].extraction).toBeNull();
   await t.action(api.research.search, draft);
@@ -106,17 +116,47 @@ test("mocked provider search persists source and retry never repeats paid call",
     sourceIndex: 0,
   });
   expect(offer).toEqual(extractionExample);
-  const { extractOfferWithAgent } = await import("./lib/agentExtraction");
+  const { analyzeWebSourceWithAgent } = await import("./lib/agentExtraction");
   await t.action(api.research.extract, {
     token: draft.token,
     runId: run.id,
     sourceIndex: 0,
   });
-  expect(extractOfferWithAgent).toHaveBeenCalledTimes(1);
+  expect(analyzeWebSourceWithAgent).toHaveBeenCalledTimes(1);
   expect(
     (await t.query(api.research.list, { token: draft.token }))[0].sources[0]
       .extractionStatus,
   ).toBe("complete");
+});
+test("loopback rehearsal records synthetic provenance on the research run", async () => {
+  enable();
+  vi.stubEnv("CONVEX_CLOUD_URL", "http://127.0.0.1:3240");
+  vi.stubEnv("REHEARSAL_BRIDGE_URL", "http://127.0.0.1:8789");
+  vi.stubEnv("REHEARSAL_BRIDGE_TOKEN", "r".repeat(64));
+  const t = convexTest(schema, modules);
+  const fetch = vi.fn(
+    async (_url: unknown) =>
+      new Response(
+        JSON.stringify({
+          success: true,
+          data: { web: [{ ...source, url: "https://supplier.com/rice" }] },
+        }),
+      ),
+  );
+  vi.stubGlobal("fetch", fetch);
+  const run = await t.action(api.research.search, draft);
+  expect(run.simulated).toBe(true);
+  expect(String(fetch.mock.calls[0][0])).toBe(
+    "http://127.0.0.1:8789/firecrawl/v2/search",
+  );
+  await t.run(async (ctx) => {
+    expect((await ctx.db.get(run.id))?.simulated).toBe(true);
+  });
+  vi.stubEnv("REHEARSAL_BRIDGE_URL", "");
+  vi.stubEnv("REHEARSAL_BRIDGE_TOKEN", "");
+  expect(
+    (await t.query(api.research.list, { token: draft.token }))[0].simulated,
+  ).toBe(true);
 });
 test("failures are sanitized and extraction attempts bounded", async () => {
   enable();
@@ -139,6 +179,7 @@ test("failures are sanitized and extraction attempts bounded", async () => {
     sources: [source, { ...source, markdown: null }],
     discarded: 0,
     warning: false,
+    simulated: false,
   });
   const args = { token: "c".repeat(64), runId: other.run.id, sourceIndex: 0 };
   expect(
@@ -205,11 +246,12 @@ test("uncertain persistence after model response cannot issue another paid extra
     sources: [source],
     discarded: 0,
     warning: false,
+    simulated: false,
   });
-  const { extractOfferWithAgent } = await import("./lib/agentExtraction");
+  const { analyzeWebSourceWithAgent } = await import("./lib/agentExtraction");
   // Force the commit validator to reject the result, representing failed persistence.
-  vi.mocked(extractOfferWithAgent).mockResolvedValueOnce(
-    {} as typeof extractionExample,
+  vi.mocked(analyzeWebSourceWithAgent).mockResolvedValueOnce(
+    {} as Awaited<ReturnType<typeof analyzeWebSourceWithAgent>>,
   );
   const args = { token: draft.token, runId: run.run.id, sourceIndex: 0 };
   await expect(t.action(api.research.extract, args)).rejects.toThrow(
@@ -222,5 +264,5 @@ test("uncertain persistence after model response cannot issue another paid extra
   await expect(t.action(api.research.extract, args)).rejects.toThrow(
     /ya está en curso/,
   );
-  expect(extractOfferWithAgent).toHaveBeenCalledTimes(1);
+  expect(analyzeWebSourceWithAgent).toHaveBeenCalledTimes(1);
 });

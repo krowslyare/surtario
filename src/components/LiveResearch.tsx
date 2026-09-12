@@ -9,6 +9,7 @@ import {
 } from "react";
 import { ExternalLink, FileSearch, History, Search } from "lucide-react";
 import { useAction, useQuery } from "convex/react";
+import { ConvexError } from "convex/values";
 import type { Id } from "../../convex/_generated/dataModel";
 import { api } from "../../convex/_generated/api";
 import {
@@ -16,8 +17,15 @@ import {
   type ExtractedOffer,
   type ExtractionSource,
 } from "../domain/extraction";
+import type { WebSelection, StudyProspect } from "../domain/study";
 import type { PurchaseSeed } from "../domain/market";
 import ExtractionReview from "./ExtractionReview";
+import {
+  ProductLinkReader,
+  SourceQualitySummary,
+  type SourceAnalysis,
+  type SourceInspection,
+} from "./SourceQuality";
 
 const SESSION_KEY = "procurement-demo-session-v1";
 
@@ -35,10 +43,17 @@ export type ResearchSource = {
   extraction: ExtractedOffer | null;
   extractionStatus: "idle" | "running" | "complete" | "failed";
   extractionError: string | null;
+  analysis?: SourceAnalysis;
+  inspection?: SourceInspection;
+  parentSourceIndex?: number;
+  observedAt?: string;
+  readStatus?: "running" | "complete" | "failed";
+  readError?: string | null;
 };
 
 export type SavedResearch = {
   id: string;
+  simulated: boolean;
   ingredient: string;
   region: string;
   observedAt: string;
@@ -84,9 +99,16 @@ export function ResearchWorkspace({
   onStatus,
   onSearch,
   onExtract,
+  onRead,
   onPrepare,
   renderProspect,
+  selections,
+  onReview,
+  onOpenStudy,
 }: {
+  selections?: WebSelection[];
+  onReview?: (selection: WebSelection) => void;
+  onOpenStudy?: () => void;
   renderProspect?: (run: SavedResearch, sourceIndex: number) => ReactNode;
   status: ResearchStatus | undefined;
   runs: SavedResearch[] | undefined;
@@ -94,18 +116,30 @@ export function ResearchWorkspace({
   onStatus: (status: ResearchStatus | undefined) => void;
   onSearch: (ingredient: string, region: string) => Promise<SavedResearch>;
   onExtract: (runId: string, sourceIndex: number) => Promise<ExtractedOffer>;
+  onRead?: (
+    runId: string,
+    sourceIndex: number,
+    url: string,
+  ) => Promise<SavedResearch>;
   onPrepare: (seed: PurchaseSeed) => void;
 }) {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localRun, setLocalRun] = useState<SavedResearch | null>(null);
   const [searching, setSearching] = useState(false);
   const [extracting, setExtracting] = useState<string[]>([]);
+  const [reading, setReading] = useState<string[]>([]);
+  const [readFailures, setReadFailures] = useState<Record<string, string>>({});
+  const [selectedLinks, setSelectedLinks] = useState<Record<string, string>>(
+    {},
+  );
+  const [readNotice, setReadNotice] = useState("");
   const [localExtractions, setLocalExtractions] = useState<
     Record<string, ExtractedOffer>
   >({});
-  const [reviewed, setReviewed] = useState<
+  const [localReviewed, setReviewed] = useState<
     { sourceId: string; seed: PurchaseSeed }[]
   >([]);
+  const reviewed = selections ?? localReviewed;
   const [equivalent, setEquivalent] = useState(false);
   const [error, setError] = useState("");
 
@@ -123,12 +157,15 @@ export function ResearchWorkspace({
         setActiveId(run.id);
         setReviewed([]);
         setEquivalent(false);
+        setReadFailures({});
+        setSelectedLinks({});
+        setReadNotice("");
       })
       .catch((cause) => {
         if (current)
           setError(
-            cause instanceof Error
-              ? cause.message
+            cause instanceof ConvexError && typeof cause.data === "string"
+              ? cause.data
               : "No se pudo completar la búsqueda. Vuelve a intentarlo.",
           );
       })
@@ -140,10 +177,19 @@ export function ResearchWorkspace({
 
   const active = useMemo(() => {
     const persisted = runs?.find((run) => run.id === activeId);
+    const localReadResolved = localRun?.sources.some((source, index) => {
+      const persistedSource = persisted?.sources[index];
+      return (
+        source.parentSourceIndex !== undefined &&
+        source.readStatus !== "running" &&
+        persistedSource?.readStatus === "running"
+      );
+    });
     if (
       localRun?.id === activeId &&
-      localRun.status !== "running" &&
-      persisted?.status === "running"
+      (persisted?.status === "running" ||
+        localRun.sources.length > (persisted?.sources.length ?? 0) ||
+        localReadResolved)
     )
       return localRun;
     return persisted ?? (localRun?.id === activeId ? localRun : null);
@@ -158,8 +204,8 @@ export function ResearchWorkspace({
       setLocalExtractions((current) => ({ ...current, [sourceId]: proposal }));
     } catch (cause) {
       setError(
-        cause instanceof Error
-          ? cause.message
+        cause instanceof ConvexError && typeof cause.data === "string"
+          ? cause.data
           : "No se pudo extraer esta fuente. Puedes intentar de nuevo.",
       );
     } finally {
@@ -167,7 +213,55 @@ export function ResearchWorkspace({
     }
   }
 
+  async function readProduct(
+    run: SavedResearch,
+    sourceIndex: number,
+    url: string,
+  ) {
+    if (!onRead) return;
+    const sourceId = `${run.id}:${sourceIndex}`;
+    setReading((current) => [...current, sourceId]);
+    setReadNotice("");
+    setReadFailures((current) => {
+      const next = { ...current };
+      delete next[sourceId];
+      return next;
+    });
+    try {
+      const updated = await onRead(run.id, sourceIndex, url);
+      setLocalRun(updated);
+      const child = updated.sources.find(
+        (source) => source.parentSourceIndex === sourceIndex,
+      );
+      setReadNotice(
+        child?.readStatus === "failed"
+          ? "La ficha no pudo leerse. La lectura no se repetirá automáticamente."
+          : "Ficha leída. Revisa la nueva fuente antes de usar sus datos.",
+      );
+    } catch (cause) {
+      setReadFailures((current) => ({
+        ...current,
+        [sourceId]:
+          cause instanceof ConvexError && typeof cause.data === "string"
+            ? cause.data
+            : "No se pudo leer la ficha seleccionada. La lectura no se repetirá automáticamente.",
+      }));
+    } finally {
+      setReading((current) => current.filter((id) => id !== sourceId));
+    }
+  }
+
   function saveReview(sourceId: string, seed: PurchaseSeed) {
+    if (onReview) {
+      onReview({
+        sourceId,
+        seed,
+        ingredient: active!.ingredient,
+        region: active!.region,
+      });
+      setEquivalent(false);
+      return;
+    }
     setReviewed((current) => {
       const existing = current.findIndex((item) => item.sourceId === sourceId);
       if (existing >= 0)
@@ -200,8 +294,8 @@ export function ResearchWorkspace({
   if (!status)
     return <p className="notice info">Comprobando la búsqueda web…</p>;
 
-  // MarketStudy explains availability next to the search controls.
-  if (!status.searchEnabled && runs?.length === 0 && !localRun) return null;
+  // Keep the status subscription mounted without an empty duplicate search panel.
+  if (!searching && !active && !error && !runs?.length) return null;
 
   return (
     <section className="live-research" aria-labelledby="live-research-title">
@@ -228,9 +322,11 @@ export function ResearchWorkspace({
           aria-label="Investigaciones guardadas"
         >
           <p className="field-hint">
-            Abrir otra investigación reemplaza la selección revisada de esta
-            vista. Hasta 10 búsquedas por navegador; borrar datos del sitio
-            pierde acceso.
+            {onReview
+              ? "Tu selección permanece en Mi estudio al abrir otra investigación."
+              : "Abrir otra investigación reemplaza la selección revisada de esta vista."}{" "}
+            Hasta 10 búsquedas por navegador; borrar datos del sitio pierde
+            acceso.
           </p>
           <span>
             <History size={16} /> Investigaciones guardadas
@@ -249,6 +345,9 @@ export function ResearchWorkspace({
                   setLocalRun(null);
                   setReviewed([]);
                   setEquivalent(false);
+                  setReadFailures({});
+                  setSelectedLinks({});
+                  setReadNotice("");
                   setError("");
                 }}
               >
@@ -280,6 +379,11 @@ export function ResearchWorkspace({
               </span>
             )}
           </div>
+          {readNotice && (
+            <p className="field-hint" role="status" aria-live="polite">
+              {readNotice}
+            </p>
+          )}
           {active.warning && (
             <p className="notice info">
               La búsqueda devolvió contenido parcial; revisa las fuentes.
@@ -295,6 +399,19 @@ export function ResearchWorkspace({
               por no cumplir los límites de la búsqueda.
             </p>
           )}
+          {active.sources.length > 0 &&
+            active.sources.every(
+              (source) =>
+                source.inspection?.state === "blocked" ||
+                source.inspection?.state === "unrelated" ||
+                source.analysis?.kind === "irrelevant",
+            ) && (
+              <p className="notice" role="status">
+                Ninguna fuente quedó lista para analizar como oferta. Puedes
+                revisar las páginas de origen o intentar una búsqueda más
+                específica.
+              </p>
+            )}
           {active.status === "complete" && active.sources.length === 0 && (
             <div className="empty-state">
               <Search size={30} />
@@ -306,27 +423,67 @@ export function ResearchWorkspace({
             {active.sources.map((source, index) => {
               const sourceId = `${active.id}:${index}`;
               const url = safeUrl(source.url);
-              const proposal = localExtractions[sourceId] ?? source.extraction;
+              const localProposal = localExtractions[sourceId];
+              const proposal = localProposal ?? source.extraction;
+              const awaitingAnalysis = Boolean(
+                localProposal && !source.extraction && !source.analysis,
+              );
               const isExtracting =
                 extracting.includes(sourceId) ||
                 source.extractionStatus === "running";
+              const isReading =
+                reading.includes(sourceId) || source.readStatus === "running";
+              const readFailure =
+                readFailures[sourceId] ||
+                (source.readStatus === "failed" ? source.readError : "") ||
+                "";
+              const isChild = source.parentSourceIndex !== undefined;
+              const parentTitle = isChild
+                ? active.sources[source.parentSourceIndex!]?.title
+                : undefined;
+              const hasChild = active.sources.some(
+                (candidate) => candidate.parentSourceIndex === index,
+              );
+              const inspectionBlocksAnalysis =
+                source.inspection && source.inspection.state !== "readable";
+              const readBlocksAnalysis =
+                source.readStatus === "running" ||
+                source.readStatus === "failed";
+              const analysisIsProduct =
+                !source.analysis || source.analysis.kind === "product";
+              const prospectAllowed =
+                source.inspection?.state !== "blocked" &&
+                source.inspection?.state !== "unrelated" &&
+                source.analysis?.kind !== "irrelevant";
               const wasReviewed = reviewed.some(
                 (item) => item.sourceId === sourceId,
               );
               const extractionSource: ExtractionSource = {
                 id: sourceId,
                 title: source.title,
-                text: source.markdown ?? source.description,
-                observedAt: active.observedAt,
-                simulated: false,
+                text: source.analysis
+                  ? `Título de la página: ${source.title.replace(/\s+/g, " ").trim()}\n\n${source.markdown ?? source.description}`
+                  : (source.markdown ?? source.description),
+                observedAt: source.observedAt ?? active.observedAt,
+                simulated: active.simulated,
                 ...(url ? { url } : {}),
               };
               return (
-                <article className="research-source" key={sourceId}>
+                <article
+                  className={`research-source${isChild ? " research-source-child" : ""}`}
+                  key={sourceId}
+                >
                   <div className="research-source-copy">
-                    <span>Fuente web candidata</span>
+                    <span>
+                      {isChild
+                        ? `Ficha leída desde ${parentTitle ?? "una fuente candidata"}`
+                        : "Fuente web candidata"}
+                    </span>
                     <h3>{source.title}</h3>
                     <p>{source.description}</p>
+                    {source.analysis && (
+                      <SourceQualitySummary analysis={source.analysis} />
+                    )}
                     {source.contentTruncated && (
                       <small>El contenido recuperado está incompleto.</small>
                     )}
@@ -339,8 +496,92 @@ export function ResearchWorkspace({
                     )}
                   </div>
                   <div className="research-source-action">
-                    {url && renderProspect?.(active, index)}
-                    {!source.markdown ? (
+                    {url && prospectAllowed && renderProspect?.(active, index)}
+                    {!isChild &&
+                    !hasChild &&
+                    onRead &&
+                    source.inspection?.state !== "blocked" &&
+                    source.inspection?.state !== "unrelated" &&
+                    source.analysis?.kind !== "irrelevant" &&
+                    source.inspection?.links.length ? (
+                      <details
+                        className="source-reader-options"
+                        open={
+                          source.analysis?.kind === "catalog" ||
+                          source.analysis?.kind === "contact" ||
+                          isReading ||
+                          Boolean(readFailure)
+                        }
+                      >
+                        <summary>Leer una ficha de este sitio</summary>
+                        <ProductLinkReader
+                          links={source.inspection.links}
+                          selectedUrl={
+                            selectedLinks[sourceId] ??
+                            source.inspection.links[0]?.url ??
+                            ""
+                          }
+                          reading={isReading}
+                          failed={readFailure}
+                          onSelect={(selectedUrl) =>
+                            setSelectedLinks((current) => ({
+                              ...current,
+                              [sourceId]: selectedUrl,
+                            }))
+                          }
+                          onRead={() =>
+                            void readProduct(
+                              active,
+                              index,
+                              selectedLinks[sourceId] ??
+                                source.inspection?.links[0]?.url ??
+                                "",
+                            )
+                          }
+                        />
+                      </details>
+                    ) : null}
+                    {source.readStatus === "running" && (
+                      <p
+                        className="field-hint"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        La ficha se está leyendo. No se repetirá
+                        automáticamente.
+                      </p>
+                    )}
+                    {source.readStatus === "failed" && source.readError && (
+                      <p className="notice error" role="alert">
+                        {source.readError}
+                      </p>
+                    )}
+                    {readBlocksAnalysis ? (
+                      <p className="field-hint">
+                        Espera a que termine la lectura de esta página. Si
+                        falló, revisa el origen manualmente.
+                      </p>
+                    ) : inspectionBlocksAnalysis ? (
+                      <p className="field-hint">
+                        {source.inspection?.state === "unrelated"
+                          ? "No encontramos coincidencias textuales suficientes con esta búsqueda. Revisa el origen si necesitas confirmarlo."
+                          : source.inspection?.reason ||
+                            "Esta página no tiene contenido legible para analizar."}
+                      </p>
+                    ) : !analysisIsProduct ? (
+                      <p className="field-hint">
+                        Esta fuente aporta contexto o contacto, pero no una
+                        oferta de producto comparable.
+                      </p>
+                    ) : awaitingAnalysis ? (
+                      <p
+                        className="field-hint"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        Clasificando la fuente antes de habilitar su revisión…
+                      </p>
+                    ) : !source.markdown ? (
                       <p>Sin texto recuperado para extraer datos.</p>
                     ) : !status.extractionEnabled && !proposal ? (
                       <p>Extracción no configurada en el servidor.</p>
@@ -352,6 +593,7 @@ export function ResearchWorkspace({
                           wasReviewed ? "Editar revisión" : "Revisar extracción"
                         }
                         confirmLabel="Añadir al estudio"
+                        confirmationNote="Añade esta oferta revisada a Mi estudio. Guarda el estudio para recuperarla después; todavía no estás preparando una compra."
                         onPrepare={(seed) => {
                           const entry = seed.sources[sourceId];
                           if (entry.extraction)
@@ -365,15 +607,26 @@ export function ResearchWorkspace({
                         }}
                       />
                     ) : (
-                      <button
-                        type="button"
-                        className="button secondary"
-                        disabled={isExtracting}
-                        onClick={() => void extract(active, index)}
-                      >
-                        <FileSearch size={16} />
-                        {isExtracting ? "Extrayendo datos…" : "Extraer datos"}
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="button primary"
+                          disabled={isExtracting}
+                          onClick={() => void extract(active, index)}
+                        >
+                          <FileSearch size={16} />
+                          {isExtracting
+                            ? "Analizando fuente…"
+                            : "Extraer datos"}
+                        </button>
+                        {!isExtracting && (
+                          <p className="field-hint">
+                            Primero identifica el tipo de página y cita la
+                            evidencia; solo una ficha de producto pasa a
+                            revisión.
+                          </p>
+                        )}
+                      </>
                     )}
                     {source.extractionStatus === "failed" &&
                       source.extractionError && (
@@ -381,9 +634,8 @@ export function ResearchWorkspace({
                       )}
                     {isExtracting && (
                       <p className="field-hint">
-                        La extracción está en curso o quedó interrumpida. No se
-                        repetirá automáticamente; si persiste, requiere revisión
-                        del operador.
+                        La IA está revisando la fuente y sus referencias. La
+                        solicitud no se repetirá automáticamente.
                       </p>
                     )}
                     {wasReviewed && (
@@ -400,7 +652,24 @@ export function ResearchWorkspace({
         </div>
       )}
 
-      {reviewed.length > 0 && (
+      {reviewed.length > 0 && onOpenStudy && (
+        <div className="reviewed-research" role="status">
+          <strong>
+            {reviewed.length}{" "}
+            {reviewed.length === 1
+              ? "oferta revisada en Mi estudio"
+              : "ofertas revisadas en Mi estudio"}
+          </strong>
+          <p>
+            Guarda el estudio para recuperar tus correcciones. Comparar una
+            compra es opcional.
+          </p>
+          <button className="button primary" onClick={onOpenStudy}>
+            Ver mi estudio
+          </button>
+        </div>
+      )}
+      {reviewed.length > 0 && !onOpenStudy && (
         <div className="reviewed-research">
           <strong>
             {reviewed.length}{" "}
@@ -440,11 +709,17 @@ export function ResearchWorkspace({
   );
 }
 
-export default function LiveResearch(props: {
+type LiveResearchProps = {
   request: WebSearchRequest | null;
   onStatus: (status: ResearchStatus | undefined) => void;
   onPrepare: (seed: PurchaseSeed) => void;
-}) {
+  selections?: WebSelection[];
+  onReview?: (selection: WebSelection) => void;
+  onOpenStudy?: () => void;
+  selectedProspectIds?: string[];
+  onProspect?: (prospect: StudyProspect) => void;
+};
+export default function LiveResearch(props: LiveResearchProps) {
   const [token, setToken] = useState<string | null>(null);
   const [storageError, setStorageError] = useState(false);
   useEffect(() => {
@@ -480,23 +755,20 @@ export default function LiveResearch(props: {
 function ConnectedResearch({
   token,
   ...props
-}: {
-  token: string;
-  request: WebSearchRequest | null;
-  onStatus: (status: ResearchStatus | undefined) => void;
-  onPrepare: (seed: PurchaseSeed) => void;
-}) {
+}: LiveResearchProps & { token: string }) {
   const status = useQuery(api.research.status, {});
   const runs = useQuery(api.research.list, { token });
   const search = useAction(api.research.search);
   const attempts = useRef(new Map<number, Promise<SavedResearch>>());
   const extract = useAction(api.research.extract);
+  const readProduct = useAction(api.research.readProduct);
   return (
     <>
       <ResearchWorkspace
         {...props}
         renderProspect={(run, index) => (
           <SaveWebProspect
+            onSaved={props.onProspect}
             token={token}
             runId={run.id as Id<"researchRuns">}
             sourceIndex={index}
@@ -522,8 +794,21 @@ function ConnectedResearch({
         onExtract={(runId, sourceIndex) =>
           extract({ token, runId: runId as Id<"researchRuns">, sourceIndex })
         }
+        onRead={(runId, sourceIndex, url) =>
+          readProduct({
+            token,
+            runId: runId as Id<"researchRuns">,
+            sourceIndex,
+            url,
+          })
+        }
       />
-      <WebProspectLibrary token={token} onPrepare={props.onPrepare} />
+      <WebProspectLibrary
+        token={token}
+        onPrepare={props.onPrepare}
+        onSelect={props.onProspect}
+        selectedIds={props.selectedProspectIds}
+      />
     </>
   );
 }

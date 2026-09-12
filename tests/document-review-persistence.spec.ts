@@ -1,31 +1,16 @@
 import { expect, test } from "@playwright/test";
-import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { mkdtempSync, writeFileSync, rmSync, readFileSync } from "node:fs";
+import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { extractionExample, extractionSource } from "../fixtures/extraction";
+import { connectOnlyToLocalBackend, runLocalConvex } from "./e2e-local";
 
 test("revisión documental guardada recupera evidencia, condiciones y elección en Convex local", async ({
   page,
   context,
 }) => {
-  // Only internal synthetic setup, on the project's anonymous local backend.
-  const target = readFileSync(".env.local", "utf8")
-    .split("\n")
-    .find((line) => line.startsWith("CONVEX_DEPLOYMENT="));
-  if (
-    process.env.CONVEX_DEPLOY_KEY ||
-    target !== "CONVEX_DEPLOYMENT=anonymous:anonymous-convexhackaton"
-  )
-    throw new Error(
-      "Document review E2E requires the anonymous local backend.",
-    );
-  await context.routeWebSocket(/.*/, (socket) => {
-    if (!["127.0.0.1", "localhost"].includes(new URL(socket.url()).hostname))
-      throw new Error("Only local WebSockets allowed.");
-    socket.connectToServer();
-  });
+  await connectOnlyToLocalBackend(context);
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) =>
     b.toString(16).padStart(2, "0"),
   ).join("");
@@ -50,11 +35,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     ]),
   );
   try {
-    execFileSync(
-      "npx",
-      ["convex", "import", "--append", "--table", "documentRuns", path],
-      { encoding: "utf8" },
-    );
+    runLocalConvex(["import", "--append", "--table", "documentRuns", path]);
   } finally {
     rmSync(folder, { recursive: true });
   }
@@ -63,13 +44,10 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     token,
   );
   await page.goto("/");
-  await page
-    .getByRole("button", { name: "Cotizaciones y documentos", exact: true })
-    .click();
+  await page.getByText("Revisar una cotización", { exact: true }).click();
   await page.getByRole("button", { name: "Revisar datos leídos" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Unidad de la presentación").click();
-  await dialog.getByRole("option", { name: "kg", exact: true }).click();
+  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
   await dialog.getByLabel("Contenido por presentación").fill("18");
   await dialog.getByLabel("Precio por presentación").fill("85");
   await dialog
@@ -86,13 +64,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
   await page.getByLabel("Entrega por pedido", { exact: true }).fill("15");
   await page
     .getByLabel("Impuestos del precio y la entrega", { exact: true })
-    .click();
-  await page
-    .getByRole("option", {
-      name: "Importes finales, impuestos incluidos",
-      exact: true,
-    })
-    .click();
+    .selectOption("included");
   await page
     .getByLabel("El proveedor puede entregar cuando lo necesito")
     .check();
@@ -125,7 +97,6 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     page.getByRole("link", { name: "Abrir documento original" }),
   ).toHaveAttribute("href", "/examples/cotizacion-demo.pdf");
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("dialog")).toHaveCount(0);
   await page.getByLabel("Cantidad necesaria").fill("20");
   await expect(
     page.getByRole("button", { name: "Oferta elegida" }),

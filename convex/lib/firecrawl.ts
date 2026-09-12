@@ -1,3 +1,8 @@
+import { providerFetch } from "./providerTransport";
+import { publicSourceUrl } from "./sourceQuality";
+
+const SEARCH_CONTENT_MAX_AGE_MS = 60 * 60 * 1000;
+
 /** Server-only discovery adapter. Returned page text is untrusted evidence, never an offer. */
 export type DiscoveredSource = {
   url: string;
@@ -16,31 +21,15 @@ function record(value: unknown): Record<string, unknown> {
     ? (value as Record<string, unknown>)
     : {};
 }
-function publicUrl(value: unknown): string | null {
-  if (typeof value !== "string" || value.length > 2000) return null;
-  try {
-    const url = new URL(value);
-    // This adapter never fetches returned URLs. Restrict links before exposing evidence.
-    if (
-      !["https:", "http:"].includes(url.protocol) ||
-      url.username ||
-      url.password ||
-      url.port
-    )
-      return null;
-    const host = url.hostname.toLowerCase();
-    if (
-      !host.includes(".") ||
-      /(^|\.)(localhost|local|internal|test|example)$/.test(host) ||
-      /^[\d.]+$/.test(host) ||
-      host.includes(":")
-    )
-      return null;
-    url.hash = "";
-    return url.toString();
-  } catch {
-    return null;
-  }
+function cleanPageStatus(value: unknown) {
+  return (
+    typeof value !== "number" ||
+    (value >= 200 && value < 300) ||
+    value === 304
+  );
+}
+function sameReportedPage(value: unknown, target: string) {
+  return typeof value !== "string" || publicSourceUrl(value) === target;
 }
 export function parseDiscovery(value: unknown): DiscoveryResult {
   const body = record(value);
@@ -52,14 +41,20 @@ export function parseDiscovery(value: unknown): DiscoveryResult {
   let discarded = 0;
   for (const item of web) {
     const page = record(item);
-    const url = publicUrl(page.url);
+    const metadata = record(page.metadata);
+    const url =
+      typeof page.url === "string" ? publicSourceUrl(page.url) : null;
     if (!url || seen.has(url) || sources.length >= 3) {
       discarded++;
       continue;
     }
     seen.add(url);
     const markdown =
-      typeof page.markdown === "string" && page.markdown.trim()
+      cleanPageStatus(metadata.statusCode) &&
+      sameReportedPage(metadata.sourceURL, url) &&
+      sameReportedPage(metadata.url, url) &&
+      typeof page.markdown === "string" &&
+      page.markdown.trim()
         ? page.markdown
         : null;
     sources.push({
@@ -67,11 +62,15 @@ export function parseDiscovery(value: unknown): DiscoveryResult {
       title:
         typeof page.title === "string"
           ? page.title.slice(0, 300)
-          : "Fuente sin título",
+          : typeof metadata.title === "string"
+            ? metadata.title.slice(0, 300)
+            : "Fuente sin título",
       description:
         typeof page.description === "string"
           ? page.description.slice(0, 2000)
-          : "",
+          : typeof metadata.description === "string"
+            ? metadata.description.slice(0, 2000)
+            : "",
       markdown: markdown?.slice(0, 20000) ?? null,
       contentTruncated: (markdown?.length ?? 0) > 20000,
     });
@@ -109,10 +108,83 @@ async function limitedJson(response: Response): Promise<unknown> {
     await reader.cancel();
   }
 }
+
+/** Read one user-selected, server-verified public product link; never browse recursively. */
+export async function readProductPage(
+  url: string,
+  apiKey: string | undefined,
+  request: typeof fetch = providerFetch,
+): Promise<DiscoveredSource> {
+  const target = publicSourceUrl(url);
+  if (!target || !apiKey?.trim())
+    throw new Error("La ficha o la configuración de lectura no es válida.");
+  const abort = new AbortController();
+  const timeout = setTimeout(() => abort.abort(), 25000);
+  try {
+    const response = await request("https://api.firecrawl.dev/v2/scrape", {
+      method: "POST",
+      redirect: "error",
+      signal: abort.signal,
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: target,
+        formats: ["markdown"],
+        onlyMainContent: true,
+        maxAge: 0,
+        timeout: 20000,
+        parsers: [],
+        location: { country: "PE", languages: ["es-PE", "es"] },
+      }),
+    });
+    if (!response.ok) {
+      await response.body?.cancel();
+      throw new Error("Firecrawl no completó la lectura de la ficha.");
+    }
+    const body = record(await limitedJson(response));
+    const data = record(body.data);
+    const metadata = record(data.metadata);
+    if (
+      body.success !== true ||
+      typeof data.markdown !== "string" ||
+      !data.markdown.trim() ||
+      !cleanPageStatus(metadata.statusCode)
+    )
+      throw new Error("La ficha no devolvió contenido utilizable.");
+    const returnedUrl =
+      typeof metadata.url === "string"
+        ? metadata.url
+        : typeof metadata.sourceURL === "string"
+          ? metadata.sourceURL
+          : target;
+    const canonical = publicSourceUrl(returnedUrl);
+    if (canonical !== target)
+      throw new Error(
+        "La ficha cambió de dirección; revisa el enlace original.",
+      );
+    return {
+      url: target,
+      title:
+        typeof metadata.title === "string"
+          ? metadata.title.slice(0, 300)
+          : "Ficha del producto",
+      description:
+        typeof metadata.description === "string"
+          ? metadata.description.slice(0, 2000)
+          : "",
+      markdown: data.markdown.slice(0, 20000),
+      contentTruncated: data.markdown.length > 20000,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 export async function discoverSources(
   input: { ingredient: string; region: string },
   apiKey: string | undefined,
-  request: typeof fetch = fetch,
+  request: typeof fetch = providerFetch,
 ): Promise<DiscoveryResult> {
   if (
     !input.ingredient.trim() ||
@@ -145,7 +217,12 @@ export async function discoverSources(
         limit: 3,
         sources: ["web"],
         timeout: 20000,
-        scrapeOptions: { formats: [{ type: "markdown" }] },
+        scrapeOptions: {
+          formats: [{ type: "markdown" }],
+          onlyMainContent: true,
+          // Discovery tolerates a short cache window; selected product reads are fresh.
+          maxAge: SEARCH_CONTENT_MAX_AGE_MS,
+        },
       }),
     });
     if (!response.ok) {

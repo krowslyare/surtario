@@ -1,11 +1,14 @@
-import { Select } from "./components/ui/Select";
 import Brand from "./components/Brand";
+import PurchasingAdvisor, {
+  comparisonStateFingerprint,
+} from "./components/PurchasingAdvisor";
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
 import { useRef, useState, type FormEvent } from "react";
 import SavedComparisons, {
   type SavedComparison,
+  type SavedComparisonsHandle,
 } from "./components/SavedComparisons";
 import {
   ArrowRight,
@@ -23,7 +26,7 @@ import {
 } from "lucide-react";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
 import {
-  evaluateOffer,
+  compareProcurement,
   type SupplierOffer,
   type ProcurementRequest,
   type BaseUnit,
@@ -31,7 +34,10 @@ import {
 import { money, numberLabel, parseCents, parseDecimal } from "./numbers";
 
 import type { ComparisonSource as Source, PurchaseSeed } from "./domain/market";
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+};
 const initialSources = (): Record<string, Source> =>
   Object.fromEntries(
     riceOffers.map((offer) => [
@@ -45,13 +51,16 @@ const initialSources = (): Record<string, Source> =>
     ]),
   );
 const unitName = (unit: string) => (unit === "unit" ? "unid." : unit);
-const displayDate = (date: string) =>
-  new Intl.DateTimeFormat("es-PE", {
+const displayDate = (date: string) => {
+  const value = new Date(`${date}T12:00:00Z`);
+  if (!Number.isFinite(value.getTime())) return "Fecha pendiente";
+  return new Intl.DateTimeFormat("es-PE", {
     day: "numeric",
     month: "short",
     year: "numeric",
     timeZone: "UTC",
-  }).format(new Date(`${date}T12:00:00Z`));
+  }).format(value);
+};
 
 function OfferEditor({
   offer,
@@ -98,7 +107,7 @@ function OfferEditor({
       ingredient: text("ingredient"),
       specification: text("specification"),
       packageContent: parseDecimal(text("content")),
-      packageUnit: text("unit") as SupplierOffer["packageUnit"],
+      packageUnit: (text("unit") || null) as SupplierOffer["packageUnit"],
       priceCents: parseCents(text("price")),
       currency: text("currency") as SupplierOffer["currency"],
       minimumPackages: parseDecimal(text("minimum"), 0),
@@ -170,18 +179,18 @@ function OfferEditor({
           )}
           <label className="field">
             <span>Unidad del contenido</span>
-            <Select
+            <select
               aria-label="Unidad del contenido"
               name="unit"
-              defaultValue={offer?.packageUnit ?? request.unit}
-              options={[
-                { value: "kg", label: "Kilogramos (kg)" },
-                { value: "g", label: "Gramos (g)" },
-                { value: "L", label: "Litros (L)" },
-                { value: "ml", label: "Mililitros (ml)" },
-                { value: "unit", label: "Unidades" },
-              ]}
-            />
+              defaultValue={offer?.packageUnit ?? ""}
+            >
+              <option value="">Por confirmar</option>
+              <option value="kg">Kilogramos (kg)</option>
+              <option value="g">Gramos (g)</option>
+              <option value="L">Litros (L)</option>
+              <option value="ml">Mililitros (ml)</option>
+              <option value="unit">Unidades</option>
+            </select>
           </label>
           {field(
             "price",
@@ -191,20 +200,19 @@ function OfferEditor({
           )}
           <label className="field">
             <span>Moneda</span>
-            <Select
+            <select
               aria-label="Moneda"
               name="currency"
               defaultValue={offer?.currency ?? "PEN"}
-              options={[
-                { value: "PEN", label: "Soles (PEN)" },
-                { value: "USD", label: "Dólares (USD)" },
-              ]}
-            />
+            >
+              <option value="PEN">Soles (PEN)</option>
+              <option value="USD">Dólares (USD)</option>
+            </select>
           </label>
           {field(
             "minimum",
             "Mínimo de presentaciones",
-            offer ? offer.minimumPackages : 1,
+            offer?.minimumPackages ?? null,
             "Presentaciones completas, no kg",
           )}
           {field(
@@ -215,19 +223,17 @@ function OfferEditor({
           )}
           <label className="field full-width">
             <span>Impuestos del precio y la entrega</span>
-            <Select
+            <select
               aria-label="Impuestos del precio y la entrega"
               name="tax"
               defaultValue={offer?.taxStatus ?? "unknown"}
-              options={[
-                { value: "unknown", label: "Por confirmar" },
-                {
-                  value: "included",
-                  label: "Importes finales, impuestos incluidos",
-                },
-                { value: "excluded", label: "Faltan impuestos por sumar" },
-              ]}
-            />
+            >
+              <option value="unknown">Por confirmar</option>
+              <option value="included">
+                Importes finales, impuestos incluidos
+              </option>
+              <option value="excluded">Faltan impuestos por sumar</option>
+            </select>
           </label>
           <label className="checkbox full-width">
             <input
@@ -287,6 +293,8 @@ export default function Comparison({
   const [message, setMessage] = useState("");
   const [savedId, setSavedId] = useState<SavedComparison["id"] | null>(null);
   const [savedRevision, setSavedRevision] = useState(0);
+  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
+  const savedComparisons = useRef<SavedComparisonsHandle>(null);
   const [clientId, setClientId] = useState(() => crypto.randomUUID());
   const currentClientId = useRef(clientId);
   const [baselineRequest, setBaselineRequest] = useState<ProcurementRequest>(
@@ -302,27 +310,26 @@ export default function Comparison({
   };
   const validQuantity =
     Number.isFinite(effectiveRequest.quantity) && effectiveRequest.quantity > 0;
-  const evaluations = offers.map((offer) =>
-    evaluateOffer(effectiveRequest, offer),
-  );
-  const complete = evaluations
-    .map((result, i) => ({ result, offer: offers[i] }))
-    .filter(({ result }) => result.eligibleForComparison);
-  const sameCurrency =
-    complete.length === offers.length &&
-    new Set(offers.map((offer) => offer.currency)).size === 1;
-  const canCompare = validQuantity && complete.length >= 2 && sameCurrency;
-  const totals = complete.map(({ result }) => result.totalCents!);
-  const difference = canCompare
-    ? Math.max(...totals) - Math.min(...totals)
-    : null;
-  const lowest = canCompare
-    ? complete.filter(({ result }) => result.totalCents === Math.min(...totals))
-    : [];
+  const { evaluations, groups } = compareProcurement(effectiveRequest, offers);
+  const summaries = groups.map((group) => {
+    const members = evaluations.filter((result) =>
+      group.offerIds.includes(result.offerId),
+    );
+    return {
+      currency: group.currency,
+      difference:
+        Math.max(...members.map((result) => result.totalCents!)) -
+        group.lowestTotalCents,
+      lowest: offers.filter((offer) =>
+        group.lowestTotalOfferIds.includes(offer.id),
+      ),
+      count: members.length,
+    };
+  });
   const source = sourceId ? sources[sourceId] : null;
   const editingOffer = offers.find((offer) => offer.id === editing);
   const unit = unitName(request.unit);
-  const hasWebSources = offers.some(
+  const hasReviewedSources = offers.some(
     (offer) => sources[offer.id]?.marketSource?.simulated === false,
   );
   const fingerprint = JSON.stringify({ request: effectiveRequest, offers });
@@ -354,6 +361,30 @@ export default function Comparison({
     : !pendingQuantity && !validQuantity
       ? "Corrige la cantidad antes de guardar. Déjala vacía si todavía está pendiente."
       : null;
+  const comparisonDraft = {
+    clientId,
+    id: savedId,
+    expectedRevision: savedRevision,
+    request: {
+      ...request,
+      quantity: parseDecimal(quantity) ?? 0,
+    },
+    offers,
+    sources,
+    selectedOfferId: activeSelection,
+    persistable,
+    blockedReason,
+  };
+  const currentFingerprint = comparisonStateFingerprint({
+    request: comparisonDraft.request,
+    offers,
+    sources,
+    selectedOfferId: activeSelection,
+  });
+  const currentFingerprintRef = useRef(currentFingerprint);
+  currentFingerprintRef.current = currentFingerprint;
+  const comparisonCurrent =
+    savedId !== null && savedFingerprint === currentFingerprint;
 
   function chooseOffer(offerId: string) {
     const evaluation =
@@ -367,6 +398,9 @@ export default function Comparison({
   }
 
   function openSaved(comparison: SavedComparison) {
+    const nextClientId = crypto.randomUUID();
+    currentClientId.current = nextClientId;
+    setClientId(nextClientId);
     setRequest({ ...comparison.request });
     setQuantity(
       comparison.request.quantity > 0
@@ -378,6 +412,14 @@ export default function Comparison({
     setBaselineRequest({ ...comparison.request });
     setSavedId(comparison.id);
     setSavedRevision(comparison.revision);
+    setSavedFingerprint(
+      comparisonStateFingerprint({
+        request: comparison.request,
+        offers: comparison.offers,
+        sources: comparison.sources,
+        selectedOfferId: comparison.selectedOfferId,
+      }),
+    );
     setSelectedOfferId(comparison.selectedOfferId);
     setSelectionFingerprint(
       JSON.stringify({
@@ -396,6 +438,7 @@ export default function Comparison({
     setSources(seed?.sources ?? initialSources());
     setSavedId(null);
     setSavedRevision(0);
+    setSavedFingerprint(null);
     const nextClientId = crypto.randomUUID();
     currentClientId.current = nextClientId;
     setClientId(nextClientId);
@@ -404,6 +447,17 @@ export default function Comparison({
     setSelectionFingerprint(null);
     setModal(null);
     setMessage(seed ? "Selección inicial restaurada." : "Ejemplo restaurado.");
+  }
+  async function saveComparisonForAdvisor() {
+    const startedWith = currentFingerprintRef.current;
+    const result = await savedComparisons.current?.persist();
+    if (
+      !result ||
+      result.submitted.clientId !== currentClientId.current ||
+      currentFingerprintRef.current !== startedWith
+    )
+      return null;
+    return { id: result.saved.id, revision: result.saved.revision };
   }
   function saveOffer(offer: SupplierOffer) {
     setOffers((current) =>
@@ -467,20 +521,19 @@ export default function Comparison({
           <span>Cómo comparar</span>
         </button>
       </header>
-      <main id="comparison-main" className="comparison-main workspace-enter">
+      <main>
+        {onBack && (
+          <button className="button text-button" onClick={onBack}>
+            Volver al estudio de mercado
+          </button>
+        )}
         <div className="workspace-nav">
-          {onBack ? (
-            <button className="button text-button" onClick={onBack}>
-              Volver al estudio de mercado
-            </button>
-          ) : (
-            <span>
-              <Scale size={16} /> Comparación de insumos
-            </span>
-          )}
+          <span>
+            <Scale size={16} /> Comparación de insumos
+          </span>
           <span className="demo-badge">
-            {hasWebSources
-              ? "Fuentes web revisadas"
+            {hasReviewedSources
+              ? "Fuentes revisadas"
               : seed
                 ? "Desde tu estudio de ejemplo"
                 : "Ejemplo sintético"}
@@ -488,119 +541,142 @@ export default function Comparison({
         </div>
         <div className="page-title">
           <div>
-            <h1 tabIndex={-1}>Compara antes de comprar</h1>
+            <h1>Compara antes de comprar</h1>
             <p>
               Añade cantidad y confirma condiciones para calcular el pedido.
             </p>
           </div>
-          <button
-            className="button secondary"
-            onClick={() => setModal("reset")}
+        </div>
+        <div className="comparison-setup">
+          <section
+            className="request-panel"
+            aria-label="Tu necesidad de compra"
           >
-            <RotateCcw size={16} />
-            {seed ? "Restaurar selección" : "Restaurar ejemplo"}
-          </button>
-        </div>
-        <section className="request-panel" aria-label="Tu necesidad de compra">
-          <div className="request-title">
-            <Package size={21} />
-            <h2>¿Qué necesitas comprar?</h2>
-          </div>
-          <div className="request-fields">
-            <label className="field ingredient">
-              <span>Insumo</span>
-              <input
-                value={request.ingredient}
-                onChange={(e) =>
-                  setRequest({ ...request, ingredient: e.target.value })
-                }
-                maxLength={120}
-              />
-            </label>
-            <label className="field specification">
-              <span>Especificación / calidad</span>
-              <input
-                value={request.specification}
-                onChange={(e) =>
-                  setRequest({ ...request, specification: e.target.value })
-                }
-                maxLength={160}
-              />
-            </label>
-            <label className="field quantity">
-              <span>Cantidad necesaria</span>
-              <input
-                inputMode="decimal"
-                value={quantity}
-                aria-invalid={!validQuantity}
-                aria-describedby={
-                  !validQuantity ? "quantity-error" : "quantity-help"
-                }
-                onChange={(e) => setQuantity(e.target.value)}
-                maxLength={16}
-              />
-            </label>
-            <label className="field unit">
-              <span>Unidad</span>
-              <Select
-                aria-label="Unidad"
-                value={request.unit}
-                onValueChange={(unit) =>
-                  setRequest({ ...request, unit: unit as BaseUnit })
-                }
-                options={[
-                  { value: "kg", label: "kg" },
-                  { value: "L", label: "L" },
-                  { value: "unit", label: "unid." },
-                ]}
-              />
-            </label>
-          </div>
-          {!validQuantity ? (
-            <p className="field-error" id="quantity-error">
-              Escribe una cantidad mayor que cero, con hasta 3 decimales y sin
-              separador de miles.
-            </p>
-          ) : (
-            <p className="field-hint" id="quantity-help">
-              Calculamos presentaciones completas para cubrir tu necesidad.
-              Puedes usar punto o coma decimal.
-            </p>
-          )}
-        </section>
+            <div className="request-title">
+              <Package size={21} />
+              <h2>¿Qué necesitas comprar?</h2>
+            </div>
+            <div className="request-fields">
+              <label className="field ingredient">
+                <span>Insumo</span>
+                <input
+                  value={request.ingredient}
+                  onChange={(e) =>
+                    setRequest({ ...request, ingredient: e.target.value })
+                  }
+                  maxLength={120}
+                />
+              </label>
+              <label className="field specification">
+                <span>Especificación / calidad</span>
+                <input
+                  value={request.specification}
+                  onChange={(e) =>
+                    setRequest({ ...request, specification: e.target.value })
+                  }
+                  maxLength={160}
+                />
+              </label>
+              <label className="field quantity">
+                <span>Cantidad necesaria</span>
+                <input
+                  inputMode="decimal"
+                  value={quantity}
+                  aria-invalid={!validQuantity}
+                  aria-describedby={
+                    !validQuantity ? "quantity-error" : "quantity-help"
+                  }
+                  onChange={(e) => setQuantity(e.target.value)}
+                  maxLength={16}
+                />
+              </label>
+              <label className="field unit">
+                <span>Unidad</span>
+                <select
+                  value={request.unit}
+                  onChange={(e) =>
+                    setRequest({ ...request, unit: e.target.value as BaseUnit })
+                  }
+                >
+                  <option value="kg">kg</option>
+                  <option value="L">L</option>
+                  <option value="unit">unid.</option>
+                </select>
+              </label>
+            </div>
+            {!validQuantity ? (
+              <p className="field-error" id="quantity-error">
+                Escribe una cantidad mayor que cero, con hasta 3 decimales y sin
+                separador de miles.
+              </p>
+            ) : (
+              <p className="field-hint" id="quantity-help">
+                Calculamos presentaciones completas para cubrir tu necesidad.
+                Puedes usar punto o coma decimal.
+              </p>
+            )}
+          </section>
 
-        <div className="comparison-library">
-          {persistenceEnabled ? (
-            <SavedComparisons
-              draft={{
-                clientId,
-                id: savedId,
-                expectedRevision: savedRevision,
-                request: { ...request, quantity: parseDecimal(quantity) ?? 0 },
-                offers,
-                sources,
-                selectedOfferId: activeSelection,
-                persistable,
-                blockedReason,
-              }}
-              onOpen={openSaved}
-              onSaved={(saved, submittedClientId) => {
-                // Update only persistence metadata: edits made while the request was
-                // in flight remain the visible draft.
-                if (submittedClientId !== currentClientId.current) return false;
-                setSavedId(saved.id);
-                setSavedRevision(saved.revision);
-                return true;
-              }}
-            />
-          ) : (
-            <p className="notice info">
-              El guardado de comparaciones no está configurado. Puedes usar el
-              ejemplo durante esta visita.
-            </p>
-          )}
+          <aside
+            className="comparison-save"
+            aria-label="Guardar y recuperar comparación"
+          >
+            {persistenceEnabled ? (
+              <SavedComparisons
+                ref={savedComparisons}
+                draft={comparisonDraft}
+                onOpen={openSaved}
+                onSaved={(saved, submittedClientId, submitted) => {
+                  // Update only persistence metadata: edits made while the request was
+                  // in flight remain the visible draft.
+                  if (submittedClientId !== currentClientId.current)
+                    return false;
+                  setSavedId(saved.id);
+                  setSavedRevision(saved.revision);
+                  setSavedFingerprint(
+                    comparisonStateFingerprint({
+                      request: submitted.request,
+                      offers: submitted.offers,
+                      sources: submitted.sources,
+                      selectedOfferId: submitted.selectedOfferId,
+                    }),
+                  );
+                  return true;
+                }}
+              />
+            ) : (
+              <p className="notice info">
+                El guardado de comparaciones no está configurado. Puedes usar el
+                ejemplo durante esta visita.
+              </p>
+            )}
+            <button
+              className="button text-button"
+              onClick={() => setModal("reset")}
+            >
+              <RotateCcw size={16} />
+              {seed ? "Restaurar selección" : "Restaurar ejemplo"}
+            </button>
+          </aside>
         </div>
-
+        {persistenceEnabled && (
+          <PurchasingAdvisor
+            key={clientId}
+            comparisonId={savedId}
+            revision={savedRevision}
+            request={effectiveRequest}
+            offers={offers}
+            comparisonFingerprint={currentFingerprint}
+            comparisonCurrent={comparisonCurrent}
+            canSaveComparison={persistable && validQuantity}
+            saveBlockedReason={
+              !validQuantity
+                ? "Indica una cantidad válida para analizar esta compra."
+                : blockedReason
+            }
+            onSaveComparison={saveComparisonForAdvisor}
+          />
+        )}
         <section
           id="comparison"
           tabIndex={-1}
@@ -614,8 +690,8 @@ export default function Comparison({
                 {offers.length === 1
                   ? "oferta para revisar"
                   : "ofertas para revisar"}{" "}
-                {hasWebSources
-                  ? "· Datos revisados de páginas públicas; condiciones por confirmar"
+                {hasReviewedSources
+                  ? "· Datos revisados con su fuente; condiciones por confirmar"
                   : "· Precios de ejemplo, no cotizaciones reales"}
               </p>
             </div>
@@ -651,23 +727,28 @@ export default function Comparison({
                 aria-live="polite"
                 aria-atomic="true"
               >
-                {canCompare ? (
+                {summaries.length > 0 ? (
                   <>
                     <span className="summary-icon">
                       <Scale size={22} />
                     </span>
-                    <div>
-                      <h3>
-                        {difference === 0
-                          ? "Las ofertas requieren el mismo desembolso"
-                          : `${lowest.map(({ offer }) => offer.supplier).join(" y ")} requiere ${money(difference, offers[0].currency)} menos${offers.length > 2 ? " que la oferta de mayor desembolso" : ""}`}
-                      </h3>
-                      <p>
-                        Para {numberLabel(effectiveRequest.quantity)} {unit}.
-                        Incluye entrega e importes finales; revisa también
-                        cuánto recibirías.
-                      </p>
-                    </div>
+                    {summaries.map(
+                      ({ currency, difference, lowest, count }) => (
+                        <div key={currency}>
+                          <h3>
+                            {difference === 0
+                              ? "Las ofertas requieren el mismo desembolso"
+                              : `${lowest.map((offer) => offer.supplier).join(" y ")} requiere ${money(difference, currency)} menos${count > 2 ? " que la oferta de mayor desembolso" : ""}`}
+                          </h3>
+                          <p>
+                            Para {numberLabel(effectiveRequest.quantity)} {unit}
+                            . Incluye entrega e importes finales; revisa también
+                            cuánto recibirías. Comparación de {count} ofertas
+                            completas en {currency}.
+                          </p>
+                        </div>
+                      ),
+                    )}
                   </>
                 ) : (
                   <>
@@ -715,7 +796,7 @@ export default function Comparison({
                   const sourceInfo = sources[offer.id];
                   return (
                     <article
-                      className={`offer${activeSelection === offer.id ? " is-chosen" : ""}`}
+                      className="offer"
                       key={offer.id}
                       aria-label={`Oferta de ${offer.supplier}`}
                     >
@@ -961,7 +1042,7 @@ export default function Comparison({
         )}
         <footer>
           <span>
-            {hasWebSources
+            {hasReviewedSources
               ? "Guarda la comparación para conservar estas correcciones y condiciones."
               : "Datos de prueba · Guarda la comparación para recuperarla."}
           </span>
@@ -1103,14 +1184,14 @@ export default function Comparison({
             >
               {source.documentReview
                 ? "Abrir documento original"
-                : "Abrir fuente web original"}
+                : "Abrir fuente original"}
             </a>
           )}
           <p className="muted">
             {source.edited
               ? "La comparación usa tus cambios manuales. Aquí conservamos los valores de entrada."
               : source.marketSource?.simulated === false
-                ? "Valores revisados desde una página pública; no equivalen a una cotización confirmada por el proveedor."
+                ? "Valores revisados desde la fuente indicada; confirma las condiciones pendientes antes de decidir."
                 : "Registro de datos sintéticos para probar la comparación. No es un documento de un proveedor real."}
           </p>
         </Dialog>
