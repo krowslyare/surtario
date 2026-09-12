@@ -57,9 +57,9 @@ export default function MarketStudy({
   const [study, setStudy] = useState<{
     id: Id<"studies"> | null;
     revision: number;
-    savedResultIds: string[];
+    savedSelectedIds: string[];
     clientId: string;
-  }>(() => ({ id: null, revision: 0, savedResultIds: [], clientId: crypto.randomUUID() }));
+  }>(() => ({ id: null, revision: 0, savedSelectedIds: [], clientId: crypto.randomUUID() }));
   const [webStatus, setWebStatus] = useState<ResearchStatus | undefined>();
   const [webRequest, setWebRequest] = useState<WebSearchRequest | null>(null);
   const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
@@ -157,7 +157,7 @@ export default function MarketStudy({
     setSelectedIds([]);
     setWebSelections([]);
     setProspects([]);
-    setStudy({ id: null, revision: 0, savedResultIds: [], clientId: crypto.randomUUID() });
+    setStudy({ id: null, revision: 0, savedSelectedIds: [], clientId: crypto.randomUUID() });
     setTerm(ingredient);
     setSearch({ term: ingredient, region });
     setResultsView("example");
@@ -228,7 +228,7 @@ export default function MarketStudy({
     setStudy({
       id: saved.id,
       revision: saved.revision,
-      savedResultIds: saved.results.map(result => result.id),
+      savedSelectedIds: saved.selectedIds,
       clientId: crypto.randomUUID(),
     });
     setShowStudy(true);
@@ -686,7 +686,7 @@ export default function MarketStudy({
                   onSaved={(saved) =>
                     setStudy((current) =>
                       current.clientId === study.clientId
-                        ? { ...current, id: saved.id, revision: saved.revision, savedResultIds: saved.results.map(result => result.id) }
+                        ? { ...current, id: saved.id, revision: saved.revision, savedSelectedIds: saved.selectedIds }
                         : current,
                     )
                   }
@@ -736,7 +736,7 @@ export default function MarketStudy({
         {persistenceEnabled &&
           study.id &&
           catalog
-            .filter((item) => item.kind === "distributor" && study.savedResultIds.includes(item.id))
+            .filter((item) => item.kind === "distributor" && study.savedSelectedIds.includes(item.id))
             .map((item) => (
               <div key={`${study.id}:${item.id}`}>
                 <h3>Ask {item.supplier}</h3>

@@ -343,11 +343,14 @@ export const create = mutation({
     if (args.prospectId && (!prospect || prospect.ownerHash !== hash))
       throw new ConvexError("Candidate unavailable in this session.");
     const distributor = study?.results.find(
-      (result) => result.id === args.resultId && result.kind === "distributor",
+      (result) =>
+        result.id === args.resultId &&
+        result.kind === "distributor" &&
+        study.selectedIds.includes(result.id),
     );
     if (study && !distributor)
       throw new ConvexError(
-        "The distributor must belong to the saved study.",
+        "The distributor must be selected in the saved study.",
       );
     const existing = await ctx.db
       .query("quotationRequests")

@@ -62,6 +62,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   await expect(
     page.getByText("Study saved with 1 option", { exact: false }),
   ).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Ask Distribuidor C/ })).toHaveCount(0);
   await page.reload();
   await page.getByRole("button", { name: "Saved research", exact: true }).click();
   const library = page.getByRole("region", {
@@ -87,6 +88,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   const candidate = page.getByRole("article", {
     name: "Distributor in study: Distribuidor candidato E2E",
   });
+  await expect(page.getByRole("heading", { name: /Ask Distribuidor C/ })).toHaveCount(0);
   await expect(candidate).toContainText("Request pricing");
   await candidate.getByRole("button", { name: "Prepare test request" }).click();
   const mail = page.getByRole("dialog");

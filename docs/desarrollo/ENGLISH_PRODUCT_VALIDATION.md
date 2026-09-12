@@ -16,9 +16,11 @@ A subsequent real Luna rehearsal exposed an additional integration error: review
 
 The final browser pass also corrected keyboard submission for live search and restricted supplier inquiries to distributor IDs actually saved in the current study. Saved research can be opened without another paid search. The About Surtario page is English; original downloadable brand artwork retains its Spanish copy.
 
+A final independent Luna max review found that the saved snapshot includes unselected catalog entries. The UI now derives inquiry candidates from saved `selectedIds`, and the server rejects draft requests for an unselected distributor even when it exists in that snapshot. Two US/Peru backend regressions failed before the correction and passed afterward. Browser checks cover a priced-only US study after reload and a web-only study without an unrelated sample distributor.
+
 ## Verification
 
-All 197 unit/backend/configuration tests and all 63 browser journeys passed locally. Browser coverage includes 320–1920 px layouts, keyboard operation, reduced motion, preserved form drafts, US study recovery, Peru regressions, hypothetical freight versus confirmed terms, quotation/reply boundaries, and saved web-advisor evidence. Frontend/backend TypeScript checks and the hosting build/asset checks passed. Browser suites use one worker because snapshot imports share a local backend. A main-bundle size warning remains; physical-device performance and a full accessibility audit were not measured.
+The initial full pass completed 197 unit/backend/configuration tests and all 63 browser journeys. After the Luna review correction, 199 unit/backend/configuration tests and three targeted browser regressions passed locally. Browser coverage includes 320–1920 px layouts, keyboard operation, reduced motion, preserved form drafts, US study recovery, Peru regressions, hypothetical freight versus confirmed terms, quotation/reply boundaries, and saved web-advisor evidence. Frontend/backend TypeScript checks and the hosting build/asset checks passed. Browser suites use one worker because snapshot imports share a local backend. A main-bundle size warning remains; physical-device performance and a full accessibility audit were not measured.
 
 ## Local Luna rehearsal
 
