@@ -49,7 +49,7 @@ export function SaveWebProspect({
           </a>
           <p>
             Confirm that the page is relevant to this ingredient. It does not
-            confirma stock, reparto ni price.
+            confirm inventory, delivery, or price.
           </p>
           <label className="field">
             Potential distributor name
@@ -160,7 +160,7 @@ export function WebProspectLibrary({
           </p>
           <p>
             Contacto anotado:{" "}
-            {item.contact ?? "Pending; revisa la page de source"}
+            {item.contact ?? "Pending; review the source page"}
           </p>
           <a href={item.sourceUrl} target="_blank" rel="noreferrer">
             {item.sourceTitle}
@@ -182,7 +182,7 @@ export function WebProspectLibrary({
             >
               {selectedIds?.includes(item.id)
                 ? "In my study"
-                : "Add a mi study"}
+                : "Add to my study"}
             </button>
           ) : (
             <QuotationMail

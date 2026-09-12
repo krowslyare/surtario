@@ -12,7 +12,7 @@ test("CSV revisable conserva fila y origen sin subir documentos", async ({
   await page
     .getByRole("button", { name: "Lista de insumos", exact: true })
     .click();
-  await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
+  await page.getByRole("button", { name: "Add list or file" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Archivo de insumos").setInputFiles({
     name: "lista.csv",
@@ -21,11 +21,11 @@ test("CSV revisable conserva fila y origen sin subir documentos", async ({
   });
   await dialog.getByLabel("Columna de insumos").click();
   await dialog.getByRole("option", { name: /^Columna 1/ }).click();
-  await dialog.getByRole("button", { name: "Revisar insumos" }).click();
-  await dialog.getByRole("button", { name: "Confirmar 3 insumos" }).click();
+  await dialog.getByRole("button", { name: "Review ingredients" }).click();
+  await dialog.getByRole("button", { name: "Confirm 3 ingredients" }).click();
   await expect(dialog.getByRole("alert")).toContainText("Completa o elimina");
-  await dialog.getByRole("button", { name: "Eliminar insumo 2" }).click();
-  await dialog.getByRole("button", { name: "Confirmar 2 insumos" }).click();
+  await dialog.getByRole("button", { name: "Remove ingredient 2" }).click();
+  await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
   await page.getByRole("button", { name: "Arroz", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Arroz en Lima" }),
@@ -44,21 +44,23 @@ test("XLSX elige segunda hoja y columna, conserva valor almacenado", async ({
   await page
     .getByRole("button", { name: "Lista de insumos", exact: true })
     .click();
-  await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
+  await page.getByRole("button", { name: "Add list or file" }).click();
   const dialog = page.getByRole("dialog");
   await dialog
     .getByLabel("Archivo de insumos")
     .setInputFiles(path.resolve("tests/fixtures/insumos-ejemplo.xlsx"));
   await dialog.getByLabel("Hoja", { exact: true }).click();
-  await dialog.getByRole("option", { name: "Ingredients", exact: true }).click();
+  await dialog
+    .getByRole("option", { name: "Ingredients", exact: true })
+    .click();
   await dialog.getByLabel("Columna de insumos").click();
   await dialog.getByRole("option", { name: /^Columna 2/ }).click();
   await expect(dialog).toContainText("Las fórmulas no se recalculan");
-  await dialog.getByRole("button", { name: "Revisar insumos" }).click();
+  await dialog.getByRole("button", { name: "Review ingredients" }).click();
   await expect(
     dialog.getByRole("textbox", { name: "Ingredient 1", exact: false }),
   ).toHaveValue("Arroz");
-  await dialog.getByRole("button", { name: "Confirmar 2 insumos" }).click();
+  await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
   await page.getByRole("button", { name: "View source de la lista" }).click();
   await expect(dialog).toContainText("Fila 2: 0012 | Arroz | 80");
   await expect(dialog).toContainText("Ingredients");
@@ -73,7 +75,7 @@ test("foto sin OCR permite transcripción y cancelar reemplazo conserva lista", 
   await page
     .getByRole("button", { name: "Lista de insumos", exact: true })
     .click();
-  await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
+  await page.getByRole("button", { name: "Add list or file" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Archivo de insumos").setInputFiles({
     name: "ejemplo.png",
@@ -84,16 +86,14 @@ test("foto sin OCR permite transcripción y cancelar reemplazo conserva lista", 
     ),
   });
   await expect(dialog).toContainText("Extracción automática pendiente");
-  await dialog.getByLabel("Transcribe los insumos").fill("Arroz\nCebolla");
-  await dialog.getByRole("button", { name: "Revisar insumos" }).click();
+  await dialog.getByLabel("Transcribe ingredients").fill("Arroz\nCebolla");
+  await dialog.getByRole("button", { name: "Review ingredients" }).click();
   await dialog
     .getByRole("textbox", { name: "Ingredient 2", exact: false })
     .fill("Cebolla roja");
-  await dialog.getByRole("button", { name: "Confirmar 2 insumos" }).click();
-  await page
-    .getByRole("button", { name: "Reemplazar lista de insumos" })
-    .click();
-  await dialog.getByLabel("Escribe o pega insumos").fill("Aceite");
+  await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
+  await page.getByRole("button", { name: "Replace ingredient list" }).click();
+  await dialog.getByLabel("Type or paste ingredients").fill("Aceite");
   await page.keyboard.press("Escape");
   await expect(
     page.getByRole("button", { name: "Cebolla roja", exact: true }),
@@ -120,7 +120,7 @@ test("manual sin archivo y archivo inválido permiten recuperación", async ({
   await page
     .getByRole("button", { name: "Lista de insumos", exact: true })
     .click();
-  await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
+  await page.getByRole("button", { name: "Add list or file" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Archivo de insumos").setInputFiles({
     name: "roto.xlsx",
@@ -129,9 +129,9 @@ test("manual sin archivo y archivo inválido permiten recuperación", async ({
     buffer: Buffer.from("not a zip"),
   });
   await expect(dialog.getByRole("alert")).toContainText("No se pudo");
-  await dialog.getByLabel("Escribe o pega insumos").fill("Arroz\nArroz");
-  await dialog.getByRole("button", { name: "Revisar insumos" }).click();
-  await dialog.getByRole("button", { name: "Confirmar 2 insumos" }).click();
+  await dialog.getByLabel("Type or paste ingredients").fill("Arroz\nArroz");
+  await dialog.getByRole("button", { name: "Review ingredients" }).click();
+  await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
   await expect(
     page.getByRole("button", { name: "Arroz", exact: true }),
   ).toHaveCount(2);
@@ -144,11 +144,11 @@ test("otro insumo exige separar el estudio y no arrastra su selección", async (
   await page
     .getByRole("button", { name: "Lista de insumos", exact: true })
     .click();
-  await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
+  await page.getByRole("button", { name: "Add list or file" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Escribe o pega insumos").fill("Arroz\nAceite");
-  await dialog.getByRole("button", { name: "Revisar insumos" }).click();
-  await dialog.getByRole("button", { name: "Confirmar 2 insumos" }).click();
+  await dialog.getByLabel("Type or paste ingredients").fill("Arroz\nAceite");
+  await dialog.getByRole("button", { name: "Review ingredients" }).click();
+  await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
   await page.getByRole("button", { name: "Arroz", exact: true }).click();
   await page
     .getByRole("article")

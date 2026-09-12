@@ -38,7 +38,7 @@ export default function IngredientIntake({
       <div className="intake-actions">
         <button className="button secondary" onClick={() => setOpen(true)}>
           <FilePlus2 size={17} />
-          {batch ? "Reemplazar lista de insumos" : "Añadir lista o archivo"}
+          {batch ? "Reemplazar ingredient list" : "Add list or file"}
         </button>
         <span>Excel, CSV, foto/PDF o escritura manual</span>
       </div>
@@ -50,12 +50,12 @@ export default function IngredientIntake({
               className="button text-button"
               onClick={() => setViewSource(true)}
             >
-              View source de la lista
+              View list source
             </button>
           </div>
           <p>
-            Investiga un insumo a la vez en la zona elegida. Guardar la lista
-            conserva solo sus nombres revisados; el archivo permanece local.
+            Research one ingredient at a time in the selected area. Saving the
+            list keeps only reviewed names; the file remains local.
           </p>
           <div className="ingredient-queue">
             {batch.rows.map((row) => (
@@ -107,21 +107,17 @@ export default function IngredientIntake({
         />
       )}
       {viewSource && batch && (
-        <Dialog
-          title="Origen de la lista"
-          wide
-          onClose={() => setViewSource(false)}
-        >
+        <Dialog title="List source" wide onClose={() => setViewSource(false)}>
           <p>
             {batch.sourceLabel ?? batch.file?.name ?? "Manual entry"}
             {batch.sheet ? ` · ${batch.sheet}` : ""}
             {batch.column !== null
-              ? ` · columna ${batch.column + 1} · ${batch.hasHeader ? "con encabezado" : "sin encabezado"}`
+              ? ` · column ${batch.column + 1} · ${batch.hasHeader ? "with header" : "without header"}`
               : ""}
           </p>
           <p className="field-hint">
             {batch.method === "transcription"
-              ? "Transcripción manual; extracción automática pendiente."
+              ? "Manual transcript; automatic extraction pending."
               : "Datos revisados por ti. No registran compras ni ofertas."}
           </p>
           {batch.file && <LocalSource file={batch.file} />}
@@ -151,7 +147,7 @@ function LocalSource({ file }: { file: File }) {
   return (
     <div className="local-source">
       {image && url && (
-        <img src={url} alt="Documento original para transcripción" />
+        <img src={url} alt="Original document for transcription" />
       )}
       <a href={url || undefined} download={file.name}>
         Descargar original local
@@ -206,7 +202,7 @@ function IntakeDialog({
         setError(
           cause instanceof Error
             ? cause.message
-            : "No se pudo leer el archivo.",
+            : "The file could not be read.",
         );
     } finally {
       if (!current.signal.aborted) setBusy(false);
@@ -217,11 +213,12 @@ function IntakeDialog({
       const next = sheet
         ? rowsFromColumn(sheet, column, header)
         : manualRows(text);
-      if (!next.length) throw new Error("No hay insumos en esta selección.");
+      if (!next.length)
+        throw new Error("There are no ingredients in this selection.");
       setRows(next);
       setError("");
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Revisa los datos.");
+      setError(cause instanceof Error ? cause.message : "Review the data.");
     }
   }
   function confirm() {
@@ -239,18 +236,20 @@ function IntakeDialog({
         })),
       });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Revisa los insumos.");
+      setError(
+        cause instanceof Error ? cause.message : "Review the ingredients.",
+      );
     }
   }
   return (
-    <Dialog title="Añadir insumos" wide onClose={onClose}>
+    <Dialog title="Add ingredients" wide onClose={onClose}>
       <p className="field-hint">
-        Trabaja con archivos de ejemplo. Se leen en este navegador y no se suben
-        al servidor. Se pierden al recargar.
+        Use sample files. They are read in this browser and are not uploaded al
+        servidor. Se pierden al recargar.
       </p>
       {replacing && (
         <p className="notice info">
-          La lista actual se reemplazará solo cuando confirmes la nueva.
+          The current list will be replaced only after you confirm the new one.
         </p>
       )}
       {!rows ? (
@@ -258,7 +257,7 @@ function IntakeDialog({
           <label className="field intake-file">
             <span>Archivo de insumos (opcional)</span>
             <span className="intake-file-button" aria-hidden="true">
-              Elegir archivo
+              Choose file
             </span>
             <input
               aria-label="Archivo de insumos (opcional)"
@@ -274,7 +273,7 @@ function IntakeDialog({
             Hasta 3 MB; XLSX/CSV de hasta 100 insumos, 20 columnas y 10 hojas.
             CSV en UTF-8. XLS antiguo no admitido.
           </p>
-          {busy && <p role="status">Leyendo archivo en tu navegador…</p>}
+          {busy && <p role="status">Reading file in your browser…</p>}
           {file && (
             <div className="intake-file-summary">
               <strong>{file.name}</strong>
@@ -288,7 +287,7 @@ function IntakeDialog({
                   setError("");
                 }}
               >
-                Quitar archivo
+                Remove file
               </button>
             </div>
           )}
@@ -317,7 +316,7 @@ function IntakeDialog({
                     value={String(column)}
                     onValueChange={(value) => setColumn(Number(value))}
                     options={[
-                      { value: "-1", label: "Elige una columna" },
+                      { value: "-1", label: "Choose a column" },
                       ...Array.from(
                         {
                           length: Math.max(
@@ -344,12 +343,12 @@ function IntakeDialog({
                   checked={header}
                   onChange={(event) => setHeader(event.target.checked)}
                 />
-                La primera fila es un encabezado
+                The first row is a header
               </label>
               <div
                 className="intake-table"
                 tabIndex={0}
-                aria-label="Vista previa del archivo"
+                aria-label="File preview"
               >
                 <table>
                   <caption>
@@ -369,9 +368,8 @@ function IntakeDialog({
                 </table>
               </div>
               <p className="field-hint">
-                Se importa la hoja elegida. Otras columnas se conservan como
-                contexto de origen. Las fórmulas no se recalculan: revisa sus
-                valores.
+                The selected sheet is imported. Other columns are kept as source
+                context. Formulas are not recalculated; review their valores.
               </p>
             </>
           ) : (
@@ -380,9 +378,8 @@ function IntakeDialog({
                 {document && (
                   <>
                     <p className="notice info">
-                      Extracción automática pendiente de conectar OpenAI. Puedes
-                      transcribir los insumos y conservar este archivo como
-                      origen.
+                      Automatic extraction requires OpenAI. You can transcribe
+                      the ingredients and keep this file as the source.
                     </p>
                     <LocalSource file={file!} />
                   </>
@@ -390,8 +387,8 @@ function IntakeDialog({
                 <label className="field intake-manual">
                   <span>
                     {document
-                      ? "Transcribe los insumos, uno por línea"
-                      : "Escribe o pega insumos, uno por línea"}
+                      ? "Transcribe ingredients, one per line"
+                      : "Type or paste ingredients, one per line"}
                   </span>
                   <textarea
                     value={text}
@@ -421,15 +418,15 @@ function IntakeDialog({
       ) : (
         <>
           <p className="intake-review-note">
-            Corrige los nombres o elimina filas. No necesitas precio, cantidad
-            ni receta para investigar.
+            Correct the names or remove rows. You do not need price or quantity
+            or a recipe to research.
           </p>
           <div className="intake-review">
             {rows.map((row, index) => (
               <div className="intake-review-row" key={row.id}>
                 <label className="field">
                   <span>
-                    Ingredient {index + 1} · fila {row.line}
+                    Ingredient {index + 1} · row {row.line}
                   </span>
                   <input
                     maxLength={120}

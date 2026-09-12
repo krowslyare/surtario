@@ -12,25 +12,17 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await page.goto("/");
   await page.getByRole("button", { name: "Explore rice example" }).click();
   const cards = page.getByRole("article");
-  await cards
-    .nth(0)
-    .getByRole("button", { name: "Add to study" })
-    .click();
-  await cards
-    .nth(2)
-    .getByRole("button", { name: "Add to study" })
-    .click();
+  await cards.nth(0).getByRole("button", { name: "Add to study" }).click();
+  await cards.nth(2).getByRole("button", { name: "Add to study" }).click();
   await expect(
     page.getByRole("button", { name: "Save study", exact: true }),
   ).toBeEnabled();
-  await page
-    .getByRole("button", { name: "Save study", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Save study", exact: true }).click();
   await expect(
     page
       .getByRole("region", { name: "Saved studies", exact: true })
       .getByRole("status"),
-  ).toContainText("Estudio guardado con 2 options");
+  ).toContainText("Study saved with 2 options");
   await cards.nth(0).getByRole("button", { name: "In my study" }).click();
   await expect(
     page
@@ -39,9 +31,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   ).toHaveText("Cambios sin guardar");
   await page.reload();
   await page.getByRole("button", { name: "Guardados (1)" }).click();
-  await page
-    .getByRole("button", { name: "Open study", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "My market study" }),
   ).toBeVisible();
@@ -64,23 +54,19 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
     .nth(1)
     .getByRole("button", { name: "In my study" })
     .click();
-  await page
-    .getByRole("button", { name: "Save study changes" })
-    .click();
+  await page.getByRole("button", { name: "Save study changes" }).click();
   await expect(
     page
       .getByRole("region", { name: "Saved studies", exact: true })
       .getByRole("status"),
-  ).toContainText("Estudio guardado con 1 option");
+  ).toContainText("Study saved with 1 option");
   await otherTab.getByRole("button", { name: "Guardados (1)" }).click();
   await expect(otherTab.getByText(/Revisión 2/)).toBeVisible();
   await otherTab.keyboard.press("Escape");
   await expect(otherTab.getByRole("dialog")).toHaveCount(0);
   // A reactive library update must not silently replace an open draft.
   await expect(otherTab.getByText("2 options in your study")).toBeVisible();
-  await otherTab
-    .getByRole("button", { name: "Save study changes" })
-    .click();
+  await otherTab.getByRole("button", { name: "Save study changes" }).click();
   await expect(otherTab.getByRole("alert")).toContainText(
     "cambió en otra vista",
   );
@@ -170,9 +156,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
   page.on("pageerror", (error) => errors.push(error.message));
   await test.step("Explorar sin documentos y revisar evidencia", async () => {
     await page.goto("/");
-    await page
-      .getByRole("button", { name: "Explore rice example" })
-      .click();
+    await page.getByRole("button", { name: "Explore rice example" }).click();
     await expect(page.getByLabel("Required quantity")).toHaveCount(0);
     await page
       .getByRole("button", { name: "View example source", exact: false })
@@ -188,19 +172,15 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     }
   });
   await test.step("Guardar y recuperar el estudio en Convex local", async () => {
-    await page
-      .getByRole("button", { name: "Save study", exact: true })
-      .click();
+    await page.getByRole("button", { name: "Save study", exact: true }).click();
     await expect(
       page
         .getByRole("region", { name: "Saved studies", exact: true })
         .getByRole("status"),
-    ).toContainText("Estudio guardado con 3 options");
+    ).toContainText("Study saved with 3 options");
     await page.reload();
     await page.getByRole("button", { name: "Guardados (1)" }).click();
-    await page
-      .getByRole("button", { name: "Open study", exact: true })
-      .click();
+    await page.getByRole("button", { name: "Open study", exact: true }).click();
     await expect(page.getByRole("article")).toHaveCount(3);
   });
   await test.step("Consultar un distribuidor sin precio, sin simular envío", async () => {
@@ -243,9 +223,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       ["Distribuidor B · ejemplo", "0"],
     ]) {
       await page.getByRole("button", { name: `Editar ${supplier}` }).click();
-      await page
-        .getByLabel("Minimum packs", { exact: true })
-        .fill("1");
+      await page.getByLabel("Minimum packs", { exact: true }).fill("1");
       await page
         .getByLabel("Delivery per order", { exact: true })
         .fill(freight);
@@ -277,9 +255,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     await page.getByLabel("Required quantity").fill("20");
     await expect(page.getByTestId("total-0")).toHaveText("S/ 175.00");
     await expect(page.getByTestId("total-1")).toHaveText("S/ 100.00");
-    await page
-      .getByRole("button", { name: "Back to market study" })
-      .click();
+    await page.getByRole("button", { name: "Back to market study" }).click();
     await expect(page.getByText("3 options in your study")).toBeVisible();
     expect(errors).toEqual([]);
   });

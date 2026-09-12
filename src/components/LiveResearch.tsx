@@ -657,7 +657,7 @@ export function ResearchWorkspace({
             opcional.
           </p>
           <button className="button primary" onClick={onOpenStudy}>
-            Ver mi study
+            View my study
           </button>
         </div>
       )}

@@ -37,9 +37,7 @@ export default function DocumentExtraction({
       <Connected token={token} onPrepare={onPrepare} />
     </Boundary>
   ) : (
-    <p>
-      La lectura de documentos necesita almacenamiento de sesión disponible.
-    </p>
+    <p>Document reading requires session storage.</p>
   );
 }
 function Connected({
@@ -71,7 +69,7 @@ function Connected({
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
-          : "No se confirmó el resultado. Repite la consulta para recuperar la misma solicitud; no se repetirá la lectura.",
+          : "The result was not confirmed. Repeat the request to recover the same operation; the document will not be read again.",
       );
     } finally {
       setBusy(false);
@@ -86,48 +84,48 @@ function Connected({
   }
   return (
     <section className="ingredient-intake" aria-label="Lectura de foto y PDF">
-      <h2>Lee una cotización desde foto o PDF</h2>
+      <h2>Read a quote from a photo or PDF</h2>
       <p>
-        Prueba con documentos sintéticos. Revisa los datos contra el archivo
-        antes de compararlos.
+        Use synthetic documents. Check the extracted data against the original
+        file before comparing them.
       </p>
       <label className="field">
-        Archivo de ejemplo
+        Sample file
         <Select
-          aria-label="Archivo de ejemplo"
+          aria-label="Sample file"
           value={kind}
           disabled={busy}
           onValueChange={(value) => setKind(value as Run["kind"])}
           options={[
-            { value: "image", label: "Imagen de cotización · PNG" },
-            { value: "pdf", label: "Cotización PDF · 1 página" },
+            { value: "image", label: "Quote image · PNG" },
+            { value: "pdf", label: "Quote PDF · 1 page" },
           ]}
         />
       </label>
       <div className="intake-actions">
         <button className="button secondary" onClick={() => setPreview(kind)}>
-          Ver archivo de ejemplo
+          View sample file
         </button>
         <a className="button text-button" href={fileUrl(kind)} download>
-          Descargar ejemplo
+          Download sample
         </a>
         <button
           className="button primary"
           disabled={!enabled || busy}
           onClick={read}
         >
-          {busy ? "Leyendo documento…" : "Leer con OpenAI"}
+          {busy ? "Reading document…" : "Read with OpenAI"}
         </button>
       </div>
       {enabled === false && (
         <p className="notice info">
-          Lectura automática sin configurar. Puedes revisar el ejemplo y usar la
-          transcripción manual desde «Añadir lista o archivo».
+          Automatic reading is not configured. You can review the sample and use
+          manual transcription from “Add list or file.”
         </p>
       )}
       <p className="field-hint">
-        Los archivos propios permanecen en tu pestaña. La demo solo envía estos
-        ejemplos al modelo. Una extracción no registra compras.
+        Your own files remain in this tab. The demo sends only these samples to
+        the model. Extraction does not record a purchase.
       </p>
       {error && <p role="alert">{error}</p>}
       {visible.map((run) => (
@@ -144,8 +142,8 @@ function Connected({
           </button>
           {run.status === "running" && (
             <p role="status">
-              Lectura en curso o pendiente de confirmación. No se reintenta
-              automáticamente.
+              Reading is in progress or awaiting confirmation. It will not retry
+              automatically.
             </p>
           )}
           {run.error && <p role="alert">{run.error}</p>}
@@ -154,14 +152,14 @@ function Connected({
       ))}
       {preview && (
         <Dialog
-          title="Archivo original de ejemplo"
+          title="Original sample file"
           wide
           onClose={() => setPreview(null)}
         >
           {preview === "image" ? (
             <img
               src={fileUrl(preview)}
-              alt="Cotización sintética: arroz blanco extra, saco de 18 kg, PEN 80"
+              alt="Synthetic quote: extra white rice, 18 kg bag, PEN 80"
               style={{ width: "100%" }}
             />
           ) : (
@@ -172,7 +170,7 @@ function Connected({
               height="460"
             >
               <a href={fileUrl(preview)} target="_blank" rel="noreferrer">
-                Abrir PDF de ejemplo
+                Open sample PDF
               </a>
             </object>
           )}
@@ -190,8 +188,7 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   render() {
     return this.state.failed ? (
       <p role="alert">
-        La lectura de documentos no está disponible. Puedes seguir con la
-        entrada manual.
+        Document reading is unavailable. You can continue with entrada manual.
       </p>
     ) : (
       this.props.children
@@ -213,41 +210,41 @@ export function DocumentReview({
           Tipo propuesto:{" "}
           {
             {
-              quotation: "cotización",
-              purchase: "compra realizada",
-              list: "lista de insumos",
-              unknown: "sin identificar",
+              quotation: "quote",
+              purchase: "completed purchase",
+              list: "ingredient list",
+              unknown: "unidentified",
             }[run.result.documentType]
           }
           .
         </p>
-        <Disclosure title="Ver transcripción propuesta">
+        <Disclosure title="View proposed transcript">
           <pre className="quotation-text">{run.result.transcript}</pre>
         </Disclosure>
         <p className="field-hint">
-          Las citas se contrastan con la transcripción del modelo. Comprueba
-          también el archivo original, especialmente cifras y unidades.
+          Citations are checked against the model transcript. Also check the
+          original file, especially numbers and units.
         </p>
         {run.result.documentType === "quotation" ? (
           <ExtractionReview
             source={{
               id: run.id,
-              title: `Transcripción automática · cotización sintética · ${run.kind}`,
+              title: `Automatic transcript · synthetic quote · ${run.kind}`,
               text: run.result.transcript,
               observedAt: new Date(run.createdAt).toISOString().slice(0, 10),
               simulated: true,
               url: fileUrl(run.kind),
             }}
-            sourceTextLabel="Transcripción propuesta · contrastar con archivo"
+            sourceTextLabel="Proposed transcript · check against file"
             originalPreview={
               <img
                 src="/examples/cotizacion-demo.png"
-                alt="Original sintético: saco de arroz de 18 kg, PEN 80"
+                alt="Synthetic original: 18 kg bag of rice, PEN 80"
                 style={{ width: "100%" }}
               />
             }
             proposal={run.result.offer}
-            triggerLabel="Revisar datos leídos"
+            triggerLabel="Review extracted data"
             onPrepare={(seed) => {
               seed.sources[run.id].documentReview = {
                 runId: run.id,
@@ -259,8 +256,8 @@ export function DocumentReview({
           />
         ) : (
           <p>
-            Este resultado no se convierte en una oferta. Usa la entrada manual
-            para investigar sus insumos.
+            This result does not become an offer. Use manual entry to research
+            ingredients.
           </p>
         )}
       </>

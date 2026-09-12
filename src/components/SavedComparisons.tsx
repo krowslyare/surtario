@@ -108,7 +108,7 @@ const SavedComparisons = forwardRef<
       <p className="notice info">
         {storageError
           ? "Your browser cannot keep this session. You can compare, but saving requires site storage."
-          : "Preparando la session de ejemplo…"}
+          : "Preparing the demo session…"}
       </p>
     );
   return (

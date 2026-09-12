@@ -50,7 +50,7 @@ const fieldCopy: Record<
 export default function ExtractionReview({
   source = extractionSource,
   proposal = extractionExample,
-  triggerLabel = "Review ejemplo de quote",
+  triggerLabel = "Review sample quote",
   onPrepare,
   confirmLabel = "Continue a comparison",
   confirmationNote = "Continuing prepares a comparison. It does not record a purchase or save the document.",

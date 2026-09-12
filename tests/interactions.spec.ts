@@ -66,7 +66,7 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
     exact: true,
   });
   const review = page.getByRole("button", {
-    name: "Revisar ejemplo de cotización",
+    name: "Review sample quote",
   });
   await expect(review).toHaveCount(0);
   await tools.click();
@@ -81,7 +81,7 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
   await unit.click();
   await dialog.getByRole("option", { name: "Pendiente", exact: true }).click();
   await expect(
-    dialog.getByRole("button", { name: "Continuar a comparación" }),
+    dialog.getByRole("button", { name: "Continue to comparison" }),
   ).toBeDisabled();
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);

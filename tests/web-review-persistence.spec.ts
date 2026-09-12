@@ -65,7 +65,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     page.getByRole("button", { name: "Mi estudio 1", exact: true }),
   ).toBeVisible();
   await page
-    .getByRole("button", { name: "Ver mi estudio", exact: true })
+    .getByRole("button", { name: "View my study", exact: true })
     .click();
   await expect(
     page.getByRole("article", {

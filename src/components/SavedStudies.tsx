@@ -24,7 +24,12 @@ export type StudyDraft = {
 };
 const SESSION_KEY = "procurement-demo-session-v1";
 
-function draftFingerprint(draft: Pick<StudyDraft, "term" | "region" | "selectedIds" | "webSelections" | "prospects">) {
+function draftFingerprint(
+  draft: Pick<
+    StudyDraft,
+    "term" | "region" | "selectedIds" | "webSelections" | "prospects"
+  >,
+) {
   return JSON.stringify([
     draft.term.trim(),
     draft.region,
@@ -62,8 +67,8 @@ export default function SavedStudies(props: {
     return (
       <p className="notice info">
         {storageError
-          ? "El navegador no permite conservar esta sesión. Puedes explorar, pero guardar requires habilitar el almacenamiento del sitio."
-          : "Preparando la sesión de ejemplo…"}
+          ? "Your browser cannot keep this session. You can explore, but saving requires site storage."
+          : "Preparing the demo session…"}
       </p>
     );
   return (
@@ -129,7 +134,8 @@ function ConnectedStudies({
     (Boolean(draft.webSelections?.length || draft.prospects?.length) ||
       (["arroz", "abarrotes", "abarrotes secos"].includes(
         draft.term.toLowerCase(),
-      ) && draft.region === "Lima"));
+      ) &&
+        draft.region === "Lima"));
   async function persist() {
     if (saving || !connected) return;
     const submittedFingerprint = fingerprint;
@@ -160,7 +166,7 @@ function ConnectedStudies({
       }));
       if (latestDraft.current.fingerprint === submittedFingerprint) {
         setMessage(
-          `Estudio guardado con ${studyOptionCount(saved)} ${studyOptionCount(saved) === 1 ? "option" : "options"}.`,
+          `Study saved with ${studyOptionCount(saved)} ${studyOptionCount(saved) === 1 ? "option" : "options"}.`,
         );
         setMessageFingerprint(submittedFingerprint);
       }
@@ -169,7 +175,7 @@ function ConnectedStudies({
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
-          : "No se confirmó el guardado. Tu selección sigue aquí; comprueba la conexión y vuelve a intentar.",
+          : "Saving was not confirmed. Your selection is still here; check your connection and try again.",
       );
     } finally {
       if (isCurrentDraft()) setSaving(false);
@@ -182,13 +188,13 @@ function ConnectedStudies({
     ) && draft.region === "Lima";
   const status =
     count === 0
-      ? "Selecciona al less una option para guardar."
+      ? "Select at least one option to save."
       : !supportedExample
-        ? "El guardado de esta demo solo está disponible para arroz o abarrotes en Lima."
+        ? "This demo can save only rice or dry-goods studies in Lima."
         : savedDraft.fingerprint === null
           ? "Sin guardar"
           : dirty
-            ? "Cambios sin guardar"
+            ? "Unsaved changes"
             : "Guardado";
   const visibleMessage =
     messageFingerprint === fingerprint && message ? message : status;
@@ -217,16 +223,16 @@ function ConnectedStudies({
       <p className="field-hint" role="status">
         {visibleMessage}
       </p>
-      <Disclosure title="Cómo se guarda">
+      <Disclosure title="How saving works">
         <p className="field-hint">
-          Se conserva en la sesión de este navegador, hasta 10 estudios. Borrar
-          los datos del sitio elimina el acceso.
+          Up to 10 studies are saved in this browser session. Clearing site data
+          removes access.
         </p>
       </Disclosure>
       {!connected && (
         <p role="status">
-          Sin conexión al guardado. Puedes seguir explorando; todavía no se han
-          confirmado cambios.
+          Saving is offline. You can keep exploring; changes have not been
+          confirmed.
         </p>
       )}
       {error && (
@@ -240,7 +246,7 @@ function ConnectedStudies({
             {studies === undefined ? (
               <p role="status">Cargando estudios…</p>
             ) : studies.length === 0 ? (
-              <p>No tienes estudios guardados en esta sesión.</p>
+              <p>You have no saved studies in this session.</p>
             ) : (
               studies.map((study) => (
                 <article key={study.id} className="saved-study-row">
@@ -251,7 +257,7 @@ function ConnectedStudies({
                     <p>
                       {studyOptionCount(study)}{" "}
                       {studyOptionCount(study) === 1 ? "option" : "options"} ·
-                      Revisión {study.revision} ·{" "}
+                      Revision {study.revision} ·{" "}
                       {new Date(study.updatedAt).toLocaleString("en-US")}
                     </p>
                   </div>
@@ -280,8 +286,8 @@ function ConnectedStudies({
               ))
             )}
             <p className="field-hint">
-              Abrir otro estudio reemplaza la selección de esta vista. Guarda
-              primero los cambios que quieras conservar.
+              Opening another study replaces the selection in this view. Save
+              any changes you want to keep first.
             </p>
           </div>
         </Dialog>
@@ -303,8 +309,8 @@ class StorageBoundary extends Component<
       return (
         <div className="notice error" role="alert">
           <p>
-            No se pudieron cargar los estudios. La selección actual sigue
-            disponible; el guardado no está confirmado.
+            Saved studies could not be loaded. Your current selection remains
+            available; saving is not confirmed.
           </p>
           <Button
             variant="secondary"

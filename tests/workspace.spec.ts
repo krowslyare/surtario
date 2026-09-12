@@ -19,7 +19,7 @@ test("mobile document tools remain reachable by keyboard and preserve the review
   await shortcut.focus();
   await page.keyboard.press("Enter");
   await expect(
-    page.getByRole("button", { name: "Añadir lista o archivo" }),
+    page.getByRole("button", { name: "Add list or file" }),
   ).toBeInViewport();
 
   const disclosure = page
@@ -28,7 +28,7 @@ test("mobile document tools remain reachable by keyboard and preserve the review
   await disclosure.focus();
   await page.keyboard.press("Enter");
   const trigger = page.getByRole("button", {
-    name: "Revisar ejemplo de cotización",
+    name: "Review sample quote",
   });
   await trigger.click();
   await page.getByLabel("Contenido por presentación").fill("18");
