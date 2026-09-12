@@ -20,7 +20,7 @@ A final independent Luna max review found that the saved snapshot includes unsel
 
 ## Verification
 
-The initial full pass completed 197 unit/backend/configuration tests and all 63 browser journeys. After the Luna review correction, 199 unit/backend/configuration tests and three targeted browser regressions passed locally. Browser coverage includes 320–1920 px layouts, keyboard operation, reduced motion, preserved form drafts, US study recovery, Peru regressions, hypothetical freight versus confirmed terms, quotation/reply boundaries, and saved web-advisor evidence. Frontend/backend TypeScript checks and the hosting build/asset checks passed. Browser suites use one worker because snapshot imports share a local backend. A main-bundle size warning remains; physical-device performance and a full accessibility audit were not measured.
+The initial full pass completed 197 unit/backend/configuration tests and all 63 browser journeys. After the Luna review correction, all 199 unit/backend/configuration tests, three targeted browser regressions and the full 64-journey browser suite passed locally. Browser coverage includes 320–1920 px layouts, keyboard operation, reduced motion, preserved form drafts, US study recovery, Peru regressions, hypothetical freight versus confirmed terms, quotation/reply boundaries, and saved web-advisor evidence. Frontend/backend TypeScript checks and the hosting build/asset checks passed. Browser suites use one worker because snapshot imports share a local backend. A main-bundle size warning remains; physical-device performance and a full accessibility audit were not measured.
 
 ## Local Luna rehearsal
 

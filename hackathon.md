@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-12T16:59:08Z
+- **Last updated:** 2026-09-12T17:02:45Z
 
 ## Log
 
@@ -322,5 +322,5 @@ Independent Sol review and GitHub review produced scoped corrections to study ma
 Addressed all three GitHub review findings in PR #27: added lb/oz review selectors to the prerequisite itself, retained coherent Spanish UI/model guidance in that intermediate PR, and documented the authorized US example scope. 182 tests, frontend/backend typechecks, production build and GitHub CI passed. The dependent English product integration changes UI and model language together.
 
 
-### 2026-09-12 - working tree · final Luna review correction
-Independent Luna max review found that saved source snapshots include unselected distributors, which could expose an unrelated catalog inquiry. Inquiry controls now use saved selected IDs, and the server rejects draft creation for distributors absent from that selection. US and Peru regression tests failed before the fix and passed afterward; browser checks cover US priced-only recovery and web-only studies. 199 unit/backend/configuration tests, three targeted browser checks, both typechecks and hosting checks passed. No external message or deployment occurred.
+### 2026-09-12 - d2a70d1 · final Luna review correction
+Independent Luna max review found that saved source snapshots include unselected distributors, which could expose an unrelated catalog inquiry. Inquiry controls now use saved selected IDs, and the server rejects draft creation for distributors absent from that selection. US and Peru regression tests failed before the fix and passed afterward; browser checks cover US priced-only recovery and web-only studies. 199 unit/backend/configuration tests, three targeted browser checks, the full 64-journey browser suite, both typechecks and hosting checks passed. No external message or deployment occurred.
