@@ -105,7 +105,7 @@ test("web review preserves source proposal, correction, conditions and idempoten
       id: saved.id,
       expectedRevision: 1,
     }),
-  ).rejects.toThrow(/otra vista/);
+  ).rejects.toThrow(/another view/);
 });
 test("synthetic provenance survives the saved run after rehearsal configuration is gone", async () => {
   const { t, args, ref } = await setup(true);
@@ -118,7 +118,7 @@ test("rejects foreign sources, missing extraction, malformed corrections and dup
   const { t, args } = await setup();
   await expect(
     t.mutation(api.comparisons.save, { ...args, token: "b".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.comparisons.save, {
       ...args,
@@ -146,7 +146,7 @@ test("rejects foreign sources, missing extraction, malformed corrections and dup
     });
   });
   await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
-    /no está completa/,
+    /incomplete/,
   );
 });
 test("same offer values cannot disguise changed review evidence on create retry", async () => {
@@ -162,7 +162,7 @@ test("same offer values cannot disguise changed review evidence on create retry"
         },
       ],
     }),
-  ).rejects.toThrow(/otros datos/);
+  ).rejects.toThrow(/different data/);
 });
 
 test("legacy extractions cannot bypass current source quality checks", async () => {

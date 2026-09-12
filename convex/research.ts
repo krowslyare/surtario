@@ -26,9 +26,9 @@ const COOLDOWN_MS = 30_000;
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SEARCH_ERROR =
-  "No se pudo completar la búsqueda. No se reintenta automáticamente; usa una solicitud nueva cuando quieras intentarlo otra vez.";
+  "The search could not be completed. It will not retry automatically; use a new request when you want to try again.";
 const EXTRACTION_ERROR =
-  "No se obtuvo una extracción verificable. Revisa la fuente y vuelve a intentarlo manualmente.";
+  "No verifiable extraction was produced. Review the source and try again manually.";
 
 function enabled(value: string | undefined) {
   return value === "true";
@@ -110,7 +110,7 @@ export const reserveSearch = internalMutation({
   handler: async (ctx, args) => {
     const hash = await ownerHash(args.token);
     if (!UUID.test(args.clientId))
-      throw new ConvexError("Solicitud no válida.");
+      throw new ConvexError("Invalid request.");
     const input = cleanInput(args.ingredient, args.region);
     const existing = await ctx.db
       .query("researchRuns")
@@ -132,10 +132,10 @@ export const reserveSearch = internalMutation({
       .order("desc")
       .take(MAX_PER_SESSION);
     if (own.length >= MAX_PER_SESSION)
-      throw new ConvexError("Esta sesión admite hasta 10 búsquedas reales.");
+      throw new ConvexError("This session supports up to 10 live searches.");
     if (own[0] && Date.now() - own[0].createdAt < COOLDOWN_MS)
       throw new ConvexError(
-        "Espera 30 segundos antes de iniciar otra búsqueda.",
+        "Wait 30 seconds before starting another search.",
       );
     const all = await ctx.db
       .query("researchRuns")
@@ -143,7 +143,7 @@ export const reserveSearch = internalMutation({
       .take(MAX_GLOBAL);
     if (all.length >= MAX_GLOBAL)
       throw new ConvexError(
-        "Se alcanzó la capacidad total de búsquedas de la demo.",
+        "The demo search capacity has been reached.",
       );
     const now = Date.now();
     const id = await ctx.db.insert("researchRuns", {
@@ -237,7 +237,7 @@ export const search = action({
   handler: async (ctx, args): Promise<SavedResearch> => {
     cleanInput(args.ingredient, args.region);
     if (!enabled(env.LIVE_RESEARCH_ENABLED) || !env.FIRECRAWL_API_KEY?.trim())
-      throw new ConvexError("La búsqueda real no está habilitada.");
+      throw new ConvexError("Live search is not enabled.");
     const reservation: { kind: "existing" | "reserved"; run: SavedResearch } =
       await ctx.runMutation(internal.research.reserveSearch, args);
     if (reservation.kind === "existing") return reservation.run;
@@ -285,18 +285,18 @@ export const reserveExtraction = internalMutation({
   handler: async (ctx, args) => {
     const hash = await ownerHash(args.token);
     if (!Number.isSafeInteger(args.sourceIndex) || args.sourceIndex < 0)
-      throw new ConvexError("Fuente no válida.");
+      throw new ConvexError("Invalid source.");
     const run = await ctx.db.get(args.runId);
     if (!run || run.ownerHash !== hash)
-      throw new ConvexError("Búsqueda no disponible en esta sesión.");
+      throw new ConvexError("Search unavailable in this session.");
     if (run.status !== "complete")
-      throw new ConvexError("La búsqueda todavía no está completa.");
+      throw new ConvexError("The search is not complete yet.");
     const source = run.sources[args.sourceIndex];
-    if (!source) throw new ConvexError("Fuente no válida.");
+    if (!source) throw new ConvexError("Invalid source.");
     if (!source.markdown)
-      throw new ConvexError("Esta fuente no contiene texto para extraer.");
+      throw new ConvexError("This source has no text to extract.");
     if (source.readStatus && source.readStatus !== "complete")
-      throw new ConvexError("La lectura de esta ficha no está completa.");
+      throw new ConvexError("This product-page read is not complete.");
     const inspection = inspectSource(source, run.ingredient);
     if (inspection.state !== "readable")
       throw new ConvexError(inspection.reason!);
@@ -305,7 +305,7 @@ export const reserveExtraction = internalMutation({
     if (source.extractionStatus === "running")
       return { kind: "running" as const };
     if (source.extractionAttempts >= 2)
-      throw new ConvexError("Esta fuente alcanzó el máximo de dos intentos.");
+      throw new ConvexError("This source has reached the two-attempt limit.");
     const sources = [...run.sources];
     sources[args.sourceIndex] = {
       ...source,
@@ -383,7 +383,7 @@ export const extract = action({
       !env.OPENAI_API_KEY?.trim() ||
       !env.OPENAI_EXTRACTION_MODEL?.trim()
     )
-      throw new ConvexError("La extracción real no está habilitada.");
+      throw new ConvexError("Live extraction is not enabled.");
     const reservation:
       | { kind: "complete"; offer: ExtractedOffer }
       | { kind: "running" }
@@ -397,7 +397,7 @@ export const extract = action({
         } = await ctx.runMutation(internal.research.reserveExtraction, args);
     if (reservation.kind === "complete") return reservation.offer;
     if (reservation.kind === "running")
-      throw new ConvexError("La extracción de esta fuente ya está en curso.");
+      throw new ConvexError("Extraction for this source is already running.");
     let result: WebAnalysis;
     try {
       result = await analyzeWebSourceWithAgent(
@@ -429,7 +429,7 @@ export const extract = action({
       });
     } catch {
       throw new ConvexError(
-        "La extracción respondió, pero no se confirmó su guardado. No repitas la llamada; requiere revisión del operador.",
+        "Extraction returned, but saving could not be confirmed. Do not repeat the call; operator review is required.",
       );
     }
   },
@@ -452,31 +452,31 @@ export const reserveProductRead = internalMutation({
     const hash = await ownerHash(args.token);
     const run = await ctx.db.get(args.runId);
     if (!run || run.ownerHash !== hash)
-      throw new ConvexError("Búsqueda no disponible en esta sesión.");
+      throw new ConvexError("Search unavailable in this session.");
     if (run.status !== "complete")
-      throw new ConvexError("La búsqueda todavía no está completa.");
+      throw new ConvexError("The search is not complete yet.");
     if ((run.simulated ?? false) !== args.simulated)
       throw new ConvexError(
-        "Esta búsqueda pertenece a otro modo de proveedores. Inicia una búsqueda nueva.",
+        "This search belongs to another supplier mode. Start a new search.",
       );
     if (!Number.isSafeInteger(args.sourceIndex) || args.sourceIndex < 0)
-      throw new ConvexError("Fuente no válida.");
+      throw new ConvexError("Invalid source.");
     const parent = run.sources[args.sourceIndex];
     if (!parent || parent.parentSourceIndex !== undefined)
       throw new ConvexError(
-        "Selecciona una fuente original; no se recorren enlaces en cadena.",
+        "Select an original source; chained links are not followed.",
       );
     const choice = inspectSource(parent, run.ingredient).links.find(
       (link) => link.url === args.url,
     );
     if (!choice)
-      throw new ConvexError("Selecciona un enlace de producto de esta fuente.");
+      throw new ConvexError("Select a product link from this source.");
     const existing = run.sources.findIndex(
       (source) => source.parentSourceIndex === args.sourceIndex,
     );
     if (existing >= 0) {
       if (run.sources[existing].url !== choice.url)
-        throw new ConvexError("Esta fuente ya tiene una ficha seleccionada.");
+        throw new ConvexError("This source already has a selected product page.");
       return {
         kind: "existing" as const,
         run: publicRun(run),
@@ -484,7 +484,7 @@ export const reserveProductRead = internalMutation({
       };
     }
     if (run.sources.length >= 6)
-      throw new ConvexError("Esta búsqueda alcanzó el máximo de fichas.");
+      throw new ConvexError("This search has reached the product-page limit.");
     const sources = [
       ...run.sources,
       {
@@ -550,7 +550,7 @@ export const finishProductRead = internalMutation({
       readStatus: page ? "complete" : "failed",
       readError: page
         ? null
-        : "No se pudo leer la ficha. La llamada puede haber consumido créditos; no se repite automáticamente.",
+        : "The product page could not be read. The call may have consumed credits and will not retry automatically.",
     };
     await ctx.db.patch(runId, { sources });
     return publicRun((await ctx.db.get(runId))!);
@@ -562,7 +562,7 @@ export const readProduct = action({
   returns: savedResearchValidator,
   handler: async (ctx, args): Promise<SavedResearch> => {
     if (!enabled(env.LIVE_RESEARCH_ENABLED) || !env.FIRECRAWL_API_KEY?.trim())
-      throw new ConvexError("La lectura web no está habilitada.");
+      throw new ConvexError("Web reading is not enabled.");
     const reservation: {
       kind: "reserved" | "existing";
       run: SavedResearch;

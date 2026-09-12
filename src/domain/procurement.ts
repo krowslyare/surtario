@@ -113,12 +113,12 @@ function validatePositiveFinite(
       issue(
         field,
         "not-finite",
-        `Completa ${label.toLocaleLowerCase("es-PE")} con un número válido.`,
+        `Enter a valid number for ${label.toLocaleLowerCase("en-US")}.`,
       ),
     ];
   }
   if (value <= 0) {
-    return [issue(field, "not-positive", `${label} debe ser mayor que cero.`)];
+    return [issue(field, "not-positive", `${label} must be greater than zero.`)];
   }
   return [];
 }
@@ -133,7 +133,7 @@ function validateNonNegativeInteger(
       issue(
         field,
         "not-finite",
-        `Completa ${label.toLocaleLowerCase("es-PE")} con un número válido.`,
+        `Enter a valid number for ${label.toLocaleLowerCase("en-US")}.`,
       ),
     ];
   }
@@ -142,7 +142,7 @@ function validateNonNegativeInteger(
       issue(
         field,
         "not-integer",
-        `${label} debe expresarse en céntimos enteros no negativos.`,
+        `${label} must be a nonnegative whole number of cents.`,
       ),
     ];
   }
@@ -153,19 +153,19 @@ function validateRequest(request: ProcurementRequest): ProcurementIssue[] {
   const errors: ProcurementIssue[] = [];
   if (request.ingredient.trim() === "") {
     errors.push(
-      issue("ingredient", "required", "El ingrediente es obligatorio."),
+      issue("ingredient", "required", "Ingredient is required."),
     );
   }
   if (request.specification.trim() === "") {
     errors.push(
-      issue("specification", "required", "La especificación es obligatoria."),
+      issue("specification", "required", "Specification is required."),
     );
   }
   errors.push(
     ...validatePositiveFinite(
       request.quantity,
       "quantity",
-      "La cantidad requerida",
+      "Required quantity",
     ),
   );
   return errors;
@@ -191,12 +191,12 @@ export function evaluateOffer(
 
   if (offer.id.trim() === "") {
     errors.push(
-      issue("offer.id", "required", "La oferta requiere un identificador."),
+      issue("offer.id", "required", "The offer requires an ID."),
     );
   }
   if (offer.supplier.trim() === "") {
     errors.push(
-      issue("offer.supplier", "required", "El proveedor es obligatorio."),
+      issue("offer.supplier", "required", "Supplier is required."),
     );
   }
   if (offer.ingredient !== request.ingredient) {
@@ -204,7 +204,7 @@ export function evaluateOffer(
       issue(
         "offer.ingredient",
         "incompatible-ingredient",
-        "El ingrediente no coincide exactamente con la solicitud.",
+        "The ingredient does not exactly match the request.",
       ),
     );
   }
@@ -213,7 +213,7 @@ export function evaluateOffer(
       issue(
         "offer.specification",
         "incompatible-specification",
-        "La especificación no coincide exactamente con la solicitud.",
+        "The specification does not exactly match the request.",
       ),
     );
   }
@@ -224,7 +224,7 @@ export function evaluateOffer(
       issue(
         "offer.packageContent",
         "missing-package-content",
-        "Falta confirmar el contenido del empaque.",
+        "Package size needs confirmation.",
       ),
     );
   } else {
@@ -232,7 +232,7 @@ export function evaluateOffer(
       ...validatePositiveFinite(
         offer.packageContent,
         "offer.packageContent",
-        "El contenido del empaque",
+        "Package size",
       ),
     );
   }
@@ -242,7 +242,7 @@ export function evaluateOffer(
       issue(
         "offer.packageUnit",
         "missing-package-unit",
-        "Falta confirmar la unidad del empaque.",
+        "Package unit needs confirmation.",
       ),
     );
   } else if (
@@ -253,7 +253,7 @@ export function evaluateOffer(
       issue(
         "offer.packageUnit",
         "incompatible-unit",
-        "La unidad del empaque no se puede convertir a la unidad solicitada.",
+        "The package unit cannot be converted to the requested unit.",
       ),
     );
   } else if (
@@ -272,7 +272,7 @@ export function evaluateOffer(
       issue(
         "offer.priceCents",
         "missing-price",
-        "Falta confirmar el precio por empaque.",
+        "Price per package needs confirmation.",
       ),
     );
   } else {
@@ -280,7 +280,7 @@ export function evaluateOffer(
       ...validateNonNegativeInteger(
         offer.priceCents,
         "offer.priceCents",
-        "El precio",
+        "Price",
       ),
     );
   }
@@ -290,7 +290,7 @@ export function evaluateOffer(
       issue(
         "offer.minimumPackages",
         "missing-minimum",
-        "Falta confirmar la compra mínima.",
+        "Minimum order needs confirmation.",
       ),
     );
   } else if (!Number.isFinite(offer.minimumPackages)) {
@@ -298,7 +298,7 @@ export function evaluateOffer(
       issue(
         "offer.minimumPackages",
         "not-finite",
-        "La compra mínima debe ser finita.",
+        "Minimum order must be finite.",
       ),
     );
   } else if (
@@ -309,7 +309,7 @@ export function evaluateOffer(
       issue(
         "offer.minimumPackages",
         "not-integer",
-        "La compra mínima debe ser un número entero de empaques, como mínimo uno.",
+        "Minimum order must be a whole number of packages, at least one.",
       ),
     );
   }
@@ -319,7 +319,7 @@ export function evaluateOffer(
       issue(
         "offer.freightCents",
         "missing-freight",
-        "Falta confirmar el flete por pedido.",
+        "Delivery cost per order needs confirmation.",
       ),
     );
   } else {
@@ -327,7 +327,7 @@ export function evaluateOffer(
       ...validateNonNegativeInteger(
         offer.freightCents,
         "offer.freightCents",
-        "El flete",
+        "Delivery cost",
       ),
     );
   }
@@ -337,7 +337,7 @@ export function evaluateOffer(
       issue(
         "offer.taxStatus",
         "tax-excluded",
-        "El tributo está excluido; falta incorporarlo para obtener el total.",
+        "Tax is excluded and must be added to calculate the total.",
       ),
     );
   } else if (offer.taxStatus === "unknown") {
@@ -345,7 +345,7 @@ export function evaluateOffer(
       issue(
         "offer.taxStatus",
         "tax-unknown",
-        "Falta confirmar la condición tributaria.",
+        "Tax status needs confirmation.",
       ),
     );
   }
@@ -354,7 +354,7 @@ export function evaluateOffer(
       issue(
         "offer.deliveryConfirmed",
         "delivery-unconfirmed",
-        "La entrega requerida no está confirmada.",
+        "Required delivery is not confirmed.",
       ),
     );
   }
@@ -422,7 +422,7 @@ export function evaluateOffer(
       issue(
         "calculation",
         "out-of-range",
-        "La cantidad o el importe supera el rango de cálculo seguro. Revisa los valores.",
+        "The quantity or amount exceeds the safe calculation range. Review the values.",
       ),
     );
     packageCount =

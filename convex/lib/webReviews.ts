@@ -27,15 +27,15 @@ export async function reconstructWebReview(
     review.sourceIndex < 0 ||
     extractionFields.some((key) => review.values[key].length > 120)
   )
-    throw new ConvexError("Revisión web no válida.");
+    throw new ConvexError("Invalid web review.");
   const ref = `${review.runId}:${review.sourceIndex}`;
   const run = await ctx.db.get("researchRuns", review.runId);
   if (!run || run.ownerHash !== owner)
-    throw new ConvexError("Búsqueda no disponible en esta sesión.");
+    throw new ConvexError("Search unavailable in this session.");
   if (run.status !== "complete")
-    throw new ConvexError("La búsqueda todavía no está completa.");
+    throw new ConvexError("The search is not complete yet.");
   const source = run.sources[review.sourceIndex];
-  if (!source) throw new ConvexError("Fuente no válida.");
+  if (!source) throw new ConvexError("Invalid source.");
   if (
     inspectSource(source, run.ingredient).state !== "readable" ||
     (source.parentSourceIndex !== undefined && source.readStatus !== "complete")
@@ -45,14 +45,14 @@ export async function reconstructWebReview(
     );
   if (source.analysis && source.analysis.kind !== "product")
     throw new ConvexError(
-      "Selecciona y revisa una ficha de producto antes de compararla.",
+      "Select and review a product listing before comparing it.",
     );
   if (
     source.extractionStatus !== "complete" ||
     !source.extraction ||
     !source.markdown
   )
-    throw new ConvexError("La extracción de esta fuente no está completa.");
+    throw new ConvexError("Extraction for this source is incomplete.");
   try {
     const seed = extractionToPurchase(
       {
@@ -60,7 +60,7 @@ export async function reconstructWebReview(
         url: source.url,
         title: source.title,
         text: source.analysis
-          ? `${webSourceText({ title: source.title, markdown: source.markdown })}\n\nAnálisis propuesto de la fuente (requiere revisión): ${source.analysis.summary}\n${source.analysis.warnings.join("\n")}`
+          ? `${webSourceText({ title: source.title, markdown: source.markdown })}\n\nProposed source analysis (requires review): ${source.analysis.summary}\n${source.analysis.warnings.join("\n")}`
           : source.markdown,
         observedAt: source.observedAt ?? run.observedAt,
         simulated: run.simulated ?? false,
@@ -73,7 +73,7 @@ export async function reconstructWebReview(
     return seed;
   } catch (error) {
     throw new ConvexError(
-      error instanceof Error ? error.message : "Revisión web no válida.",
+      error instanceof Error ? error.message : "Invalid web review.",
     );
   }
 }

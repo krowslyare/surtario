@@ -45,17 +45,17 @@ export const save = mutation({
       (contact !== null && (contact.length > 300 || /[\r\n]/.test(contact)))
     )
       throw new ConvexError(
-        "Revisa el nombre y el contacto; usa una sola línea.",
+        "Review the name and contact; use one line.",
       );
     if (!Number.isSafeInteger(args.sourceIndex) || args.sourceIndex < 0)
-      throw new ConvexError("Fuente no válida.");
+      throw new ConvexError("Invalid source.");
     const run = await ctx.db.get(args.runId);
     if (!run || run.ownerHash !== hash)
-      throw new ConvexError("Investigación no disponible en esta sesión.");
+      throw new ConvexError("Research unavailable in this session.");
     if (run.status !== "complete")
-      throw new ConvexError("La investigación no está completa.");
+      throw new ConvexError("Research is not complete.");
     const source = run.sources[args.sourceIndex];
-    if (!source) throw new ConvexError("Fuente no válida.");
+    if (!source) throw new ConvexError("Invalid source.");
     const inspection = inspectSource(source, run.ingredient);
     if (
       ["blocked", "unrelated"].includes(inspection.state) ||
@@ -71,7 +71,7 @@ export const save = mutation({
       url.username ||
       url.password
     )
-      throw new ConvexError("Fuente sin enlace válido.");
+      throw new ConvexError("Source has no valid link.");
     const existing = await ctx.db
       .query("webProspects")
       .withIndex("by_ownerHash_and_runId_and_sourceIndex", (q) =>
@@ -84,7 +84,7 @@ export const save = mutation({
     if (existing) {
       if (existing.supplier !== supplier || existing.contact !== contact)
         throw new ConvexError(
-          "La fuente ya se guardó con otros datos. Conserva la ficha original.",
+          "The source was already saved with different data. Keep the original record.",
         );
       return view(existing);
     }
@@ -96,7 +96,7 @@ export const save = mutation({
           .take(10)
       ).length >= 10
     )
-      throw new ConvexError("Hasta 10 distribuidores candidatos por sesión.");
+      throw new ConvexError("Up to 10 distributor candidates per session.");
     if (
       (
         await ctx.db
@@ -105,7 +105,7 @@ export const save = mutation({
           .take(100)
       ).length >= 100
     )
-      throw new ConvexError("Se alcanzó el límite de candidatos de la demo.");
+      throw new ConvexError("The demo candidate limit has been reached.");
     const id = await ctx.db.insert("webProspects", {
       ownerHash: hash,
       runId: args.runId,

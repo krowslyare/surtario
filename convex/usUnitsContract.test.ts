@@ -92,7 +92,7 @@ test("US studies persist only the matching server-owned context", async () => {
       region: "Lima",
       selectedIds: ["catalog-a"],
     }),
-  ).rejects.toThrow(/otra selección/);
+  ).rejects.toThrow(/another selection/);
   await expect(
     t.mutation(api.studies.save, {
       ...draft,

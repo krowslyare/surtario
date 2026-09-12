@@ -12,13 +12,13 @@ export const extractionFields = [
   "currency",
 ] as const;
 const fieldLabels = {
-  supplier: "Proveedor",
-  ingredient: "Insumo",
-  specification: "Especificación",
-  packageContent: "Contenido por presentación",
-  packageUnit: "Unidad",
-  price: "Precio por presentación",
-  currency: "Moneda",
+  supplier: "Supplier",
+  ingredient: "Ingredient",
+  specification: "Specification",
+  packageContent: "Package size",
+  packageUnit: "Unit",
+  price: "Price per package",
+  currency: "Currency",
 };
 export type ExtractionField = (typeof extractionFields)[number];
 export type ExtractedField = { value: string | null; evidence: string | null };
@@ -45,21 +45,21 @@ export function extractionToPurchase(
 ): PurchaseSeed {
   if (!confirmed)
     throw new Error(
-      "Revisa los datos y confirma su correspondencia con el documento.",
+      "Review the data and confirm it matches the document.",
     );
   for (const key of ["supplier", "ingredient", "specification"] as const)
     if (!values[key].trim() || values[key].trim().length > 120)
       throw new Error(
-        "Completa proveedor, insumo y especificación (hasta 120 caracteres).",
+        "Enter supplier, ingredient, and specification (up to 120 characters).",
       );
   if (!["PEN", "USD"].includes(values.currency))
-    throw new Error("Confirma la moneda: PEN o USD.");
+    throw new Error("Confirm the currency: USD or PEN.");
   if (
     !["kg", "g", "lb", "oz", "L", "ml", "unit"].includes(
       values.packageUnit,
     )
   )
-    throw new Error("Confirma la unidad de la presentación.");
+    throw new Error("Confirm the package unit.");
   const content = parseDecimal(values.packageContent);
   const price = parseCents(values.price);
   if (
@@ -67,11 +67,11 @@ export function extractionToPurchase(
     (!Number.isFinite(content) || content <= 0 || content > 1e6)
   )
     throw new Error(
-      "El contenido debe ser positivo, sin separadores de miles y hasta 3 decimales; puedes dejarlo pendiente.",
+      "Package size must be positive, with no thousands separators and up to 3 decimals; you may leave it pending.",
     );
   if (price !== null && (!Number.isSafeInteger(price) || price < 0))
     throw new Error(
-      "Revisa el precio: hasta 2 decimales, sin separadores de miles; puedes dejarlo pendiente.",
+      "Review the price: up to 2 decimals, no thousands separators; you may leave it pending.",
     );
   const offer: SupplierOffer = {
     id: source.id ?? "reviewed-document",
@@ -93,7 +93,7 @@ export function extractionToPurchase(
   const audit = extractionFields
     .map(
       (key) =>
-        `${fieldLabels[key]}: ${extracted[key].value ?? "Pendiente"}; evidencia: ${extracted[key].evidence ?? "Sin evidencia"}${values[key] !== (extracted[key].value ?? "") ? `; corrección manual: ${values[key] || "Pendiente"}` : ""}`,
+        `${fieldLabels[key]}: ${extracted[key].value ?? "Pending"}; evidence: ${extracted[key].evidence ?? "No evidence"}${values[key] !== (extracted[key].value ?? "") ? `; manual correction: ${values[key] || "Pending"}` : ""}`,
     )
     .join("\n");
   return {
@@ -113,7 +113,7 @@ export function extractionToPurchase(
     offers: [offer],
     sources: {
       [offer.id]: {
-        label: `${source.simulated ? "Documento sintético revisado" : "Documento revisado"}: ${source.title}`,
+        label: `${source.simulated ? "Reviewed synthetic document" : "Reviewed document"}: ${source.title}`,
         date: source.observedAt.slice(0, 10),
         extraction: {
           proposed: structuredClone(extracted),
@@ -127,7 +127,7 @@ export function extractionToPurchase(
           observedAt: source.observedAt,
           publishedAt: null,
           simulated: source.simulated,
-          evidence: `${source.text}\n\nRevisión${edited ? " con correcciones manuales" : ""}:\n${audit}`,
+          evidence: `${source.text}\n\nReview${edited ? " with manual corrections" : ""}:\n${audit}`,
         },
       },
     },
@@ -140,17 +140,17 @@ export function combineReviewedOffers(
   confirmed: boolean,
 ): PurchaseSeed {
   if (!confirmed)
-    throw new Error("Confirma la equivalencia de las ofertas revisadas.");
+    throw new Error("Confirm that the reviewed offers are equivalent.");
   if (
     !seeds.length ||
     seeds.length > 3 ||
     seeds.some((seed) => seed.offers.length !== 1)
   )
-    throw new Error("Selecciona entre una y tres ofertas revisadas.");
+    throw new Error("Select one to three reviewed offers.");
   const first = seeds[0];
   const offers = seeds.flatMap((seed) => seed.offers);
   if (new Set(offers.map((offer) => offer.id)).size !== offers.length)
-    throw new Error("Una misma fuente no puede aparecer dos veces.");
+    throw new Error("The same source cannot appear twice.");
   if (
     seeds.some(
       (seed) =>
@@ -161,7 +161,7 @@ export function combineReviewedOffers(
     )
   )
     throw new Error(
-      "Revisa insumo, especificación, unidad y moneda: estas ofertas no son comparables todavía.",
+      "Review the ingredient, specification, unit, and currency; these offers are not comparable yet.",
     );
   return {
     request: { ...first.request, quantity: 0 },

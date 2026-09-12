@@ -82,7 +82,7 @@ test("reply review saves source, manual fields and choice without altering the e
   const { t, args, reply } = await setup();
   const saved = await t.mutation(api.comparisons.save, args);
   const source = saved.sources[args.selectedOfferId];
-  expect(source.marketSource?.evidence.split("\n\nRevisión")[0]).toBe(
+  expect(source.marketSource?.evidence.split("\n\nReview")[0]).toBe(
     reply.text,
   );
   expect(source.extraction?.proposed.price.value).toBeNull();
@@ -227,7 +227,7 @@ test("AI-assisted review requires the exact completed generation", async () => {
       ...args,
       replyReview: { ...args.replyReview, extractionAttempt: 1 },
     }),
-  ).rejects.toThrow(/cambió|no está completa/);
+  ).rejects.toThrow(/changed|incomplete/);
 });
 test("late suggestions auto-apply only to an untouched empty review", () => {
   const empty = {
@@ -306,7 +306,7 @@ test("foreign and unlinked replies, missing confirmation and conflicting retries
   const { t, args } = await setup();
   await expect(
     t.mutation(api.comparisons.save, { ...args, token: "b".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.comparisons.save, {
       ...args,
@@ -324,14 +324,14 @@ test("foreign and unlinked replies, missing confirmation and conflicting retries
       values,
       false,
     ),
-  ).toThrow(/confirma/);
+  ).toThrow(/confirm/);
   await t.mutation(api.comparisons.save, args);
   await expect(
     t.mutation(api.comparisons.save, {
       ...args,
       replyReview: { ...args.replyReview, values: { ...values, price: "90" } },
     }),
-  ).rejects.toThrow(/otros datos/);
+  ).rejects.toThrow(/different data/);
 });
 
 test("append to a saved comparison preserves old sources, quantity and revision while clearing choice", async () => {
@@ -372,7 +372,7 @@ test("append to a saved comparison preserves old sources, quantity and revision 
       ...append,
       selectedOfferId: riceOffers[1].id,
     }),
-  ).rejects.toThrow(/Vuelve a elegir/);
+  ).rejects.toThrow(/Select an offer again/);
   const saved = await t.mutation(api.comparisons.save, append);
   expect(saved.id).toBe(original.id);
   expect(saved.revision).toBe(2);
@@ -386,11 +386,11 @@ test("append to a saved comparison preserves old sources, quantity and revision 
   );
   expect(saved.selectedOfferId).toBeNull();
   await expect(t.mutation(api.comparisons.save, append)).rejects.toThrow(
-    /otra vista/,
+    /another view/,
   );
   await expect(
     t.mutation(api.comparisons.save, { ...append, expectedRevision: 2 }),
-  ).rejects.toThrow(/ya pertenece/);
+  ).rejects.toThrow(/already part/);
   const final = await t.mutation(api.comparisons.save, {
     ...append,
     expectedRevision: 2,
@@ -437,7 +437,7 @@ test("append rejects incompatible identity and currency, unchecked equivalence a
           { review: { ...args.replyReview, values: v }, equivalent: true },
         ],
       }),
-    ).rejects.toThrow(/coincidir|moneda/);
+    ).rejects.toThrow(/must match|currency/);
   }
   const { mergeReplyOffer } = await import("../src/domain/replyReview");
   const incoming = prepareReplyOffer(
@@ -449,7 +449,7 @@ test("append rejects incompatible identity and currency, unchecked equivalence a
     },
     true,
   );
-  expect(() => mergeReplyOffer(original, incoming, false)).toThrow(/Confirma/);
+  expect(() => mergeReplyOffer(original, incoming, false)).toThrow(/Confirm/);
   const full = {
     ...original,
     sources: {
@@ -458,6 +458,6 @@ test("append rejects incompatible identity and currency, unchecked equivalence a
       retired2: original.sources[riceOffers[1].id],
     },
   };
-  expect(() => mergeReplyOffer(full, incoming, true)).toThrow(/cuatro fuentes/);
+  expect(() => mergeReplyOffer(full, incoming, true)).toThrow(/four sources/);
   expect((await t.query(api.comparisons.list, { token }))[0].revision).toBe(1);
 });

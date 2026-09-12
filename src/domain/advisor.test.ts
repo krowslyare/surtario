@@ -71,9 +71,9 @@ describe("analyzePurchase", () => {
         eligible: true,
       }),
     ]);
-    expect(result.impact).toContain("stock");
-    expect(result.impact).not.toContain("ahorro de");
-    expect(result.missing).toContain("Falta confirmar el consumo diario.");
+    expect(result.impact).toContain("inventory");
+    expect(result.impact).not.toContain("realized savings of");
+    expect(result.missing).toContain("Daily usage needs confirmation.");
   });
 
   it("respeta presupuesto y cobertura incluso con prioridad de precio unitario", () => {
@@ -120,7 +120,7 @@ describe("analyzePurchase", () => {
 
     expect(result.action).toBe("clarify");
     expect(result.recommendedOfferId).toBeNull();
-    expect(result.warning).toContain("tipo de cambio");
+    expect(result.warning).toContain("exchange rate");
   });
 
   it("mantiene pendientes las ofertas inciertas", () => {
@@ -137,7 +137,7 @@ describe("analyzePurchase", () => {
     expect(result.action).toBe("clarify");
     expect(result.alternatives[0].eligible).toBe(false);
     expect(result.alternatives[0].warnings.join(" ")).toMatch(
-      /precio|flete|tributaria/i,
+      /price|delivery cost|tax/i,
     );
   });
 
@@ -165,7 +165,7 @@ describe("analyzePurchase", () => {
 
     expect(result.action).toBe("clarify");
     expect(result.recommendedOfferId).toBeNull();
-    expect(result.missing.join(" ")).toMatch(/céntimos|finito|preferido/i);
+    expect(result.missing.join(" ")).toMatch(/cents|finite|preferred/i);
   });
 });
 

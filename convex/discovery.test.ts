@@ -164,7 +164,7 @@ describe("prueba interna Firecrawl", () => {
     expect(
       parseDiscovery({ success: true, data: { web: [] } }).sources,
     ).toEqual([]);
-    expect(() => parseDiscovery({ success: true })).toThrow("no válida");
+    expect(() => parseDiscovery({ success: true })).toThrow("invalid response");
   });
   it("no filtra mensajes del proveedor ni reintenta errores de cuota", async () => {
     const request = vi.fn(
@@ -176,7 +176,7 @@ describe("prueba interna Firecrawl", () => {
         "synthetic-test",
         request,
       ),
-    ).rejects.toThrow("saldo o límites");
+    ).rejects.toThrow("balance or limits");
     expect(request).toHaveBeenCalledOnce();
   });
   it("rechaza respuestas enormes y JSON inválido", async () => {
@@ -186,14 +186,14 @@ describe("prueba interna Firecrawl", () => {
         "synthetic-test",
         async () => new Response("x".repeat(1024 * 1024 + 1)),
       ),
-    ).rejects.toThrow("No se pudo");
+    ).rejects.toThrow("could not be completed");
     await expect(
       discoverSources(
         { ingredient: "Arroz", region: "Lima" },
         "synthetic-test",
         async () => new Response("<html>"),
       ),
-    ).rejects.toThrow("JSON no válido");
+    ).rejects.toThrow("invalid JSON");
   });
   it("aborta timeout sin segunda llamada", async () => {
     vi.useFakeTimers();
@@ -211,7 +211,7 @@ describe("prueba interna Firecrawl", () => {
         "synthetic-test",
         request,
       ),
-    ).rejects.toThrow("podría haber consumido créditos");
+    ).rejects.toThrow("may have consumed credits");
     await vi.advanceTimersByTimeAsync(25000);
     await pending;
     expect(request).toHaveBeenCalledOnce();

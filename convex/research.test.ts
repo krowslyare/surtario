@@ -53,7 +53,7 @@ test("disabled public search cannot spend or write; status contains no credentia
     extractionEnabled: false,
   });
   await expect(t.action(api.research.search, draft)).rejects.toThrow(
-    /no está habilitada/,
+    /not enabled/,
   );
   expect(fetch).not.toHaveBeenCalled();
   expect(await t.query(api.research.list, { token: draft.token })).toEqual([]);
@@ -76,7 +76,7 @@ test("one reservation per client id, owner isolation, conflict and cooldown", as
       ...draft,
       clientId: "22222222-2222-4222-8222-222222222222",
     }),
-  ).rejects.toThrow(/30 segundos/);
+  ).rejects.toThrow(/30 seconds/);
   expect(await t.query(api.research.list, { token: "b".repeat(64) })).toEqual(
     [],
   );
@@ -86,7 +86,7 @@ test("one reservation per client id, owner isolation, conflict and cooldown", as
       runId: first.run.id,
       sourceIndex: 0,
     }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   expect(first.run).not.toHaveProperty("ownerHash");
   expect(first.run.simulated).toBe(false);
 });
@@ -199,13 +199,13 @@ test("failures are sanitized and extraction attempts bounded", async () => {
   });
   await expect(
     t.mutation(internal.research.reserveExtraction, args),
-  ).rejects.toThrow(/dos intentos/);
+  ).rejects.toThrow(/two-attempt/);
   await expect(
     t.mutation(internal.research.reserveExtraction, {
       ...args,
       sourceIndex: 1,
     }),
-  ).rejects.toThrow(/no contiene texto/);
+  ).rejects.toThrow(/no text/);
 });
 
 test("session and global reservations enforce lifetime spend ceilings", async () => {
@@ -228,13 +228,13 @@ test("session and global reservations enforce lifetime spend ceilings", async ()
       ...draft,
       clientId: "22222222-2222-4222-8222-222222222222",
     }),
-  ).rejects.toThrow(/10 búsquedas/);
+  ).rejects.toThrow(/10 live searches/);
   await expect(
     t.mutation(internal.research.reserveSearch, {
       ...draft,
       token: "d".repeat(64),
     }),
-  ).rejects.toThrow(/capacidad total/);
+  ).rejects.toThrow(/capacity/);
 });
 
 test("uncertain persistence after model response cannot issue another paid extraction", async () => {
@@ -255,14 +255,14 @@ test("uncertain persistence after model response cannot issue another paid extra
   );
   const args = { token: draft.token, runId: run.run.id, sourceIndex: 0 };
   await expect(t.action(api.research.extract, args)).rejects.toThrow(
-    /no se confirmó su guardado/,
+    /saving could not be confirmed/,
   );
   expect(
     (await t.query(api.research.list, { token: draft.token }))[0].sources[0]
       .extractionStatus,
   ).toBe("running");
   await expect(t.action(api.research.extract, args)).rejects.toThrow(
-    /ya está en curso/,
+    /already running/,
   );
   expect(analyzeWebSourceWithAgent).toHaveBeenCalledTimes(1);
 });

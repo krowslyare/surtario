@@ -70,7 +70,7 @@ describe("procurement comparison", () => {
         packageContent,
       });
       expect(
-        result.errors.some((entry) => entry.includes("contenido del empaque")),
+        result.errors.some((entry) => entry.toLowerCase().includes("package size")),
       ).toBe(true);
       expect(result.eligibleForComparison).toBe(false);
     },
@@ -94,7 +94,7 @@ describe("procurement comparison", () => {
         minimumPackages,
       });
       expect(
-        result.errors.some((entry) => entry.includes("compra mínima")),
+        result.errors.some((entry) => entry.includes("Minimum order")),
       ).toBe(true);
     }
   });
@@ -108,8 +108,8 @@ describe("procurement comparison", () => {
     expect(result.errors).toEqual([]);
     expect(result.pending).toEqual(
       expect.arrayContaining([
-        "Falta confirmar el contenido del empaque.",
-        "Falta confirmar la unidad del empaque.",
+        "Package size needs confirmation.",
+        "Package unit needs confirmation.",
       ]),
     );
     expect(result.packageCount).toBeNull();
@@ -127,7 +127,7 @@ describe("procurement comparison", () => {
       expect(result.subtotalCents).toBe(8_000);
       expect(result.totalCents).toBeNull();
       expect(
-        result.pending.some((entry) => entry.toLowerCase().includes("tribut")),
+        result.pending.some((entry) => entry.toLowerCase().includes("tax")),
       ).toBe(true);
     },
   );
@@ -139,7 +139,7 @@ describe("procurement comparison", () => {
     });
     expect(result.subtotalCents).toBe(8_000);
     expect(result.totalCents).toBeNull();
-    expect(result.pending).toContain("Falta confirmar el flete por pedido.");
+    expect(result.pending).toContain("Delivery cost per order needs confirmation.");
   });
 
   it("does not compare different currencies or choose from a single offer", () => {
@@ -164,7 +164,7 @@ describe("procurement comparison", () => {
     expect(result.groups).toEqual([]);
     expect(
       result.evaluations[1].comparisonExclusions.some((entry) =>
-        entry.includes("especificación"),
+        entry.includes("specification"),
       ),
     ).toBe(true);
   });
@@ -184,7 +184,7 @@ describe("procurement comparison", () => {
     });
     expect(
       litres.comparisonExclusions.some((entry) =>
-        entry.includes("unidad del empaque"),
+        entry.includes("package unit"),
       ),
     ).toBe(true);
     expect(litres.packageCount).toBeNull();

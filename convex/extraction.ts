@@ -28,7 +28,7 @@ export const probe = internalAction({
     const model = env.OPENAI_EXTRACTION_MODEL;
     if (!key?.trim() || !model?.trim())
       throw new Error(
-        "Configura OPENAI_API_KEY y OPENAI_EXTRACTION_MODEL en Convex para probar la extracción.",
+        "Set OPENAI_API_KEY and OPENAI_EXTRACTION_MODEL in Convex to test extraction.",
       );
     const sourceText =
       example === "ambiguous"
@@ -42,7 +42,7 @@ export const probe = internalAction({
       };
     } catch {
       throw new Error(
-        "No se obtuvo una extracción verificable. Revisa configuración, disponibilidad y respuesta del modelo. No se reintenta automáticamente.",
+        "No verifiable extraction was returned. Review the configuration, availability, and model response. It will not retry automatically.",
       );
     }
   },

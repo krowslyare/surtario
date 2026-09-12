@@ -30,7 +30,7 @@ test("saves server snapshots, retries once, and never exposes session credential
       ...draft,
       selectedIds: ["catalog-b", "distributor-c"],
     }),
-  ).rejects.toThrow(/otra selección/);
+  ).rejects.toThrow(/another selection/);
   expect(await t.query(api.studies.list, { token: tokenA })).toHaveLength(1);
 });
 test("a second capability cannot read or update another study even with its ID", async () => {
@@ -44,9 +44,9 @@ test("a second capability cannot read or update another study even with its ID",
       id: saved.id,
       expectedRevision: 1,
     }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(t.query(api.studies.list, { token: "invalid" })).rejects.toThrow(
-    /Sesión/,
+    /session/,
   );
   expect((await t.query(api.studies.list, { token: tokenA }))[0].revision).toBe(
     1,
@@ -65,7 +65,7 @@ test("stale updates are rejected while source evidence remains unchanged", async
   expect(updated.revision).toBe(2);
   expect(updated.results).toEqual(saved.results);
   await expect(t.mutation(api.studies.save, update)).rejects.toThrow(
-    /otra vista/,
+    /another view/,
   );
   expect(
     (await t.query(api.studies.list, { token: tokenA }))[0].selectedIds,
@@ -91,7 +91,7 @@ test("anonymous persistence accepts only bounded synthetic studies", async () =>
       clientId: `${String(i).padStart(8, "0")}-1111-4111-8111-111111111111`,
     });
   await expect(t.mutation(api.studies.save, draft)).rejects.toThrow(
-    /10 estudios/,
+    /10 studies/,
   );
   expect(await t.query(api.studies.list, { token: tokenA })).toHaveLength(10);
 });
@@ -177,7 +177,7 @@ test("study restores reviewed web evidence, no-price candidates and examples wit
       ...args,
       webReviews: [{ ...review, values: { ...review.values, price: "90" } }],
     }),
-  ).rejects.toThrow(/otra selección/);
+  ).rejects.toThrow(/another selection/);
 });
 test("web-only studies and unknown prices persist; foreign refs, duplicates and stale edits are refused", async () => {
   const { t, review, prospect } = await webStudy();
@@ -199,7 +199,7 @@ test("web-only studies and unknown prices persist; foreign refs, duplicates and 
     ).rejects.toThrow();
   await expect(
     t.mutation(api.studies.save, { ...args, token: tokenB, webReviews: [] }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   const updated = await t.mutation(api.studies.save, {
     ...args,
     id: saved.id,
@@ -214,7 +214,7 @@ test("web-only studies and unknown prices persist; foreign refs, duplicates and 
       id: saved.id,
       expectedRevision: 1,
     }),
-  ).rejects.toThrow(/otra vista/);
+  ).rejects.toThrow(/another view/);
 });
 
 test("a study refuses unrelated research contexts even when every source is owned", async () => {
@@ -228,13 +228,13 @@ test("a study refuses unrelated research contexts even when every source is owne
       webReviews: [review],
       prospectIds: [prospect.id],
     }),
-  ).rejects.toThrow(/un insumo y una zona/);
+  ).rejects.toThrow(/one ingredient and one area/);
   await t.run(async (ctx) => {
     await ctx.db.patch("researchRuns", review.runId, { region: "Cusco" });
   });
   await expect(
     t.mutation(api.studies.save, { ...draft, webReviews: [review] }),
-  ).rejects.toThrow(/un insumo y una zona/);
+  ).rejects.toThrow(/one ingredient and one area/);
   const onlyWeb = await t.mutation(api.studies.save, {
     ...draft,
     selectedIds: [],

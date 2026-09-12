@@ -64,7 +64,7 @@ test("document correction, original, source and decision survive save, retry and
   expect(saved.sources[id].marketSource?.simulated).toBe(true);
   expect(
     saved.sources[id].marketSource?.evidence.split(
-      "\n\nRevisión con correcciones manuales:",
+      "\n\nReview with manual corrections:",
     )[0],
   ).toBe(extractionSource.text);
   expect(saved.sources[id].extraction?.proposed.price.value).toBe("80.00");
@@ -93,13 +93,13 @@ test("document correction, original, source and decision survive save, retry and
       id: saved.id,
       expectedRevision: 1,
     }),
-  ).rejects.toThrow(/otra vista/);
+  ).rejects.toThrow(/another view/);
 });
 test("foreign, non-quotation, incomplete and malformed document references are rejected", async () => {
   const { t, args, id } = await setup();
   await expect(
     t.mutation(api.comparisons.save, { ...args, token: "b".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.comparisons.save, {
       ...args,
@@ -108,13 +108,13 @@ test("foreign, non-quotation, incomplete and malformed document references are r
         values: { ...args.documentReview.values, price: "x".repeat(121) },
       },
     }),
-  ).rejects.toThrow(/no válida/);
+  ).rejects.toThrow(/Invalid/);
   await expect(
     t.mutation(api.comparisons.save, { ...args, webReviews: [] }),
   ).rejects.toThrow(/No mezcles/);
   await t.run(async (ctx) => ctx.db.patch(id, { status: "running" }));
   await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
-    /lectura completa/,
+    /complete quote reading/,
   );
   await t.run(async (ctx) =>
     ctx.db.patch(id, {
@@ -127,7 +127,7 @@ test("foreign, non-quotation, incomplete and malformed document references are r
     }),
   );
   await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
-    /cotización/,
+    /quote reading/,
   );
 });
 test("a retried creation cannot replace the confirmed evidence with a new correction", async () => {
@@ -141,5 +141,5 @@ test("a retried creation cannot replace the confirmed evidence with a new correc
         values: { ...args.documentReview.values, price: "90" },
       },
     }),
-  ).rejects.toThrow(/otros datos/);
+  ).rejects.toThrow(/different data/);
 });

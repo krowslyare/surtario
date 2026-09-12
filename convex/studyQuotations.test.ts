@@ -25,7 +25,7 @@ test("a saved study can request a distributor catalog without any comparison or 
   const request = await t.mutation(api.quotationMail.create, args);
   expect(request.comparisonId).toBeUndefined();
   expect(request.studyId).toBe(study.id);
-  expect(request.text).toContain("cantidad todavía está por definir");
+  expect(request.text).toContain("Quantity is still to be determined");
   expect(request.text).toContain("Lima");
   expect(request.recipient).toBeNull();
   expect(request.state).toBe("draft");
@@ -38,11 +38,11 @@ test("a saved study can request a distributor catalog without any comparison or 
   ).toEqual([]);
   await expect(
     t.mutation(api.quotationMail.create, { ...args, token: "b".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.quotationMail.create, { ...args, resultId: "catalog-a" }),
   ).rejects.toThrow(/distribuidor/);
   await expect(
     t.mutation(api.quotationMail.create, { token, clientId: args.clientId }),
-  ).rejects.toThrow(/Indica/);
+  ).rejects.toThrow(/Choose one source/);
 });

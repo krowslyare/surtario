@@ -85,13 +85,13 @@ export function validateWebAnalysis(
   const quote = (number: number): string => {
     if (!lines[number - 1])
       throw new Error(
-        "El análisis cita una referencia que no existe en la fuente.",
+        "The analysis cites a reference that does not exist in the source.",
       );
     return lines[number - 1];
   };
   const { evidenceLineNumbers, ...analysis } = raw.analysis;
   if (analysis.kind !== "irrelevant" && !evidenceLineNumbers.length)
-    throw new Error("El análisis no contiene evidencia verificable.");
+    throw new Error("The analysis does not contain verifiable evidence.");
   const evidence = evidenceLineNumbers.map(quote);
   const offer = Object.fromEntries(
     extractionFields.map((key) => {

@@ -66,7 +66,7 @@ export const save = mutation({
   handler: async (ctx, args) => {
     const hash = await ownerHash(args.token);
     if (!/^[a-f0-9-]{36}$/.test(args.clientId))
-      throw new ConvexError("Solicitud no válida.");
+      throw new ConvexError("Invalid request.");
     const ingredients = reviewedIngredients(args.ingredients);
     const existing = await ctx.db
       .query("ingredientLists")
@@ -83,7 +83,7 @@ export const save = mutation({
         )
       ) {
         throw new ConvexError(
-          "La solicitud anterior ya guardó otra lista. Revisa las listas guardadas antes de volver a intentar.",
+          "The previous request saved a different list. Review saved lists before trying again.",
         );
       }
       return publicList(existing);
@@ -93,13 +93,13 @@ export const save = mutation({
       .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
       .take(MAX_PER_SESSION);
     if (own.length >= MAX_PER_SESSION)
-      throw new ConvexError("Esta sesión admite hasta 10 listas guardadas.");
+      throw new ConvexError("This session supports up to 10 saved lists.");
     const all = await ctx.db
       .query("ingredientLists")
       .withIndex("by_creation_time")
       .take(MAX_GLOBAL);
     if (all.length >= MAX_GLOBAL)
-      throw new ConvexError("Se alcanzó la capacidad de listas de esta demo.");
+      throw new ConvexError("The demo list capacity has been reached.");
     const id = await ctx.db.insert("ingredientLists", {
       ownerHash: hash,
       clientId: args.clientId,

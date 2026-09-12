@@ -58,7 +58,7 @@ export const reserve = internalMutation({
         args.clientId,
       )
     )
-      throw new ConvexError("Solicitud no válida.");
+      throw new ConvexError("Invalid request.");
     const existing = await ctx.db
       .query("documentRuns")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -71,14 +71,14 @@ export const reserve = internalMutation({
       return { fresh: false, run: view(existing) };
     }
     if (!enabled())
-      throw new ConvexError("La lectura de documentos no está habilitada.");
+      throw new ConvexError("Document reading is not enabled.");
     const own = await ctx.db
       .query("documentRuns")
       .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
       .order("desc")
       .take(10);
     if (own.length >= 10)
-      throw new ConvexError("Límite de 10 lecturas por sesión.");
+      throw new ConvexError("Limit: 10 document reads per session.");
     if (own[0] && Date.now() - own[0].createdAt < 30000)
       throw new ConvexError("Espera 30 segundos antes de otra lectura.");
     if (
@@ -89,7 +89,7 @@ export const reserve = internalMutation({
           .take(100)
       ).length >= 100
     )
-      throw new ConvexError("Límite total de lecturas de la demo.");
+      throw new ConvexError("The demo document-reading limit has been reached.");
     const id = await ctx.db.insert("documentRuns", {
       ownerHash: hash,
       clientId: args.clientId,
@@ -115,7 +115,7 @@ export const finish = internalMutation({
       result,
       error: result
         ? null
-        : "No se pudo leer el documento. Revisa el archivo o usa la transcripción manual. No se reintenta automáticamente.",
+        : "The document could not be read. Review the file or use manual transcription. It will not retry automatically.",
     });
     return view((await ctx.db.get(id))!);
   },

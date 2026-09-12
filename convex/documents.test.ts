@@ -35,7 +35,7 @@ test("disabled documents cannot call the provider", async () => {
   const t = convexTest(schema, modules);
   expect(await t.query(api.documents.status, {})).toBe(false);
   await expect(t.action(api.documents.extract, args)).rejects.toThrow(
-    /no está habilitada/,
+    /not enabled/,
   );
   expect(extractDocument).not.toHaveBeenCalled();
 });
@@ -108,7 +108,7 @@ test("cooldown and total quota reject before another provider call", async () =>
       });
   });
   await expect(full.action(api.documents.extract, args)).rejects.toThrow(
-    /total/,
+    /limit/,
   );
   expect(extractDocument).not.toHaveBeenCalled();
 });
@@ -119,7 +119,7 @@ test("classification, citations and text bounds are enforced", () => {
   ).toThrow(/Non-quotation/);
   expect(() =>
     validateDocument({ ...result, transcript: "unrelated text" }),
-  ).toThrow(/cita/);
+  ).toThrow(/quote/);
   expect(() =>
     validateDocument({ ...result, transcript: "x".repeat(12001) }),
   ).toThrow();
