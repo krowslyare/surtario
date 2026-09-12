@@ -341,7 +341,7 @@ function Connected({
                       onEditOffer(offer.id);
                     }}
                   >
-                    Editar condiciones de {offer.supplier}
+                    Edit terms for {offer.supplier}
                   </button>
                 ))}
               </div>

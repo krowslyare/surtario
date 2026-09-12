@@ -34,11 +34,11 @@ export function SaveWebProspect({
   return (
     <>
       <button className="button text-button" onClick={() => setOpen(true)}>
-        {saved ? "Ver candidato saving" : "Save posible distribuidor"}
+        {saved ? "View saved candidate" : "Save potential distributor"}
       </button>
       {open && (
         <Dialog
-          title="Review posible distribuidor"
+          title="Review potential distributor"
           onClose={() => {
             if (!busy) setOpen(false);
           }}

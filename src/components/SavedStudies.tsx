@@ -10,6 +10,7 @@ import type { savedStudyValidator } from "../../convex/studyValidators";
 import type { Id } from "../../convex/_generated/dataModel";
 import { studyOptionCount } from "../domain/study";
 import type { StudyProspect, WebSelection } from "../domain/study";
+import { findMarketExampleContext } from "../../fixtures/market";
 
 export type SavedStudy = Infer<typeof savedStudyValidator>;
 export type StudyDraft = {
@@ -132,10 +133,7 @@ function ConnectedStudies({
   const eligible =
     count > 0 &&
     (Boolean(draft.webSelections?.length || draft.prospects?.length) ||
-      (["arroz", "abarrotes", "abarrotes secos"].includes(
-        draft.term.toLowerCase(),
-      ) &&
-        draft.region === "Lima"));
+      Boolean(findMarketExampleContext(draft.term, draft.region)));
   async function persist() {
     if (saving || !connected) return;
     const submittedFingerprint = fingerprint;
@@ -182,20 +180,19 @@ function ConnectedStudies({
     }
   }
   const dirty = savedDraft.fingerprint !== fingerprint;
-  const supportedExample =
-    ["arroz", "abarrotes", "abarrotes secos"].includes(
-      draft.term.toLowerCase(),
-    ) && draft.region === "Lima";
+  const supportedExample = Boolean(
+    findMarketExampleContext(draft.term, draft.region),
+  );
   const status =
     count === 0
       ? "Select at least one option to save."
       : !supportedExample
-        ? "This demo can save only rice or dry-goods studies in Lima."
+        ? "This demo can save only the available sample markets."
         : savedDraft.fingerprint === null
-          ? "Sin guardar"
+          ? "Not saved"
           : dirty
             ? "Unsaved changes"
-            : "Guardado";
+            : "Saved";
   const visibleMessage =
     messageFingerprint === fingerprint && message ? message : status;
   return (
@@ -206,7 +203,7 @@ function ConnectedStudies({
           onClick={persist}
           disabled={!eligible || !connected}
           busy={saving}
-          busyLabel="Guardando…"
+          busyLabel="Saving…"
         >
           <Bookmark size={16} aria-hidden="true" />
           {draft.id ? "Save study changes" : "Save study"}
@@ -216,7 +213,7 @@ function ConnectedStudies({
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
         >
-          <FolderOpen size={16} aria-hidden="true" /> Guardados{" "}
+          <FolderOpen size={16} aria-hidden="true" /> Saved{" "}
           {studies ? `(${studies.length})` : ""}
         </Button>
       </div>

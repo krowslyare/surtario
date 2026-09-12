@@ -118,7 +118,7 @@ export default function IngredientIntake({
           <p className="field-hint">
             {batch.method === "transcription"
               ? "Manual transcript; automatic extraction pending."
-              : "Datos revisados por ti. No registran compras ni ofertas."}
+              : "Data reviewed by you. It does not record purchases or offers."}
           </p>
           {batch.file && <LocalSource file={batch.file} />}
           <div className="intake-source-rows">
@@ -255,12 +255,12 @@ function IntakeDialog({
       {!rows ? (
         <>
           <label className="field intake-file">
-            <span>Archivo de insumos (opcional)</span>
+            <span>Ingredient file (optional)</span>
             <span className="intake-file-button" aria-hidden="true">
               Choose file
             </span>
             <input
-              aria-label="Archivo de insumos (opcional)"
+              aria-label="Ingredient file (optional)"
               type="file"
               accept=".xlsx,.csv,.png,.jpg,.jpeg,.webp,.pdf"
               onChange={(event) => {
@@ -411,7 +411,7 @@ function IntakeDialog({
               onClick={review}
             >
               <ListPlus size={17} />
-              Revisar insumos
+              Review ingredients
             </button>
           </div>
         </>
@@ -444,7 +444,7 @@ function IntakeDialog({
                 </label>
                 <button
                   className="icon-button"
-                  aria-label={`Eliminar insumo ${index + 1}`}
+                  aria-label={`Remove ingredient ${index + 1}`}
                   onClick={() =>
                     setRows(rows.filter((item) => item.id !== row.id))
                   }
@@ -456,10 +456,11 @@ function IntakeDialog({
           </div>
           <div className="dialog-actions">
             <button className="button secondary" onClick={() => setRows(null)}>
-              Volver a la entrada
+              Back to input
             </button>
             <button className="button primary" onClick={confirm}>
-              Confirmar {rows.length} {rows.length === 1 ? "insumo" : "insumos"}
+              Confirm {rows.length}{" "}
+              {rows.length === 1 ? "ingredient" : "ingredients"}
             </button>
           </div>
         </>

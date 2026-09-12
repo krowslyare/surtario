@@ -14,13 +14,13 @@ import type { ExtractedOffer, ReviewedValues } from "../domain/extraction";
 import type { PurchaseSeed } from "../domain/market";
 import { Dialog } from "./Dialog";
 const labels = {
-  supplier: "Proveedor",
-  ingredient: "Insumo",
+  supplier: "Supplier",
+  ingredient: "Ingredient",
   specification: "Specification",
   packageContent: "Package size",
   packageUnit: "Package unit",
   price: "Price per package",
-  currency: "Moneda",
+  currency: "Currency",
 };
 export default function ReplyOfferReview({
   reply,
@@ -237,7 +237,7 @@ export default function ReplyOfferReview({
                 <option value="">Pending</option>
                 {(key === "currency"
                   ? ["PEN", "USD"]
-                  : ["kg", "g", "L", "ml", "unit"]
+                  : ["kg", "g", "lb", "oz", "L", "ml", "unit"]
                 ).map((value) => (
                   <option key={value} value={value}>
                     {value}

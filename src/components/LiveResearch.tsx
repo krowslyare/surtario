@@ -481,7 +481,7 @@ export function ResearchWorkspace({
                     )}
                     {url ? (
                       <a href={url} target="_blank" rel="noopener noreferrer">
-                        Ver page de source <ExternalLink size={14} />
+                        View source page <ExternalLink size={14} />
                       </a>
                     ) : (
                       <small>

@@ -145,7 +145,7 @@ function ScenarioDetails({
                   ? "Budget not evaluated."
                   : alternative.affordable
                     ? "Within the stated budget."
-                    : "Supera el presupuesto indicado."}
+                    : "Exceeds the stated budget."}
               </p>
               {alternative.warnings.length > 0 && (
                 <ul>
@@ -400,7 +400,7 @@ function Connected({
             ? "Save scenario and request AI analysis"
             : "Save scenario";
   return (
-    <section className="advisor-panel" aria-label="Asesor de compras">
+    <section className="advisor-panel" aria-label="Purchasing advisor">
       <div className="advisor-heading">
         <div>
           <h2>What should you do next?</h2>
@@ -414,7 +414,7 @@ function Connected({
         <summary>Decision context · optional</summary>
         <div className="advisor-fields">
           <label className="field">
-            Prioridad
+            Priority
             <select
               value={context.priority}
               onChange={(e) =>
@@ -432,7 +432,7 @@ function Connected({
             </select>
           </label>
           <label className="field">
-            Proveedor habitual
+            Preferred supplier
             <select
               value={context.preferredOfferId ?? ""}
               onChange={(e) =>
@@ -610,7 +610,7 @@ function Connected({
               {run.context.priority === "cash"
                 ? "Caja"
                 : run.context.priority === "unit_price"
-                  ? "Precio por unidad"
+                  ? "Unit price"
                   : "Equilibrio"}
             </button>
           ))}

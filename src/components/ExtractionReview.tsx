@@ -19,8 +19,8 @@ const fieldCopy: Record<
   ExtractionField,
   { label: string; kind: "text" | "select"; options?: [string, string][] }
 > = {
-  supplier: { label: "Proveedor", kind: "text" },
-  ingredient: { label: "Insumo", kind: "text" },
+  supplier: { label: "Supplier", kind: "text" },
+  ingredient: { label: "Ingredient", kind: "text" },
   specification: { label: "Specification", kind: "text" },
   packageContent: { label: "Package size", kind: "text" },
   packageUnit: {
@@ -30,18 +30,20 @@ const fieldCopy: Record<
       ["", "Pending"],
       ["kg", "kg"],
       ["g", "g"],
+      ["lb", "lb"],
+      ["oz", "oz"],
       ["L", "L"],
       ["ml", "ml"],
-      ["unit", "unidad"],
+      ["unit", "unit"],
     ],
   },
   price: { label: "Price per package", kind: "text" },
   currency: {
-    label: "Moneda",
+    label: "Currency",
     kind: "select",
     options: [
       ["", "Pending"],
-      ["PEN", "PEN · soles"],
+      ["PEN", "PEN · Peruvian soles"],
       ["USD", "USD · US dollars"],
     ],
   },

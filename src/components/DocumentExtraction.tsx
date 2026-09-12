@@ -138,7 +138,7 @@ function Connected({
             className="button text-button"
             onClick={() => setPreview(run.kind)}
           >
-            Ver original
+            View original
           </button>
           {run.status === "running" && (
             <p role="status">
