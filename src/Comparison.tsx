@@ -1,4 +1,5 @@
 import Brand from "./components/Brand";
+import { Select } from "./components/ui/Select";
 import PurchasingAdvisor, {
   comparisonStateFingerprint,
 } from "./components/PurchasingAdvisor";
@@ -179,18 +180,19 @@ function OfferEditor({
           )}
           <label className="field">
             <span>Unidad del contenido</span>
-            <select
+            <Select
               aria-label="Unidad del contenido"
               name="unit"
               defaultValue={offer?.packageUnit ?? ""}
-            >
-              <option value="">Por confirmar</option>
-              <option value="kg">Kilogramos (kg)</option>
-              <option value="g">Gramos (g)</option>
-              <option value="L">Litros (L)</option>
-              <option value="ml">Mililitros (ml)</option>
-              <option value="unit">Unidades</option>
-            </select>
+              options={[
+                { value: "", label: "Por confirmar" },
+                { value: "kg", label: "Kilogramos (kg)" },
+                { value: "g", label: "Gramos (g)" },
+                { value: "L", label: "Litros (L)" },
+                { value: "ml", label: "Mililitros (ml)" },
+                { value: "unit", label: "Unidades" },
+              ]}
+            />
           </label>
           {field(
             "price",
@@ -200,14 +202,15 @@ function OfferEditor({
           )}
           <label className="field">
             <span>Moneda</span>
-            <select
+            <Select
               aria-label="Moneda"
               name="currency"
               defaultValue={offer?.currency ?? "PEN"}
-            >
-              <option value="PEN">Soles (PEN)</option>
-              <option value="USD">Dólares (USD)</option>
-            </select>
+              options={[
+                { value: "PEN", label: "Soles (PEN)" },
+                { value: "USD", label: "Dólares (USD)" },
+              ]}
+            />
           </label>
           {field(
             "minimum",
@@ -223,17 +226,16 @@ function OfferEditor({
           )}
           <label className="field full-width">
             <span>Impuestos del precio y la entrega</span>
-            <select
+            <Select
               aria-label="Impuestos del precio y la entrega"
               name="tax"
               defaultValue={offer?.taxStatus ?? "unknown"}
-            >
-              <option value="unknown">Por confirmar</option>
-              <option value="included">
-                Importes finales, impuestos incluidos
-              </option>
-              <option value="excluded">Faltan impuestos por sumar</option>
-            </select>
+              options={[
+                { value: "unknown", label: "Por confirmar" },
+                { value: "included", label: "Importes finales, impuestos incluidos" },
+                { value: "excluded", label: "Faltan impuestos por sumar" },
+              ]}
+            />
           </label>
           <label className="checkbox full-width">
             <input
@@ -592,16 +594,18 @@ export default function Comparison({
               </label>
               <label className="field unit">
                 <span>Unidad</span>
-                <select
+                <Select
+                  aria-label="Unidad"
                   value={request.unit}
-                  onChange={(e) =>
-                    setRequest({ ...request, unit: e.target.value as BaseUnit })
+                  onValueChange={(unit) =>
+                    setRequest({ ...request, unit: unit as BaseUnit })
                   }
-                >
-                  <option value="kg">kg</option>
-                  <option value="L">L</option>
-                  <option value="unit">unid.</option>
-                </select>
+                  options={[
+                    { value: "kg", label: "kg" },
+                    { value: "L", label: "L" },
+                    { value: "unit", label: "unid." },
+                  ]}
+                />
               </label>
             </div>
             {!validQuantity ? (
