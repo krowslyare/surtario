@@ -1,3 +1,4 @@
+import { researchLocation } from "../../src/domain/researchMarket";
 import { providerFetch } from "./providerTransport";
 import { publicSourceUrl } from "./sourceQuality";
 
@@ -114,6 +115,7 @@ export async function readProductPage(
   url: string,
   apiKey: string | undefined,
   request: typeof fetch = providerFetch,
+  region?: string,
 ): Promise<DiscoveredSource> {
   const target = publicSourceUrl(url);
   if (!target || !apiKey?.trim())
@@ -136,7 +138,7 @@ export async function readProductPage(
         maxAge: 0,
         timeout: 20000,
         parsers: [],
-        location: { country: "PE", languages: ["es-PE", "es"] },
+        ...(region ? { location: { country: researchLocation(region).country, languages: [researchLocation(region).language] } } : {}),
       }),
     });
     if (!response.ok) {
@@ -211,9 +213,9 @@ export async function discoverSources(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        query: `${input.ingredient.trim()} proveedores distribuidores ${input.region.trim()} Perú`,
-        country: "PE",
-        location: `${input.region.trim()}, Peru`,
+        query: `${input.ingredient.trim()} ${researchLocation(input.region).language === "es" ? "proveedores distribuidores" : "wholesale restaurant suppliers"} ${researchLocation(input.region).location}`,
+        ...(researchLocation(input.region).country ? { country: researchLocation(input.region).country } : {}),
+        location: researchLocation(input.region).location,
         limit: 3,
         sources: ["web"],
         timeout: 20000,

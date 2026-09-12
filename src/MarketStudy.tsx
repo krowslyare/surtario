@@ -42,7 +42,7 @@ import SavedStudies, { type SavedStudy } from "./components/SavedStudies";
 import type { Id } from "../convex/_generated/dataModel";
 
 const dateLabel = (date: string) =>
-  new Intl.DateTimeFormat("es-PE", {
+  new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -50,10 +50,10 @@ const dateLabel = (date: string) =>
   }).format(new Date(`${date}T12:00:00Z`));
 const kindLabel = (result: MarketResult) =>
   result.kind === "catalog"
-    ? "Precio de catálogo"
+    ? "Catalog price"
     : result.kind === "distributor"
-      ? "Distribuidor sin precio"
-      : "Referencia general";
+      ? "Supplier without a price"
+      : "Market reference";
 
 export default function MarketStudy({
   onPrepare,
@@ -92,7 +92,7 @@ export default function MarketStudy({
       (selectedIds.length ? { ingredient: "Arroz", region: "Lima" } : null);
     if (existing && !sameStudyContext(existing, context)) {
       setError(
-        "Esta selección pertenece a otro insumo o zona. Guarda tu estudio e inicia uno nuevo antes de añadirla.",
+        "This option belongs to a different ingredient or area. Save this study and start another before adding it.",
       );
       return false;
     }
@@ -144,8 +144,8 @@ export default function MarketStudy({
     (item): item is CatalogResult => item.kind === "catalog",
   );
   const sourceTitle = search
-    ? `${search.term} en ${search.region}`
-    : "Tu estudio";
+    ? `${search.term} in ${search.region}`
+    : "Your study";
   const showExampleWorkspace = resultsView === "example" || showStudy;
 
   function beginIngredientStudy(ingredient: string) {
@@ -179,7 +179,7 @@ export default function MarketStudy({
   function explore(event?: FormEvent) {
     event?.preventDefault();
     if (!term.trim()) {
-      setError("Escribe un insumo o categoría para explorar.");
+      setError("Enter an ingredient or category to explore.");
       return;
     }
     setError("");
@@ -233,7 +233,7 @@ export default function MarketStudy({
     setQuote(result);
     setCopyState("");
     setQuoteText(
-      `Hola, estoy investigando opciones de ${result.ingredient.toLowerCase()} para un restaurante en ${search?.region ?? result.region}. ¿Podrían compartir catálogo, presentaciones, precios con impuestos, pedido mínimo y cobertura de entrega? Por ahora es una consulta de mercado; aún no tengo una cantidad de compra definida. Gracias.`,
+      `Hello, I am researching ${result.ingredient.toLowerCase()} for a restaurant in ${search?.region ?? result.region}. Could you share pack sizes, prices, tax, minimum order and delivery coverage? This is a market inquiry; I have not set a purchase quantity yet. Thank you.`,
     );
   }
   function prepare() {
@@ -241,14 +241,14 @@ export default function MarketStudy({
       onPrepare(preparePurchaseFromCatalog(selected, confirmed));
       setPrepareOpen(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Revisa la selección.");
+      setError(e instanceof Error ? e.message : "Review your shortlist.");
     }
   }
 
   return (
     <>
       <a href="#market-results" className="skip-link">
-        Ir a los resultados
+        Skip to results
       </a>
       <header className="topbar market-topbar">
         <Brand />
@@ -263,7 +263,7 @@ export default function MarketStudy({
           }}
         >
           <Bookmark size={18} />
-          Mi estudio
+          My study
           {optionCount > 0 && (
             <span className="selection-count">{optionCount}</span>
           )}
@@ -275,15 +275,14 @@ export default function MarketStudy({
         <div className="workspace-nav">
           <span>
             <Search size={16} />
-            Explorar mercado
+            Explore suppliers
           </span>
-          <span className="demo-badge">Prototipo de investigación</span>
+          <span className="demo-badge">Ingredient sourcing</span>
         </div>
         <div className="market-intro">
-          <h1>Investiga tus insumos.</h1>
+          <h1>Find the right ingredients.</h1>
           <p>
-            Precios por unidad, presentaciones y proveedores. Guarda las
-            opciones que quieras revisar.
+            Find suppliers, check pack sizes and keep the options worth comparing.
           </p>
         </div>
         <form
@@ -295,22 +294,22 @@ export default function MarketStudy({
           }}
         >
           <label className="field">
-            <span>Insumo o categoría</span>
+            <span>Ingredient or category</span>
             <div className="search-input">
               <Search size={20} />
               <input
-                aria-label="Insumo o categoría"
+                aria-label="Ingredient or category"
                 value={term}
                 onChange={(e) => setTerm(e.target.value)}
-                placeholder="Ej. arroz, abarrotes secos"
+                placeholder="e.g. long-grain white rice"
                 maxLength={120}
               />
             </div>
           </label>
           <label className="field">
-            <span>Zona de interés</span>
+            <span>Delivery area</span>
             <select
-              aria-label="Zona de interés"
+              aria-label="Delivery area"
               value={region}
               onChange={(e) => setRegion(e.target.value)}
             >
@@ -325,7 +324,7 @@ export default function MarketStudy({
               className={`button ${webStatus?.searchEnabled ? "secondary" : "primary"}`}
               onClick={webStatus?.searchEnabled ? () => explore() : undefined}
             >
-              Explorar ejemplo
+              Explore example
             </button>
             <button
               type={webStatus?.searchEnabled ? "submit" : "button"}
@@ -333,20 +332,20 @@ export default function MarketStudy({
               disabled={!webStatus?.searchEnabled || !term.trim()}
               aria-describedby="market-search-help"
             >
-              <Search size={18} aria-hidden="true" /> Buscar en la web
+              <Search size={18} aria-hidden="true" /> Search suppliers
             </button>
           </div>
           <p className="market-search-note" id="market-search-help">
             <Info size={16} />
             {webStatus?.searchEnabled
-              ? "Busca fuentes en la web o explora datos sintéticos de arroz y abarrotes en Lima."
-              : "Explora datos sintéticos de arroz y abarrotes en Lima. La búsqueda web aún no está habilitada."}
+              ? "Search public sources or try a sample study."
+              : "Try a sample study while live search is unavailable."}
           </p>
           <a
             className="button text-button mobile-tool-link"
             href="#study-tools"
           >
-            <FileText size={16} aria-hidden="true" /> Usar lista o archivo
+            <FileText size={16} aria-hidden="true" /> Use a list or file
             <ArrowRight size={16} aria-hidden="true" />
           </a>
         </form>
@@ -362,7 +361,7 @@ export default function MarketStudy({
                     : undefined
                 }
                 tabIndex={resultsView === "web" && !showStudy ? -1 : undefined}
-                aria-label="Resultados de investigación web"
+                aria-label="Supplier search results"
               >
                 <LiveResearch
                   selections={webSelections}
@@ -397,14 +396,12 @@ export default function MarketStudy({
                   aria-labelledby="start-title"
                 >
                   <div>
-                    <h2 id="start-title">Empieza con arroz en Lima</h2>
+                    <h2 id="start-title">Try a rice example</h2>
                     <p>
-                      Un saco de 18 kg, una bolsa de 1 kg y un distribuidor sin
-                      precio publicado. Revisa qué puedes comparar y qué falta
-                      consultar.
+                      Compare two pack sizes and a supplier without a published price. See what you know and what to ask next.
                     </p>
                     <button className="button secondary" onClick={startExample}>
-                      Explorar ejemplo de arroz <ArrowRight size={17} />
+                      Explore rice example <ArrowRight size={17} />
                     </button>
                   </div>
                   <dl className="example-preview">
@@ -416,7 +413,7 @@ export default function MarketStudy({
                       .map((item) => (
                         <div key={item.id}>
                           <dt>
-                            Presentación de{" "}
+                            Pack size:{" "}
                             {item.packageContent === null
                               ? "peso pendiente"
                               : `${numberLabel(item.packageContent)} ${item.packageUnit}`}
@@ -428,8 +425,8 @@ export default function MarketStudy({
                         </div>
                       ))}
                     <div>
-                      <dt>Otro distribuidor</dt>
-                      <dd>Por consultar</dd>
+                      <dt>Another supplier</dt>
+                      <dd>Ask supplier</dd>
                     </div>
                   </dl>
                 </section>
@@ -438,11 +435,11 @@ export default function MarketStudy({
                   <div className="section-heading">
                     <div>
                       <h2 id="results-title" tabIndex={-1}>
-                        {showStudy ? "Mi estudio de mercado" : sourceTitle}
+                        {showStudy ? "My market study" : sourceTitle}
                       </h2>
                       <p>
                         {showStudy
-                          ? `${optionCount} ${optionCount === 1 ? "opción seleccionada" : "opciones seleccionadas"} en esta vista`
+                          ? `${optionCount} ${optionCount === 1 ? "selected option" : "selected options"} in this view`
                           : `${results.length} resultados ilustrativos · No representan cobertura real del mercado`}
                       </p>
                     </div>
@@ -454,21 +451,21 @@ export default function MarketStudy({
                           setFilter("all");
                         }}
                       >
-                        Volver a resultados
+                        Back to results
                       </button>
                     )}
                   </div>
                   <div
                     className="market-toolbar"
-                    aria-label="Tipos de resultado"
+                    aria-label="Result types"
                   >
                     <SlidersHorizontal size={16} />
                     {(
                       [
-                        ["all", "Todos"],
-                        ["catalog", "Con precio"],
-                        ["distributor", "Sin precio"],
-                        ["reference", "Referencias"],
+                        ["all", "All"],
+                        ["catalog", "With prices"],
+                        ["distributor", "No price"],
+                        ["reference", "References"],
                       ] as const
                     ).map(([value, label]) => (
                       <button
@@ -516,19 +513,19 @@ export default function MarketStudy({
                         <Search size={32} />
                         <h3>
                           {showStudy
-                            ? "Todavía no tienes opciones de este tipo"
-                            : "No hay ejemplos para esta búsqueda"}
+                            ? "No options of this type yet"
+                            : "No examples match this search"}
                         </h3>
                         <p>
                           {showStudy
-                            ? "Selecciona resultados para construir tu estudio. No necesitas preparar una compra."
-                            : "Esto no indica que no existan distribuidores. El prototipo solo contiene ejemplos de arroz y abarrotes en Lima."}
+                            ? "Add options to build your study. A purchase plan is optional."
+                            : "This does not mean there are no suppliers. Try live search or open a sample study."}
                         </p>
                         <button
                           className="button secondary"
                           onClick={startExample}
                         >
-                          Ver ejemplo de arroz
+                          View rice example
                         </button>
                       </div>
                     )
@@ -549,25 +546,25 @@ export default function MarketStudy({
                             <div className="result-location">
                               <MapPin size={14} />
                               {result.kind === "reference"
-                                ? `Zona de referencia: ${result.region}.`
-                                : `${result.region} · Reparto por confirmar`}
+                                ? `Reference area: ${result.region}.`
+                                : `${result.region} · Delivery to confirm`}
                             </div>
                             <button
                               className="button text-button source-button"
                               onClick={() => setSource(result)}
                             >
                               <FileText size={15} />
-                              Ver fuente de ejemplo{" "}
+                              View example source{" "}
                               <span>{dateLabel(result.source.observedAt)}</span>
                             </button>
                           </div>
                           <div className="result-value">
                             {result.kind === "catalog" ? (
                               <>
-                                <span>Precio por unidad · ejemplo</span>
+                                <span>Unit price · example</span>
                                 <strong className="normalized-price">
                                   {publishedUnitPrice(result) === null ? (
-                                    "Por confirmar"
+                                    "To confirm"
                                   ) : (
                                     <>
                                       {money(
@@ -580,37 +577,37 @@ export default function MarketStudy({
                                 </strong>
                                 <p className="package-price">
                                   {money(result.priceCents, result.currency)}{" "}
-                                  por{" "}
+                                  per{" "}
                                   {result.packageContent === null
-                                    ? "presentación por confirmar"
+                                    ? "pack size to confirm"
                                     : `${numberLabel(result.packageContent)} ${result.packageUnit}`}
                                 </p>
                                 <small>
-                                  No confirma stock, impuestos ni entrega.
+                                  Stock, tax and delivery need confirmation.
                                 </small>
                               </>
                             ) : result.kind === "distributor" ? (
                               <>
-                                <span>Precio no publicado</span>
+                                <span>Price not published</span>
                                 <strong className="contact-heading">
-                                  Consultar catálogo
+                                  Request catalog
                                 </strong>
                                 <p>
                                   {result.contact
-                                    ? "Contacto comercial ilustrativo disponible"
-                                    : "Sin contacto confirmado"}
+                                    ? "Sample supplier contact available"
+                                    : "Contact not confirmed"}
                                 </p>
                                 <button
                                   className="button text-button"
                                   onClick={() => setSource(result)}
                                 >
                                   <Mail size={16} />
-                                  Ver contacto
+                                  View contact
                                 </button>
                               </>
                             ) : (
                               <>
-                                <span>Contexto del mercado</span>
+                                <span>Market context</span>
                                 <p>{result.note}</p>
                               </>
                             )}
@@ -627,15 +624,15 @@ export default function MarketStudy({
                                 <Bookmark size={16} />
                               )}
                               {selectedIds.includes(result.id)
-                                ? "En mi estudio"
-                                : "Añadir a mi estudio"}
+                                ? "In my study"
+                                : "Add to study"}
                             </button>
                             {result.kind !== "reference" && (
                               <button
                                 className="button text-button"
                                 onClick={() => requestQuote(result)}
                               >
-                                Preparar consulta <ArrowRight size={16} />
+                                Prepare inquiry <ArrowRight size={16} />
                               </button>
                             )}
                           </div>
@@ -651,10 +648,9 @@ export default function MarketStudy({
                       <div>
                         <h3 id="study-next-title">
                           {selected.length}{" "}
-                          {selected.length === 1 ? "opción" : "opciones"} en tu
-                          estudio
+                          {selected.length === 1 ? "option" : "options"} in your study
                         </h3>
-                        <p>Preparar una compra es opcional.</p>
+                        <p>You can keep researching without planning a purchase.</p>
                       </div>
                       <div className="study-next-actions">
                         <button
@@ -664,7 +660,7 @@ export default function MarketStudy({
                             setFilter("all");
                           }}
                         >
-                          Revisar selección
+                          Review selection
                         </button>
                         <button
                           className="button primary"
@@ -675,12 +671,11 @@ export default function MarketStudy({
                             setError("");
                           }}
                         >
-                          Preparar compra <ArrowRight size={17} />
+                          Plan purchase <ArrowRight size={17} />
                         </button>
                         {priced.length === 0 && (
                           <small>
-                            Para calcular una compra, selecciona un precio o
-                            solicita cotización.
+                            Add a priced offer or request a quote to calculate a purchase.
                           </small>
                         )}
                       </div>
@@ -699,7 +694,7 @@ export default function MarketStudy({
                 )
                 .map((item) => (
                   <div key={`${study.id}:${item.id}`}>
-                    <h3>Consultar a {item.supplier}</h3>
+                    <h3>Ask {item.supplier}</h3>
                     <QuotationMail
                       comparisonId={null}
                       studyId={study.id!}
@@ -714,9 +709,9 @@ export default function MarketStudy({
           <aside className="study-panel" aria-labelledby="study-panel-title">
             <div className="study-panel-heading">
               <Bookmark size={18} aria-hidden="true" />
-              <h2 id="study-panel-title">Tu estudio</h2>
+              <h2 id="study-panel-title">Your study</h2>
               <span className="study-panel-count">
-                {optionCount} {optionCount === 1 ? "opción" : "opciones"}
+                {optionCount} {optionCount === 1 ? "option" : "options"}
               </span>
             </div>
             <button
@@ -727,7 +722,7 @@ export default function MarketStudy({
                 else beginIngredientStudy(next);
               }}
             >
-              Nuevo estudio
+              New study
             </button>
             {persistenceEnabled ? (
               <SavedStudies
@@ -752,8 +747,7 @@ export default function MarketStudy({
               />
             ) : (
               <p className="field-hint">
-                Guardado no configurado. Puedes explorar ejemplos; esta
-                selección se pierde al recargar.
+                Saving is unavailable. You can explore examples, but this selection will be lost on reload.
               </p>
             )}
           </aside>
@@ -761,11 +755,11 @@ export default function MarketStudy({
             className="study-tools"
             id="study-tools"
             tabIndex={-1}
-            aria-label="Herramientas del estudio"
+            aria-label="Study tools"
           >
             <div className="study-tool-heading">
               <FileText size={18} aria-hidden="true" />
-              <h2>Tus insumos</h2>
+              <h2>Your ingredients</h2>
             </div>
             <IngredientIntake
               persistenceEnabled={persistenceEnabled}
@@ -779,8 +773,7 @@ export default function MarketStudy({
             <details className="document-tools">
               <summary>
                 <span>
-                  <FileText size={18} aria-hidden="true" /> Revisar una
-                  cotización
+                  <FileText size={18} aria-hidden="true" /> Review a quote
                 </span>
                 <ChevronDown
                   size={18}
@@ -789,25 +782,22 @@ export default function MarketStudy({
                 />
               </summary>
               <p className="document-tools-hint">
-                Foto, PDF o entrada manual. Revisa los datos antes de comparar.
+                Photo, PDF or manual entry. Review the details before comparing.
               </p>
               {persistenceEnabled && (
                 <DocumentExtraction onPrepare={onPrepare} />
               )}
               <ExtractionReview onPrepare={onPrepare} />
               <aside className="market-context">
-                <h3>¿Ya tienes una cotización?</h3>
+                <h3>Already have a quote?</h3>
                 <p>
-                  Puedes introducir precios y condiciones en la comparación
-                  manual. La lectura automática de foto/PDF está disponible para
-                  los ejemplos al configurar OpenAI. Los archivos propios
-                  conservan la alternativa manual.
+                  Enter the prices and terms from your quote. You can also review a sample document before comparing.
                 </p>
                 <button
                   className="button text-button"
                   onClick={onManualExample}
                 >
-                  Abrir alternativa de comparación manual{" "}
+                  Enter a quote manually{" "}
                   <ArrowRight size={16} />
                 </button>
               </aside>
@@ -816,37 +806,33 @@ export default function MarketStudy({
         </div>
         <footer>
           <span>
-            Guarda el estudio para recuperar fuentes revisadas, candidatos y
-            ejemplos seleccionados. Preparar una compra es opcional.
+            Save your study to return to reviewed sources and shortlisted suppliers.
           </span>
           <span>
-            Los ejemplos usan fuentes y contactos ficticios. Cada envío de
-            correo requiere revisión y autorización.
+            Examples use fictional data. Review and approve each email before sending.
           </span>
         </footer>
       </main>
       {nextIngredient && (
         <Dialog
-          title="Investigar otro insumo"
+          title="Research another ingredient"
           onClose={() => setNextIngredient(null)}
         >
           <p>
-            Vas a iniciar un estudio de {nextIngredient}. La selección actual no
-            se trasladará. Si no la guardaste, vuelve al estudio y guárdala
-            antes de continuar.
+            Start a study for {nextIngredient}. Your current selection will not carry over. Save it first if you want to keep it.
           </p>
           <div className="dialog-actions">
             <button
               className="button secondary"
               onClick={() => setNextIngredient(null)}
             >
-              Volver al estudio
+              Back to study
             </button>
             <button
               className="button primary"
               onClick={() => beginIngredientStudy(nextIngredient)}
             >
-              Iniciar otro estudio
+              Start another study
             </button>
           </div>
         </Dialog>
@@ -855,51 +841,47 @@ export default function MarketStudy({
         <Dialog
           title={
             source.kind === "distributor"
-              ? "Fuente y contacto del distribuidor"
-              : "Origen del resultado"
+              ? "Supplier source and contact"
+              : "Result source"
           }
           onClose={() => setSource(null)}
         >
-          <span className="demo-badge">Datos ficticios</span>
+          <span className="demo-badge">Sample data</span>
           <div className="source-document">
             <h3>{source.source.title}</h3>
-            <p>Observación de ejemplo: {dateLabel(source.source.observedAt)}</p>
+            <p>Sample observed: {dateLabel(source.source.observedAt)}</p>
             <blockquote>{source.source.evidence}</blockquote>
             {source.kind === "distributor" && source.contact && (
               <div className="example-contact">
-                <strong>Correo de ejemplo</strong>
+                <strong>Sample email</strong>
                 <code>{source.contact.value}</code>
                 <small>
-                  Dirección ficticia sin verificar. No se habilita envío a este
-                  contacto.
+                  Fictional address. Messages cannot be sent to this contact.
                 </small>
               </div>
             )}
           </div>
           <p className="muted">
-            La versión conectada conservará la URL y el fragmento original. Este
-            ejemplo no procede de una búsqueda real.
+            This is sample data, not a live search result.
           </p>
         </Dialog>
       )}
       {quote && (
         <Dialog
-          title="Preparar consulta al distribuidor"
+          title="Prepare supplier inquiry"
           onClose={() => setQuote(null)}
         >
           <p className="muted">
-            Borrador para {quote.supplier}. Puedes consultar catálogo sin
-            definir cantidad. Este texto solo se copia; no envía correo.
+            Draft for {quote.supplier}. You can request a catalog without a quantity. Copying this text does not send an email.
           </p>
           {persistenceEnabled && (
             <p className="field-hint">
-              Para correo de prueba, guarda el estudio y abre «Consultar a{" "}
-              {quote.supplier}» en la página. Revisarás otro borrador y su
-              destinatario antes de autorizar el envío.
+              To email the test recipient, save the study and open “Ask{" "}
+              {quote.supplier}” on the page. Review the draft and recipient before approving the send.
             </p>
           )}
           <label className="field quote-field">
-            <span>Mensaje editable</span>
+            <span>Edit message</span>
             <textarea
               rows={8}
               value={quoteText}
@@ -912,22 +894,22 @@ export default function MarketStudy({
           </label>
           <div className="dialog-actions">
             <button className="button secondary" onClick={() => setQuote(null)}>
-              Cerrar
+              Close
             </button>
             <button
               className="button primary"
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(quoteText);
-                  setCopyState("Texto copiado. No se envió ningún mensaje.");
+                  setCopyState("Text copied. No message was sent.");
                 } catch {
                   setCopyState(
-                    "No se pudo copiar. Selecciona el texto y cópialo manualmente.",
+                    "Could not copy. Select the text and copy it manually.",
                   );
                 }
               }}
             >
-              Copiar texto
+              Copy text
             </button>
           </div>
           <p role="status" className="field-hint">
@@ -937,13 +919,13 @@ export default function MarketStudy({
       )}
       {prepareOpen && (
         <Dialog
-          title="Del estudio a una posible compra"
+          title="Plan a purchase from this study"
           onClose={() => setPrepareOpen(false)}
         >
           <p>
-            Usarás {priced.length}{" "}
-            {priced.length === 1 ? "precio de catálogo" : "precios de catálogo"}
-            . Todavía tendrás que indicar cantidad y confirmar condiciones.
+            You will use {priced.length}{" "}
+            {priced.length === 1 ? "catalog price" : "catalog prices"}
+            . You will still need to enter a quantity and confirm terms.
           </p>
           <ul className="review-list">
             {priced.map((result) => (
@@ -959,8 +941,7 @@ export default function MarketStudy({
           </ul>
           {selected.length > priced.length && (
             <p className="muted">
-              Los contactos sin precio y las referencias quedan en tu estudio;
-              no se convierten en ofertas.
+              Contacts without prices and market references stay in your study; they do not become offers.
             </p>
           )}
           <label className="checkbox">
@@ -970,8 +951,7 @@ export default function MarketStudy({
               onChange={(e) => setConfirmed(e.target.checked)}
             />
             <span>
-              Revisé las fuentes y confirmé que estos productos tienen la misma
-              especificación y calidad.
+              I reviewed the sources and confirmed that these products have the same specification and quality.
             </span>
           </label>
           {error && (
@@ -984,14 +964,14 @@ export default function MarketStudy({
               className="button secondary"
               onClick={() => setPrepareOpen(false)}
             >
-              Seguir investigando
+              Keep researching
             </button>
             <button
               className="button primary"
               disabled={!confirmed}
               onClick={prepare}
             >
-              Indicar cantidad y condiciones
+              Enter quantity and terms
             </button>
           </div>
         </Dialog>

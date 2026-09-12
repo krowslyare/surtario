@@ -144,7 +144,7 @@ test("product reading accepts only an owned source link, preserves parent, and n
       onlyMainContent: true,
       maxAge: 0,
       parsers: [],
-      location: { country: "PE", languages: ["es-PE", "es"] },
+      location: { country: "PE", languages: ["es"] },
     });
     return Response.json({
       success: true,
