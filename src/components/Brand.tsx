@@ -13,7 +13,7 @@ export default function Brand() {
         </svg>
       </span>
       <span>
-        Compras <span className="brand-description">para restaurantes</span>
+        Purchasing <span className="brand-description">for restaurants</span>
       </span>
     </div>
   );

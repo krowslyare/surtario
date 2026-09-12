@@ -18,23 +18,25 @@ test("guarda nombres revisados y recupera la cola después de recargar", async (
   );
 
   await page.goto("/");
-  await page.getByRole("button", { name: "Añadir lista o archivo" }).click();
+  await page.getByRole("button", { name: "Add list or file" }).click();
   const dialog = page.getByRole("dialog");
   await dialog
-    .getByLabel("Escribe o pega insumos")
+    .getByLabel("Type or paste ingredients")
     .fill("Arroz sintético\nAceite sintético");
-  await dialog.getByRole("button", { name: "Revisar insumos" }).click();
-  await dialog.getByRole("button", { name: "Confirmar 2 insumos" }).click();
-  await page.getByRole("button", { name: "Guardar lista" }).click();
-  await expect(page.getByText("Lista guardada con 2 insumos")).toBeVisible();
+  await dialog.getByRole("button", { name: "Review ingredients" }).click();
+  await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
+  await page.getByRole("button", { name: "Save list" }).click();
+  await expect(
+    page.getByText("List saved with 2 reviewed ingredients"),
+  ).toBeVisible();
 
   await page.reload();
   await expect(
-    page.getByRole("heading", { name: "2 insumos revisados" }),
+    page.getByRole("heading", { name: "2 reviewed ingredients" }),
   ).toHaveCount(0);
-  await page.getByRole("button", { name: "Listas guardadas (1)" }).click();
+  await page.getByRole("button", { name: "Saved lists (1)" }).click();
   await expect(page.getByText("Entrada manual revisada")).toBeVisible();
-  await page.getByRole("button", { name: "Abrir lista" }).click();
+  await page.getByRole("button", { name: "Open list" }).click();
   await expect(
     page.getByRole("button", { name: "Arroz sintético", exact: true }),
   ).toBeVisible();
@@ -65,40 +67,36 @@ test("a late confirmation does not mark a replacement list as saved", async ({
   });
   await page.goto("/");
   await expect(
-    page.getByRole("button", { name: "Listas guardadas (0)" }),
+    page.getByRole("button", { name: "Saved lists (0)" }),
   ).toBeVisible();
   async function enterList(name: string, replacing: boolean) {
     await page
       .getByRole("button", {
-        name: replacing ? "Reemplazar lista" : "Añadir lista o archivo",
+        name: replacing ? "Reemplazar lista" : "Add list or file",
       })
       .click();
     const dialog = page.getByRole("dialog");
-    await dialog.getByLabel("Escribe o pega insumos").fill(name);
-    await dialog.getByRole("button", { name: "Revisar insumos" }).click();
+    await dialog.getByLabel("Type or paste ingredients").fill(name);
+    await dialog.getByRole("button", { name: "Review ingredients" }).click();
     await dialog
-      .getByRole("button", { name: "Confirmar 1 insumo", exact: true })
+      .getByRole("button", { name: "Confirm 1 ingredient", exact: true })
       .click();
   }
   await enterList("Arroz sintético", false);
   hold = true;
-  await page
-    .getByRole("button", { name: "Guardar lista", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Save list", exact: true }).click();
   await expect.poll(() => pending.length).toBeGreaterThan(0);
   await enterList("Aceite sintético", true);
   hold = false;
   pending.forEach((deliver) => deliver());
   await expect(
-    page.getByRole("button", { name: "Guardar lista", exact: true }),
+    page.getByRole("button", { name: "Save list", exact: true }),
   ).toBeEnabled();
   await expect(
     page.getByRole("button", { name: "Aceite sintético", exact: true }),
   ).toBeVisible();
-  await page
-    .getByRole("button", { name: "Guardar lista", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Save list", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Listas guardadas (2)" }),
+    page.getByRole("button", { name: "Saved lists (2)" }),
   ).toBeVisible();
 });

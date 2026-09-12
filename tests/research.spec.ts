@@ -58,15 +58,15 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
     page.getByText("La búsqueda devolvió contenido parcial", { exact: false }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Ver página de origen" }),
+    page.getByRole("link", { name: "View source page" }),
   ).toHaveAttribute("href", "https://supplier.test/rice");
   await page.screenshot({
     path: "/tmp/research-positive-mobile.png",
     fullPage: true,
   });
-  await page.getByRole("button", { name: "Revisar extracción" }).click();
+  await page.getByRole("button", { name: "Review extraction" }).click();
   const dialog = page.getByRole("dialog");
-  await expect(dialog).toContainText("Revisar datos de la cotización");
+  await expect(dialog).toContainText("Review quote details");
   await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
   await dialog.getByLabel("Contenido por presentación").fill("18");
   await dialog
@@ -74,12 +74,10 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
       "Revisé el origen y confirmo los datos, incluidas mis correcciones",
     )
     .check();
-  await dialog.getByRole("button", { name: "Añadir al estudio" }).click();
-  await page
-    .getByRole("button", { name: "Comparar ofertas revisadas" })
-    .click();
+  await dialog.getByRole("button", { name: "Add to study" }).click();
+  await page.getByRole("button", { name: "Compare reviewed offers" }).click();
   await expect(page.getByLabel("Cantidad necesaria")).toHaveValue("");
-  await expect(page.getByTestId("total-0")).toHaveText("Pendiente");
+  await expect(page.getByTestId("total-0")).toHaveText("Pending");
   await page.getByRole("button", { name: "Ver origen" }).click();
   await expect(page.getByRole("dialog")).toContainText("Catálogo de prueba");
   expect(errors).toEqual([]);
@@ -130,24 +128,26 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/__source_quality_test");
-  await expect(page.getByText("Catálogo general", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Catálogo general", { exact: true }),
+  ).toBeVisible();
   const evidence = page.getByText("Catálogo de productos para restaurantes", {
     exact: false,
   });
   await expect(evidence).not.toBeVisible();
-  await page.getByText("Ver evidencia (1)", { exact: true }).click();
+  await page.getByText("View evidence (1)", { exact: true }).click();
+  await expect(evidence).toBeVisible();
   await expect(
-    evidence,
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Revisar extracción" }),
+    page.getByRole("button", { name: "Review extraction" }),
   ).toHaveCount(0);
 
   const picker = page.getByLabel("Página a leer");
   await picker.selectOption("https://supplier.test/arroz-5kg");
   await page.getByRole("button", { name: "Leer ficha del producto" }).click();
   await expect(picker).toHaveValue("https://supplier.test/arroz-5kg");
-  await expect(page.getByText("Leyendo la ficha seleccionada", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("Leyendo la ficha seleccionada", { exact: false }),
+  ).toBeVisible();
   await expect(
     page.getByText("Ficha leída desde Catálogo del distribuidor", {
       exact: true,
@@ -160,29 +160,29 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
     await page.evaluate(
       () => (window as Window & { __readUrl?: string }).__readUrl,
     ),
-  ).toBe(
-    "https://supplier.test/arroz-5kg",
-  );
+  ).toBe("https://supplier.test/arroz-5kg");
   await page.screenshot({
     path: "/tmp/research-source-quality-mobile.png",
     fullPage: true,
   });
 
-  await page.getByRole("button", { name: "Revisar extracción" }).click();
+  await page.getByRole("button", { name: "Review extraction" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.locator("time")).toHaveAttribute(
     "datetime",
     "2026-09-10T18:30:00Z",
   );
-  await expect(dialog.getByText("Título de la página: Arroz extra 5 kg")).toBeVisible();
+  await expect(
+    dialog.getByText("Título de la página: Arroz extra 5 kg"),
+  ).toBeVisible();
   await page.goto("/__source_quality_test?unusable=1");
   await expect(
-    page.getByText("Ninguna fuente quedó lista para analizar como oferta", {
+    page.getByText("No source is ready to analyze as an offer", {
       exact: false,
     }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Ver página de origen" }),
+    page.getByRole("link", { name: "View source page" }),
   ).toHaveAttribute("href", "https://supplier.test/nosotros");
   await expect(page.getByRole("button", { name: "Extraer datos" })).toHaveCount(
     0,

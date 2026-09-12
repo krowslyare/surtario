@@ -77,19 +77,19 @@ test("a simulated reading keeps the original visible, requires review and opens 
   });
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/__document_test");
-  await page.getByRole("button", { name: "Revisar datos leídos" }).click();
+  await page.getByRole("button", { name: "Review extracted data" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("img")).toBeVisible();
   await expect(dialog).toContainText("Transcripción propuesta");
   await expect(
-    dialog.getByRole("button", { name: "Continuar a comparación" }),
+    dialog.getByRole("button", { name: "Continue to comparison" }),
   ).toBeDisabled();
   await dialog
     .getByLabel("Precio por presentación", { exact: true })
     .fill("85.00");
   await dialog.getByRole("checkbox").check();
   await page.screenshot({ path: "/tmp/document-review-mobile.png" });
-  await dialog.getByRole("button", { name: "Continuar a comparación" }).click();
+  await dialog.getByRole("button", { name: "Continue to comparison" }).click();
   await expect(
     page.getByText("Desde tu estudio de ejemplo", { exact: true }),
   ).toBeVisible();

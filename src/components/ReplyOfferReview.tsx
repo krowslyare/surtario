@@ -16,10 +16,10 @@ import { Dialog } from "./Dialog";
 const labels = {
   supplier: "Proveedor",
   ingredient: "Insumo",
-  specification: "Especificación",
-  packageContent: "Contenido por presentación",
-  packageUnit: "Unidad de la presentación",
-  price: "Precio por presentación",
+  specification: "Specification",
+  packageContent: "Package size",
+  packageUnit: "Package unit",
+  price: "Price per package",
   currency: "Moneda",
 };
 export default function ReplyOfferReview({
@@ -164,7 +164,7 @@ export default function ReplyOfferReview({
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
-          : "No se confirmó la extracción. Conserva la revisión manual y no repitas si el estado sigue en curso.",
+          : "Extraction was not confirmed. Keep the manual review and do not retry while the request is still running.",
       );
     } finally {
       setExtracting(false);
@@ -174,11 +174,11 @@ export default function ReplyOfferReview({
     pendingSuggestion?.proposal ??
     (appliedAttempt !== undefined ? appliedProposal : null);
   return (
-    <Dialog title="Preparar oferta desde respuesta" wide onClose={onClose}>
+    <Dialog title="Prepare offer from reply" wide onClose={onClose}>
       <p>
-        Revisa una sola oferta del correo. La IA solo propone campos con
-        evidencia literal; tú confirmas o corriges cada dato. Si falta precio o
-        contenido, déjalo pendiente. Revisión manual siempre disponible.
+        Review one offer from the email. AI only proposes fields with quoted
+        evidence; you confirm or correct each value. If price or package size is
+        missing, leave it pending. Manual review is always available.
       </p>
       <pre className="quotation-text">{reply.text}</pre>
       {status !== "complete" && (
@@ -190,23 +190,23 @@ export default function ReplyOfferReview({
           onClick={() => void suggest()}
         >
           {extracting || status === "running"
-            ? "Extracción en curso…"
+            ? "Extracting…"
             : attempts > 0
-              ? "Volver a intentar con IA"
-              : "Sugerir campos con IA"}
+              ? "Try AI again"
+              : "Suggest fields with AI"}
         </button>
       )}
       {!aiEnabled && status !== "complete" && (
         <p className="notice info">
-          Extracción de respuestas no configurada. Puedes completar todos los
-          campos manualmente.
+          Reply extraction is not configured. You can complete all fields
+          manually.
         </p>
       )}
       {status === "complete" && (
         <p className="notice info" role="status">
           {pendingSuggestion
-            ? "La sugerencia está lista. Tus ediciones se conservaron; aplícala solo si quieres reemplazarlas."
-            : "Sugerencia aplicada. Comprueba cada campo contra el correo antes de confirmar."}
+            ? "The suggestion is ready. Your edits were preserved; apply it only if you want to replace them."
+            : "Suggestion applied. Check each field against the email before confirming."}
         </p>
       )}
       {pendingSuggestion && (
@@ -214,7 +214,7 @@ export default function ReplyOfferReview({
           className="button secondary"
           onClick={() => applySuggestion(pendingSuggestion)}
         >
-          Aplicar sugerencia de IA
+          Apply AI suggestion
         </button>
       )}
       {error && (
@@ -234,7 +234,7 @@ export default function ReplyOfferReview({
                   updateValue(key, e.target.value);
                 }}
               >
-                <option value="">Pendiente</option>
+                <option value="">Pending</option>
                 {(key === "currency"
                   ? ["PEN", "USD"]
                   : ["kg", "g", "L", "ml", "unit"]
@@ -257,14 +257,14 @@ export default function ReplyOfferReview({
             {displayedProposal && (
               <small>
                 Propuesta original de IA: «
-                {displayedProposal[key].value ?? "Pendiente"}» · Evidencia
-                original: «{displayedProposal[key].evidence ?? "Sin evidencia"}»
+                {displayedProposal[key].value ?? "Pending"}» · Evidencia
+                original: «{displayedProposal[key].evidence ?? "No evidence"}»
               </small>
             )}
             {displayedProposal &&
               values[key] !== (displayedProposal[key].value ?? "") && (
                 <small>
-                  Corrección manual actual: «{values[key] || "Pendiente"}»
+                  Current manual correction: «{values[key] || "Pending"}»
                 </small>
               )}
           </label>
@@ -276,19 +276,19 @@ export default function ReplyOfferReview({
           checked={confirmed}
           onChange={(e) => setConfirmed(e.target.checked)}
         />
-        Confirmo que estos datos corresponden a una oferta de esta respuesta
+        I confirm these details represent an offer in this reply
       </label>
       <p className="field-hint">
-        La opción «Continuar con nueva oferta» abre una comparación nueva sin
-        registrar compra. Después podrás completar entrega, impuestos y mínimo y
-        guardar la comparación.
+        “Continue with new offer” opens a new comparison without recording a
+        purchase. You can then complete delivery, tax, and minimum order details
+        and save the comparison.
       </p>
       {onAdd && (
         <>
           <p>
-            Comparación actual: {comparisonLabel}. Las demás ofertas y la
-            cantidad se conservarán. Guarda la comparación después de añadir;
-            tendrás que elegir de nuevo.
+            Current comparison: {comparisonLabel}. The other offers and quantity
+            will remain. Save the comparison after adding this offer; you will
+            need to select an offer again.
           </p>
           <label className="checkbox">
             <input
@@ -296,8 +296,8 @@ export default function ReplyOfferReview({
               checked={equivalent}
               onChange={(e) => setEquivalent(e.target.checked)}
             />
-            Confirmo equivalencia con el insumo y especificación de la
-            comparación actual
+            I confirm it matches the ingredient and specification in the current
+            comparison
           </label>
           <button
             className="button secondary"
@@ -316,14 +316,12 @@ export default function ReplyOfferReview({
                 onClose();
               } catch (cause) {
                 setError(
-                  cause instanceof Error
-                    ? cause.message
-                    : "Revisa la equivalencia.",
+                  cause instanceof Error ? cause.message : "Review the match.",
                 );
               }
             }}
           >
-            Añadir a comparación actual
+            Add to current comparison
           </button>
         </>
       )}
@@ -344,12 +342,12 @@ export default function ReplyOfferReview({
             onClose();
           } catch (cause) {
             setError(
-              cause instanceof Error ? cause.message : "Revisa los campos.",
+              cause instanceof Error ? cause.message : "Review the fields.",
             );
           }
         }}
       >
-        Continuar con nueva oferta
+        Continue with new offer
       </button>
     </Dialog>
   );

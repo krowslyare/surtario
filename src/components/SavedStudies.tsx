@@ -46,8 +46,8 @@ export default function SavedStudies(props: {
     return (
       <p className="notice info">
         {storageError
-          ? "El navegador no permite conservar esta sesión. Puedes explorar, pero guardar requiere habilitar el almacenamiento del sitio."
-          : "Preparando la sesión de ejemplo…"}
+          ? "Your browser cannot keep this session. You can explore, but saving requires site storage."
+          : "Preparing the demo session…"}
       </p>
     );
   return (
@@ -111,48 +111,43 @@ function ConnectedStudies({
       });
       onSaved(saved);
       setMessage(
-        `Estudio guardado con ${studyOptionCount(saved)} ${studyOptionCount(saved) === 1 ? "opción" : "opciones"}. Los cambios posteriores requieren guardar de nuevo.`,
+        `Study saved with ${studyOptionCount(saved)} ${studyOptionCount(saved) === 1 ? "option" : "options"}. Save again after making changes.`,
       );
     } catch (cause) {
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
-          : "No se confirmó el guardado. Tu selección sigue aquí; comprueba la conexión y vuelve a intentar.",
+          : "Saving was not confirmed. Your selection is still here; check your connection and try again.",
       );
     } finally {
       setSaving(false);
     }
   }
   return (
-    <section className="saved-studies" aria-label="Estudios guardados">
+    <section className="saved-studies" aria-label="Saved studies">
       <div className="saved-study-actions">
         <button
           className="button secondary"
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
         >
-          Guardados {studies ? `(${studies.length})` : ""}
+          Saved {studies ? `(${studies.length})` : ""}
         </button>
         <button
           className="button primary"
           onClick={persist}
           disabled={!eligible || saving || !connected}
         >
-          {saving
-            ? "Guardando…"
-            : draft.id
-              ? "Guardar cambios del estudio"
-              : "Guardar estudio"}
+          {saving ? "Saving…" : draft.id ? "Save study changes" : "Save study"}
         </button>
       </div>
       <p className="field-hint">
-        Hasta 10 estudios en este navegador. Guarda antes de salir. Si borras
-        los datos del sitio, pierdes el acceso.
+        Save up to 10 studies in this browser. Save before leaving. Clearing
+        site data removes access.
       </p>
       {!connected && (
         <p role="status">
-          Sin conexión al guardado. Puedes seguir explorando; todavía no se han
-          confirmado cambios.
+          Saving is offline. You can keep exploring; changes are not confirmed.
         </p>
       )}
       {message && <p role="status">{message}</p>}
@@ -164,21 +159,21 @@ function ConnectedStudies({
       {expanded && (
         <div className="saved-study-list">
           {studies === undefined ? (
-            <p role="status">Cargando estudios…</p>
+            <p role="status">Loading studies…</p>
           ) : studies.length === 0 ? (
-            <p>No tienes estudios guardados en esta sesión.</p>
+            <p>You have no saved studies in this session.</p>
           ) : (
             studies.map((study) => (
               <article key={study.id} className="saved-study-row">
                 <div>
                   <strong>
-                    {study.term} en {study.region}
+                    {study.term} in {study.region}
                   </strong>
                   <p>
                     {studyOptionCount(study)}{" "}
-                    {studyOptionCount(study) === 1 ? "opción" : "opciones"} ·
-                    Revisión {study.revision} ·{" "}
-                    {new Date(study.updatedAt).toLocaleString("es-PE")}
+                    {studyOptionCount(study) === 1 ? "option" : "options"} ·
+                    Revision {study.revision} ·{" "}
+                    {new Date(study.updatedAt).toLocaleString("en-US")}
                   </p>
                 </div>
                 <button
@@ -189,18 +184,18 @@ function ConnectedStudies({
                     setExpanded(false);
                     setError("");
                     setMessage(
-                      "Estudio recuperado. La selección abierta reemplazó el borrador de esta vista.",
+                      "Study opened. Its selection replaced the draft in this view.",
                     );
                   }}
                 >
-                  Abrir estudio
+                  Open study
                 </button>
               </article>
             ))
           )}
           <p className="field-hint">
-            Abrir otro estudio reemplaza la selección de esta vista. Guarda
-            primero los cambios que quieras conservar.
+            Opening another study replaces the selection in this view. Save any
+            changes you want to keep first.
           </p>
         </div>
       )}
@@ -221,14 +216,14 @@ class StorageBoundary extends Component<
       return (
         <div className="notice error" role="alert">
           <p>
-            No se pudieron cargar los estudios. La selección actual sigue
-            disponible; el guardado no está confirmado.
+            Saved studies could not be loaded. Your current selection is still
+            available; saving is not confirmed.
           </p>
           <button
             className="button secondary"
             onClick={() => this.setState({ failed: false })}
           >
-            Reintentar guardado
+            Retry saving
           </button>
         </div>
       );

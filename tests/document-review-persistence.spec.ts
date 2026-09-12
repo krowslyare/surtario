@@ -45,7 +45,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
   );
   await page.goto("/");
   await page.getByText("Revisar una cotización", { exact: true }).click();
-  await page.getByRole("button", { name: "Revisar datos leídos" }).click();
+  await page.getByRole("button", { name: "Review extracted data" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
   await dialog.getByLabel("Contenido por presentación").fill("18");
@@ -55,7 +55,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
       "Revisé el origen y confirmo los datos, incluidas mis correcciones",
     )
     .check();
-  await dialog.getByRole("button", { name: "Continuar a comparación" }).click();
+  await dialog.getByRole("button", { name: "Continue to comparison" }).click();
   await page.getByLabel("Cantidad necesaria").fill("10");
   await page
     .getByRole("button", { name: "Editar Distribuidora de ejemplo" })
@@ -72,10 +72,10 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
   await expect(page.getByTestId("total-0")).toHaveText("S/ 100.00");
   await page.getByRole("button", { name: "Elegir oferta" }).click();
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
-    page.getByText("Comparación guardada con una oferta elegida", {
+    page.getByText("Comparison saved with a selected offer", {
       exact: false,
     }),
   ).toBeVisible();
@@ -83,7 +83,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
   await page
     .getByRole("button", { name: "Comparaciones guardadas (1)" })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(page.getByTestId("total-0")).toHaveText("S/ 100.00");
   await expect(
     page.getByRole("button", { name: "Oferta elegida" }),
@@ -101,11 +101,9 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
   await expect(
     page.getByRole("button", { name: "Oferta elegida" }),
   ).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Guardar cambios de la comparación" })
-    .click();
+  await page.getByRole("button", { name: "Save comparison changes" }).click();
   await expect(
-    page.getByText("Comparación guardada. Los cambios posteriores", {
+    page.getByText("Comparison saved Los cambios posteriores", {
       exact: false,
     }),
   ).toBeVisible();

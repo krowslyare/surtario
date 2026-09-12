@@ -15,11 +15,11 @@ export type SourceInspection = {
 };
 
 const kindCopy: Record<SourceAnalysis["kind"], string> = {
-  product: "Ficha de producto",
-  catalog: "Catálogo general",
-  contact: "Contacto de proveedor",
-  irrelevant: "Fuente no pertinente",
-  uncertain: "Fuente por confirmar",
+  product: "Product page",
+  catalog: "General catalog",
+  contact: "Supplier contact",
+  irrelevant: "Irrelevant source",
+  uncertain: "Source needs review",
 };
 
 function safeUrl(value: string) {
@@ -41,13 +41,13 @@ export function SourceQualitySummary({
   return (
     <section
       className={`source-quality source-quality-${analysis.kind}`}
-      aria-label="Análisis de la fuente"
+      aria-label="Source analysis"
     >
       <strong>{kindCopy[analysis.kind]}</strong>
       <p>{analysis.summary}</p>
       {analysis.evidence.length > 0 && (
         <details className="source-evidence">
-          <summary>Ver evidencia ({analysis.evidence.length})</summary>
+          <summary>View evidence ({analysis.evidence.length})</summary>
           <ul>
             {analysis.evidence.map((item, index) => (
               <li key={`${index}:${item}`}>“{item}”</li>
@@ -57,7 +57,7 @@ export function SourceQualitySummary({
       )}
       {analysis.warnings.length > 0 && (
         <div className="source-warnings">
-          <span>Qué falta confirmar</span>
+          <span>What still needs confirmation</span>
           <ul>
             {analysis.warnings.map((item, index) => (
               <li key={`${index}:${item}`}>{item}</li>
@@ -97,14 +97,14 @@ export function ProductLinkReader({
   return (
     <div className="product-link-reader">
       <div>
-        <strong>Posibles fichas del producto</strong>
+        <strong>Possible product pages</strong>
         <p>
-          Elige una página del mismo sitio. Leerla crea una fuente separada para
-          revisar; no registra una compra.
+          Choose a page from the same site. Reading it creates a separate source
+          for review; it does not record a purchase.
         </p>
       </div>
       <label>
-        Página a leer
+        Page to read
         <select
           value={current}
           disabled={reading || Boolean(failed)}
@@ -122,7 +122,7 @@ export function ProductLinkReader({
         target="_blank"
         rel="noopener noreferrer"
       >
-        Abrir ficha candidata <ExternalLink size={14} />
+        Open candidate page <ExternalLink size={14} />
       </a>
       <button
         type="button"
@@ -131,11 +131,11 @@ export function ProductLinkReader({
         onClick={onRead}
       >
         <ScanSearch size={16} />
-        {reading ? "Leyendo ficha…" : "Leer ficha del producto"}
+        {reading ? "Reading page…" : "Read product page"}
       </button>
       {reading && (
         <p className="field-hint" role="status" aria-live="polite">
-          Leyendo la ficha seleccionada. No se repetirá automáticamente.
+          Reading the selected page. It will not retry automatically.
         </p>
       )}
       {failed && (

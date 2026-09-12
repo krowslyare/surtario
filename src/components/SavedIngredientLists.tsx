@@ -38,8 +38,8 @@ export default function SavedIngredientLists(props: {
     return (
       <p className="field-hint">
         {storageError
-          ? "El navegador no permite conservar esta sesión. La lista sigue disponible en esta pestaña."
-          : "Preparando el guardado de listas…"}
+          ? "Your browser cannot keep this session. The list remains available in this tab."
+          : "Preparing list storage…"}
       </p>
     );
   return (
@@ -109,14 +109,14 @@ function ConnectedIngredientLists({
       const stillCurrent = onSaved(saved.id, submittedClientId);
       setMessage(
         stillCurrent
-          ? `Lista guardada con ${saved.ingredients.length} insumos revisados.`
-          : "Se guardó la lista anterior. La cola actual todavía no está guardada.",
+          ? `List saved with ${saved.ingredients.length} reviewed ingredients.`
+          : "The previous list was saved. The current queue is still unsaved.",
       );
     } catch (cause) {
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
-          : "No se confirmó el guardado. La lista sigue disponible en esta pestaña.",
+          : "Saving was not confirmed. The list remains available in this tab.",
       );
     } finally {
       setSaving(false);
@@ -131,23 +131,23 @@ function ConnectedIngredientLists({
           onClick={() => setExpanded(!expanded)}
           aria-expanded={expanded}
         >
-          Listas guardadas {lists ? `(${lists.length})` : ""}
+          Saved lists {lists ? `(${lists.length})` : ""}
         </button>
         <button
           className="button secondary"
           onClick={persist}
           disabled={!persistable || !!savedId || saving || !connected}
         >
-          {saving ? "Guardando…" : savedId ? "Lista guardada" : "Guardar lista"}
+          {saving ? "Saving…" : savedId ? "List saved" : "Save list"}
         </button>
       </div>
       <p className="field-hint">
-        Demo pública: guarda solo nombres sintéticos revisados. No se guardan el
-        archivo, otras columnas, precios ni filas originales. Las
-        transcripciones de foto o PDF permanecen en esta pestaña.
+        Public demo: only reviewed synthetic names are saved. Files, other
+        columns, prices, and original rows are not saved. Photo and PDF
+        transcripts remain in this tab.
       </p>
       {!connected && (
-        <p role="status">Sin conexión al guardado; la lista local no cambió.</p>
+        <p role="status">Saving is offline; the local list did not change.</p>
       )}
       {message && <p role="status">{message}</p>}
       {error && (
@@ -158,17 +158,19 @@ function ConnectedIngredientLists({
       {expanded && (
         <div className="saved-study-list">
           {lists === undefined ? (
-            <p role="status">Cargando listas…</p>
+            <p role="status">Loading lists…</p>
           ) : lists.length === 0 ? (
-            <p>No tienes listas guardadas en esta sesión.</p>
+            <p>You have no saved lists in this session.</p>
           ) : (
             lists.map((list) => (
               <article key={list.id} className="saved-study-row">
                 <div>
-                  <strong>{list.ingredients.length} insumos revisados</strong>
+                  <strong>
+                    {list.ingredients.length} reviewed ingredients
+                  </strong>
                   <p>
                     {list.sourceLabel} ·{" "}
-                    {new Date(list.updatedAt).toLocaleString("es-PE")}
+                    {new Date(list.updatedAt).toLocaleString("en-US")}
                   </p>
                 </div>
                 <button
@@ -178,17 +180,17 @@ function ConnectedIngredientLists({
                     onOpen(list);
                     setExpanded(false);
                     setError("");
-                    setMessage("Lista recuperada en la cola local.");
+                    setMessage("List opened in the local queue.");
                   }}
                 >
-                  Abrir lista
+                  Open list
                 </button>
               </article>
             ))
           )}
           <p className="field-hint">
-            Abrir una lista reemplaza la cola local actual. No inicia compras ni
-            crea ofertas.
+            Opening a list replaces the current local queue. It does not start a
+            purchase or create offers.
           </p>
         </div>
       )}
@@ -208,8 +210,7 @@ class ListStorageBoundary extends Component<
     if (this.state.failed)
       return (
         <p className="notice error" role="alert">
-          No se pudieron cargar las listas guardadas. La cola local sigue
-          disponible.
+          Saved lists could not be loaded. The local queue is still available.
         </p>
       );
     return this.props.children;

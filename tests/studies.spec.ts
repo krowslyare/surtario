@@ -21,19 +21,15 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
     .getByRole("button", { name: "Añadir a mi estudio" })
     .click();
   await expect(
-    page.getByRole("button", { name: "Guardar estudio", exact: true }),
+    page.getByRole("button", { name: "Save study", exact: true }),
   ).toBeEnabled();
-  await page
-    .getByRole("button", { name: "Guardar estudio", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Save study", exact: true }).click();
   await expect(page.getByRole("status")).toContainText(
     "Estudio guardado con 2 opciones",
   );
   await page.reload();
   await page.getByRole("button", { name: "Guardados (1)" }).click();
-  await page
-    .getByRole("button", { name: "Abrir estudio", exact: true })
-    .click();
+  await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(
     page.getByRole("heading", { name: "Mi estudio de mercado" }),
   ).toBeVisible();
@@ -48,31 +44,27 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await otherTab.goto("/");
   await otherTab.getByRole("button", { name: "Guardados (1)" }).click();
   await otherTab
-    .getByRole("button", { name: "Abrir estudio", exact: true })
+    .getByRole("button", { name: "Open study", exact: true })
     .click();
   await page
     .getByRole("article")
     .nth(1)
     .getByRole("button", { name: "En mi estudio" })
     .click();
-  await page
-    .getByRole("button", { name: "Guardar cambios del estudio" })
-    .click();
+  await page.getByRole("button", { name: "Save study changes" }).click();
   await expect(page.getByRole("status")).toContainText(
-    "Estudio guardado con 1 opción",
+    "Study saved with 1 option",
   );
   await otherTab.getByRole("button", { name: "Guardados (1)" }).click();
   await expect(otherTab.getByText(/Revisión 2/)).toBeVisible();
   // A reactive library update must not silently replace an open draft.
   await expect(otherTab.getByText("2 opciones en tu estudio")).toBeVisible();
-  await otherTab
-    .getByRole("button", { name: "Guardar cambios del estudio" })
-    .click();
+  await otherTab.getByRole("button", { name: "Save study changes" }).click();
   await expect(otherTab.getByRole("alert")).toContainText(
     "cambió en otra vista",
   );
   await otherTab
-    .getByRole("button", { name: "Abrir estudio", exact: true })
+    .getByRole("button", { name: "Open study", exact: true })
     .click();
   await expect(otherTab.getByText("1 opción en tu estudio")).toBeVisible();
 
@@ -82,7 +74,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await visitor.goto("/");
   await visitor.getByRole("button", { name: "Guardados (0)" }).click();
   await expect(
-    visitor.getByText("No tienes estudios guardados en esta sesión."),
+    visitor.getByText("You have no saved studies in this session."),
   ).toBeVisible();
   await independent.close();
   await otherTab.close();
@@ -100,19 +92,19 @@ test("sin conexión conserva el borrador y no declara guardado", async ({
     .getByRole("button", { name: "Añadir a mi estudio" })
     .click();
   await expect(
-    page.getByRole("button", { name: "Guardar estudio", exact: true }),
+    page.getByRole("button", { name: "Save study", exact: true }),
   ).toBeEnabled();
   await context.setOffline(true);
   await expect(
-    page.getByRole("button", { name: "Guardar estudio", exact: true }),
+    page.getByRole("button", { name: "Save study", exact: true }),
   ).toBeDisabled();
   await expect(
-    page.getByText("Sin conexión al guardado.", { exact: false }),
+    page.getByText("Saving is offline.", { exact: false }),
   ).toBeVisible();
   await expect(page.getByText("1 opción en tu estudio")).toBeVisible();
   await context.setOffline(false);
   await expect(
-    page.getByRole("button", { name: "Guardar estudio", exact: true }),
+    page.getByRole("button", { name: "Save study", exact: true }),
   ).toBeEnabled();
 });
 
@@ -163,17 +155,13 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     }
   });
   await test.step("Guardar y recuperar el estudio en Convex local", async () => {
-    await page
-      .getByRole("button", { name: "Guardar estudio", exact: true })
-      .click();
+    await page.getByRole("button", { name: "Save study", exact: true }).click();
     await expect(page.getByRole("status")).toContainText(
       "Estudio guardado con 3 opciones",
     );
     await page.reload();
     await page.getByRole("button", { name: "Guardados (1)" }).click();
-    await page
-      .getByRole("button", { name: "Abrir estudio", exact: true })
-      .click();
+    await page.getByRole("button", { name: "Open study", exact: true }).click();
     await expect(page.getByRole("article")).toHaveCount(3);
   });
   await test.step("Consultar un distribuidor sin precio, sin simular envío", async () => {
@@ -204,8 +192,8 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
       .click();
     await expect(page.getByLabel("Cantidad necesaria")).toHaveValue("");
     await page.getByLabel("Cantidad necesaria").fill("10");
-    await expect(page.getByTestId("total-0")).toHaveText("Pendiente");
-    await expect(page.getByTestId("total-1")).toHaveText("Pendiente");
+    await expect(page.getByTestId("total-0")).toHaveText("Pending");
+    await expect(page.getByTestId("total-1")).toHaveText("Pending");
   });
   await test.step("Completar condiciones sintéticas y comprobar el desembolso", async () => {
     // Rehearsal fallback only: these values are not a received supplier response.
