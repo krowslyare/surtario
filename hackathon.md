@@ -304,3 +304,12 @@ The current integrated pass records 175 unit/backend/configuration tests and 10 
 Published the merged PR #21–#26 backend and frontend to the existing Convex development preview. Backend deployment, frontend typecheck/build and hosting checks passed. All eight served files matched the local build by SHA-256; SPA fallback, asset 404 and unsigned webhook rejection passed.
 In-app browser verification saved a synthetic study containing one priced offer and one distributor without a price, then recovered both after reload. Evidence: `docs/desarrollo/HOSTING.md`. The application remains at the reviewed main revision; this entry records deployment evidence.
 Provider settings, production and private repository visibility were unchanged; no external provider call or email was sent. Work stops here for the separate branding pass. Direct OpenAI API, combined hosted provider acceptance, recording and contest submission remain pending.
+
+
+### 2026-09-12 - working tree · US mass and sample-market contract
+Added lb/oz calculation and extraction validation with independent conversion checks, USD sample offers and market-bound persisted studies. Parent review found a saved-study cross-market update; the fix rejects mismatched updates and idempotent replays without changing the original study.
+182 tests and frontend/backend TypeScript checks passed. This PR does not change the current frontend language, deploy code or exercise external providers.
+
+
+### 2026-09-12 - working tree · unit PR review follow-up
+Addressed the automated review by wiring lb/oz into document, web, reply, and offer review selectors and lb into the requested quantity. Kept generated explanations in the existing interface language until the English frontend delivery; the authorized US example scope is now explicit in repository guidance. No deployment or provider call occurred.

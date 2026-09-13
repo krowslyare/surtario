@@ -2,6 +2,7 @@ import { v } from "convex/values";
 
 export const baseUnitValidator = v.union(
   v.literal("kg"),
+  v.literal("lb"),
   v.literal("L"),
   v.literal("unit"),
 );
@@ -9,6 +10,7 @@ export const baseUnitValidator = v.union(
 export const packageUnitValidator = v.union(
   baseUnitValidator,
   v.literal("g"),
+  v.literal("oz"),
   v.literal("ml"),
 );
 

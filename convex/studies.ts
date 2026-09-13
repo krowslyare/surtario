@@ -5,7 +5,11 @@ import { webReviewInputValidator } from "./comparisonValidators";
 import { extractionFields } from "../src/domain/extraction";
 import { sameStudyContext, type WebSelection } from "../src/domain/study";
 import { reconstructWebReview } from "./lib/webReviews";
-import { marketExamples } from "../fixtures/market";
+import {
+  findMarketExampleContext,
+  findMarketExampleContextByIds,
+  marketExamples,
+} from "../fixtures/market";
 import type { Doc } from "./_generated/dataModel";
 
 function reviewedSelectionKey(items: WebSelection[]) {
@@ -125,21 +129,19 @@ export const save = mutation({
       : null;
     const term = context?.ingredient ?? args.term.trim();
     const region = context?.region ?? args.region;
-    if (
-      !context &&
-      (!["arroz", "abarrotes", "abarrotes secos"].includes(
-        term.toLowerCase(),
-      ) ||
-        region !== "Lima")
-    )
+    const selectedIds = [...new Set(args.selectedIds)];
+    const selectedExampleContext = findMarketExampleContextByIds(selectedIds);
+    const requestedExampleContext = findMarketExampleContext(term, region);
+    if (!context && !requestedExampleContext)
       throw new ConvexError(
         "Por ahora solo se guardan estudios del ejemplo o fuentes web revisadas.",
       );
-    const selectedIds = [...new Set(args.selectedIds)];
     if (
       args.selectedIds.length > 4 ||
       (!selectedIds.length && !webSelections.length && !prospects.length) ||
-      selectedIds.some((id) => !marketExamples.some((item) => item.id === id))
+      (selectedIds.length > 0 &&
+        (!selectedExampleContext ||
+          (!context && selectedExampleContext !== requestedExampleContext)))
     )
       throw new ConvexError(
         "Selecciona entre una y cuatro opciones del ejemplo, una oferta web o un distribuidor revisado.",
@@ -149,7 +151,8 @@ export const save = mutation({
       (webSelections.some((item) => !sameStudyContext(context, item)) ||
         prospects.some((item) => !sameStudyContext(context, item)) ||
         (selectedIds.length > 0 &&
-          !sameStudyContext(context, { ingredient: "Arroz", region: "Lima" })))
+          (!selectedExampleContext ||
+            !sameStudyContext(context, selectedExampleContext))))
     )
       throw new ConvexError(
         "Este estudio reúne un insumo y una zona. Guarda la selección e inicia otro estudio para cambiar de investigación.",
@@ -161,6 +164,23 @@ export const save = mutation({
       if (study.revision !== args.expectedRevision)
         throw new ConvexError(
           "El estudio cambió en otra vista. Ábrelo desde Guardados antes de actualizar.",
+        );
+      const savedExampleContext = findMarketExampleContext(
+        study.term,
+        study.region,
+      );
+      const sameSavedContext = savedExampleContext
+        ? requestedExampleContext === savedExampleContext
+        : term === study.term && region === study.region;
+      if (
+        !sameSavedContext ||
+        (selectedExampleContext &&
+          !selectedExampleContext.results.every((result) =>
+            study.results.some((saved) => saved.id === result.id),
+          ))
+      )
+        throw new ConvexError(
+          "Este estudio conserva un insumo, una zona y sus fuentes. Inicia otro estudio para cambiar de mercado.",
         );
       // Preserve the original source snapshot when updating selection.
       await ctx.db.patch("studies", study._id, {
@@ -217,7 +237,7 @@ export const save = mutation({
       clientId: args.clientId,
       term,
       region,
-      results: marketExamples,
+      results: requestedExampleContext?.results ?? marketExamples,
       selectedIds,
       webSelections,
       prospects,

@@ -237,7 +237,7 @@ export default function ReplyOfferReview({
                 <option value="">Pendiente</option>
                 {(key === "currency"
                   ? ["PEN", "USD"]
-                  : ["kg", "g", "L", "ml", "unit"]
+                  : ["kg", "g", "lb", "oz", "L", "ml", "unit"]
                 ).map((value) => (
                   <option key={value} value={value}>
                     {value}

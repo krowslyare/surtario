@@ -279,3 +279,12 @@ The current integrated pass has 175 unit/backend/configuration tests and 10 focu
 PRs #21–#26 are merged; `6ed1dd1` was the deployed application revision. Published its backend with `convex dev --once` and frontend with `deploy:hosting:dev` to the existing development target. All eight hosted files matched the build by SHA-256; SPA reload, missing asset 404 and unsigned webhook rejection passed. In-app browser verification saved a synthetic rice study with a priced offer and a no-price distributor, then recovered both after reload. See [hosting evidence](HOSTING.md).
 
 The requested stop is after this deployment. Provider keys/gates, production and repository visibility were unchanged; no external provider call or email was sent. Direct OpenAI API, the combined hosted provider journey, branding, timed recording and submission remain pending. Stages 2–5 and 7 retain those acceptance requirements.
+
+
+## September 12, 2026 — US mass and sample-market contract
+
+Pounds and ounces are supported across calculation, extraction validation, advisor input and saved comparisons. Separate fictional US examples preserve server-owned source context; a study cannot be updated into another market or replayed with a changed context. Existing Peru examples remain supported.
+
+182 domain/backend tests and both frontend/backend TypeScript checks passed. Independent parent review identified a cross-market update that could preserve an incompatible result snapshot; the fix and regression passed. UI selectors, English workflows, live provider acceptance and public deployment are outside this backend PR. No stage is marked complete by these checks.
+
+La revisión automática del PR de unidades se atendió incluyendo lb/oz en todos los selectores de revisión y lb en la cantidad requerida. La interfaz y las explicaciones conservan juntas su idioma anterior hasta la entrega de frontend. El cambio de alcance autorizado quedó explícito en AGENTS y el plan.

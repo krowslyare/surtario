@@ -301,3 +301,8 @@ Consultadas o identificadas el 7/9/2026. Fuentes comerciales describen oferta, n
 The hackathon decision flow includes an optional purchasing advisor after a comparison is reviewed. It considers stated cash priorities, budget, confirmed daily usage and stock, maximum coverage, and the current supplier. Deterministic scenarios provide order outlay and excess; a bounded Agent interpretation explains tradeoffs using the owned source snapshot. Negotiation drafts use comparable evidence and require human review before any external communication.
 
 This addition does not infer financial history, demand, credit terms, market trends, quality or realized savings. Unknown conditions remain pending. An analysis retains its inputs and comparison revision so changed evidence cannot silently rewrite a prior verdict. Research still works without any purchasing context. See the [advisor contract](../desarrollo/ASESOR_COMPRAS.md) and the [provider verification procedure](../desarrollo/CREDENTIALS_AND_E2E.md); implementation status remains in ETAPAS.md.
+
+
+## Alcance autorizado · 12 de septiembre de 2026
+
+El autor amplió el ejemplo de referencia a arroz en Portland (USD/lb) y decidió que la interfaz final sea en inglés. Se conserva el contrato peruano y PEN. La entrega de unidades mantiene temporalmente la interfaz y las explicaciones en español; la integración de frontend cambia ambas juntas. Esta decisión no agrega fiscalidad automática, conversión de moneda ni un motor general multi-país.
