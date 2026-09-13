@@ -718,9 +718,11 @@ export default function Comparison({
               persistenceEnabled && savingAvailable && persistable && validQuantity
             }
             saveUnavailableReason={
-              !savingAvailable
-                ? "Saving is unavailable. Allow site storage and check your connection; keep this view open."
-                : blockedReason
+              !persistenceEnabled
+                ? "Saving is unavailable. You can use this example during your visit."
+                : !savingAvailable
+                  ? "Saving is unavailable. Allow site storage and check your connection; keep this view open."
+                  : blockedReason
             }
             onSave={saveComparisonForAdvisor}
           />
