@@ -301,3 +301,10 @@ PR #27 is the reviewed prerequisite for US measurements. Its follow-up d26b14c i
 
 
 Final Luna max review found that saved source snapshots include unselected distributors. The product now uses saved selection IDs for inquiry controls, and `quotationMail.create` rejects unselected distributors on the server. Both US/Peru regression cases failed before the correction and passed afterward. The corrected pass has 199 unit/backend/configuration tests, three targeted browser journeys and the full 64-journey browser suite passing, plus both typechecks and hosting checks. Both PRs have passing GitHub test/build checks.
+
+
+## September 13, 2026 — finding-to-decision follow-through
+
+The missing-freight insight now contains the supplier question, hypothetical amount, before/after DSS recommendation and explicit supplier-answer confirmation. It reuses the current advisor priority and constraints. Confirmation edits freight only; the resulting panel states whether the recommended action changed and can save the comparison. Saved freight survives reload; the before/after recap remains current-view state. No automatic selection, purchase or outbound message is added.
+
+205 unit/backend/configuration tests, seven focused browser journeys, both TypeScript checks and hosting checks passed locally. The focused flow checks confirmation reset, actual unit-price context, focus, mobile layout and saved recovery. The prior baseline covered all 64 browser journeys. See [the flow contract and evidence](DECISION_FOLLOWTHROUGH.md). Provider, hosted acceptance and private-pilot gates remain unchanged.

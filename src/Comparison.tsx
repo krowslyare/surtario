@@ -1,8 +1,17 @@
-import MissingConditionInsight from "./components/MissingConditionInsight";
+import {
+  previewFreightDecision,
+  type FreightDecisionPreview,
+} from "./domain/missingResolution";
+import MissingConditionInsight, {
+  ResolvedCondition,
+} from "./components/MissingConditionInsight";
 import Brand from "./components/Brand";
 import { Select } from "./components/ui/Select";
 import PurchasingAdvisor, {
   comparisonStateFingerprint,
+  defaultAdvisorContext,
+  stableValue,
+  type AdvisorDecisionState,
 } from "./components/PurchasingAdvisor";
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
@@ -310,6 +319,16 @@ export default function Comparison({
   const [selectionFingerprint, setSelectionFingerprint] = useState<
     string | null
   >(null);
+  const [decisionState, setDecisionState] = useState<AdvisorDecisionState>({
+    context: defaultAdvisorContext,
+    invalid: false,
+  });
+  const [resolved, setResolved] = useState<{
+    preview: FreightDecisionPreview;
+    fingerprint: string;
+    contextKey: string;
+    clientId: string;
+  } | null>(null);
   const effectiveRequest = {
     ...request,
     quantity: parseDecimal(quantity) ?? NaN,
@@ -464,6 +483,21 @@ export default function Comparison({
     )
       return null;
     return { id: result.saved.id, revision: result.saved.revision };
+  }
+  function confirmFreightAnswer(offerId: string, cents: number) {
+    if (decisionState.invalid) return;
+    const preview = previewFreightDecision(
+      effectiveRequest, offers, decisionState.context, offerId, cents,
+    );
+    saveOffer(preview.updatedOffer);
+    setResolved({
+      preview,
+      fingerprint: JSON.stringify({ request: effectiveRequest, offers: preview.updatedOffers }),
+      contextKey: stableValue(decisionState),
+      clientId,
+    });
+    setMessage("Delivery confirmed. The decision was recalculated. No purchase was placed.");
+    requestAnimationFrame(() => document.getElementById("resolved-condition")?.focus());
   }
   function saveOffer(offer: SupplierOffer) {
     setOffers((current) =>
@@ -665,10 +699,27 @@ export default function Comparison({
             </button>
           </aside>
         </div>
-        <MissingConditionInsight key={currentFingerprint} request={effectiveRequest} offers={offers} onEdit={setEditing} />
+        <MissingConditionInsight
+          key={`${currentFingerprint}:${stableValue(decisionState)}`}
+          request={effectiveRequest}
+          offers={offers}
+          decisionState={decisionState}
+          onConfirm={confirmFreightAnswer}
+          onEdit={setEditing}
+        />
+        {resolved && resolved.clientId === clientId && resolved.fingerprint === fingerprint && resolved.contextKey === stableValue(decisionState) && (
+          <ResolvedCondition
+            key={resolved.fingerprint}
+            preview={resolved.preview}
+            saved={comparisonCurrent}
+            canSave={persistenceEnabled && persistable && validQuantity}
+            onSave={saveComparisonForAdvisor}
+          />
+        )}
         {persistenceEnabled && (
           <PurchasingAdvisor
             key={clientId}
+            onDecisionContext={setDecisionState}
             comparisonId={savedId}
             revision={savedRevision}
             request={effectiveRequest}

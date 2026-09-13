@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-12T17:02:45Z
+- **Last updated:** 2026-09-13T06:35:32Z
 
 ## Log
 
@@ -324,3 +324,8 @@ Addressed all three GitHub review findings in PR #27: added lb/oz review selecto
 
 ### 2026-09-12 - d2a70d1 · final Luna review correction
 Independent Luna max review found that saved source snapshots include unselected distributors, which could expose an unrelated catalog inquiry. Inquiry controls now use saved selected IDs, and the server rejects draft creation for distributors absent from that selection. US and Peru regression tests failed before the fix and passed afterward; browser checks cover US priced-only recovery and web-only studies. 199 unit/backend/configuration tests, three targeted browser checks, the full 64-journey browser suite, both typechecks and hosting checks passed. No external message or deployment occurred.
+
+
+### 2026-09-13 - working tree · finding-to-decision follow-through
+Connected the missing-freight finding to a complete supplier question, an amount preview using the existing deterministic DSS context, explicit operator confirmation and a visible before/after recommendation. Confirmation changes only freight and preserves source evidence. The result can save through existing comparison persistence; the confirmed amount survives reload, while the recap belongs to the current view. No message, selection or purchase is triggered.
+205 unit/backend/configuration tests, seven focused browser journeys, frontend/backend TypeScript and hosting checks passed locally. Cases cover boundary amounts, real advisor priorities, budget constraints, stale input, confirmation reset, focus and mobile layout. No schema change, external model call, provider configuration or cloud deployment was performed. Evidence and limits: `docs/desarrollo/DECISION_FOLLOWTHROUGH.md`.

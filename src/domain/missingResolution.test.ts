@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import type { ProcurementRequest, SupplierOffer } from "./procurement";
 import {
   compareFreightScenario,
+  previewFreightDecision,
   resolveMissingConditions,
 } from "./missingResolution";
 
@@ -141,4 +142,100 @@ test("compareFreightScenario preserves the source ID and shows before/after elig
   expect(() => compareFreightScenario(request, pending, -1)).toThrow(
     /non-negative integer/,
   );
+});
+
+const decisionContext: import("./advisor").AdvisorContext = {
+  priority: "cash",
+  budgetCents: null,
+  dailyUsage: null,
+  stockQuantity: null,
+  maxCoverageDays: null,
+  preferredOfferId: null,
+};
+
+test.each([
+  { freight: 500, total: 4500, difference: -500, choice: "pending-freight" },
+  { freight: 1000, total: 5000, difference: 0, choice: "pending-freight" },
+  { freight: 1500, total: 5500, difference: 500, choice: "complete" },
+])(
+  "connects a confirmed freight amount of $freight cents to the decision",
+  ({ freight, total, difference, choice }) => {
+    const result = previewFreightDecision(
+      request,
+      [pending, complete],
+      decisionContext,
+      pending.id,
+      freight,
+    );
+    expect(result.before).toMatchObject({
+      action: "research",
+      recommendedOfferId: null,
+    });
+    expect(result.after).toMatchObject({
+      action: "buy",
+      recommendedOfferId: choice,
+    });
+    expect(result.totalCents).toBe(total);
+    expect(result.differenceCents).toBe(difference);
+    expect(result.decisionChanged).toBe(true);
+    expect(result.finding.questionDraft).toContain("2 packs of 25 lb Rice");
+    expect(pending.freightCents).toBeNull();
+  },
+);
+
+test("uses the operator priority instead of silently substituting lowest outlay", () => {
+  const result = previewFreightDecision(
+    request,
+    [pending, complete],
+    { ...decisionContext, priority: "unit_price" },
+    pending.id,
+    1500,
+  );
+  expect(result.after.recommendedOfferId).toBe("pending-freight");
+  expect(result.differenceCents).toBe(500);
+});
+
+test("a confirmed answer can leave the decision blocked by the real budget", () => {
+  const result = previewFreightDecision(
+    request,
+    [pending, complete],
+    { ...decisionContext, budgetCents: 4400 },
+    pending.id,
+    500,
+  );
+  expect(result.before.action).toBe("clarify");
+  expect(result.after).toMatchObject({
+    action: "clarify",
+    recommendedOfferId: null,
+  });
+  expect(result.decisionChanged).toBe(false);
+});
+
+test("rejects a stale question and unsupported freight without changing other terms", () => {
+  expect(() =>
+    previewFreightDecision(
+      request,
+      [{ ...pending, freightCents: 0 }, complete],
+      decisionContext,
+      pending.id,
+      500,
+    ),
+  ).toThrow(/no longer matches/);
+  expect(() =>
+    previewFreightDecision(
+      request,
+      [pending, complete],
+      decisionContext,
+      pending.id,
+      Number.MAX_SAFE_INTEGER,
+    ),
+  ).toThrow();
+  const result = previewFreightDecision(
+    request,
+    [pending, complete],
+    decisionContext,
+    pending.id,
+    500,
+  );
+  expect(result.updatedOffer).toEqual({ ...pending, freightCents: 500 });
 });
