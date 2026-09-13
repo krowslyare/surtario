@@ -40,11 +40,13 @@ export function ResolvedCondition({
   preview,
   saved,
   canSave,
+  saveUnavailableReason,
   onSave,
 }: {
   preview: FreightDecisionPreview;
   saved: boolean;
   canSave: boolean;
+  saveUnavailableReason: string | null;
   onSave: () => Promise<unknown>;
 }) {
   const [saving, setSaving] = useState(false);
@@ -108,11 +110,11 @@ export function ResolvedCondition({
             try {
               if (!(await onSave()))
                 setError(
-                  "Saving was not confirmed. Keep this view open and retry from Save comparison.",
+                  "Saving was not confirmed. Keep this view open and retry when saving is available.",
                 );
             } catch {
               setError(
-                "Saving was not confirmed. Keep this view open and retry from Save comparison.",
+                "Saving was not confirmed. Keep this view open and retry when saving is available.",
               );
             } finally {
               setSaving(false);
@@ -132,6 +134,9 @@ export function ResolvedCondition({
           Confirming an answer does not select an offer or place an order.
         </p>
       </div>
+      {!canSave && !saved && !saving && (
+        <p className="field-hint">{saveUnavailableReason}</p>
+      )}
       {error && <p role="alert">{error}</p>}
     </section>
   );

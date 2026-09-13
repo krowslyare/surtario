@@ -310,6 +310,7 @@ export default function Comparison({
   const [savedRevision, setSavedRevision] = useState(0);
   const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
   const savedComparisons = useRef<SavedComparisonsHandle>(null);
+  const [savingAvailable, setSavingAvailable] = useState(false);
   const [clientId, setClientId] = useState(() => crypto.randomUUID());
   const currentClientId = useRef(clientId);
   const [baselineRequest, setBaselineRequest] = useState<ProcurementRequest>(
@@ -665,6 +666,7 @@ export default function Comparison({
             {persistenceEnabled ? (
               <SavedComparisons
                 ref={savedComparisons}
+                onAvailabilityChange={setSavingAvailable}
                 draft={comparisonDraft}
                 onOpen={openSaved}
                 onSaved={(saved, submittedClientId, submitted) => {
@@ -712,7 +714,14 @@ export default function Comparison({
             key={resolved.fingerprint}
             preview={resolved.preview}
             saved={comparisonCurrent}
-            canSave={persistenceEnabled && persistable && validQuantity}
+            canSave={
+              persistenceEnabled && savingAvailable && persistable && validQuantity
+            }
+            saveUnavailableReason={
+              !savingAvailable
+                ? "Saving is unavailable. Allow site storage and check your connection; keep this view open."
+                : blockedReason
+            }
             onSave={saveComparisonForAdvisor}
           />
         )}

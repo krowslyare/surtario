@@ -151,3 +151,26 @@ test("a missing delivery quote stays hypothetical until its terms are confirmed"
   await expect(page.getByTestId("total-1")).toHaveText("Pending");
   expect(errors).toEqual([]);
 });
+
+test("a confirmed answer stays usable when site storage blocks saving", async ({ page }) => {
+  await page.addInitScript(() => {
+    Object.defineProperty(window, "localStorage", {
+      get() { throw new DOMException("Site storage blocked", "SecurityError"); },
+    });
+  });
+  await page.goto("/?view=comparison&example=pe");
+  await expect(page.getByText("Your browser cannot keep this session. You can compare, but saving requires site storage.", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Edit Proveedor A", exact: true }).click();
+  await page.getByRole("dialog").getByLabel("Delivery per order", { exact: true }).fill("");
+  await page.getByRole("dialog").getByRole("button", { name: "Save offer" }).click();
+  await page.getByRole("region", { name: "Resolve missing terms" }).getByRole("button", { name: "Prepare supplier question" }).click();
+  const dialog = page.getByRole("dialog", { name: "Resolve the delivery cost" });
+  await dialog.getByLabel("Try a delivery amount (PEN)").fill("0");
+  await dialog.getByRole("checkbox").check();
+  await dialog.getByRole("button", { name: "Confirm answer and update decision" }).click();
+  const outcome = page.getByRole("region", { name: "Answer and decision" });
+  await expect(outcome).toBeVisible();
+  await expect(outcome.getByRole("button", { name: "Save updated comparison" })).toBeDisabled();
+  await expect(outcome).toContainText("Saving is unavailable. Allow site storage and check your connection");
+  await expect(page.getByTestId("total-0")).toHaveText("S/ 80.00");
+});
