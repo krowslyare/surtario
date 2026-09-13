@@ -44,7 +44,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await expect(page.getByRole("dialog")).toHaveCount(0);
 
   const otherTab = await context.newPage();
-  await otherTab.goto("/");
+  await otherTab.goto("/?view=market");
   await otherTab.getByRole("button", { name: "Saved (1)" }).click();
   await otherTab
     .getByRole("button", { name: "Open study", exact: true })
@@ -79,7 +79,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   const independent = await browser.newContext();
   await connectOnlyToLocalBackend(independent);
   const visitor = await independent.newPage();
-  await visitor.goto("/");
+  await visitor.goto("/?view=market");
   await visitor.getByRole("button", { name: "Saved (0)" }).click();
   await expect(
     visitor.getByText("You have no saved studies in this session."),

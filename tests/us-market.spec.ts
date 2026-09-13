@@ -6,7 +6,7 @@ test.beforeEach(async ({context}) => { await connectOnlyToLocalBackend(context);
 test("US example keeps USD and pounds through study recovery and purchase planning", async ({page}) => {
   const errors: string[] = [];
   page.on("pageerror", error => errors.push(error.message));
-  await page.goto("/");
+  await page.goto("/?view=market");
   await expect(page.locator("html")).toHaveAttribute("lang","en");
   await page.getByRole("button",{name:"Explore rice example"}).click();
   await expect(page.getByRole("heading",{name:"Rice in Portland, OR, US",exact:true})).toBeVisible();

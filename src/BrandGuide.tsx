@@ -46,7 +46,7 @@ export default function BrandGuide() {
       </a>
       <header className="topbar">
         <Brand />
-        <a className="button secondary" href="/">
+        <a className="button secondary" href="/?view=market">
           Open Surtario
         </a>
       </header>

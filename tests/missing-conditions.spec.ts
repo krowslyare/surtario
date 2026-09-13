@@ -30,7 +30,7 @@ test("a missing delivery quote stays hypothetical until its terms are confirmed"
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
-  await page.goto("/");
+  await page.goto("/?view=market");
   await page.getByRole("button", { name: "Explore rice example" }).click();
   const results = page.getByRole("article");
   await results.nth(0).getByRole("button", { name: "Add to study" }).click();

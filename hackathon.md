@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-13T14:47:56Z
+- **Last updated:** 2026-09-13T22:27:58Z
 
 ## Log
 
@@ -329,3 +329,9 @@ Independent Luna max review found that saved source snapshots include unselected
 ### 2026-09-13 - working tree · finding-to-decision follow-through
 Connected the missing-freight finding to a complete supplier question, an amount preview using the existing deterministic DSS context, explicit operator confirmation and a visible before/after recommendation. Confirmation changes only freight and preserves source evidence. The result can save through existing comparison persistence; the confirmed amount survives reload, while the recap belongs to the current view. No message, selection or purchase is triggered.
 205 unit/backend/configuration tests, 13 focused browser journeys, frontend/backend TypeScript and hosting checks passed locally. Cases cover boundary amounts, real advisor priorities, budget constraints, stale input, confirmation reset, focus and mobile layout. Independent Luna max review found a misleading save action under blocked site storage; saving now follows persistence readiness, with a passing browser regression. No schema change, external model call, provider configuration or cloud deployment was performed. Evidence and limits: `docs/desarrollo/DECISION_FOLLOWTHROUGH.md`.
+
+### 2026-09-13 - working tree · compact product landing
+Added an English product entrance at the root route, using the existing Surtario identity and ingredient photograph. A fictional supplier reply demonstrates the deterministic delivery calculation; the workspace loads on entry and explicit market, comparison, brand and Peru links remain available.
+205 unit/backend/configuration tests and hosting checks passed. All 67 browser journeys passed across the full run and targeted rechecks after correcting local CLI configuration and old other-tab workspace URLs; later timeouts passed without changing assertions. Desktop/mobile captures, keyboard, reduced motion and back/reload are covered. No new model call, backend change, deployment or visibility change.
+
+Independent Sol review returned `ship` with no material fixes after inspecting all four captures, the established design contract and routing/product truth. Luna could not complete the initial review because of a usage limit; Sol performed the replacement review.
