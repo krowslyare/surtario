@@ -18,6 +18,7 @@ import type { ProcurementRequest, SupplierOffer } from "../domain/procurement";
 
 export type SavedComparison = Infer<typeof savedComparisonValidator>;
 export type ComparisonDraft = {
+  sourcingCaseId?: string;
   clientId: string;
   id: Id<"comparisons"> | null;
   expectedRevision: number;
@@ -180,15 +181,18 @@ const ConnectedComparisons = forwardRef<
       ? newestComparison(queried, confirmed.current.get(submitted.id))
       : undefined;
     const newReplies = replyReviewsToAppend(submitted, persisted);
+    const newWeb = submitted.id ? submitted.offers.filter(offer => submitted.sources[offer.id]?.webReview && !persisted?.sources[offer.id]).map(offer => ({review:{...submitted.sources[offer.id].webReview!,runId:submitted.sources[offer.id].webReview!.runId as Id<"researchRuns">},equivalent:true as const})) : [];
     try {
       const saved = await save({
         token,
         clientId: submitted.clientId,
+        ...(submitted.sourcingCaseId ? { sourcingCaseId: submitted.sourcingCaseId as Id<"sourcingCases"> } : {}),
         id: submitted.id,
         expectedRevision: submitted.expectedRevision,
         request: submitted.request,
         offers: submitted.offers,
-        selectedOfferId: newReplies.length ? null : submitted.selectedOfferId,
+        selectedOfferId: newReplies.length || newWeb.length ? null : submitted.selectedOfferId,
+        ...(newWeb.length ? { appendWeb: newWeb } : {}),
         ...(newReplies.length ? { appendReplies: newReplies } : {}),
         ...(!submitted.id &&
         submitted.offers.length === 1 &&

@@ -1,0 +1,336 @@
+.sourcing-case {
+  margin-block: var(--space-8);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+.sourcing-heading,
+.sourcing-heading > div,
+.sourcing-detail-heading,
+.sourcing-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.sourcing-heading,
+.sourcing-detail-heading {
+  justify-content: space-between;
+}
+.sourcing-heading h2,
+.sourcing-detail-heading h3 {
+  margin: 0;
+}
+.sourcing-case h3 {
+  font-size: var(--text-section);
+}
+.sourcing-case p {
+  max-width: 75ch;
+}
+.sourcing-intake,
+.sourcing-evidence-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+}
+.sourcing-intake .field {
+  margin-bottom: var(--space-4);
+}
+.sourcing-intake textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+.sourcing-library ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.sourcing-library h3,
+.sourcing-watches h3 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.sourcing-case-link {
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-3);
+  text-align: left;
+  background: var(--color-canvas);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  overflow-wrap: anywhere;
+}
+.sourcing-case-link[aria-pressed="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-success-surface);
+}
+.sourcing-case-link small {
+  color: var(--color-text-muted);
+}
+.sourcing-detail {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+.sourcing-detail-heading {
+  align-items: flex-start;
+}
+.sourcing-detail-heading > div {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sourcing-state {
+  background: var(--color-success-surface);
+  border-radius: var(--radius-badge);
+  padding: var(--space-1) var(--space-3);
+}
+.sourcing-result {
+  font-size: 1.125rem;
+  padding-block: var(--space-4);
+}
+.sourcing-history ol {
+  padding-left: var(--space-6);
+}
+.sourcing-history li {
+  padding: 0 0 var(--space-4) var(--space-2);
+  border-left: 1px solid var(--color-border);
+  overflow-wrap: anywhere;
+}
+.sourcing-history time {
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}
+.sourcing-history li p {
+  margin-block: var(--space-1);
+}
+.sourcing-watch,
+.sourcing-watch-option {
+  border-top: 1px solid var(--color-border);
+  padding-block: var(--space-4);
+  overflow-wrap: anywhere;
+}
+.sourcing-watch-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.sourcing-watch-option > a {
+  flex: 1;
+  min-width: 10rem;
+}
+.sourcing-watch strong {
+  font-size: var(--text-label);
+}
+.sourcing-watch p {
+  margin-block: var(--space-2);
+}
+.sourcing-reviews {
+  margin-top: var(--space-6);
+}
+@media (max-width: 760px) {
+  .sourcing-case {
+    padding: var(--space-4);
+  }
+  .sourcing-intake,
+  .sourcing-evidence-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+  }
+  .sourcing-heading {
+    align-items: flex-start;
+  }
+  .sourcing-heading > div {
+    flex-wrap: nowrap;
+    align-items: flex-start;
+  }
+  .sourcing-heading svg {
+    flex-shrink: 0;
+  }
+}
+
+.sourcing-next {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-6);
+  margin-block: var(--space-6);
+  padding: var(--space-6);
+  border: 0;
+  background: var(--color-success-surface);
+  border-radius: var(--radius-panel);
+}
+.sourcing-next h3 {
+  margin-top: 0;
+}
+.sourcing-next p {
+  margin-block: var(--space-3) var(--space-4);
+}
+.sourcing-facts {
+  margin: 0;
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+.sourcing-facts dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+.sourcing-facts dd {
+  margin: var(--space-1) 0 0;
+}
+.sourcing-correspondence {
+  margin-block: var(--space-6);
+  scroll-margin-top: 110px;
+}
+.sourcing-correspondence ul {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+.sourcing-reviews,
+.sourcing-history,
+.sourcing-watches {
+  scroll-margin-top: 110px;
+}
+@media (max-width: 760px) {
+  .sourcing-next {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--space-4);
+  }
+  .sourcing-facts {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-4);
+  }
+}
+.sourcing-switcher > .disclosure-trigger {
+  cursor: pointer;
+  padding-block: var(--space-3);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+.sourcing-switcher > .disclosure-trigger:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
+}
+
+.sourcing-next h3 {
+  font-size: var(--text-title);
+  font-family: var(--font-display);
+  text-wrap: balance;
+}
+.sourcing-next p {
+  max-width: 60ch;
+}
+.sourcing-activity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding-block: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  margin-top: var(--space-2);
+}
+.sourcing-activity > div {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.sourcing-activity svg {
+  flex-shrink: 0;
+  margin-top: var(--space-1);
+}
+.sourcing-activity p {
+  margin: var(--space-1) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  overflow-wrap: anywhere;
+}
+.sourcing-activity button {
+  flex-shrink: 0;
+}
+.sourcing-disclosure {
+  border-bottom: 1px solid var(--color-border);
+}
+.sourcing-disclosure > .disclosure-trigger {
+  padding-block: var(--space-4);
+  cursor: pointer;
+  min-height: var(--control-min-height);
+  font-weight: 600;
+}
+.sourcing-disclosure > .disclosure-trigger svg {
+  vertical-align: middle;
+  margin-right: var(--space-2);
+}
+.sourcing-disclosure > .disclosure-trigger span {
+  font-size: var(--text-label);
+  font-weight: 400;
+  color: var(--color-text-muted);
+  margin-left: var(--space-2);
+}
+.sourcing-disclosure > .disclosure-trigger:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+.sourcing-history ol {
+  list-style: none;
+  padding-left: var(--space-3);
+}
+.sourcing-history li {
+  position: relative;
+  padding: 0 0 var(--space-6) var(--space-6);
+}
+.sourcing-history li::before {
+  content: "";
+  position: absolute;
+  left: -5px;
+  top: 4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--color-primary);
+}
+.sourcing-history li:first-child p {
+  font-weight: 600;
+}
+.sourcing-history li:last-child {
+  border-color: transparent;
+  padding-bottom: 0;
+}
+@media (max-width: 760px) {
+  .sourcing-activity {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .sourcing-next h3 {
+    font-size: var(--text-section);
+  }
+}
+
+.sourcing-event-title {
+  font-weight: 600;
+}
+.sourcing-event-details > .disclosure-trigger {
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  cursor: pointer;
+  padding-block: var(--space-2);
+  min-height: var(--control-min-height);
+}
+.sourcing-event-details p {
+  font-size: var(--text-label);
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.sourcing-event-details > .disclosure-trigger:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}

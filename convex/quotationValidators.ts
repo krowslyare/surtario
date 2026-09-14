@@ -40,6 +40,12 @@ export const savedQuotationValidator = v.object({
   failure: v.union(v.string(), v.null()),
   replies: v.array(quotationReplyValidator),
   createdAt: v.number(),
+  approvedAt: v.union(v.number(), v.null()),
+  approvedRevision: v.union(v.number(), v.null()),
+  updatedAt: v.number(),
+  aiDraftStatus: v.union(v.literal("idle"), v.literal("running"), v.literal("complete"), v.literal("failed")),
+  aiDraftSubject: v.union(v.string(), v.null()),
+  aiDraftText: v.union(v.string(), v.null()),
 });
 
 export type SavedQuotation = typeof savedQuotationValidator.type;

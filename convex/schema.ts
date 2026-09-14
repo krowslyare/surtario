@@ -12,7 +12,24 @@ import {
 import { documentKind, documentResult } from "./documentValidators";
 import { prospectContent } from "./prospectValidators";
 import { advisorRunContent } from "./advisorValidators";
+import { caseFields, eventFields, watchFields } from "./sourcingValidators";
 export default defineSchema({
+  sourcingCases: defineTable({
+    ownerHash: v.string(),
+    ...caseFields,
+    workflowId: v.optional(v.string()),
+    runs: v.number(),
+  })
+    .index("by_ownerHash", ["ownerHash"])
+    .index("by_studyId", ["studyId"])
+    .index("by_comparisonId", ["comparisonId"]),
+  sourcingEvents: defineTable(eventFields)
+    .index("by_caseId", ["caseId"])
+    .index("by_caseId_and_eventKey", ["caseId", "eventKey"]),
+  sourceWatches: defineTable(watchFields)
+    .index("by_caseId", ["caseId"])
+    .index("by_caseId_and_resultId", ["caseId", "resultId"])
+    .index("by_status_and_nextCheckAt", ["status", "nextCheckAt"]),
   ingredientLists: defineTable({
     ownerHash: v.string(),
     clientId: v.string(),
@@ -92,6 +109,19 @@ export default defineSchema({
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
   quotationRequests: defineTable({
+    aiDraftStatus: v.optional(
+      v.union(
+        v.literal("idle"),
+        v.literal("running"),
+        v.literal("complete"),
+        v.literal("failed"),
+      ),
+    ),
+    aiDraftAttempts: v.optional(v.number()),
+    aiDraftSubject: v.optional(v.string()),
+    aiDraftText: v.optional(v.string()),
+    approvedAt: v.optional(v.number()),
+    approvedRevision: v.optional(v.number()),
     ownerHash: v.string(),
     clientId: v.string(),
     simulated: v.optional(v.boolean()),

@@ -2,10 +2,14 @@ import { defineApp } from "convex/server";
 import { v } from "convex/values";
 import agent from "@convex-dev/agent/convex.config";
 import staticHosting from "@convex-dev/static-hosting/convex.config";
+import workflow from "@convex-dev/workflow/convex.config";
 const app = defineApp({
   env: {
     REHEARSAL_BRIDGE_URL: v.optional(v.string()),
     REHEARSAL_BRIDGE_TOKEN: v.optional(v.string()),
+    QUOTATION_DRAFT_ENABLED: v.optional(v.string()),
+    SOURCING_ENABLED: v.optional(v.string()),
+    SOURCE_WATCH_ENABLED: v.optional(v.string()),
     ADVISOR_ENABLED: v.optional(v.string()),
     OPENAI_ADVISOR_MODEL: v.optional(v.string()),
     OPENAI_API_KEY: v.optional(v.string()),
@@ -22,6 +26,7 @@ const app = defineApp({
   },
 });
 app.use(agent);
+app.use(workflow);
 // HTTP serving stays app-owned so the existing AgentMail webhook keeps its URL.
 app.use(staticHosting);
 export default app;

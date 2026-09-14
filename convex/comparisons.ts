@@ -1,3 +1,4 @@
+import { appendCaseEvent } from "./lib/caseEvents";
 import {
   emptyReplyProposal,
   mergeReplyOffer,
@@ -189,9 +190,7 @@ async function reconstructReply(
     );
   } catch (error) {
     throw new ConvexError(
-      error instanceof Error
-        ? error.message
-        : "Invalid reply review.",
+      error instanceof Error ? error.message : "Invalid reply review.",
     );
   }
 }
@@ -329,6 +328,7 @@ export const list = query({
 export const save = mutation({
   args: {
     token: v.string(),
+    sourcingCaseId: v.optional(v.id("sourcingCases")),
     clientId: v.string(),
     id: v.union(v.id("comparisons"), v.null()),
     expectedRevision: v.number(),
@@ -338,6 +338,14 @@ export const save = mutation({
     webReviews: v.optional(v.array(webReviewInputValidator)),
     documentReview: v.optional(documentReviewInputValidator),
     replyReview: v.optional(replyReviewInputValidator),
+    appendWeb: v.optional(
+      v.array(
+        v.object({
+          review: webReviewInputValidator,
+          equivalent: v.literal(true),
+        }),
+      ),
+    ),
     appendReplies: v.optional(
       v.array(
         v.object({
@@ -358,6 +366,69 @@ export const save = mutation({
       args.expectedRevision < 0
     )
       throw new ConvexError("Invalid request.");
+    const sourcingCase = args.sourcingCaseId
+      ? await ctx.db.get(args.sourcingCaseId)
+      : null;
+    if (
+      args.sourcingCaseId &&
+      (!sourcingCase || sourcingCase.ownerHash !== hash)
+    )
+      throw new ConvexError("Sourcing case unavailable in this session.");
+    if (
+      sourcingCase &&
+      sourcingCase.ingredient.trim().toLowerCase() !==
+        args.request.ingredient.trim().toLowerCase()
+    )
+      throw new ConvexError(
+        "The comparison ingredient must match the sourcing case.",
+      );
+    async function recordCase(
+      comparisonId: Doc<"comparisons">["_id"],
+      revision: number,
+    ) {
+      if (
+        sourcingCase?.comparisonId &&
+        sourcingCase.comparisonId !== comparisonId
+      )
+        throw new ConvexError(
+          "This sourcing case already has a saved comparison. Open that comparison to update it.",
+        );
+      const linkedCase = await ctx.db
+        .query("sourcingCases")
+        .withIndex("by_comparisonId", (q) => q.eq("comparisonId", comparisonId))
+        .first();
+      if (sourcingCase && linkedCase && linkedCase._id !== sourcingCase._id)
+        throw new ConvexError(
+          "This comparison already belongs to another sourcing case.",
+        );
+      if (sourcingCase && !sourcingCase.comparisonId)
+        await ctx.db.patch(sourcingCase._id, { comparisonId });
+      await appendCaseEvent(ctx, {
+        comparisonId,
+        kind: "comparison_saved",
+        summary:
+          "Reviewed comparison saved. Calculated scenarios use this revision; previous advisor explanations must be refreshed.",
+        eventKey: `comparison:${comparisonId}:${revision}`,
+        sourceId: comparisonId,
+      });
+      const reviews = args.replyReview
+        ? [args.replyReview]
+        : (args.appendReplies?.map((item) => item.review) ?? []);
+      for (const review of reviews) {
+        const request = await ctx.db.get(review.requestId);
+        if (request && request.ownerHash === hash)
+          await appendCaseEvent(ctx, {
+            studyId: request.studyId,
+            prospectId: request.prospectId,
+            comparisonId: request.comparisonId ?? comparisonId,
+            kind: "mail_reviewed",
+            summary:
+              "A provider reply was confirmed and saved as an offer. It is available for recalculation; no purchase was recorded.",
+            eventKey: `reply-reviewed:${review.requestId}:${review.messageId}:${comparisonId}:${revision}`,
+            sourceId: comparisonId,
+          });
+      }
+    }
     const previous = args.id ? await ctx.db.get("comparisons", args.id) : null;
     if (args.id && (!previous || previous.ownerHash !== hash))
       throw new ConvexError("Comparison unavailable in this session.");
@@ -390,9 +461,7 @@ export const save = mutation({
         args.appendReplies.length < 1 ||
         args.appendReplies.length > 3
       )
-        throw new ConvexError(
-          "Add replies only to a saved comparison.",
-        );
+        throw new ConvexError("Add replies only to a saved comparison.");
       let baseline: PurchaseSeed = {
         request: previous.request,
         offers: previous.offers,
@@ -408,15 +477,59 @@ export const save = mutation({
           );
         }
         if (!args.offers.some((offer) => offer.id === incoming.offers[0].id))
-          throw new ConvexError(
-            "The added offer must be in the comparison.",
-          );
+          throw new ConvexError("The added offer must be in the comparison.");
       }
       if (args.selectedOfferId !== null)
         throw new ConvexError(
           "Select an offer again after saving the new offers.",
         );
       validatedPrevious = { ...previous, sources: baseline.sources };
+    }
+    if (args.appendWeb !== undefined) {
+      if (
+        !previous ||
+        args.webReviews ||
+        args.documentReview ||
+        args.replyReview ||
+        args.appendReplies ||
+        args.appendWeb.length < 1 ||
+        args.appendWeb.length > 3
+      )
+        throw new ConvexError(
+          "Add reviewed web evidence only to a saved comparison.",
+        );
+      const additions = { ...previous.sources };
+      for (const addition of args.appendWeb) {
+        const incoming = await reconstructWebReview(ctx, hash, addition.review);
+        const offer = incoming.offers[0];
+        if (
+          incoming.request.ingredient !== previous.request.ingredient ||
+          incoming.request.specification !== previous.request.specification ||
+          incoming.request.unit !== previous.request.unit ||
+          previous.offers.some((item) => item.currency !== offer.currency)
+        )
+          throw new ConvexError(
+            "Confirm matching ingredient, specification, unit and currency before adding evidence.",
+          );
+        if (additions[offer.id])
+          throw new ConvexError(
+            "This web source is already in the comparison.",
+          );
+        if (!args.offers.some((item) => item.id === offer.id))
+          throw new ConvexError(
+            "The reviewed offer must remain in the comparison.",
+          );
+        Object.assign(additions, incoming.sources);
+      }
+      if (Object.keys(additions).length > 4)
+        throw new ConvexError(
+          "This comparison supports four sources, including historical sources.",
+        );
+      if (args.selectedOfferId !== null)
+        throw new ConvexError(
+          "Select an offer again after saving new evidence.",
+        );
+      validatedPrevious = { ...previous, sources: additions };
     }
     const sources = validateScenario(
       args.request,
@@ -445,10 +558,10 @@ export const save = mutation({
         revision: previous.revision + 1,
         updatedAt: Date.now(),
       });
+      await recordCase(args.id, previous.revision + 1);
       return publicComparison((await ctx.db.get("comparisons", args.id))!);
     }
-    if (args.expectedRevision !== 0)
-      throw new ConvexError("Invalid review.");
+    if (args.expectedRevision !== 0) throw new ConvexError("Invalid review.");
     const existing = await ctx.db
       .query("comparisons")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -471,6 +584,7 @@ export const save = mutation({
         throw new ConvexError(
           "This request was already saved with different data. Open the saved comparison before updating.",
         );
+      await recordCase(existing._id, existing.revision);
       return publicComparison(existing);
     }
     const own = await ctx.db
@@ -493,6 +607,7 @@ export const save = mutation({
       revision: 1,
       updatedAt: Date.now(),
     });
+    await recordCase(id, 1);
     return publicComparison((await ctx.db.get("comparisons", id))!);
   },
 });
