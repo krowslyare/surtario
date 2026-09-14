@@ -1,0 +1,135 @@
+.landing {
+  max-width: 1920px;
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: 0 clamp(24px, 4.2vw, 80px);
+  display: flex;
+  flex-direction: column;
+}
+.landing ::selection { background: var(--color-hero); color: var(--color-primary); }
+.landing-header {
+  min-height: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.landing-enter {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 48px;
+  color: var(--color-primary);
+  text-decoration: none;
+  text-underline-offset: 6px;
+  font-size: 14px;
+  font-weight: 650;
+}
+.landing-enter:hover { text-decoration: underline; }
+.landing-main {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 32px 0 44px;
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: clamp(32px, 5vw, 96px);
+}
+.landing-intro { padding-block: 40px; }
+.landing-intro h1 {
+  font-family: var(--font-display);
+  font-size: clamp(52px, 5.05vw, 96px);
+  font-weight: 650;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+.landing-promise {
+  font-size: clamp(16px, 1.12vw, 20px);
+  line-height: 1.65;
+  max-width: 39ch;
+  margin-top: 32px;
+  color: var(--color-text-muted);
+}
+.landing .landing-cta { margin-top: 36px; min-height: 56px; padding-inline: 24px; gap: 26px; }
+.landing-entry-note { margin-top: 14px; font-size: 13px; color: var(--color-text-muted); }
+.landing-principle { display: flex; align-items: center; gap: 16px; margin-top: clamp(48px, 7vh, 84px); }
+.landing-principle p { font-size: 14px; line-height: 1.55; }
+.landing-scene { position: relative; padding: 0 0 0 8%; min-width: 0; }
+.landing-photo {
+  display: block;
+  width: 100%;
+  height: clamp(580px, 68vh, 740px);
+  object-fit: cover;
+  object-position: center;
+  border-radius: 16px 16px 96px 16px;
+}
+.landing-slip {
+  position: absolute;
+  width: min(440px, 87%);
+  left: -4%;
+  bottom: 32px;
+  background: var(--color-surface);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-overlay);
+  padding: 28px;
+}
+.landing-slip-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.landing-slip-heading h2 { font-size: 25px; line-height: 1.08; letter-spacing: -0.03em; font-weight: 650; }
+.landing-slip-heading > span { font-size: 13px; text-align: right; white-space: nowrap; color: var(--color-text-muted); }
+.landing-quotes { margin-block: 22px 18px; font-size: 14px; font-variant-numeric: tabular-nums; }
+.landing-quotes > div { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--color-border-subtle); }
+.landing-quotes > div > span:last-child { text-align: right; font-weight: 650; }
+.landing-quotes small { display: block; font-size: 12px; font-weight: 400; color: var(--color-text-muted); }
+.landing-question { font-size: 15px; font-weight: 650; line-height: 1.45; }
+.landing-answer { margin-top: 16px; padding: 16px; background: var(--color-canvas); border-radius: var(--radius-control); min-height: 121px; transition: background 240ms var(--ease-settle); }
+.landing-answer[data-answered="true"] { background: var(--color-lime); }
+.landing-answer-line { display: flex; align-items: flex-start; gap: 8px; }
+.landing-answer-line strong { font-size: 13px; line-height: 1.45; font-weight: 650; }
+.landing-answer-line svg { margin-top: 1px; }
+.landing-answer p { margin-top: 8px; font-size: 13px; line-height: 1.5; }
+.landing-reveal { border: 0; padding: 8px 0; background: transparent; color: var(--color-primary); display: flex; align-items: center; gap: 12px; min-height: 48px; margin-top: 8px; font-size: 14px; font-weight: 700; text-align: left; text-underline-offset: 4px; }
+.landing-reveal:hover { text-decoration: underline; }
+.landing-sample-note { color: var(--color-text-muted); font-size: 11px; line-height: 1.5; }
+.landing-footer { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 24px; border-top: 1px solid var(--color-border); font-size: 12px; color: var(--color-text-muted); }
+.landing-footer > span { color: var(--color-primary); font-weight: 650; }
+@media (max-width: 1150px) {
+  .landing-main { gap: 32px; grid-template-columns: 1fr 1fr; }
+  .landing-intro h1 { font-size: clamp(45px, 5.1vw, 60px); }
+  .landing-slip { left: 0; width: 100%; padding: 24px; bottom: 24px; }
+  .landing-scene { padding-left: 12%; }
+  .landing-photo { height: 610px; }
+}
+@media (max-width: 760px) {
+  .landing { padding-inline: 24px; }
+  .landing-header { min-height: 92px; gap: 12px; }
+  .landing-header .brand-wordmark { font-size: 36px; }
+  .landing-header .brand-symbol { width: 34px; height: 34px; }
+  .landing-enter { font-size: 12px; gap: 6px; }
+  .landing-main { display: block; padding: 30px 0 32px; }
+  .landing-intro { padding: 0; }
+  .landing-intro h1 { font-size: clamp(40px, 7.9vw, 59px); }
+  .landing-promise { margin-top: 24px; font-size: 16px; max-width: 40ch; }
+  .landing .landing-cta { margin-top: 28px; }
+  .landing-entry-note { max-width: 35ch; font-size: 12px; }
+  .landing-principle { display: none; }
+  .landing-scene { margin-top: 40px; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+  .landing-photo { grid-area: 1 / 1; height: 360px; border-radius: 16px 16px 64px 16px; object-position: center 28%; }
+  .landing-slip { position: relative; grid-area: 1 / 1; left: auto; bottom: auto; width: calc(100% - 24px); margin: 220px auto 0; padding: 22px; }
+  .landing-slip-heading h2 { font-size: 24px; }
+  .landing-answer { min-height: 121px; }
+  .landing-footer { align-items: flex-start; flex-direction: column; gap: 8px; padding-block: 22px; }
+  .landing-footer p { max-width: 35ch; }
+}
+@media (max-width: 370px) {
+  .landing { padding-inline: 16px; }
+  .landing-header .brand-wordmark { font-size: 31px; }
+  .landing-header .brand-symbol { width: 28px; height: 28px; }
+  .landing-enter { gap: 4px; font-size: 11px; }
+  .landing-intro h1 { font-size: 37px; }
+  .landing-slip { width: calc(100% - 12px); padding: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-answer { transition: none; }
+}

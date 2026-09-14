@@ -309,6 +309,14 @@ The missing-freight insight now contains the supplier question, hypothetical amo
 
 205 unit/backend/configuration tests, 13 focused browser journeys, both TypeScript checks and hosting checks passed locally. The focused flow checks confirmation reset, actual unit-price context, focus, mobile layout and saved recovery. Independent Luna max review found an enabled save action when site storage was blocked; the correction gates saving on session/query/connection readiness and includes a passing browser regression. The prior baseline covered all 64 browser journeys. See [the flow contract and evidence](DECISION_FOLLOWTHROUGH.md). Provider, hosted acceptance and private-pilot gates remain unchanged.
 
+## September 13, 2026 — compact product entrance
+
+The root route now presents the English Surtario landing with existing brand photography and an interactive fictional delivery example. The workspace loads on entry and remains directly available at `/?view=market`; comparison/brand and legacy Peru links remain supported. No backend/schema or provider behavior changed.
+
+205 unit/backend/configuration checks and hosting build passed. All 67 browser journeys were verified across the complete run and focused corrections/rechecks. The new landing checks keyboard, reduced motion, back/reload and 1920/1440/390/320 px reflow. See [landing behavior and evidence](../diseno/surfaces/LANDING.md). No cloud deployment or repository visibility change.
+
+Independent Sol review returned `ship` with no material fixes after inspecting all four captures, the established design contract and routing/product truth. Luna could not complete the initial review because of a usage limit; Sol performed the replacement review.
+
 ## September 13, 2026 — pre-merge Sol correction
 
 Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.

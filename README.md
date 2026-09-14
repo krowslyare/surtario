@@ -6,6 +6,8 @@ Research does not require recipes, purchase history, stock or a document. Suppli
 
 ## Current capabilities
 
+- A compact product entrance at `/`, with an interactive, explicitly fictional delivery example and direct entry to `/?view=market`. [Landing behavior and design](docs/diseno/surfaces/LANDING.md).
+
 - Research examples without a quantity, including distributors without published prices. Explicitly gated Firecrawl search and OpenAI extraction preserve sources, dates and fields requiring review.
 - Classify candidate sources before price review, retain cited summaries and warnings, and explicitly read a selected same-site product page. Catalogs, broken pages and unrelated sources cannot silently become comparable offers.
 - Keep reviewed web offers, no-price distributor candidates and selected examples in one saved market study. Counts and recovery use the same selection; adding a different ingredient/location requires a new study.
@@ -42,7 +44,7 @@ In another terminal:
 npm run dev
 ```
 
-Open the URL printed by Vite, normally `http://127.0.0.1:5173`. Restart Vite if its backend URL changes. With no backend URL, fixture exploration and calculations remain available; persistence is explicitly unavailable. Saving and reloading requires the local backend.
+Open the URL printed by Vite, normally `http://127.0.0.1:5173`, for the product entrance. Use `/?view=market` to open the workspace directly; comparison and brand links retain their explicit `view` parameter. Legacy `/?example=pe` still opens the Peru workspace. Restart Vite if its backend URL changes. With no backend URL, fixture exploration and calculations remain available; persistence is explicitly unavailable. Saving and reloading requires the local backend.
 
 ## Verify
 

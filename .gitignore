@@ -26,4 +26,7 @@ playwright-report/
 test-results/
 
 # Estado y credenciales del backend local
-.convex/
+.convex
+
+# Local design review captures
+.impeccable/review/

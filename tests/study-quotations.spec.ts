@@ -37,7 +37,7 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
 
 test("saving a priced US offer does not expose an unselected distributor inquiry", async ({ page, context }) => {
   await connectOnlyToLocalBackend(context);
-  await page.goto("/");
+  await page.goto("/?view=market");
   await page.getByRole("button", { name: "Explore rice example" }).click();
   await page.getByRole("article").first().getByRole("button", { name: "Add to study" }).click();
   await page.getByRole("button", { name: "Save study", exact: true }).click();
