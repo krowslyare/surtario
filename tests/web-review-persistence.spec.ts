@@ -120,7 +120,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   ).toBeVisible();
   const advisor = page.getByRole("region", { name: "Purchasing advisor" });
   await advisor.getByRole("button", { name: "Save scenario", exact: true }).click();
-  await expect(advisor.getByText("Scenario saved with a verifiable calculation")).toBeVisible();
+  await expect(advisor.getByText("Saved", { exact: true })).toBeVisible();
   await expect(advisor.getByText(/out of date for this view/i)).toHaveCount(0);
   await page.reload();
   await page

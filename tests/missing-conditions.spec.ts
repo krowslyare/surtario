@@ -60,7 +60,7 @@ test("a missing delivery quote stays hypothetical until its terms are confirmed"
   await expect(page.getByTestId("total-1")).toHaveText("Pending");
   const insight = page.getByRole("region", { name: "Resolve missing terms" });
   await expect(insight).toContainText("USD 5.00 or less");
-  await page.getByText("Decision context · optional", { exact: true }).click();
+  await page.getByText("Budget and preferences", { exact: true }).click();
   await page
     .getByRole("combobox", { name: /Priority/ })
     .selectOption("unit_price");
