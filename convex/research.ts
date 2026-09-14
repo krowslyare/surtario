@@ -44,7 +44,7 @@ function cleanInput(ingredient: string, region: string) {
   return { ingredient: cleanIngredient, region: cleanRegion };
 }
 
-function publicRun(run: Doc<"researchRuns">): SavedResearch {
+export function publicRun(run: Doc<"researchRuns">): SavedResearch {
   return {
     id: run._id,
     simulated: run.simulated ?? false,

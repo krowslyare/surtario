@@ -280,11 +280,13 @@ export function analyzePurchase(
       recommendation:
         offers.length === 0
           ? "Find at least one verifiable offer for this request."
-          : "Confirm pending data or adjust the constraints before selecting.",
+          : comparableCandidates.length > 0
+            ? "Adjust your budget or coverage limit to include a supplier."
+            : "Complete the offer details to compare suppliers.",
       impact:
-        "There is no eligible comparable cash outlay with the current data.",
+        "A total cannot be compared until the offer details and your buying limits are confirmed.",
       warning:
-        "Missing price, tax, delivery, and equivalencies were not inferred.",
+        "Only confirmed prices, taxes and delivery costs are included.",
       negotiationDraft: null,
       missing,
     };

@@ -26,6 +26,7 @@ export default function QuotationMail(props: {
   studyId?: Id<"studies">;
   prospectId?: Id<"webProspects">;
   resultId?: string;
+  initialRequestId?: Id<"quotationRequests">;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
   onPrepare?: (seed: PurchaseSeed) => void;
@@ -64,12 +65,14 @@ function Connected({
   onPrepare,
   onAddReply,
   comparisonLabel,
+  initialRequestId,
 }: {
   token: string;
   comparisonId: Id<"comparisons"> | null;
   studyId?: Id<"studies">;
   prospectId?: Id<"webProspects">;
   resultId?: string;
+  initialRequestId?: Id<"quotationRequests">;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
   onPrepare?: (seed: PurchaseSeed) => void;
@@ -80,6 +83,14 @@ function Connected({
   const requests = useQuery(api.quotationMail.list, { token });
   const create = useMutation(api.quotationMail.create);
   const send = useAction(api.quotationMail.send);
+  const suggest = useAction(api.quotationMail.suggestInquiry);
+  const revise = useMutation(api.quotationMail.reviseDraft);
+  const [editDraft, setEditDraft] = useState<{
+    id: string;
+    revision: number;
+    subject: string;
+    text: string;
+  } | null>(null);
   const [reviewReply, setReviewReply] = useState<{
     requestId: Id<"quotationRequests">;
     messageId: string;
@@ -110,7 +121,14 @@ function Connected({
       : studyId
         ? item.studyId === studyId && item.resultId === resultId
         : item.comparisonId === comparisonId;
-  const own = requests?.filter(matches);
+  const own = requests?.filter(
+    (item) =>
+      matches(item) && (!initialRequestId || item.id === initialRequestId),
+  );
+  const requestedAvailable = Boolean(
+    own?.some((item) => item.id === initialRequestId),
+  );
+
   const persisted = own?.find((item) => item.id === activeId);
   const localActive = local?.id === activeId && matches(local) ? local : null;
   const active =
@@ -129,6 +147,13 @@ function Connected({
     setConfirmed(false);
     setError("");
   }, [targetKey]);
+  useEffect(() => {
+    setConfirmed(false);
+    setEditDraft(null);
+  }, [active?.id, active?.revision, active?.recipient, active?.text]);
+  useEffect(() => {
+    if (initialRequestId && requestedAvailable) setActiveId(initialRequestId);
+  }, [initialRequestId, requestedAvailable]);
   async function prepare() {
     if (!targetKey || busy) return;
     if (creation.current.comparisonId !== targetKey)
@@ -196,13 +221,15 @@ function Connected({
           not be sent.
         </p>
       )}
-      <button
-        className="button secondary"
-        disabled={!targetKey || busy}
-        onClick={prepare}
-      >
-        Prepare test request
-      </button>
+      {!initialRequestId && (
+        <button
+          className="button secondary"
+          disabled={!targetKey || busy}
+          onClick={prepare}
+        >
+          Prepare test request
+        </button>
+      )}
       {!targetKey && <p className="field-hint">Save the comparison first.</p>}
       {error && (
         <p role="alert" className="notice error">
@@ -249,6 +276,162 @@ function Connected({
             <strong>{active.subject}</strong>
           </p>
           <pre className="quotation-text">{active.text}</pre>
+          {active.state === "draft" && (
+            <div className="inquiry-drafting">
+              <p className="field-hint">
+                Ask about the missing terms that matter. The saved message above
+                is the version you approve for sending.
+              </p>
+              {status?.draftEnabled && active.aiDraftStatus === "idle" && (
+                <button
+                  className="button secondary"
+                  disabled={busy}
+                  onClick={async () => {
+                    setBusy(true);
+                    setConfirmed(false);
+                    setError("");
+                    try {
+                      setLocal(
+                        await suggest({
+                          token,
+                          id: active.id,
+                          expectedRevision: active.revision,
+                        }),
+                      );
+                    } catch (cause) {
+                      setError(message(cause));
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  Suggest supplier question
+                </button>
+              )}
+              {active.aiDraftStatus === "running" && (
+                <p role="status">
+                  Preparing a question. You can return to this saved request
+                  later.
+                </p>
+              )}
+              {active.aiDraftStatus === "failed" && (
+                <p className="notice info">
+                  The AI suggestion could not be confirmed. You can edit the
+                  original message.
+                </p>
+              )}
+              {active.aiDraftStatus === "complete" && active.aiDraftText && (
+                <details>
+                  <summary>Review AI suggestion</summary>
+                  <strong>{active.aiDraftSubject}</strong>
+                  <pre className="quotation-text">{active.aiDraftText}</pre>
+                  <button
+                    className="button secondary"
+                    disabled={busy}
+                    onClick={() => {
+                      setConfirmed(false);
+                      setEditDraft({
+                        id: active.id,
+                        revision: active.revision,
+                        subject: active.aiDraftSubject ?? active.subject,
+                        text: active.aiDraftText!,
+                      });
+                    }}
+                  >
+                    Edit this suggestion
+                  </button>
+                </details>
+              )}
+              {!editDraft && (
+                <button
+                  className="button text-button"
+                  disabled={busy || active.aiDraftStatus === "running"}
+                  onClick={() => {
+                    setConfirmed(false);
+                    setEditDraft({
+                      id: active.id,
+                      revision: active.revision,
+                      subject: active.subject,
+                      text: active.text,
+                    });
+                  }}
+                >
+                  Edit saved message
+                </button>
+              )}
+              {editDraft?.id === active.id && (
+                <div>
+                  <label className="field">
+                    <span>Message subject</span>
+                    <input
+                      value={editDraft.subject}
+                      maxLength={120}
+                      onChange={(event) =>
+                        setEditDraft({
+                          ...editDraft,
+                          subject: event.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                  <label className="field">
+                    <span>Message text</span>
+                    <textarea
+                      value={editDraft.text}
+                      rows={7}
+                      maxLength={4000}
+                      onChange={(event) =>
+                        setEditDraft({ ...editDraft, text: event.target.value })
+                      }
+                    />
+                  </label>
+                  <div className="dialog-actions">
+                    <button
+                      className="button secondary"
+                      disabled={busy}
+                      onClick={() => setEditDraft(null)}
+                    >
+                      Discard message edits
+                    </button>
+                    <button
+                      className="button primary"
+                      disabled={
+                        busy ||
+                        !editDraft.subject.trim() ||
+                        editDraft.text.trim().length < 10
+                      }
+                      onClick={async () => {
+                        setBusy(true);
+                        setError("");
+                        setConfirmed(false);
+                        try {
+                          setLocal(
+                            await revise({
+                              token,
+                              id: active.id,
+                              expectedRevision: editDraft.revision,
+                              subject: editDraft.subject,
+                              text: editDraft.text,
+                            }),
+                          );
+                          setEditDraft(null);
+                          setNotice(
+                            "Message saved. Review this version before approving the send.",
+                          );
+                        } catch (cause) {
+                          setError(message(cause));
+                        } finally {
+                          setBusy(false);
+                        }
+                      }}
+                    >
+                      Save message revision
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
           <p role="status">
             {labels[active.state]}.{" "}
             {active.state === "sent"
@@ -266,6 +449,11 @@ function Connected({
             <label className="checkbox">
               <input
                 type="checkbox"
+                disabled={
+                  Boolean(editDraft) ||
+                  active.aiDraftStatus === "running" ||
+                  busy
+                }
                 checked={confirmed}
                 onChange={(e) => setConfirmed(e.target.checked)}
               />
@@ -293,6 +481,8 @@ function Connected({
                 !active.recipient ||
                 active.state !== "draft" ||
                 !confirmed ||
+                Boolean(editDraft) ||
+                active.aiDraftStatus === "running" ||
                 busy
               }
               onClick={sendReviewed}
@@ -301,12 +491,33 @@ function Connected({
             </button>
           </div>
           {notice && <p role="status">{notice}</p>}
+          <h3>Request history</h3>
+          <ul>
+            <li>Prepared {new Date(active.createdAt).toLocaleString()}.</li>
+            {active.approvedAt !== null && (
+              <li>
+                Approved revision {active.approvedRevision} for the recipient
+                and message above on{" "}
+                {new Date(active.approvedAt).toLocaleString()}.
+              </li>
+            )}
+            {active.state !== "draft" && (
+              <li>
+                {labels[active.state]} ·{" "}
+                {new Date(active.updatedAt).toLocaleString()}.
+              </li>
+            )}
+          </ul>
           <h3>Linked replies</h3>
           {active.replies.length === 0 ? (
-            <p>No replies are linked yet.</p>
+            <p>
+              No replies are linked yet. You can continue researching and return
+              to this saved request later.
+            </p>
           ) : (
             active.replies.map((reply) => (
               <div key={reply.messageId}>
+                <p>Received {reply.receivedAt}</p>
                 <pre className="quotation-text">{reply.text}</pre>
                 <p>Review the reply before changing prices or terms.</p>
                 {onPrepare && (

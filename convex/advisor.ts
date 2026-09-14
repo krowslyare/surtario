@@ -14,6 +14,7 @@ import {
   advisorNarrative,
   savedAdvisorRun,
 } from "./advisorValidators";
+import { appendCaseEvent } from "./lib/caseEvents";
 import { analyzePurchase } from "../src/domain/advisor";
 import { explainPurchase, validateNarrative } from "./lib/advisorAgent";
 const enabled = () =>
@@ -163,6 +164,8 @@ export const prepare = mutation({
       clientId: _client,
       ...snapshot
     } = comparison;
+    const report = analyzePurchase(comparison.request, comparison.offers, c);
+    const prior = (await ctx.db.query("advisorRuns").withIndex("by_comparisonId", q => q.eq("comparisonId", comparison._id)).order("desc").take(1))[0];
     const id = await ctx.db.insert("advisorRuns", {
       ownerHash: owner,
       clientId: args.clientId,
@@ -170,13 +173,14 @@ export const prepare = mutation({
       comparisonRevision: comparison.revision,
       context: c,
       snapshot,
-      report: analyzePurchase(comparison.request, comparison.offers, c),
+      report,
       status: "calculated",
       narrative: null,
       error: null,
       createdAt: Date.now(),
       toolCalls: [],
     });
+    await appendCaseEvent(ctx, { comparisonId: comparison._id, eventKey: `advisor:${id}`, kind: "decision_calculated", summary: `Comparison revision ${comparison.revision}; priority ${c.priority}. ${report.recommendation} ${prior ? (prior.report.action !== report.action || prior.report.recommendedOfferId !== report.recommendedOfferId ? "The recommended action or option changed from the preceding saved analysis." : "The recommended action and option are unchanged from the preceding saved analysis.") : "First saved decision for this comparison."}` });
     return view((await ctx.db.get(id))!);
   },
 });

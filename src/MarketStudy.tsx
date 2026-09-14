@@ -1,3 +1,4 @@
+import { mergeReplyOffer } from "./domain/replyReview";
 import { useEffect, useState, type FormEvent } from "react";
 import {
   ArrowRight,
@@ -7,7 +8,12 @@ import {
   Search,
   FolderOpen,
 } from "lucide-react";
-import { marketExamples, allMarketExamples, usMarketExamples, findMarketExampleContextByIds } from "../fixtures/market";
+import {
+  marketExamples,
+  allMarketExamples,
+  usMarketExamples,
+  findMarketExampleContextByIds,
+} from "../fixtures/market";
 import {
   filterMarketExamples,
   preparePurchaseFromCatalog,
@@ -38,6 +44,7 @@ import IngredientIntake from "./components/IngredientIntake";
 import SavedStudies, { type SavedStudy } from "./components/SavedStudies";
 import type { Id } from "../convex/_generated/dataModel";
 import StudySelections from "./components/StudySelections";
+import SourcingCase, { type StudyCaseLink } from "./components/SourcingCase";
 import {
   sameStudyContext,
   studyOptionCount,
@@ -58,21 +65,44 @@ export default function MarketStudy({
     id: Id<"studies"> | null;
     revision: number;
     savedSelectedIds: string[];
+    savedContext?: { term: string; region: string };
     clientId: string;
-  }>(() => ({ id: null, revision: 0, savedSelectedIds: [], clientId: crypto.randomUUID() }));
+  }>(() => ({
+    id: null,
+    revision: 0,
+    savedSelectedIds: [],
+    clientId: crypto.randomUUID(),
+  }));
+  const [studyCase, setStudyCase] = useState<StudyCaseLink>({
+    studyId: null,
+    ready: false,
+  });
+  const currentStudyCase =
+    study.id && studyCase.studyId === study.id ? studyCase : null;
+  const caseLinkPending = Boolean(
+    persistenceEnabled &&
+    study.id &&
+    (!currentStudyCase || !currentStudyCase.ready),
+  );
   const [webStatus, setWebStatus] = useState<ResearchStatus | undefined>();
   const [webRequest, setWebRequest] = useState<WebSearchRequest | null>(null);
   const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
   const [catalog, setCatalog] = useState<MarketResult[]>(allMarketExamples);
   const [term, setTerm] = useState("");
-  const [region, setRegion] = useState(samplePeru ? "Lima" : "Portland, OR, US");
+  const [region, setRegion] = useState(
+    samplePeru ? "Lima" : "Portland, OR, US",
+  );
   const [search, setSearch] = useState<{ term: string; region: string } | null>(
     null,
   );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [webSelections, setWebSelections] = useState<WebSelection[]>([]);
   const [prospects, setProspects] = useState<StudyProspect[]>([]);
-  const optionCount = studyOptionCount({ selectedIds, webSelections, prospects });
+  const optionCount = studyOptionCount({
+    selectedIds,
+    webSelections,
+    prospects,
+  });
   const [filter, setFilter] = useState<
     "all" | "catalog" | "distributor" | "reference"
   >("all");
@@ -84,6 +114,19 @@ export default function MarketStudy({
   const [summaryVisible, setSummaryVisible] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [prepareOpen, setPrepareOpen] = useState(false);
+  const [caseReply, setCaseReply] = useState<PurchaseSeed | null>(null);
+  const [replyEquivalent, setReplyEquivalent] = useState(false);
+  function prepareStudyReply(seed: PurchaseSeed) {
+    if (caseLinkPending) {
+      setError("The saved study is still loading. Try again once it is ready.");
+      return;
+    }
+    if (currentStudyCase?.comparison) {
+      setCaseReply(seed);
+      setReplyEquivalent(false);
+    } else onPrepare({ ...seed, sourcingCaseId: currentStudyCase?.caseId });
+  }
+
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
   const [showStudy, setShowStudy] = useState(false);
@@ -118,7 +161,8 @@ export default function MarketStudy({
     const existing =
       webSelections[0] ??
       prospects[0] ??
-      (findMarketExampleContextByIds(selectedIds) ?? null);
+      findMarketExampleContextByIds(selectedIds) ??
+      null;
     if (existing && !sameStudyContext(existing, context)) {
       setError(
         "This option belongs to a different ingredient or area. Save this study and start another before adding it.",
@@ -157,7 +201,12 @@ export default function MarketStudy({
     setSelectedIds([]);
     setWebSelections([]);
     setProspects([]);
-    setStudy({ id: null, revision: 0, savedSelectedIds: [], clientId: crypto.randomUUID() });
+    setStudy({
+      id: null,
+      revision: 0,
+      savedSelectedIds: [],
+      clientId: crypto.randomUUID(),
+    });
     setTerm(ingredient);
     setSearch({ term: ingredient, region });
     setResultsView("example");
@@ -227,6 +276,7 @@ export default function MarketStudy({
     setResultsView("example");
     setStudy({
       id: saved.id,
+      savedContext: { term: saved.term, region: saved.region },
       revision: saved.revision,
       savedSelectedIds: saved.selectedIds,
       clientId: crypto.randomUUID(),
@@ -288,7 +338,16 @@ export default function MarketStudy({
 
   function prepare() {
     try {
-      onPrepare(preparePurchaseFromCatalog(selected, confirmed));
+      if (caseLinkPending)
+        throw new Error(
+          "The saved study is still loading. Wait before preparing its comparison.",
+        );
+      onPrepare({
+        ...preparePurchaseFromCatalog(selected, confirmed),
+        ...(currentStudyCase?.caseId
+          ? { sourcingCaseId: currentStudyCase.caseId }
+          : {}),
+      });
       setPrepareOpen(false);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Review your shortlist.");
@@ -351,7 +410,6 @@ export default function MarketStudy({
             <Search size={16} />
             Explore suppliers
           </span>
-
         </div>
         <div className="market-hero">
           <div className="hero-workspace">
@@ -445,7 +503,16 @@ export default function MarketStudy({
                     required
                   />
                   <datalist id="delivery-area-suggestions">
-                    {["Portland, OR, US", "Chicago, IL, US", "Miami, FL, US", "Lima", "Arequipa", "Cusco"].map((area) => <option key={area} value={area} />)}
+                    {[
+                      "Portland, OR, US",
+                      "Chicago, IL, US",
+                      "Miami, FL, US",
+                      "Lima",
+                      "Arequipa",
+                      "Cusco",
+                    ].map((area) => (
+                      <option key={area} value={area} />
+                    ))}
                   </datalist>
                 </label>
                 <Button type={webStatus?.searchEnabled ? "button" : "submit"} variant={webStatus?.searchEnabled ? "secondary" : "primary"} onClick={webStatus?.searchEnabled ? () => explore() : undefined}>
@@ -460,11 +527,19 @@ export default function MarketStudy({
                   Search suppliers
                 </Button>
                 {persistenceEnabled && (
-                  <Button variant="text" type="button" onClick={() => {
-                    setResultsView("web");
-                    setShowStudy(false);
-                    requestAnimationFrame(() => document.getElementById("market-results")?.focus());
-                  }}>Saved research</Button>
+                  <Button
+                    variant="text"
+                    type="button"
+                    onClick={() => {
+                      setResultsView("web");
+                      setShowStudy(false);
+                      requestAnimationFrame(() =>
+                        document.getElementById("market-results")?.focus(),
+                      );
+                    }}
+                  >
+                    Saved research
+                  </Button>
                 )}
                 <p className="market-search-note">
                   <Info size={16} />
@@ -495,6 +570,26 @@ export default function MarketStudy({
           <p id="market-search-error" className="notice error" role="alert">
             {error}
           </p>
+        )}
+        {persistenceEnabled && (
+          <SourcingCase
+            ingredient={term}
+            region={region}
+            studyId={
+              study.savedContext?.term.trim().toLowerCase() ===
+                term.trim().toLowerCase() &&
+              study.savedContext?.region.trim().toLowerCase() ===
+                region.trim().toLowerCase()
+                ? study.id
+                : null
+            }
+            onPrepare={onPrepare}
+            onStudyCase={setStudyCase}
+            comparisonStudyId={study.id}
+            onReview={addReview}
+            onProspect={toggleProspect}
+            selections={webSelections}
+          />
         )}
         <div className="market-workspace">
           <div className="market-content">
@@ -644,8 +739,8 @@ export default function MarketStudy({
             </div>
             {optionCount > 0 && (
               <p className="study-total">
-                {optionCount}{" "}
-                {optionCount === 1 ? "option" : "options"} in your study
+                {optionCount} {optionCount === 1 ? "option" : "options"} in your
+                study
               </p>
             )}
             {(search || showStudy) && optionCount === 0 && (
@@ -686,7 +781,16 @@ export default function MarketStudy({
                   onSaved={(saved) =>
                     setStudy((current) =>
                       current.clientId === study.clientId
-                        ? { ...current, id: saved.id, revision: saved.revision, savedSelectedIds: saved.selectedIds }
+                        ? {
+                            ...current,
+                            id: saved.id,
+                            revision: saved.revision,
+                            savedSelectedIds: saved.selectedIds,
+                            savedContext: {
+                              term: saved.term,
+                              region: saved.region,
+                            },
+                          }
                         : current,
                     )
                   }
@@ -709,11 +813,27 @@ export default function MarketStudy({
                 <div className="study-next-actions">
                   <Button
                     variant="secondary"
-                    disabled={priced.length === 0 && webSelections.length === 0}
+                    disabled={
+                      caseLinkPending ||
+                      (priced.length === 0 && webSelections.length === 0)
+                    }
                     onClick={() => {
                       if (priced.length === 0 && webSelections.length > 0) {
                         setShowStudy(true);
                         setFilter("all");
+                        return;
+                      }
+                      if (currentStudyCase?.comparison) {
+                        const comparison = currentStudyCase.comparison;
+                        onPrepare({
+                          ...comparison,
+                          sourcingCaseId: currentStudyCase.caseId,
+                          resumeComparison: {
+                            id: comparison.id,
+                            revision: comparison.revision,
+                            selectedOfferId: comparison.selectedOfferId,
+                          },
+                        });
                         return;
                       }
                       setPrepareOpen(true);
@@ -721,7 +841,14 @@ export default function MarketStudy({
                       setError("");
                     }}
                   >
-                    {priced.length === 0 && webSelections.length > 0 ? "Review purchase options" : "Plan purchase"} <ArrowRight size={17} />
+                    {currentStudyCase?.comparison
+                      ? "Open saved case comparison"
+                      : caseLinkPending
+                        ? "Loading study context…"
+                        : priced.length === 0 && webSelections.length > 0
+                          ? "Review purchase options"
+                          : "Plan purchase"}{" "}
+                    <ArrowRight size={17} />
                   </Button>
                   {priced.length === 0 && webSelections.length === 0 && (
                     <small>
@@ -736,7 +863,11 @@ export default function MarketStudy({
         {persistenceEnabled &&
           study.id &&
           catalog
-            .filter((item) => item.kind === "distributor" && study.savedSelectedIds.includes(item.id))
+            .filter(
+              (item) =>
+                item.kind === "distributor" &&
+                study.savedSelectedIds.includes(item.id),
+            )
             .map((item) => (
               <div key={`${study.id}:${item.id}`}>
                 <h3>Ask {item.supplier}</h3>
@@ -746,7 +877,9 @@ export default function MarketStudy({
                   resultId={item.id}
                   offers={[]}
                   onEditOffer={() => {}}
-                  onPrepare={onPrepare}
+                  onPrepare={prepareStudyReply}
+                  onAddReply={currentStudyCase?.comparison ? prepareStudyReply : undefined}
+                  comparisonLabel={currentStudyCase?.comparison ? "this case comparison" : undefined}
                 />
               </div>
             ))}
@@ -793,8 +926,7 @@ export default function MarketStudy({
                   Enter the prices and terms from your quote. You can also review a sample document before comparing.
                 </p>
                 <Button variant="text" onClick={onManualExample}>
-                  Enter a quote manually{" "}
-                  <ArrowRight size={16} />
+                  Enter a quote manually <ArrowRight size={16} />
                 </Button>
               </aside>
             </Disclosure>
@@ -943,6 +1075,20 @@ export default function MarketStudy({
           <p role="status" className="field-hint">
             {copyState}
           </p>
+        </Dialog>
+      )}
+      {caseReply && currentStudyCase?.comparison && (
+        <Dialog title="Update the case comparison" onClose={() => setCaseReply(null)}>
+          <p>Add the reviewed reply to your saved comparison.</p>
+          <label className="checkbox"><input type="checkbox" checked={replyEquivalent} onChange={(event) => setReplyEquivalent(event.target.checked)} />I confirm the same ingredient, specification, unit and currency.</label>
+          {error && <p className="notice error" role="alert">{error}</p>}
+          <Button disabled={!replyEquivalent} onClick={() => {
+            try {
+              const comparison = currentStudyCase.comparison!;
+              onPrepare({ ...mergeReplyOffer(comparison, caseReply, replyEquivalent), sourcingCaseId: currentStudyCase.caseId, resumeComparison: { id: comparison.id, revision: comparison.revision } });
+              setCaseReply(null);
+            } catch (cause) { setError(cause instanceof Error ? cause.message : "Review the reply details."); }
+          }}>Review updated comparison</Button>
         </Dialog>
       )}
       {prepareOpen && (

@@ -69,6 +69,8 @@ export type ComparisonSource = {
   edited: boolean;
 };
 export type PurchaseSeed = {
+  resumeComparison?: { id: string; revision: number; selectedOfferId?: string | null };
+  sourcingCaseId?: string;
   request: ProcurementRequest;
   offers: SupplierOffer[];
   sources: Record<string, ComparisonSource>;

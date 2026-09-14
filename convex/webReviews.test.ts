@@ -210,3 +210,26 @@ test("analyzed web evidence keeps the same source fingerprint after saving", asy
   expect(saved.sources[ref]).toEqual(clientSeed.sources[ref]);
   expect(saved.sources[ref].marketSource?.evidence).toContain("Proposed source analysis (requires review): A synthetic rice quotation.");
 });
+
+test("reviewed later web evidence updates the same comparison and preserves earlier sources", async () => {
+  const {t,args,ref} = await setup();
+  const first = await t.mutation(api.comparisons.save,args);
+  const run = args.webReviews[0].runId;
+  const secondRun = await t.run(async ctx => {
+    const row=(await ctx.db.get(run))!;const {_id,_creationTime,...fields}=row;
+    return ctx.db.insert("researchRuns",{...fields,clientId:crypto.randomUUID()});
+  });
+  const nextRef=`${secondRun}:0`;
+  const updated=await t.mutation(api.comparisons.save,{
+    token,clientId:crypto.randomUUID(),id:first.id,expectedRevision:first.revision,
+    request:first.request,offers:[{...first.offers[0],id:nextRef,priceCents:9000}],selectedOfferId:null,
+    appendWeb:[{review:{...args.webReviews[0],runId:secondRun,values:{...args.webReviews[0].values,price:"90"}},equivalent:true}],
+  });
+  expect(updated.id).toBe(first.id);expect(updated.revision).toBe(2);
+  expect(updated.sources[ref]).toEqual(first.sources[ref]);expect(updated.sources[nextRef].original.priceCents).toBe(9000);
+  expect(updated.offers[0].id).toBe(nextRef);
+  await expect(t.mutation(api.comparisons.save,{
+    token:"b".repeat(64),clientId:crypto.randomUUID(),id:first.id,expectedRevision:2,request:first.request,offers:updated.offers,selectedOfferId:null,
+    appendWeb:[{review:{...args.webReviews[0],runId:secondRun},equivalent:true}],
+  })).rejects.toThrow(/unavailable/);
+});

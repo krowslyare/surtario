@@ -54,6 +54,7 @@ test("Enter uses enabled web research while the example remains an explicit sepa
     route.fulfill({
       contentType: "application/javascript",
       body: `import React from ${JSON.stringify(reactUrl)};
+      export function ResearchWorkspace() { return null; }
       export default function Research({onStatus,request}) {
         React.useEffect(() => onStatus({searchEnabled:true,extractionEnabled:false}), [onStatus]);
         return React.createElement('output', {'aria-label':'Test web request'}, JSON.stringify(request));

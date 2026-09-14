@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useRef, useId, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 export function Dialog({
@@ -12,6 +12,7 @@ export function Dialog({
   onClose: () => void;
   wide?: boolean;
 }) {
+  const titleId = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const element = dialog.current;
@@ -41,10 +42,10 @@ export function Dialog({
           onClose();
       }}
       className={wide ? "dialog wide" : "dialog"}
-      aria-labelledby="dialog-title"
+      aria-labelledby={titleId}
     >
       <div className="dialog-head">
-        <h2 id="dialog-title">{title}</h2>
+        <h2 id={titleId}>{title}</h2>
         <button className="icon-button" aria-label="Close" onClick={onClose}>
           <X size={20} />
         </button>

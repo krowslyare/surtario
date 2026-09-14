@@ -27,6 +27,8 @@ The preceding full-suite delivery covered **all 54 browser journeys**. The Septe
 The English-first integration and US decision flow are described in [product validation](docs/desarrollo/ENGLISH_PRODUCT_VALIDATION.md), with [US market boundaries](docs/desarrollo/US_MARKET.md). Real Luna CLI extraction and advisor generation were exercised locally, including saved-analysis recovery without another model call. Web/mail in that rehearsal were synthetic. The English-first integration pass completed **199 unit/backend/configuration tests and all 64 browser journeys passing**, plus frontend/backend typechecks and hosting checks. The older figures above describe their respective deliveries.
 
 
+Persistent sourcing cases now connect a bounded AI research loop, reviewed evidence, versioned comparisons, traceable quotation drafts/replies and explicit selected-source monitoring. AI can plan research and suggest supplier questions as well as interpret sources/replies and explain decisions. Monitoring checks selected real reviewed sources about every 24 hours for seven days and creates review proposals for price/package changes. Provider gates remain off by default; the new workflow has local mocked-provider verification, not real-provider or hosted acceptance. See [architecture, limits and configuration](docs/desarrollo/CASOS_ABASTECIMIENTO.md).
+
 ## Run locally
 
 Requires Node.js >=22.12 and npm. Install from the lockfile:
@@ -79,6 +81,7 @@ The [hosting procedure](docs/desarrollo/HOSTING.md) explains target selection an
 | --- | --- |
 | Product scope and decisions | [Product plan](docs/producto/PLAN_PRODUCTO.md), [adversarial planning review](docs/producto/REVISION_ADVERSARIAL.md) |
 | Stage status | [ETAPAS.md](docs/desarrollo/ETAPAS.md) |
+| Persistent sourcing cases | [Architecture, AI layers and monitoring](docs/desarrollo/CASOS_ABASTECIMIENTO.md) |
 | Purchasing advisor | [Decision policy and evidence](docs/desarrollo/ASESOR_COMPRAS.md) |
 | Ingredient intake | [Local intake](docs/desarrollo/ENTRADA_INSUMOS.md), [saved lists](docs/desarrollo/SAVED_INGREDIENT_LISTS.md) |
 | Web research | [Search contract](docs/desarrollo/BUSQUEDA_WEB.md), [saved reviews](docs/desarrollo/REVISION_WEB_GUARDADA.md), [distributor candidates](docs/desarrollo/DISTRIBUIDORES_WEB.md) |

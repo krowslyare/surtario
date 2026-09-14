@@ -1,3 +1,4 @@
+import { Disclosure } from "./ui/Disclosure";
 import { useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -57,31 +58,40 @@ export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
   useEffect(() => setCopied(false), [report.negotiationDraft]);
   return (
     <div className="advisor-verdict">
-      <div className="advisor-decision-row advisor-decision-primary">
-        <span>Recommended action</span>
-        <p className="advisor-recommendation">{report.recommendation}</p>
-      </div>
-      <div className="advisor-decision-row">
-        <span>Impact on this order</span>
+      <p className="advisor-recommendation">{report.recommendation}</p>
+      {report.alternatives.some((option) => option.eligible) && (
         <p>{report.impact}</p>
-      </div>
-      <div className="advisor-decision-row advisor-decision-condition">
-        <span>Decision condition</span>
-        <p>{report.warning}</p>
-      </div>
+      )}
+      {!report.alternatives.some((option) => option.eligible) &&
+        report.alternatives.length > 0 && (
+          <a className="button secondary" href="#comparison">
+            Review offer details
+          </a>
+        )}
       {report.missing.length > 0 && (
-        <details>
-          <summary>Missing data</summary>
+        <Disclosure title="Details to confirm">
+          <p className="field-hint">
+            Usage and stock are optional; add them only to estimate how long a
+            purchase will last.
+          </p>
           <ul>
-            {report.missing.map((m, i) => (
-              <li key={i}>{m}</li>
+            {report.missing.map((item, index) => (
+              <li key={index}>{item}</li>
             ))}
           </ul>
-        </details>
+        </Disclosure>
       )}
+      <Disclosure title="How this recommendation was calculated">
+        <p>{report.warning}</p>
+        {!report.alternatives.some((option) => option.eligible) && (
+          <p>{report.impact}</p>
+        )}
+      </Disclosure>
       {report.negotiationDraft && (
-        <details className="advisor-negotiation">
-          <summary>Prepare supplier conversation</summary>
+        <Disclosure
+          className="advisor-negotiation"
+          title={<>Prepare supplier conversation</>}
+        >
           <pre className="quotation-text">{report.negotiationDraft}</pre>
           <button
             className="button secondary"
@@ -101,7 +111,7 @@ export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
               ? "Text copied. No message was sent."
               : "Review the text before sending it through your usual channel."}
           </p>
-        </details>
+        </Disclosure>
       )}
     </div>
   );
@@ -114,10 +124,10 @@ function ScenarioDetails({
   offers: SupplierOffer[];
 }) {
   return (
-    <details className="advisor-alternatives">
-      <summary>
-        View cash outlay, coverage, and pending items by supplier
-      </summary>
+    <Disclosure
+      className="advisor-alternatives"
+      title={<>Compare supplier totals</>}
+    >
       <ul>
         {report.alternatives.map((alternative) => {
           const currency = offers.find(
@@ -158,10 +168,13 @@ function ScenarioDetails({
           );
         })}
       </ul>
-    </details>
+    </Disclosure>
   );
 }
-export type AdvisorDecisionState = { context: AdvisorContext; invalid: boolean };
+export type AdvisorDecisionState = {
+  context: AdvisorContext;
+  invalid: boolean;
+};
 
 export default function PurchasingAdvisor(props: {
   onDecisionContext?: (state: AdvisorDecisionState) => void;
@@ -401,7 +414,7 @@ function Connected({
       : !comparisonCurrent
         ? enabled
           ? "Save comparison and request AI analysis"
-          : "Save comparison and scenario"
+          : "Save buying options"
         : selected && !stale && selected.status === "calculated" && enabled
           ? "Request AI analysis"
           : enabled
@@ -411,15 +424,16 @@ function Connected({
     <section className="advisor-panel" aria-label="Purchasing advisor">
       <div className="advisor-heading">
         <div>
-          <h2>What should you do next?</h2>
+          <h2>Your buying options</h2>
           <p className="field-hint">
-            Compare the cash outlay with your priorities. Selecting or copying a
-            recommendation does not place an order.
+            Check what you would pay before choosing a supplier.
           </p>
         </div>
       </div>
-      <details className="advisor-context">
-        <summary>Decision context · optional</summary>
+      <Disclosure
+        className="advisor-context"
+        title={<>Budget and preferences</>}
+      >
         <div className="advisor-fields">
           <label className="field">
             Priority
@@ -494,7 +508,7 @@ function Connected({
           Leaving inventory blank does not mean zero. This does not calculate
           credit or financing costs.
         </p>
-      </details>
+      </Disclosure>
       {invalid ? (
         <p role="alert" className="notice error">
           Review the context values before analyzing. The result will appear
@@ -505,9 +519,9 @@ function Connected({
           <p className="advisor-mode">
             {selected && !stale
               ? selected.narrative
-                ? "Scenario saved and interpreted with its sources"
-                : "Scenario saved with a verifiable calculation"
-              : "Scenario calculated from the visible data"}
+                ? "Saved · AI explanation available"
+                : "Saved"
+              : ""}
           </p>
           <AdvisorVerdict report={displayedReport} />
           <ScenarioDetails
@@ -522,14 +536,16 @@ function Connected({
             The saved analysis is out of date for this view. The next action
             will save the visible comparison and prepare a new scenario.
           </p>
-          <details className="advisor-stale-evidence">
-            <summary>View the previous saved analysis</summary>
+          <Disclosure
+            className="advisor-stale-evidence"
+            title={<>View the previous saved analysis</>}
+          >
             <AdvisorVerdict report={selected.report} />
             <ScenarioDetails
               report={selected.report}
               offers={selected.snapshot.offers}
             />
-          </details>
+          </Disclosure>
         </>
       )}
       {actionAvailable && (
@@ -555,8 +571,8 @@ function Connected({
           {saveBlockedReason
             ? saveBlockedReason
             : enabled === false
-              ? "AI is not configured; the deterministic calculation and its sources will be saved."
-              : "One action saves the comparison and context before requesting AI analysis. It does not send messages or record a purchase."}
+              ? "Your comparison and preferences will be saved."
+              : "Save your comparison to get an AI explanation. No order is placed."}
         </p>
       )}
       {error && (
@@ -581,8 +597,7 @@ function Connected({
                   <li key={i}>{q}</li>
                 ))}
               </ul>
-              <details>
-                <summary>Sources reviewed</summary>
+              <Disclosure title={<>Sources reviewed</>}>
                 <ul>
                   {selected.narrative.sourceIds.map((id) => (
                     <li key={id}>
@@ -591,7 +606,7 @@ function Connected({
                     </li>
                   ))}
                 </ul>
-              </details>
+              </Disclosure>
             </>
           )}
           {selected.status === "calculated" && (
@@ -602,8 +617,7 @@ function Connected({
         </div>
       )}
       {!!runs?.length && (
-        <details>
-          <summary>Restore scenarios ({runs.length})</summary>
+        <Disclosure title={<>Restore scenarios ({runs.length})</>}>
           {runs.map((run) => (
             <button
               key={run.id}
@@ -622,7 +636,7 @@ function Connected({
                   : "Balanced"}
             </button>
           ))}
-        </details>
+        </Disclosure>
       )}
     </section>
   );

@@ -1,3 +1,4 @@
+import type { Id } from "../convex/_generated/dataModel";
 import {
   previewFreightDecision,
   type FreightDecisionPreview,
@@ -293,7 +294,11 @@ export default function Comparison({
     ...(seed?.request ?? riceRequest),
   });
   const [quantity, setQuantity] = useState(
-    seed ? "" : String(riceRequest.quantity),
+    seed?.resumeComparison
+      ? String(seed.request.quantity || "")
+      : seed
+        ? ""
+        : String(riceRequest.quantity),
   );
   const [offers, setOffers] = useState<SupplierOffer[]>(() =>
     (seed?.offers ?? riceOffers).map((offer) => ({ ...offer })),
@@ -306,8 +311,13 @@ export default function Comparison({
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [message, setMessage] = useState("");
-  const [savedId, setSavedId] = useState<SavedComparison["id"] | null>(null);
-  const [savedRevision, setSavedRevision] = useState(0);
+  const [savedId, setSavedId] = useState<SavedComparison["id"] | null>(
+    (seed?.resumeComparison?.id as SavedComparison["id"]) ?? null,
+  );
+  const [savedRevision, setSavedRevision] = useState(
+    seed?.resumeComparison?.revision ?? 0,
+  );
+  const [sourcingCaseId, setSourcingCaseId] = useState(seed?.sourcingCaseId);
   const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
   const savedComparisons = useRef<SavedComparisonsHandle>(null);
   const [savingAvailable, setSavingAvailable] = useState(false);
@@ -316,10 +326,10 @@ export default function Comparison({
   const [baselineRequest, setBaselineRequest] = useState<ProcurementRequest>(
     () => ({ ...(seed?.request ?? riceRequest) }),
   );
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(seed?.resumeComparison?.selectedOfferId ?? null);
   const [selectionFingerprint, setSelectionFingerprint] = useState<
     string | null
-  >(null);
+  >(seed?.resumeComparison?.selectedOfferId ? JSON.stringify({ request: seed.request, offers: seed.offers }) : null);
   const [decisionState, setDecisionState] = useState<AdvisorDecisionState>({
     context: defaultAdvisorContext,
     invalid: false,
@@ -388,6 +398,7 @@ export default function Comparison({
       ? "Correct the quantity before saving, or leave it blank if unknown."
       : null;
   const comparisonDraft = {
+    sourcingCaseId,
     clientId,
     id: savedId,
     expectedRevision: savedRevision,
@@ -418,12 +429,11 @@ export default function Comparison({
     if (!evaluation?.eligibleForComparison) return;
     setSelectedOfferId(offerId);
     setSelectionFingerprint(fingerprint);
-    setMessage(
-      "Offer selected for this comparison. No purchase was recorded.",
-    );
+    setMessage("Offer selected for this comparison. No purchase was recorded.");
   }
 
   function openSaved(comparison: SavedComparison) {
+    setSourcingCaseId(undefined);
     const nextClientId = crypto.randomUUID();
     currentClientId.current = nextClientId;
     setClientId(nextClientId);
@@ -458,12 +468,27 @@ export default function Comparison({
   }
 
   function reset() {
+    setSourcingCaseId(seed?.sourcingCaseId);
     setRequest({ ...(seed?.request ?? riceRequest) });
-    setQuantity(seed ? "" : String(riceRequest.quantity));
+    setQuantity(
+      seed?.resumeComparison
+        ? String(seed.request.quantity)
+        : seed
+          ? ""
+          : String(riceRequest.quantity),
+    );
     setOffers((seed?.offers ?? riceOffers).map((offer) => ({ ...offer })));
     setSources(seed?.sources ?? initialSources());
-    setSavedId(null);
-    setSavedRevision(0);
+    setSavedId(
+      (seed?.resumeComparison?.id as Id<"comparisons"> | undefined) ?? null,
+    );
+    setSavedRevision(
+      seed?.resumeComparison
+        ? savedId === seed.resumeComparison.id
+          ? savedRevision
+          : seed.resumeComparison.revision
+        : 0,
+    );
     setSavedFingerprint(null);
     const nextClientId = crypto.randomUUID();
     currentClientId.current = nextClientId;
@@ -493,12 +518,19 @@ export default function Comparison({
     saveOffer(preview.updatedOffer);
     setResolved({
       preview,
-      fingerprint: JSON.stringify({ request: effectiveRequest, offers: preview.updatedOffers }),
+      fingerprint: JSON.stringify({
+        request: effectiveRequest,
+        offers: preview.updatedOffers,
+      }),
       contextKey: stableValue(decisionState),
       clientId,
     });
-    setMessage("Delivery confirmed. The decision was recalculated. No purchase was placed.");
-    requestAnimationFrame(() => document.getElementById("resolved-condition")?.focus());
+    setMessage(
+      "Delivery confirmed. The decision was recalculated. No purchase was placed.",
+    );
+    requestAnimationFrame(() =>
+      document.getElementById("resolved-condition")?.focus(),
+    );
   }
   function saveOffer(offer: SupplierOffer) {
     setOffers((current) =>

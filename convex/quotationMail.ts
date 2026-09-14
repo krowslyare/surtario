@@ -14,6 +14,8 @@ import {
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
+import { draftInquiry } from "./lib/inquiryDraft";
+import { appendCaseEvent } from "./lib/caseEvents";
 import { ownerHash } from "./lib/demoSession";
 import { extractReplyOfferWithAgent } from "./lib/replyExtraction";
 import {
@@ -40,6 +42,24 @@ const SEND_UNCERTAIN =
   "The send result could not be confirmed. It will not retry automatically.";
 const REPLY_EXTRACTION_ERROR =
   "No verifiable suggestion was produced. Complete the fields manually or try once more.";
+
+async function traceMail(
+  ctx: MutationCtx,
+  request: Doc<"quotationRequests">,
+  kind: string,
+  summary: string,
+  key: string,
+) {
+  await appendCaseEvent(ctx, {
+    studyId: request.studyId,
+    prospectId: request.prospectId,
+    comparisonId: request.comparisonId,
+    kind,
+    summary,
+    eventKey: `mail:${request._id}:${key}`,
+    sourceId: request._id,
+  });
+}
 
 function normalizedSender(value: string) {
   return (
@@ -113,6 +133,12 @@ async function publicRequest(
     receipt: doc.receipt,
     failure: doc.failure,
     createdAt: doc.createdAt,
+    approvedAt: doc.approvedAt ?? null,
+    approvedRevision: doc.approvedRevision ?? null,
+    updatedAt: doc.updatedAt,
+    aiDraftStatus: doc.aiDraftStatus ?? "idle",
+    aiDraftSubject: doc.aiDraftSubject ?? null,
+    aiDraftText: doc.aiDraftText ?? null,
     replies: replies.map(publicReply),
   };
 }
@@ -123,6 +149,7 @@ export const status = query({
     enabled: v.boolean(),
     recipient: v.union(v.string(), v.null()),
     extractionEnabled: v.boolean(),
+    draftEnabled: v.boolean(),
   }),
   handler: async () => {
     const value = configured();
@@ -130,6 +157,7 @@ export const status = query({
       enabled: value.enabled,
       recipient: value.recipient,
       extractionEnabled: replyExtractorConfigured(),
+      draftEnabled: inquiryConfigured(),
     };
   },
 });
@@ -145,6 +173,91 @@ export const list = query({
       .order("desc")
       .take(MAX_PER_SESSION);
     return await Promise.all(docs.map((doc) => publicRequest(ctx, doc)));
+  },
+});
+
+function inquiryConfigured() {
+  return env.QUOTATION_DRAFT_ENABLED === "true" && !!env.OPENAI_API_KEY?.trim() && !!env.OPENAI_EXTRACTION_MODEL?.trim();
+}
+
+export const reserveInquiry = internalMutation({
+  args: { token: v.string(), id: v.id("quotationRequests"), expectedRevision: v.number() },
+  returns: v.union(v.object({ fresh: v.literal(false), request: savedQuotationValidator }), v.object({ fresh: v.literal(true), context: v.string() })),
+  handler: async (ctx, args) => {
+    const hash = await ownerHash(args.token);
+    const doc = await ctx.db.get(args.id);
+    if (!doc || doc.ownerHash !== hash) throw new ConvexError("Request unavailable in this session.");
+    if (doc.state !== "draft" || doc.revision !== args.expectedRevision) throw new ConvexError("The draft changed. Open it again before requesting a suggestion.");
+    if ((doc.aiDraftAttempts ?? 0) > 0) return { fresh: false as const, request: await publicRequest(ctx, doc) };
+    if (!inquiryConfigured()) throw new ConvexError("AI inquiry drafting is not enabled.");
+    const comparison = doc.comparisonId ? await ctx.db.get(doc.comparisonId) : null;
+    const study = doc.studyId ? await ctx.db.get(doc.studyId) : null;
+    const prospect = doc.prospectId ? await ctx.db.get(doc.prospectId) : null;
+    for (const source of [comparison, study, prospect]) if (source && source.ownerHash !== hash) throw new ConvexError("Source unavailable in this session.");
+    await ctx.db.patch(doc._id, { aiDraftStatus: "running", aiDraftAttempts: 1 });
+    await ctx.scheduler.runAfter(90_000, internal.quotationMail.expireInquiry, { id: doc._id });
+    await traceMail(ctx, doc, "mail_draft_started", "AI is preparing a supplier question. Nothing is sent.", "ai-draft-started");
+    return { fresh: true as const, context: JSON.stringify({
+      originalInquiry: doc.text,
+      request: comparison?.request,
+      offers: comparison?.offers,
+      source: study?.results.find(result => result.id === doc.resultId) ?? (prospect ? { ingredient: prospect.ingredient, supplier: prospect.supplier, region: prospect.region } : undefined),
+    }).slice(0, 16000) };
+  },
+});
+
+export const expireInquiry = internalMutation({
+  args: { id: v.id("quotationRequests") }, returns: v.null(),
+  handler: async (ctx, {id}) => {
+    const doc = await ctx.db.get(id);
+    if (doc?.aiDraftStatus === "running") {
+      await ctx.db.patch(id, {aiDraftStatus: "failed"});
+      await traceMail(ctx, doc, "mail_draft_failed", "AI drafting was interrupted. The original draft remains editable; no automatic retry.", "ai-draft-finished");
+    }
+    return null;
+  },
+});
+
+export const finishInquiry = internalMutation({
+  args: { id: v.id("quotationRequests"), proposal: v.union(v.object({ subject: v.string(), text: v.string() }), v.null()) },
+  returns: savedQuotationValidator,
+  handler: async (ctx, { id, proposal }) => {
+    const doc = await ctx.db.get(id);
+    if (!doc) throw new Error("Missing inquiry draft.");
+    if (doc.aiDraftStatus !== "running") return await publicRequest(ctx, doc);
+    if (proposal && (!proposal.subject.trim() || proposal.subject.length > 120 || proposal.text.length < 10 || proposal.text.length > 2000)) throw new Error("Invalid inquiry proposal.");
+    await ctx.db.patch(id, { aiDraftStatus: proposal ? "complete" : "failed", ...(proposal ? { aiDraftSubject: proposal.subject, aiDraftText: proposal.text } : {}) });
+    await traceMail(ctx, doc, proposal ? "mail_draft_suggested" : "mail_draft_failed", proposal ? "AI suggested a supplier question. Review and save it before approving a send." : "AI drafting failed. The original draft remains available; no automatic retry.", "ai-draft-finished");
+    return await publicRequest(ctx, (await ctx.db.get(id))!);
+  },
+});
+
+export const suggestInquiry = action({
+  args: { token: v.string(), id: v.id("quotationRequests"), expectedRevision: v.number() },
+  returns: savedQuotationValidator,
+  handler: async (ctx, args): Promise<SavedQuotation> => {
+    const reservation: { fresh: false; request: SavedQuotation } | { fresh: true; context: string } = await ctx.runMutation(internal.quotationMail.reserveInquiry, args);
+    if (!reservation.fresh) return reservation.request;
+    let proposal: {subject:string; text:string} | null = null;
+    try { proposal = await draftInquiry(ctx, reservation.context, env.OPENAI_API_KEY!, env.OPENAI_EXTRACTION_MODEL!); } catch { /* Preserve the editable original draft. */ }
+    return await ctx.runMutation(internal.quotationMail.finishInquiry, { id: args.id, proposal });
+  },
+});
+
+export const reviseDraft = mutation({
+  args: { token: v.string(), id: v.id("quotationRequests"), expectedRevision: v.number(), subject: v.string(), text: v.string() },
+  returns: savedQuotationValidator,
+  handler: async (ctx, args) => {
+    const hash = await ownerHash(args.token);
+    const doc = await ctx.db.get(args.id);
+    if (!doc || doc.ownerHash !== hash) throw new ConvexError("Request unavailable in this session.");
+    if (doc.state !== "draft" || doc.revision !== args.expectedRevision || doc.aiDraftStatus === "running") throw new ConvexError("The draft changed or an AI suggestion is still running.");
+    const subject = args.subject.trim(), text = args.text.trim();
+    if (!subject || subject.length > 120 || /[\r\n]/.test(subject) || text.length < 10 || text.length > 4000) throw new ConvexError("Use a subject up to 120 characters and a message from 10 to 4000 characters.");
+    if (subject === doc.subject && text === doc.text) return await publicRequest(ctx, doc);
+    await ctx.db.patch(doc._id, { subject, text, revision: doc.revision + 1, updatedAt: Date.now() });
+    await traceMail(ctx, doc, "mail_draft_revised", `The user saved message revision ${doc.revision + 1}. Recipient is unchanged; a fresh send approval is required.`, `revised:${doc.revision + 1}`);
+    return await publicRequest(ctx, (await ctx.db.get(doc._id))!);
   },
 });
 
@@ -197,6 +310,7 @@ export const reserveReplyExtraction = internalMutation({
       extractionAttempts: attempts + 1,
       extractionAttempt: null,
     });
+    await traceMail(ctx, request, "mail_extraction_started", "AI interpretation of a linked reply started.", `extract:${reply.messageId}:${attempts + 1}`);
     return {
       kind: "reserved" as const,
       replyId: reply._id,
@@ -227,6 +341,8 @@ export const finishReplyExtraction = internalMutation({
       extractionError: null,
       extractionAttempt: attempt,
     });
+    const request = await ctx.db.get(reply.requestId);
+    if (request) await traceMail(ctx, request, "mail_extracted", "AI proposed reply fields with evidence. User review is still required.", `extracted:${reply.messageId}:${attempt}`);
     return publicReply((await ctx.db.get(replyId))!);
   },
 });
@@ -237,7 +353,7 @@ export const failReplyExtraction = internalMutation({
   handler: async (ctx, { replyId }) => {
     const reply = await ctx.db.get(replyId);
     if (!reply) throw new Error("Missing reserved reply extraction.");
-    if (reply.extractionStatus === "running")
+    if (reply.extractionStatus === "running") {
       await ctx.db.patch(replyId, {
         extraction: null,
         extractionStatus: "failed",
@@ -246,6 +362,9 @@ export const failReplyExtraction = internalMutation({
             ? "No verifiable suggestion was produced in two attempts. Complete the fields manually."
             : REPLY_EXTRACTION_ERROR,
       });
+      const request = await ctx.db.get(reply.requestId);
+      if (request) await traceMail(ctx, request, "mail_extraction_failed", "Reply interpretation failed. The original message remains available for manual review.", `extraction-failed:${reply.messageId}:${reply.extractionAttempts ?? 0}`);
+    }
     return publicReply((await ctx.db.get(replyId))!);
   },
 });
@@ -448,6 +567,7 @@ export const create = mutation({
       createdAt: now,
       updatedAt: now,
     });
+    await traceMail(ctx, (await ctx.db.get(id))!, "mail_draft", "Quote request prepared. Recipient and message are frozen for review.", "draft");
     return await publicRequest(ctx, (await ctx.db.get(id))!);
   },
 });
@@ -492,6 +612,7 @@ export const reserveSend = internalMutation({
       throw new ConvexError(
         "This request was already processed. Operator review is required before another send.",
       );
+    if (doc.aiDraftStatus === "running") throw new ConvexError("Wait for the AI draft result before approving this message.");
     const cfg = configured();
     if (!cfg.enabled || !doc.recipient || !doc.inboxId)
       throw new ConvexError(
@@ -503,10 +624,13 @@ export const reserveSend = internalMutation({
       );
     await ctx.db.patch(doc._id, {
       state: "sending",
+      approvedAt: Date.now(),
+      approvedRevision: doc.revision,
       simulated: providerRehearsalEnabled(),
       revision: doc.revision + 1,
       updatedAt: Date.now(),
     });
+    await traceMail(ctx, doc, "mail_approved", `Approved frozen message revision ${doc.revision} to ${doc.recipient}. Send started.`, `approved:${doc.revision}`);
     return {
       kind: "reserved" as const,
       id: doc._id,
@@ -536,7 +660,7 @@ export const finishSend = internalMutation({
   handler: async (ctx, { id, outcome }) => {
     const doc = await ctx.db.get(id);
     if (!doc) throw new Error("Missing reserved quotation request.");
-    if (doc.state === "sending")
+    if (doc.state === "sending") {
       await ctx.db.patch(
         id,
         outcome.kind === "sent"
@@ -557,6 +681,12 @@ export const finishSend = internalMutation({
               updatedAt: Date.now(),
             },
       );
+      await traceMail(ctx, doc, `mail_${outcome.kind}`, outcome.kind === "sent"
+        ? "AgentMail accepted the message. Delivery and a reply are not yet confirmed."
+        : outcome.kind === "uncertain"
+          ? "Send result is uncertain. No automatic resend; operator verification is required."
+          : "AgentMail rejected the send. No automatic resend.", `outcome:${outcome.kind}`);
+    }
     return await publicRequest(ctx, (await ctx.db.get(id))!);
   },
 });
@@ -817,6 +947,7 @@ export const recordVerifiedSentReceipt = internalMutation({
       revision: request.revision + 1,
       updatedAt: Date.now(),
     });
+    await traceMail(ctx, request, "mail_sent", "Operator verified the AgentMail receipt without resending.", "reconciled");
     return "recorded" as const;
   },
 });
@@ -890,6 +1021,7 @@ export const linkVerifiedUnmatchedReply = internalMutation({
       text: event.text,
       receivedAt: event.receivedAt,
     });
+    await traceMail(ctx, request, "mail_reply", "A provider reply was linked after operator verification. Review its terms before updating the decision.", `reply:${event.messageId}`);
     await ctx.db.delete(event._id);
     return "linked" as const;
   },
@@ -969,6 +1101,7 @@ export const recordReceived = internalMutation({
         receivedAt: args.receivedAt,
         from: sender,
       });
+      await traceMail(ctx, request, "mail_reply", "A provider reply arrived. Its terms remain unconfirmed until review.", `reply:${args.messageId}`);
       return "matched" as const;
     }
     const unmatched = await ctx.db

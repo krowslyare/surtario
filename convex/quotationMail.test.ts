@@ -66,6 +66,7 @@ test("creates an owned fixed draft without credentials and never accepts message
     enabled: false,
     recipient: null,
     extractionEnabled: false,
+    draftEnabled: false,
   });
   expect(
     await t.query(api.quotationMail.list, { token: "b".repeat(64) }),
@@ -494,4 +495,51 @@ test("acknowledges and retains a visibly truncated signed long reply", async () 
   expect(stored?.text.startsWith("x".repeat(100))).toBe(true);
   expect(stored?.text).toContain("Reply truncated");
   expect(stored?.messageId).toBe("msg-long");
+});
+
+
+test("traces immutable approval, uncertain recovery and duplicate replies without resending", async () => {
+  enableMail();
+  const t = convexTest(schema, modules);
+  const saved = await comparison(t);
+  const caseId = await t.run(async (ctx) => {
+    const comparison = (await ctx.db.get(saved.id))!;
+    return await ctx.db.insert("sourcingCases", {
+      ownerHash: comparison.ownerHash, comparisonId: saved.id,
+      ingredient: "Arroz", region: "Lima", objective: "Compare conditions",
+      status: "idle", revision: 1, steps: 0, runs: 0, researchRunIds: [],
+      summary: "", createdAt: Date.now(), updatedAt: Date.now(),
+    });
+  });
+  const draft = await t.mutation(api.quotationMail.create, {
+    token, comparisonId: saved.id, clientId: "22222222-2222-4222-8222-222222222222",
+  });
+  expect(draft.approvedAt).toBeNull();
+  await expect(t.mutation(internal.quotationMail.reserveSend, {
+    token, id: draft.id, expectedRevision: 0, confirmed: true,
+  })).rejects.toThrow(/changed/);
+  await t.mutation(internal.quotationMail.reserveSend, {
+    token, id: draft.id, expectedRevision: 1, confirmed: true,
+  });
+  const uncertain = await t.mutation(internal.quotationMail.finishSend, { id: draft.id, outcome: { kind: "uncertain" } });
+  expect(uncertain.approvedRevision).toBe(1);
+  expect(uncertain.approvedAt).toEqual(expect.any(Number));
+  await expect(t.mutation(internal.quotationMail.reserveSend, {
+    token, id: draft.id, expectedRevision: uncertain.revision, confirmed: true,
+  })).rejects.toThrow(/already processed/);
+  await t.mutation(internal.quotationMail.recordVerifiedSentReceipt, {
+    requestId: draft.id, expectedRevision: uncertain.revision, inboxId: "inbox-test",
+    messageId: "trace-out", threadId: "trace-thread", operatorVerified: true,
+  });
+  const reply = { eventId: "trace-event", messageId: "trace-in", inboxId: "inbox-test",
+    threadId: "trace-thread", from: "buyer@example.test", text: "Freight is pending.", receivedAt: "2026-09-14T12:00:00Z" };
+  expect(await t.mutation(internal.quotationMail.recordReceived, reply)).toBe("matched");
+  expect(await t.mutation(internal.quotationMail.recordReceived, reply)).toBe("duplicate");
+  const events = await t.run(ctx => ctx.db.query("sourcingEvents").withIndex("by_caseId", q => q.eq("caseId", caseId)).take(20));
+  expect(events.map(event => event.kind)).toEqual(["mail_draft", "mail_approved", "mail_uncertain", "mail_sent", "mail_reply"]);
+  const recovered = (await t.query(api.quotationMail.list, { token }))[0];
+  expect(recovered.text).toBe(draft.text);
+  expect(recovered.recipient).toBe(draft.recipient);
+  expect(recovered.approvedAt).toBe(uncertain.approvedAt);
+  expect(recovered.replies).toHaveLength(1);
 });

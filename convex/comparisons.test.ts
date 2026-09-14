@@ -153,3 +153,82 @@ test("updates use saved identities and retain evidence when an offer is removed"
     sources["rice-supplier-a"],
   );
 });
+
+test("case linking is owned, atomic, immutable across comparisons and retry safe", async () => {
+  const t = convexTest(schema, modules);
+  const { ownerHash } = await import("./lib/demoSession");
+  const sourcingCaseId = await t.run(async (ctx) =>
+    ctx.db.insert("sourcingCases", {
+      ownerHash: await ownerHash(draft.token),
+      ingredient: "Arroz",
+      region: "Lima",
+      objective: "Explore",
+      status: "idle",
+      revision: 1,
+      steps: 0,
+      runs: 0,
+      researchRunIds: [],
+      summary: "",
+      createdAt: 1,
+      updatedAt: 1,
+    }),
+  );
+  await expect(
+    t.mutation(api.comparisons.save, {
+      ...draft,
+      token: "b".repeat(64),
+      sourcingCaseId,
+    }),
+  ).rejects.toThrow(/case unavailable/);
+  await expect(
+    t.mutation(api.comparisons.save, {
+      ...draft,
+      sourcingCaseId,
+      request: { ...draft.request, ingredient: "Oil" },
+    }),
+  ).rejects.toThrow(/ingredient must match/);
+  const saved = await t.mutation(api.comparisons.save, {
+    ...draft,
+    sourcingCaseId,
+  });
+  expect(
+    (await t.mutation(api.comparisons.save, { ...draft, sourcingCaseId })).id,
+  ).toBe(saved.id);
+  await expect(
+    t.mutation(api.comparisons.save, {
+      ...draft,
+      sourcingCaseId,
+      clientId: "22222222-2222-4222-8222-222222222222",
+    }),
+  ).rejects.toThrow(/already has a saved comparison/);
+  expect(
+    await t.query(api.comparisons.list, { token: draft.token }),
+  ).toHaveLength(1);
+  const events = await t.run((ctx) =>
+    ctx.db
+      .query("sourcingEvents")
+      .withIndex("by_caseId", (q) => q.eq("caseId", sourcingCaseId))
+      .take(10),
+  );
+  expect(events).toHaveLength(1);
+  expect(events[0].kind).toBe("comparison_saved");
+  const anotherCase = await t.run(async (ctx) => {
+    const row = await ctx.db.get(sourcingCaseId);
+    const { _id, _creationTime, comparisonId, ...fields } = row!;
+    return ctx.db.insert("sourcingCases", {
+      ...fields,
+      objective: "Another case",
+    });
+  });
+  await expect(
+    t.mutation(api.comparisons.save, {
+      ...draft,
+      id: saved.id,
+      expectedRevision: 1,
+      sourcingCaseId: anotherCase,
+    }),
+  ).rejects.toThrow(/another sourcing case/);
+  expect(
+    (await t.query(api.comparisons.list, { token: draft.token }))[0].revision,
+  ).toBe(1);
+});
