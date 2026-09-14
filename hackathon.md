@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-12T17:02:45Z
+- **Last updated:** 2026-09-14T03:28:54Z
 
 ## Log
 
@@ -324,3 +324,6 @@ Addressed all three GitHub review findings in PR #27: added lb/oz review selecto
 
 ### 2026-09-12 - d2a70d1 · final Luna review correction
 Independent Luna max review found that saved source snapshots include unselected distributors, which could expose an unrelated catalog inquiry. Inquiry controls now use saved selected IDs, and the server rejects draft creation for distributors absent from that selection. US and Peru regression tests failed before the fix and passed afterward; browser checks cover US priced-only recovery and web-only studies. 199 unit/backend/configuration tests, three targeted browser checks, the full 64-journey browser suite, both typechecks and hosting checks passed. No external message or deployment occurred.
+
+### 2026-09-13 - working tree · pre-merge Sol correction
+Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.

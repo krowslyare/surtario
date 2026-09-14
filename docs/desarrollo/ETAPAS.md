@@ -301,3 +301,7 @@ PR #27 is the reviewed prerequisite for US measurements. Its follow-up d26b14c i
 
 
 Final Luna max review found that saved source snapshots include unselected distributors. The product now uses saved selection IDs for inquiry controls, and `quotationMail.create` rejects unselected distributors on the server. Both US/Peru regression cases failed before the correction and passed afterward. The corrected pass has 199 unit/backend/configuration tests, three targeted browser journeys and the full 64-journey browser suite passing, plus both typechecks and hosting checks. Both PRs have passing GitHub test/build checks.
+
+## September 13, 2026 — pre-merge Sol correction
+
+Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.
