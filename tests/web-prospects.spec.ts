@@ -15,7 +15,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     token,
     clientId: crypto.randomUUID(),
     ingredient: "Arroz",
-    region: "Lima",
+    region: "Arequipa",
   });
   run("research:finishSearch", {
     id: reserved.run.id,
@@ -38,7 +38,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   );
   await page.goto("/?example=pe");
   await page.getByRole("button", { name: "Saved research", exact: true }).click();
-  await page.getByRole("button", { name: /Arroz · Lima/ }).click();
+  await page.getByRole("button", { name: /Arroz · Arequipa/ }).click();
   await page
     .getByRole("button", { name: "Save potential distributor" })
     .click();
@@ -58,6 +58,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     .click();
   await expect(review).not.toBeVisible();
   await page.getByRole("button", { name: "My study 1", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Saved studies", exact: true }).getByRole("status")).toHaveText("Not saved");
   await page.getByRole("button", { name: "Save study", exact: true }).click();
   await expect(
     page.getByText("Study saved with 1 option", { exact: false }),

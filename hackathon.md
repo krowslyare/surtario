@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-13T14:47:56Z
+- **Last updated:** 2026-09-14T03:28:54Z
 
 ## Log
 
@@ -329,3 +329,6 @@ Independent Luna max review found that saved source snapshots include unselected
 ### 2026-09-13 - working tree · finding-to-decision follow-through
 Connected the missing-freight finding to a complete supplier question, an amount preview using the existing deterministic DSS context, explicit operator confirmation and a visible before/after recommendation. Confirmation changes only freight and preserves source evidence. The result can save through existing comparison persistence; the confirmed amount survives reload, while the recap belongs to the current view. No message, selection or purchase is triggered.
 205 unit/backend/configuration tests, 13 focused browser journeys, frontend/backend TypeScript and hosting checks passed locally. Cases cover boundary amounts, real advisor priorities, budget constraints, stale input, confirmation reset, focus and mobile layout. Independent Luna max review found a misleading save action under blocked site storage; saving now follows persistence readiness, with a passing browser regression. No schema change, external model call, provider configuration or cloud deployment was performed. Evidence and limits: `docs/desarrollo/DECISION_FOLLOWTHROUGH.md`.
+
+### 2026-09-13 - working tree · pre-merge Sol correction
+Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.
