@@ -161,7 +161,10 @@ function ScenarioDetails({
     </details>
   );
 }
+export type AdvisorDecisionState = { context: AdvisorContext; invalid: boolean };
+
 export default function PurchasingAdvisor(props: {
+  onDecisionContext?: (state: AdvisorDecisionState) => void;
   comparisonId: Id<"comparisons"> | null;
   revision: number;
   request: ProcurementRequest;
@@ -203,7 +206,9 @@ function Connected({
   canSaveComparison,
   saveBlockedReason,
   onSaveComparison,
+  onDecisionContext,
 }: {
+  onDecisionContext?: (state: AdvisorDecisionState) => void;
   comparisonId: Id<"comparisons"> | null;
   revision: number;
   request: ProcurementRequest;
@@ -274,6 +279,9 @@ function Connected({
         ((k === "dailyUsage" || k === "maxCoverageDays") && n === 0))
     );
   });
+  useEffect(() => {
+    onDecisionContext?.({ context, invalid });
+  }, [context, invalid, onDecisionContext]);
   const validRequestQuantity =
     Number.isFinite(request.quantity) && request.quantity > 0;
   const report = analyzePurchase(request, offers, context);

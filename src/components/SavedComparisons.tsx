@@ -70,6 +70,7 @@ const SavedComparisons = forwardRef<
   SavedComparisonsHandle,
   {
     draft: ComparisonDraft;
+    onAvailabilityChange?: (available: boolean) => void;
     onOpen: (comparison: SavedComparison) => void;
     onSaved: (
       comparison: SavedComparison,
@@ -125,6 +126,7 @@ const ConnectedComparisons = forwardRef<
   {
     token: string;
     draft: ComparisonDraft;
+    onAvailabilityChange?: (available: boolean) => void;
     onOpen: (comparison: SavedComparison) => void;
     onSaved: (
       comparison: SavedComparison,
@@ -132,7 +134,10 @@ const ConnectedComparisons = forwardRef<
       submitted: ComparisonDraft,
     ) => boolean;
   }
->(function ConnectedComparisons({ token, draft, onOpen, onSaved }, ref) {
+>(function ConnectedComparisons(
+  { token, draft, onOpen, onSaved, onAvailabilityChange },
+  ref,
+) {
   const comparisons = useQuery(api.comparisons.list, { token });
   const save = useMutation(api.comparisons.save);
   const connection = useConvexConnectionState();
@@ -157,6 +162,11 @@ const ConnectedComparisons = forwardRef<
     setError("");
   }, [draft.clientId]);
   const connected = online && connection.isWebSocketConnected;
+  const available = connected && comparisons !== undefined && !saving;
+  useEffect(() => {
+    onAvailabilityChange?.(available);
+    return () => onAvailabilityChange?.(false);
+  }, [available, onAvailabilityChange]);
 
   const persist = useCallback(async () => {
     if (savingRef.current || !connected || !draft.persistable) return null;

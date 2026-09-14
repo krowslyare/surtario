@@ -1,3 +1,4 @@
+import { analyzePurchase, type AdvisorContext } from "./advisor";
 import {
   evaluateOffer,
   type Currency,
@@ -100,8 +101,8 @@ export function resolveMissingConditions(
           ? ("can-match" as const)
           : ("already-more-expensive" as const),
         questionDraft: canMatch
-          ? `Can ${offer.supplier} confirm freight of ${money(offer.currency, maxFreightCents)} or less for this order?`
-          : `What is the confirmed freight for this order from ${offer.supplier}?`,
+          ? `For ${evaluation.packageCount} ${evaluation.packageCount === 1 ? "pack" : "packs"} of ${offer.packageContent} ${offer.packageUnit} ${request.ingredient} (${request.specification}), can ${offer.supplier} confirm final delivery, including tax, of ${money(offer.currency, maxFreightCents)} or less?`
+          : `For ${evaluation.packageCount} ${evaluation.packageCount === 1 ? "pack" : "packs"} of ${offer.packageContent} ${offer.packageUnit} ${request.ingredient} (${request.specification}), what is the final delivery cost, including tax, from ${offer.supplier}?`,
         explanation: canMatch
           ? `At or below the hypothetical ${money(offer.currency, maxFreightCents)} freight boundary, this offer's total would be no higher than the best complete alternative.`
           : `This offer's merchandise subtotal is already ${money(offer.currency, -maxFreightCents)} above the best complete alternative, before any freight is added.`,
@@ -131,3 +132,51 @@ export function compareFreightScenario(
     after: evaluateOffer(request, { ...offer, freightCents }),
   };
 }
+
+/** Uses the same decision policy and operator context as the purchasing advisor. */
+export function previewFreightDecision(
+  request: ProcurementRequest,
+  offers: SupplierOffer[],
+  context: AdvisorContext,
+  offerId: string,
+  freightCents: number,
+) {
+  const finding = resolveMissingConditions(request, offers).find(
+    (item) => item.offerId === offerId,
+  );
+  if (!finding)
+    throw new Error(
+      "This delivery question no longer matches the current comparison.",
+    );
+  const offer = offers.find((item) => item.id === offerId)!;
+  const scenario = compareFreightScenario(request, offer, freightCents);
+  if (
+    !scenario.after.eligibleForComparison ||
+    scenario.after.totalCents === null
+  )
+    throw new Error(
+      "Enter a valid final delivery amount within the supported range.",
+    );
+  const updatedOffer = { ...offer, freightCents };
+  const updatedOffers = offers.map((item) =>
+    item.id === offerId ? updatedOffer : item,
+  );
+  const before = analyzePurchase(request, offers, context);
+  const after = analyzePurchase(request, updatedOffers, context);
+  return {
+    finding,
+    updatedOffer,
+    updatedOffers,
+    freightCents,
+    totalCents: scenario.after.totalCents,
+    differenceCents:
+      scenario.after.totalCents - finding.evidence.benchmarkTotalCents,
+    before,
+    after,
+    decisionChanged:
+      before.action !== after.action ||
+      before.recommendedOfferId !== after.recommendedOfferId,
+  };
+}
+
+export type FreightDecisionPreview = ReturnType<typeof previewFreightDecision>;
