@@ -7,12 +7,12 @@
 - **Repo:** private
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://incredible-wolverine-122.convex.cloud
-- **Components:** @convex-dev/agent, @convex-dev/static-hosting
-- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, realtime queries
+- **Components:** @convex-dev/agent, @convex-dev/static-hosting, @convex-dev/workflow
+- **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, crons, realtime queries
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-14T03:28:54Z
+- **Last updated:** 2026-09-14T19:30:30Z
 
 ## Log
 
@@ -338,3 +338,11 @@ Independent Sol review returned `ship` with no material fixes after inspecting a
 
 ### 2026-09-13 - working tree · pre-merge Sol correction
 Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.
+
+
+### 2026-09-14 - working tree · persistent sourcing cases
+Persistent sourcing cases now connect an optional saved study, bounded research self-loop, reviewed comparison updates and versioned supplier messages. Explicit source watches run daily for seven days and preserve changed/unverified observations for human review. AI can propose research steps, evidence and inquiry text; it cannot approve an email, select its recipient or record a purchase. The UI recovers cases, highlights the next action and exposes dated history and supporting details on demand.
+
+Local verification covers capability ownership, canceled/late work, duplicate events, immutable mail approval, stale comparison revisions, saved-study context, offline recovery and responsive layouts. Provider calls in these tests are mocked or synthetic. The workflow component is registered; no cloud deployment or provider flags were changed. Real OpenAI API behavior, the combined hosted flow and a seven-day live watch remain unverified. See [the architecture and configuration contract](docs/desarrollo/CASOS_ABASTECIMIENTO.md).
+
+Independent pre-PR review found and closed two continuation defects: unchanged case comparisons now retain their selected offer, and replies opened directly from a study update the existing case comparison instead of creating an unlinked one. Added focused browser regressions for both. Fresh verification passed 222 unit/backend tests, frontend/backend TypeScript and hosting checks. The full browser run passed 71/72; the remaining failure was an incomplete research-module test stub, corrected without removing assertions. The new direct-study reply test and both workspace tests then passed; selection recovery was checked separately. This is local synthetic evidence; CI and hosted acceptance are separate checks.
