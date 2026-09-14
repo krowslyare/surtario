@@ -180,14 +180,11 @@ function ConnectedStudies({
     }
   }
   const dirty = savedDraft.fingerprint !== fingerprint;
-  const supportedExample = Boolean(
-    findMarketExampleContext(draft.term, draft.region),
-  );
   const status =
     count === 0
       ? "Select at least one option to save."
-      : !supportedExample
-        ? "This demo can save only the available sample markets."
+      : !eligible
+        ? "Select an available example or a reviewed web source to save."
         : savedDraft.fingerprint === null
           ? "Not saved"
           : dirty

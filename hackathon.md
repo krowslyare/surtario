@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-13T22:27:58Z
+- **Last updated:** 2026-09-14T03:28:54Z
 
 ## Log
 
@@ -335,3 +335,6 @@ Added an English product entrance at the root route, using the existing Surtario
 205 unit/backend/configuration tests and hosting checks passed. All 67 browser journeys passed across the full run and targeted rechecks after correcting local CLI configuration and old other-tab workspace URLs; later timeouts passed without changing assertions. Desktop/mobile captures, keyboard, reduced motion and back/reload are covered. No new model call, backend change, deployment or visibility change.
 
 Independent Sol review returned `ship` with no material fixes after inspecting all four captures, the established design contract and routing/product truth. Luna could not complete the initial review because of a usage limit; Sol performed the replacement review.
+
+### 2026-09-13 - working tree · pre-merge Sol correction
+Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.

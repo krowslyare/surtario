@@ -138,7 +138,7 @@ test("volver al ejemplo después de una búsqueda vacía conserva la selección"
       .getByRole("region", { name: "Saved studies", exact: true })
       .getByRole("status"),
   ).toHaveText(
-    "This demo can save only the available sample markets.",
+    "Select an available example or a reviewed web source to save.",
   );
   await page.getByRole("button", { name: "View rice example" }).click();
   await expect(

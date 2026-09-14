@@ -316,3 +316,7 @@ The root route now presents the English Surtario landing with existing brand pho
 205 unit/backend/configuration checks and hosting build passed. All 67 browser journeys were verified across the complete run and focused corrections/rechecks. The new landing checks keyboard, reduced motion, back/reload and 1920/1440/390/320 px reflow. See [landing behavior and evidence](../diseno/surfaces/LANDING.md). No cloud deployment or repository visibility change.
 
 Independent Sol review returned `ship` with no material fixes after inspecting all four captures, the established design contract and routing/product truth. Luna could not complete the initial review because of a usage limit; Sol performed the replacement review.
+
+## September 13, 2026 — pre-merge Sol correction
+
+Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.

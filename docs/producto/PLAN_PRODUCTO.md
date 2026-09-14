@@ -37,7 +37,7 @@ Priorizar acceso real sobre una cocina elegida por estética. Una cocina criolla
 
 Explorar sin documentos ni precios propios sí encaja. Quedan fuera inicialmente grandes cadenas que requieren integrar su ERP desde el primer día y servicios de inventario o compra automática. No tener porciones estandarizadas impide costear platos, pero no impide comparar insumos equivalentes.
 
-**Dirección de entrega actual:** interfaz móvil en inglés, USD y unidades de masa de EE. UU. para el ejemplo predeterminado. Los fixtures de Perú siguen disponibles en español, PEN y unidades métricas para preservar ese recorrido y su evidencia. Moneda, zona, unidad y procedencia son datos explícitos; una comparación no cruza esos contextos.
+**Dirección de entrega actual:** interfaz móvil en inglés, USD y unidades de masa de EE. UU. para el ejemplo predeterminado. Los fixtures y citas de Perú conservan su español, PEN y unidades métricas; los controles y explicaciones generadas permanecen en inglés. Se conserva la evidencia original, sin prometer una interfaz bilingüe. Moneda, zona, unidad y procedencia son datos explícitos; una comparación no cruza esos contextos.
 
 **Límite del alcance:** soportar dos recorridos conocidos dentro del mismo producto no implica traducciones completas, cobertura de países, conversión de divisas, motores tributarios, facturación SUNAT ni un marketplace. Cada oferta conserva sus impuestos, flete, disponibilidad y cobertura como datos confirmados o pendientes; nunca se infieren a partir del idioma o la ubicación.
 
