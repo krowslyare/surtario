@@ -109,7 +109,7 @@ test("extracts only the owned stored reply and reuses the paid result", async ()
       ...args,
       token: "b".repeat(64),
     }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
 });
 
 test("disabled extraction cannot reserve or call the provider", async () => {
@@ -121,7 +121,7 @@ test("disabled extraction cannot reserve or call the provider", async () => {
       requestId,
       messageId: "incoming",
     }),
-  ).rejects.toThrow(/no está habilitada/);
+  ).rejects.toThrow(/not enabled/);
   expect(extractReplyOfferWithAgent).not.toHaveBeenCalled();
   expect(
     (await t.query(api.quotationMail.list, { token }))[0].replies[0]
@@ -145,7 +145,7 @@ test("sanitizes failures and allows only one explicit retry", async () => {
   expect(second.extractionStatus).toBe("failed");
   expect(second.extractionAttempts).toBe(2);
   await expect(t.action(api.quotationMail.extractReply, args)).rejects.toThrow(
-    /máximo de dos intentos/,
+    /two-attempt limit/,
   );
   expect(extractReplyOfferWithAgent).toHaveBeenCalledTimes(2);
 });
@@ -160,7 +160,7 @@ test("running and uncertain reservations never issue another paid call", async (
       .kind,
   ).toBe("reserved");
   await expect(t.action(api.quotationMail.extractReply, args)).rejects.toThrow(
-    /en curso/,
+    /already running/,
   );
   expect(extractReplyOfferWithAgent).not.toHaveBeenCalled();
 
@@ -175,9 +175,9 @@ test("running and uncertain reservations never issue another paid call", async (
   };
   await expect(
     other.t.action(api.quotationMail.extractReply, uncertain),
-  ).rejects.toThrow(/no se confirmó su guardado/);
+  ).rejects.toThrow(/saving was not confirmed/);
   await expect(
     other.t.action(api.quotationMail.extractReply, uncertain),
-  ).rejects.toThrow(/en curso/);
+  ).rejects.toThrow(/already running/);
   expect(extractReplyOfferWithAgent).toHaveBeenCalledTimes(1);
 });

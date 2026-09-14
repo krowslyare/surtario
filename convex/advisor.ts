@@ -52,7 +52,7 @@ export const list = query({
     const owner = await ownerHash(args.token);
     const comparison = await ctx.db.get(args.comparisonId);
     if (!comparison || comparison.ownerHash !== owner)
-      throw new ConvexError("Comparación no disponible.");
+      throw new ConvexError("Comparison unavailable.");
     return (
       await ctx.db
         .query("advisorRuns")
@@ -76,10 +76,10 @@ export const prepare = mutation({
   handler: async (ctx, args) => {
     const owner = await ownerHash(args.token);
     if (!/^[a-f\d-]{36}$/i.test(args.clientId))
-      throw new ConvexError("Solicitud no válida.");
+      throw new ConvexError("Invalid request.");
     const comparison = await ctx.db.get(args.comparisonId);
     if (!comparison || comparison.ownerHash !== owner)
-      throw new ConvexError("Comparación no disponible.");
+      throw new ConvexError("Comparison unavailable.");
     const existing = await ctx.db
       .query("advisorRuns")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -92,19 +92,19 @@ export const prepare = mutation({
         existing.comparisonRevision !== args.expectedRevision ||
         !sameContext(existing.context, args.context)
       )
-        throw new ConvexError("Esta solicitud ya corresponde a otro análisis.");
+        throw new ConvexError("This request already belongs to another analysis.");
       return view(existing);
     }
     if (comparison.revision !== args.expectedRevision)
       throw new ConvexError(
-        "La comparación cambió. Recupera la versión guardada antes de analizar.",
+        "The comparison changed. Restore the saved version before analyzing it.",
       );
     if (
       !Number.isFinite(comparison.request.quantity) ||
       comparison.request.quantity <= 0
     )
       throw new ConvexError(
-        "Indica una cantidad mayor que cero antes de preparar el análisis.",
+        "Enter a quantity greater than zero before preparing the analysis.",
       );
     const c = args.context;
     if (
@@ -119,7 +119,7 @@ export const prepare = mutation({
         !comparison.offers.some((o) => o.id === c.preferredOfferId))
     )
       throw new ConvexError(
-        "Revisa el contexto: importes y cantidades válidos, consumo y cobertura mayores a cero.",
+        "Review the context: use valid amounts and quantities, with usage and coverage greater than zero.",
       );
     const matching = (
       await ctx.db
@@ -146,7 +146,7 @@ export const prepare = mutation({
           .take(20)
       ).length >= 20
     )
-      throw new ConvexError("Hasta 20 análisis por sesión.");
+      throw new ConvexError("Up to 20 analyses are allowed per session.");
     if (
       (
         await ctx.db
@@ -155,7 +155,7 @@ export const prepare = mutation({
           .take(200)
       ).length >= 200
     )
-      throw new ConvexError("Se alcanzó la capacidad de análisis de la demo.");
+      throw new ConvexError("The demo analysis capacity has been reached.");
     const {
       _id: _id,
       _creationTime: _time,
@@ -187,16 +187,16 @@ export const reserve = internalMutation({
     const owner = await ownerHash(args.token),
       run = await ctx.db.get(args.id);
     if (!run || run.ownerHash !== owner)
-      throw new ConvexError("Análisis no disponible.");
+      throw new ConvexError("Analysis unavailable.");
     if (run.status !== "calculated") return { fresh: false, run: view(run) };
     if (!enabled())
       throw new ConvexError(
-        "El asesor de IA aún no está habilitado. Puedes usar el escenario calculado.",
+        "The AI advisor is not enabled yet. You can use the calculated scenario.",
       );
     const comparison = await ctx.db.get(run.comparisonId);
     if (!comparison || comparison.revision !== run.comparisonRevision)
       throw new ConvexError(
-        "El análisis está desactualizado. Prepara uno nuevo.",
+        "The analysis is out of date. Prepare a new one.",
       );
     await ctx.db.patch(run._id, { status: "running" });
     // Keep interruption recovery independent of the action that calls the model.
@@ -215,7 +215,7 @@ export const expire = internalMutation({
       await ctx.db.patch(id, {
         status: "failed",
         error:
-          "El análisis de IA no terminó a tiempo. El cálculo se conserva; no se reintenta automáticamente.",
+          "The AI analysis did not finish in time. The calculation is preserved and will not retry automatically.",
       });
     }
     return null;
@@ -251,7 +251,7 @@ export const finish = internalMutation({
       toolCalls: args.toolCalls,
       error: args.narrative
         ? null
-        : "No se confirmó el análisis de IA. El cálculo se conserva; no se reintenta automáticamente.",
+        : "The AI analysis could not be confirmed. The calculation is preserved and will not retry automatically.",
     });
     return view((await ctx.db.get(run._id))!);
   },

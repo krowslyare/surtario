@@ -10,16 +10,16 @@ import { Dialog } from "./Dialog";
 
 type Quotation = Infer<typeof savedQuotationValidator>;
 const labels = {
-  draft: "Borrador",
-  sending: "Envío en curso",
-  sent: "Aceptado por AgentMail",
-  uncertain: "Envío sin confirmar",
-  failed: "Envío fallido",
+  draft: "Draft",
+  sending: "Sending",
+  sent: "Accepted by AgentMail",
+  uncertain: "Send unconfirmed",
+  failed: "Send failed",
 };
 function message(error: unknown) {
   return error instanceof ConvexError && typeof error.data === "string"
     ? error.data
-    : "No se confirmó la operación. Conserva el borrador y revisa la conexión.";
+    : "The operation was not confirmed. Keep the draft and check your connection.";
 }
 export default function QuotationMail(props: {
   comparisonId: Id<"comparisons"> | null;
@@ -44,7 +44,7 @@ export default function QuotationMail(props: {
   if (!token)
     return (
       <p className="field-hint">
-        Guarda la comparación para preparar una solicitud de cotización.
+        Save the comparison to prepare a quote request.
       </p>
     );
   return (
@@ -178,22 +178,22 @@ function Connected({
     }
   }
   return (
-    <section className="saved-studies" aria-label="Cotizaciones por correo">
-      <h2>Consultar condiciones por correo</h2>
+    <section className="saved-studies" aria-label="Email quote requests">
+      <h2>Request terms by email</h2>
       <p className="field-hint">
         {prospectId
-          ? "Consulta basada en un candidato web guardado. El contacto anotado no es el destinatario: el envío solo usa el buzón de prueba configurado."
+          ? "Request based on a saved web candidate. The noted contact is not the recipient: sending uses only the configured test inbox."
           : studyId
-            ? "Consulta de catálogo basada en el estudio guardado. No exige cantidad ni precio. El destinatario será el buzón de prueba, no el contacto del distribuidor."
-            : "La solicitud usa la versión guardada de esta comparación. Guarda primero los cambios que quieras incluir."}
+            ? "Catalog request based on the saved study. It does not require a quantity or price. The recipient is the test inbox, not the distributor contact."
+            : "The request uses the saved version of this comparison. Save any changes you want to include first."}
       </p>
       {status === undefined && (
-        <p className="field-hint">Comprobando disponibilidad del correo…</p>
+        <p className="field-hint">Checking email availability…</p>
       )}
       {status && !status.enabled && (
         <p className="notice info">
-          Correo de prueba no habilitado. Puedes preparar y copiar el mensaje;
-          no se enviará.
+          Test email is unavailable. You can prepare and copy the message; will
+          not be sent.
         </p>
       )}
       <button
@@ -201,11 +201,9 @@ function Connected({
         disabled={!targetKey || busy}
         onClick={prepare}
       >
-        Preparar solicitud de prueba
+        Prepare test request
       </button>
-      {!targetKey && (
-        <p className="field-hint">Primero guarda la comparación.</p>
-      )}
+      {!targetKey && <p className="field-hint">Save the comparison first.</p>}
       {error && (
         <p role="alert" className="notice error">
           {error}
@@ -225,13 +223,13 @@ function Connected({
               setNotice("");
             }}
           >
-            Ver solicitud
+            View request
           </button>
         </div>
       ))}
       {active && (
         <Dialog
-          title="Revisar solicitud de cotización"
+          title="Review quote request"
           onClose={() => {
             setActiveId(null);
             setConfirmed(false);
@@ -243,9 +241,9 @@ function Connected({
             </p>
           )}
           <p>
-            <strong>Destinatario de prueba:</strong>{" "}
+            <strong>Test recipient:</strong>{" "}
             {active.recipient ??
-              "Sin configurar; crea otra solicitud cuando esté configurado."}
+              "Not configured; create another request after it is configured."}
           </p>
           <p>
             <strong>{active.subject}</strong>
@@ -254,14 +252,14 @@ function Connected({
           <p role="status">
             {labels[active.state]}.{" "}
             {active.state === "sent"
-              ? "La aceptación no confirma entrega ni respuesta."
-              : "No se realiza ninguna compra."}
+              ? "Acceptance does not confirm delivery or a reply."
+              : "No purchase is made."}
           </p>
           {active.failure && <p className="notice error">{active.failure}</p>}
           {(active.state === "sending" || active.state === "uncertain") && (
             <p>
-              Si el envío quedó interrumpido, requiere revisión del operador. No
-              crees otro para repetirlo sin comprobar el resultado.
+              If sending was interrupted, an operator must review it. It will
+              not create another one to repeat it without checking the result.
             </p>
           )}
           {active.state === "draft" && (
@@ -271,7 +269,7 @@ function Connected({
                 checked={confirmed}
                 onChange={(e) => setConfirmed(e.target.checked)}
               />
-              Revisé el destinatario y el texto y autorizo este envío de prueba
+              I reviewed the recipient and message and authorize this test send
             </label>
           )}
           <div className="dialog-actions">
@@ -280,13 +278,13 @@ function Connected({
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(active.text);
-                  setNotice("Texto copiado. No se envió ningún mensaje.");
+                  setNotice("Text copied. No message was sent.");
                 } catch {
-                  setNotice("Selecciona el texto y cópialo manualmente.");
+                  setNotice("Select the text and copy it manually.");
                 }
               }}
             >
-              Copiar para WhatsApp
+              Copy for WhatsApp
             </button>
             <button
               className="button primary"
@@ -299,20 +297,18 @@ function Connected({
               }
               onClick={sendReviewed}
             >
-              Enviar solicitud de prueba
+              Send test request
             </button>
           </div>
           {notice && <p role="status">{notice}</p>}
-          <h3>Respuestas vinculadas</h3>
+          <h3>Linked replies</h3>
           {active.replies.length === 0 ? (
-            <p>Todavía no hay respuestas vinculadas.</p>
+            <p>No replies are linked yet.</p>
           ) : (
             active.replies.map((reply) => (
               <div key={reply.messageId}>
                 <pre className="quotation-text">{reply.text}</pre>
-                <p>
-                  Revisa la respuesta antes de modificar precios o condiciones.
-                </p>
+                <p>Review the reply before changing prices or terms.</p>
                 {onPrepare && (
                   <button
                     className="button secondary"
@@ -333,7 +329,7 @@ function Connected({
                       setConfirmed(false);
                     }}
                   >
-                    Revisar como nueva oferta
+                    Review as new offer
                   </button>
                 )}
                 {offers.map((offer) => (
@@ -345,7 +341,7 @@ function Connected({
                       onEditOffer(offer.id);
                     }}
                   >
-                    Editar condiciones de {offer.supplier}
+                    Edit terms for {offer.supplier}
                   </button>
                 ))}
               </div>
@@ -386,7 +382,7 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   render() {
     return this.state.failed ? (
       <p role="alert" className="notice error">
-        El correo no está disponible. La comparación sigue accesible.
+        Email is unavailable. The comparison remains accessible.
       </p>
     ) : (
       this.props.children

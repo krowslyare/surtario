@@ -35,11 +35,11 @@ const COOLDOWN_MS = 30_000;
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const SEND_FAILED =
-  "AgentMail rechazó el envío. Crea una solicitud nueva para volver a intentarlo.";
+  "AgentMail rejected the send. Create a new request to try again.";
 const SEND_UNCERTAIN =
-  "No se pudo confirmar el resultado del envío. No se reintentará automáticamente.";
+  "The send result could not be confirmed. It will not retry automatically.";
 const REPLY_EXTRACTION_ERROR =
-  "No se obtuvo una sugerencia verificable. Puedes completar los campos manualmente o volver a intentarlo una vez.";
+  "No verifiable suggestion was produced. Complete the fields manually or try once more.";
 
 function normalizedSender(value: string) {
   return (
@@ -169,16 +169,16 @@ export const reserveReplyExtraction = internalMutation({
   handler: async (ctx, args) => {
     const hash = await ownerHash(args.token);
     if (!args.messageId || args.messageId.length > 500)
-      throw new ConvexError("Respuesta no válida.");
+      throw new ConvexError("Invalid reply.");
     const request = await ctx.db.get(args.requestId);
     if (!request || request.ownerHash !== hash)
-      throw new ConvexError("Solicitud no disponible en esta sesión.");
+      throw new ConvexError("Request unavailable in this session.");
     const reply = await ctx.db
       .query("quotationReplies")
       .withIndex("by_messageId", (q) => q.eq("messageId", args.messageId))
       .unique();
     if (!reply || reply.requestId !== request._id)
-      throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+      throw new ConvexError("Reply not linked to this request.");
     const status = reply.extractionStatus ?? "idle";
     const attempts = reply.extractionAttempts ?? 0;
     if (!Number.isSafeInteger(attempts) || attempts < 0)
@@ -188,7 +188,7 @@ export const reserveReplyExtraction = internalMutation({
     if (status === "running") return { kind: "running" as const };
     if (attempts >= 2)
       throw new ConvexError(
-        "Esta respuesta alcanzó el máximo de dos intentos. Completa los campos manualmente.",
+        "This reply reached the two-attempt limit. Complete the fields manually.",
       );
     await ctx.db.patch(reply._id, {
       extraction: null,
@@ -243,7 +243,7 @@ export const failReplyExtraction = internalMutation({
         extractionStatus: "failed",
         extractionError:
           (reply.extractionAttempts ?? 0) >= 2
-            ? "No se obtuvo una sugerencia verificable en dos intentos. Completa los campos manualmente."
+            ? "No verifiable suggestion was produced in two attempts. Complete the fields manually."
             : REPLY_EXTRACTION_ERROR,
       });
     return publicReply((await ctx.db.get(replyId))!);
@@ -259,7 +259,7 @@ export const extractReply = action({
   returns: quotationReplyValidator,
   handler: async (ctx, args): Promise<QuotationReply> => {
     if (!replyExtractorConfigured())
-      throw new ConvexError("La extracción de respuestas no está habilitada.");
+      throw new ConvexError("Reply extraction is not enabled.");
     const reservation:
       | { kind: "complete"; reply: QuotationReply }
       | { kind: "running" }
@@ -275,7 +275,7 @@ export const extractReply = action({
     if (reservation.kind === "complete") return reservation.reply;
     if (reservation.kind === "running")
       throw new ConvexError(
-        "La extracción de esta respuesta ya está en curso o requiere revisión del operador.",
+        "Extraction for this reply is already running or requires operator review.",
       );
     let offer: ExtractedOffer;
     try {
@@ -303,7 +303,7 @@ export const extractReply = action({
       );
     } catch {
       throw new ConvexError(
-        "La extracción respondió, pero no se confirmó su guardado. No repitas la llamada; requiere revisión del operador.",
+        "Extraction returned, but saving was not confirmed. Do not repeat the call; operator review is required.",
       );
     }
   },
@@ -322,32 +322,35 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const hash = await ownerHash(args.token);
     if (!UUID.test(args.clientId))
-      throw new ConvexError("Solicitud no válida.");
+      throw new ConvexError("Invalid request.");
     if (
       [args.comparisonId, args.studyId, args.prospectId].filter(Boolean)
         .length !== 1 ||
       (!args.studyId && args.resultId !== undefined)
     )
       throw new ConvexError(
-        "Indica un solo origen: comparación, estudio o candidato web.",
+        "Choose one source: comparison, study, or web candidate.",
       );
     const comparison = args.comparisonId
       ? await ctx.db.get(args.comparisonId)
       : null;
     const study = args.studyId ? await ctx.db.get(args.studyId) : null;
     if (args.comparisonId && (!comparison || comparison.ownerHash !== hash))
-      throw new ConvexError("Comparación no disponible en esta sesión.");
+      throw new ConvexError("Comparison unavailable in this session.");
     if (args.studyId && (!study || study.ownerHash !== hash))
-      throw new ConvexError("Estudio no disponible en esta sesión.");
+      throw new ConvexError("Study unavailable in this session.");
     const prospect = args.prospectId ? await ctx.db.get(args.prospectId) : null;
     if (args.prospectId && (!prospect || prospect.ownerHash !== hash))
-      throw new ConvexError("Candidato no disponible en esta sesión.");
+      throw new ConvexError("Candidate unavailable in this session.");
     const distributor = study?.results.find(
-      (result) => result.id === args.resultId && result.kind === "distributor",
+      (result) =>
+        result.id === args.resultId &&
+        result.kind === "distributor" &&
+        study.selectedIds.includes(result.id),
     );
     if (study && !distributor)
       throw new ConvexError(
-        "El distribuidor debe pertenecer al estudio guardado.",
+        "The distributor must be selected in the saved study.",
       );
     const existing = await ctx.db
       .query("quotationRequests")
@@ -362,7 +365,7 @@ export const create = mutation({
         existing.resultId !== args.resultId ||
         existing.prospectId !== args.prospectId
       )
-        throw new ConvexError("La solicitud ya existe con otros datos.");
+        throw new ConvexError("This request already exists with different data.");
       return await publicRequest(ctx, existing);
     }
     const own = await ctx.db
@@ -372,11 +375,11 @@ export const create = mutation({
       .take(MAX_PER_SESSION);
     if (own.length >= MAX_PER_SESSION)
       throw new ConvexError(
-        "Esta sesión admite hasta 10 solicitudes de cotización.",
+        "This session supports up to 10 quote requests.",
       );
     if (own[0] && Date.now() - own[0].createdAt < COOLDOWN_MS)
       throw new ConvexError(
-        "Espera 30 segundos antes de crear otra solicitud.",
+        "Wait 30 seconds before creating another request.",
       );
     const global = await ctx.db
       .query("quotationRequests")
@@ -384,45 +387,45 @@ export const create = mutation({
       .take(MAX_GLOBAL);
     if (global.length >= MAX_GLOBAL)
       throw new ConvexError(
-        "Se alcanzó la capacidad total de solicitudes de la demo.",
+        "The demo request capacity has been reached.",
       );
     const cfg = configured();
     const quantity =
       comparison && comparison.request.quantity > 0
         ? `${comparison.request.quantity} ${comparison.request.unit}`
-        : "una cantidad por definir";
+        : "a quantity to be determined";
     const ingredient =
       comparison?.request.ingredient ??
       prospect?.ingredient ??
       distributor!.ingredient;
-    const subject = `Solicitud de cotización: ${ingredient}`;
+    const subject = `Quote request: ${ingredient}`;
     const text = prospect
       ? [
-          "Hola,",
+          "Hello,",
           "",
-          `Consulta de catálogo para ${prospect.supplier}: ${ingredient} en ${prospect.region}.`,
-          "La cantidad todavía está por definir. No es una orden de compra.",
-          "Indicar presentaciones, precios, impuestos, mínimo y cobertura de entrega.",
-          "Gracias.",
+          `Catalog request for ${prospect.supplier}: ${ingredient} in ${prospect.region}.`,
+          "Quantity is still to be determined. This is not a purchase order.",
+          "Please provide package options, prices, tax, minimum order, and delivery area.",
+          "Thank you.",
         ].join("\n")
       : study
         ? [
-            "Hola,",
+            "Hello,",
             "",
-            `Consulta de catálogo para ${distributor!.supplier}: ${ingredient} en ${study.region}.`,
-            "La cantidad todavía está por definir. No es una orden de compra.",
-            "Indicar presentaciones, precios, impuestos, mínimo y cobertura de entrega.",
-            "Gracias.",
+            `Catalog request for ${distributor!.supplier}: ${ingredient} in ${study.region}.`,
+            "Quantity is still to be determined. This is not a purchase order.",
+            "Please provide package options, prices, tax, minimum order, and delivery area.",
+            "Thank you.",
           ].join("\n")
         : [
-            "Hola,",
+            "Hello,",
             "",
-            `Quisiera solicitar una cotización para ${quantity} de ${comparison!.request.ingredient}.`,
-            `Especificación: ${comparison!.request.specification}.`,
+            `I would like to request a quote for ${quantity} of ${comparison!.request.ingredient}.`,
+            `Specification: ${comparison!.request.specification}.`,
             "",
-            "Por favor, indicar presentación, precio, mínimo de compra y condiciones de entrega.",
+            "Please provide package size, price, minimum order, and delivery terms.",
             "",
-            "Gracias.",
+            "Thank you.",
           ].join("\n");
     const now = Date.now();
     const id = await ctx.db.insert("quotationRequests", {
@@ -474,7 +477,7 @@ export const reserveSend = internalMutation({
     const hash = await ownerHash(args.token);
     const doc = await ctx.db.get(args.id);
     if (!doc || doc.ownerHash !== hash)
-      throw new ConvexError("Solicitud no disponible en esta sesión.");
+      throw new ConvexError("Request unavailable in this session.");
     if (doc.state === "sent")
       return {
         kind: "existing" as const,
@@ -484,19 +487,19 @@ export const reserveSend = internalMutation({
       !Number.isSafeInteger(args.expectedRevision) ||
       doc.revision !== args.expectedRevision
     )
-      throw new ConvexError("La solicitud cambió en otra vista.");
+      throw new ConvexError("The request changed in another view.");
     if (doc.state !== "draft")
       throw new ConvexError(
-        "Esta solicitud ya fue procesada. Requiere revisión del operador antes de cualquier nuevo envío.",
+        "This request was already processed. Operator review is required before another send.",
       );
     const cfg = configured();
     if (!cfg.enabled || !doc.recipient || !doc.inboxId)
       throw new ConvexError(
-        "AgentMail no está habilitado para esta solicitud.",
+        "AgentMail is not enabled for this request.",
       );
     if (doc.recipient !== cfg.recipient || doc.inboxId !== cfg.inboxId)
       throw new ConvexError(
-        "La configuración cambió. Crea una solicitud nueva antes de enviar.",
+        "The configuration changed. Create a new request before sending.",
       );
     await ctx.db.patch(doc._id, {
       state: "sending",

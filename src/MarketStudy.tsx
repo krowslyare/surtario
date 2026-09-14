@@ -1,34 +1,31 @@
-import StudySelections from "./components/StudySelections";
-import {
-  studyOptionCount,
-  sameStudyContext,
-  type WebSelection,
-  type StudyProspect,
-} from "./domain/study";
-import Brand from "./components/Brand";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   ArrowRight,
   Bookmark,
   Check,
-  ChevronDown,
-  FileText,
   Info,
-  Mail,
-  MapPin,
   Search,
-  SlidersHorizontal,
+  FolderOpen,
 } from "lucide-react";
-import { marketExamples } from "../fixtures/market";
+import { marketExamples, allMarketExamples, usMarketExamples, findMarketExampleContextByIds } from "../fixtures/market";
 import {
   filterMarketExamples,
   preparePurchaseFromCatalog,
-  publishedUnitPrice,
   type CatalogResult,
   type MarketResult,
   type PurchaseSeed,
 } from "./domain/market";
 import { money, numberLabel } from "./numbers";
+import Brand from "./components/Brand";
+import MarketHero from "./components/MarketHero";
+import {
+  MarketResultRow,
+  marketDateLabel as dateLabel,
+  marketKindLabel as kindLabel,
+} from "./components/MarketResultRow";
+import { Button } from "./components/ui/Button";
+import { Disclosure } from "./components/ui/Disclosure";
+import { SegmentedControl } from "./components/ui/SegmentedControl";
 import { Dialog } from "./components/Dialog";
 import LiveResearch, {
   type ResearchStatus,
@@ -40,20 +37,13 @@ import DocumentExtraction from "./components/DocumentExtraction";
 import IngredientIntake from "./components/IngredientIntake";
 import SavedStudies, { type SavedStudy } from "./components/SavedStudies";
 import type { Id } from "../convex/_generated/dataModel";
-
-const dateLabel = (date: string) =>
-  new Intl.DateTimeFormat("es-PE", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    timeZone: "UTC",
-  }).format(new Date(`${date}T12:00:00Z`));
-const kindLabel = (result: MarketResult) =>
-  result.kind === "catalog"
-    ? "Precio de catálogo"
-    : result.kind === "distributor"
-      ? "Distribuidor sin precio"
-      : "Referencia general";
+import StudySelections from "./components/StudySelections";
+import {
+  sameStudyContext,
+  studyOptionCount,
+  type StudyProspect,
+  type WebSelection,
+} from "./domain/study";
 
 export default function MarketStudy({
   onPrepare,
@@ -67,59 +57,22 @@ export default function MarketStudy({
   const [study, setStudy] = useState<{
     id: Id<"studies"> | null;
     revision: number;
+    savedSelectedIds: string[];
     clientId: string;
-  }>(() => ({ id: null, revision: 0, clientId: crypto.randomUUID() }));
+  }>(() => ({ id: null, revision: 0, savedSelectedIds: [], clientId: crypto.randomUUID() }));
   const [webStatus, setWebStatus] = useState<ResearchStatus | undefined>();
   const [webRequest, setWebRequest] = useState<WebSearchRequest | null>(null);
-  const [catalog, setCatalog] = useState<MarketResult[]>(marketExamples);
+  const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
+  const [catalog, setCatalog] = useState<MarketResult[]>(allMarketExamples);
   const [term, setTerm] = useState("");
-  const [region, setRegion] = useState("Lima");
+  const [region, setRegion] = useState(samplePeru ? "Lima" : "Portland, OR, US");
   const [search, setSearch] = useState<{ term: string; region: string } | null>(
     null,
   );
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [webSelections, setWebSelections] = useState<WebSelection[]>([]);
   const [prospects, setProspects] = useState<StudyProspect[]>([]);
-  const optionCount = studyOptionCount({
-    selectedIds,
-    webSelections,
-    prospects,
-  });
-  function canAddContext(context: { ingredient?: string; region?: string }) {
-    const existing =
-      webSelections[0] ??
-      prospects[0] ??
-      (selectedIds.length ? { ingredient: "Arroz", region: "Lima" } : null);
-    if (existing && !sameStudyContext(existing, context)) {
-      setError(
-        "Esta selección pertenece a otro insumo o zona. Guarda tu estudio e inicia uno nuevo antes de añadirla.",
-      );
-      return false;
-    }
-    return true;
-  }
-  function addReview(selection: WebSelection) {
-    if (!canAddContext(selection)) return;
-    setWebSelections((current) =>
-      current.some((item) => item.sourceId === selection.sourceId)
-        ? current.map((item) =>
-            item.sourceId === selection.sourceId ? selection : item,
-          )
-        : current.length < 3
-          ? [...current, selection]
-          : current,
-    );
-  }
-  function toggleProspect(prospect: StudyProspect) {
-    if (!canAddContext(prospect)) return;
-    setProspects((current) =>
-      current.some((item) => item.id === prospect.id)
-        ? current
-        : current.length < 3
-          ? [...current, prospect]
-          : current,
-    );
-  }
+  const optionCount = studyOptionCount({ selectedIds, webSelections, prospects });
   const [filter, setFilter] = useState<
     "all" | "catalog" | "distributor" | "reference"
   >("all");
@@ -127,6 +80,9 @@ export default function MarketStudy({
   const [quote, setQuote] = useState<MarketResult | null>(null);
   const [quoteText, setQuoteText] = useState("");
   const [copyState, setCopyState] = useState("");
+  const [selectionMessage, setSelectionMessage] = useState("");
+  const [summaryVisible, setSummaryVisible] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [prepareOpen, setPrepareOpen] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
@@ -140,20 +96,68 @@ export default function MarketStudy({
   const visible = (showStudy ? selected : results).filter(
     (item) => filter === "all" || item.kind === filter,
   );
+  const filteredEmpty =
+    filter !== "all" && (showStudy ? selected : results).length > 0;
   const priced = selected.filter(
     (item): item is CatalogResult => item.kind === "catalog",
   );
   const sourceTitle = search
-    ? `${search.term} en ${search.region}`
-    : "Tu estudio";
+    ? `${search.term} in ${search.region}`
+    : "Your study";
   const showExampleWorkspace = resultsView === "example" || showStudy;
+  const hasVisibleExternalSelection =
+    webSelections.some(
+      ({ seed }) =>
+        filter === "all" ||
+        (filter === "catalog" && seed.offers[0].priceCents !== null) ||
+        (filter === "distributor" && seed.offers[0].priceCents === null),
+    ) ||
+    (prospects.length > 0 && (filter === "all" || filter === "distributor"));
+
+  function canAddContext(context: { ingredient?: string; region?: string }) {
+    const existing =
+      webSelections[0] ??
+      prospects[0] ??
+      (findMarketExampleContextByIds(selectedIds) ?? null);
+    if (existing && !sameStudyContext(existing, context)) {
+      setError(
+        "This option belongs to a different ingredient or area. Save this study and start another before adding it.",
+      );
+      return false;
+    }
+    return true;
+  }
+
+  function addReview(selection: WebSelection) {
+    if (!canAddContext(selection)) return;
+    setWebSelections((current) =>
+      current.some((item) => item.sourceId === selection.sourceId)
+        ? current.map((item) =>
+            item.sourceId === selection.sourceId ? selection : item,
+          )
+        : current.length < 3
+          ? [...current, selection]
+          : current,
+    );
+  }
+
+  function toggleProspect(prospect: StudyProspect) {
+    if (!canAddContext(prospect)) return;
+    setProspects((current) =>
+      current.some((item) => item.id === prospect.id)
+        ? current.filter((item) => item.id !== prospect.id)
+        : current.length < 3
+          ? [...current, prospect]
+          : current,
+    );
+  }
 
   function beginIngredientStudy(ingredient: string) {
-    setCatalog(marketExamples);
+    setCatalog(allMarketExamples);
     setSelectedIds([]);
     setWebSelections([]);
     setProspects([]);
-    setStudy({ id: null, revision: 0, clientId: crypto.randomUUID() });
+    setStudy({ id: null, revision: 0, savedSelectedIds: [], clientId: crypto.randomUUID() });
     setTerm(ingredient);
     setSearch({ term: ingredient, region });
     setResultsView("example");
@@ -164,9 +168,11 @@ export default function MarketStudy({
   }
 
   function searchWeb() {
-    setSearch({ term: term.trim(), region });
+    if (!term.trim() || !region.trim()) return;
+    setSearch({ term: term.trim(), region: region.trim() });
     setError("");
     setResultsView("web");
+    setSearchOpen(false);
     setShowStudy(false);
     setFilter("all");
     setWebRequest((current) => ({
@@ -179,20 +185,27 @@ export default function MarketStudy({
   function explore(event?: FormEvent) {
     event?.preventDefault();
     if (!term.trim()) {
-      setError("Escribe un insumo o categoría para explorar.");
+      setError("Enter an ingredient or category to explore.");
       return;
     }
     setError("");
-    setSearch({ term: term.trim(), region });
+    setSearch({ term: term.trim(), region: region.trim() });
     setResultsView("example");
+    setSearchOpen(false);
     setShowStudy(false);
     setFilter("all");
   }
   function startExample() {
-    setTerm("Arroz");
-    setRegion("Lima");
-    setSearch({ term: "Arroz", region: "Lima" });
+    const sample = samplePeru ? marketExamples : usMarketExamples;
+    const sampleTerm = sample[0].ingredient;
+    const sampleRegion = sample[0].region;
+    if (optionCount > 0 && !canAddContext({ ingredient: sampleTerm, region: sampleRegion })) return;
+    setCatalog(allMarketExamples);
+    setTerm(sampleTerm);
+    setRegion(sampleRegion);
+    setSearch({ term: sampleTerm, region: sampleRegion });
     setResultsView("example");
+    setSearchOpen(false);
     setFilter("all");
     setShowStudy(false);
     setError("");
@@ -215,6 +228,7 @@ export default function MarketStudy({
     setStudy({
       id: saved.id,
       revision: saved.revision,
+      savedSelectedIds: saved.selectedIds,
       clientId: crypto.randomUUID(),
     });
     setShowStudy(true);
@@ -223,6 +237,16 @@ export default function MarketStudy({
   }
   function toggle(result: MarketResult) {
     if (!selectedIds.includes(result.id) && !canAddContext(result)) return;
+    if (showStudy && selectedIds.includes(result.id)) {
+      requestAnimationFrame(() =>
+        document
+          .getElementById("results-title")
+          ?.focus({ preventScroll: true }),
+      );
+    }
+    setSelectionMessage(
+      `${result.supplier}: ${selectedIds.includes(result.id) ? "removed from study" : "added to study"}. Save your study to keep these changes.`,
+    );
     setSelectedIds((current) =>
       current.includes(result.id)
         ? current.filter((id) => id !== result.id)
@@ -233,136 +257,254 @@ export default function MarketStudy({
     setQuote(result);
     setCopyState("");
     setQuoteText(
-      `Hola, estoy investigando opciones de ${result.ingredient.toLowerCase()} para un restaurante en ${search?.region ?? result.region}. ¿Podrían compartir catálogo, presentaciones, precios con impuestos, pedido mínimo y cobertura de entrega? Por ahora es una consulta de mercado; aún no tengo una cantidad de compra definida. Gracias.`,
+      `Hello, I am researching ${result.ingredient.toLowerCase()} for a restaurant in ${search?.region ?? result.region}. Could you share pack sizes, prices, tax, minimum order and delivery coverage? This is a market inquiry; I have not set a purchase quantity yet. Thank you.`,
     );
   }
+  useEffect(() => {
+    if (!search && !showStudy) return;
+    const frame = requestAnimationFrame(() => {
+      const heading = document.getElementById("results-title");
+      heading?.focus({ preventScroll: true });
+      document
+        .getElementById("market-main")
+        ?.scrollIntoView({ block: "start" });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [search, showStudy]);
+
+  useEffect(() => {
+    const summary = document.getElementById("study-summary");
+    if (!summary) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setSummaryVisible(entry.isIntersecting),
+      {
+        rootMargin: "-100px 0px -100px 0px",
+        threshold: 0.15,
+      },
+    );
+    observer.observe(summary);
+    return () => observer.disconnect();
+  }, []);
+
   function prepare() {
     try {
       onPrepare(preparePurchaseFromCatalog(selected, confirmed));
       setPrepareOpen(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Revisa la selección.");
+      setError(e instanceof Error ? e.message : "Review your shortlist.");
     }
   }
 
   return (
     <>
-      <a href="#market-results" className="skip-link">
-        Ir a los resultados
+      <a
+        href={search || showStudy || resultsView === "web" ? "#market-results" : "#market-search"}
+        className="skip-link"
+      >
+        Skip to content
       </a>
       <header className="topbar market-topbar">
         <Brand />
-        <button
-          className="button text-button"
-          onClick={() => {
-            setShowStudy(!showStudy);
-            setFilter("all");
-            requestAnimationFrame(() =>
-              document.getElementById("results-title")?.focus(),
-            );
-          }}
-        >
-          <Bookmark size={18} />
-          Mi estudio
-          {optionCount > 0 && (
-            <span className="selection-count">{optionCount}</span>
-          )}
-        </button>
+        <nav className="brand-nav" aria-label="Main navigation">
+          <Button
+            variant="text"
+            className="brand-explore"
+            aria-current={!showStudy ? "page" : undefined}
+            onClick={() => {
+              setShowStudy(false);
+              setFilter("all");
+              setSearchOpen(true);
+              requestAnimationFrame(() => {
+                document
+                  .getElementById("market-search")
+                  ?.scrollIntoView({ block: "start" });
+                document
+                  .querySelector<HTMLInputElement>("#market-search input")
+                  ?.focus({ preventScroll: true });
+              });
+            }}
+          >
+            Explore suppliers
+          </Button>
+          <Button
+            variant="text"
+            aria-pressed={showStudy}
+            onClick={() => {
+              setShowStudy(true);
+              setFilter("all");
+            }}
+          >
+            <Bookmark size={18} />
+            My study
+            {optionCount > 0 && (
+              <span className="selection-count">{optionCount}</span>
+            )}
+          </Button>
+        </nav>
       </header>
       <main
-        className={`market-main ${search || showStudy || resultsView === "web" ? "has-results" : "is-intro"}`}
+        id="market-main"
+        className={`market-main ${search || showStudy ? "has-results" : "is-intro"} ${showStudy ? "is-study" : ""}`}
       >
         <div className="workspace-nav">
           <span>
             <Search size={16} />
-            Explorar mercado
+            Explore suppliers
           </span>
-          <span className="demo-badge">Prototipo de investigación</span>
+
         </div>
-        <div className="market-intro">
-          <h1>Investiga tus insumos.</h1>
-          <p>
-            Precios por unidad, presentaciones y proveedores. Guarda las
-            opciones que quieras revisar.
-          </p>
-        </div>
-        <form
-          className="market-search"
-          onSubmit={(event) => {
-            event.preventDefault();
-            if (webStatus?.searchEnabled && term.trim()) searchWeb();
-            else explore();
-          }}
-        >
-          <label className="field">
-            <span>Insumo o categoría</span>
-            <div className="search-input">
-              <Search size={20} />
-              <input
-                aria-label="Insumo o categoría"
-                value={term}
-                onChange={(e) => setTerm(e.target.value)}
-                placeholder="Ej. arroz, abarrotes secos"
-                maxLength={120}
-              />
+        <div className="market-hero">
+          <div className="hero-workspace">
+            <div
+              className={`market-intro ${search || showStudy ? "sr-only" : ""}`}
+            >
+              <h1 tabIndex={-1}>
+                {search || showStudy ? (
+                  showStudy ? (
+                    "Your options, side by side."
+                  ) : (
+                    "Find your next supplier."
+                  )
+                ) : (
+                  <>
+                    Good judgment.
+                    <br />
+                    Better ingredients.
+                  </>
+                )}
+              </h1>
+              <p>
+                Find suppliers, compare the real cost and decide with confidence.
+              </p>
             </div>
-          </label>
-          <label className="field">
-            <span>Zona de interés</span>
-            <select
-              aria-label="Zona de interés"
-              value={region}
-              onChange={(e) => setRegion(e.target.value)}
+            {(search || showStudy) && (
+              <div className="search-strip">
+                <span>
+                  <Search size={18} aria-hidden="true" />
+                  {search
+                    ? `${search.term} · ${search.region}`
+                    : "Explore suppliers"}
+                </span>
+                <Button
+                  variant="text"
+                  aria-expanded={searchOpen}
+                  aria-controls="search-editor"
+                  onClick={() => {
+                    setSearchOpen(!searchOpen);
+                    if (!searchOpen)
+                      requestAnimationFrame(() =>
+                        document
+                          .querySelector<HTMLInputElement>(
+                            "#market-search input",
+                          )
+                          ?.focus(),
+                      );
+                  }}
+                >
+                  {searchOpen ? "Close search" : "Change search"}
+                </Button>
+              </div>
+            )}
+            <div
+              id="search-editor"
+              hidden={!!(search || showStudy) && !searchOpen}
             >
-              <option>Lima</option>
-              <option>Arequipa</option>
-              <option>Cusco</option>
-            </select>
-          </label>
-          <div className="market-search-actions">
-            <button
-              type={webStatus?.searchEnabled ? "button" : "submit"}
-              className={`button ${webStatus?.searchEnabled ? "secondary" : "primary"}`}
-              onClick={webStatus?.searchEnabled ? () => explore() : undefined}
-            >
-              Explorar ejemplo
-            </button>
-            <button
-              type={webStatus?.searchEnabled ? "submit" : "button"}
-              className={`button ${webStatus?.searchEnabled ? "primary" : "secondary"}`}
-              disabled={!webStatus?.searchEnabled || !term.trim()}
-              aria-describedby="market-search-help"
-            >
-              <Search size={18} aria-hidden="true" /> Buscar en la web
-            </button>
+              <form
+                id="market-search"
+                className="market-search"
+                onSubmit={(event) => { event.preventDefault(); if (webStatus?.searchEnabled) searchWeb(); else explore(); }}
+              >
+                <label className="field">
+                  <span>Ingredient or category</span>
+                  <div className="search-input">
+                    <Search size={20} />
+                    <input
+                      aria-label="Ingredient or category"
+                      value={term}
+                      onChange={(e) => setTerm(e.target.value)}
+                      placeholder="e.g. long-grain white rice"
+                      maxLength={120}
+                      aria-invalid={!!error && !term.trim()}
+                      aria-describedby={
+                        error && !term.trim()
+                          ? "market-search-error"
+                          : undefined
+                      }
+                    />
+                  </div>
+                </label>
+                <label className="field">
+                  <span>Delivery area</span>
+                  <input
+                    aria-label="Delivery area"
+                    value={region}
+                    onChange={(event) => setRegion(event.target.value)}
+                    list="delivery-area-suggestions"
+                    placeholder="City, state, country (e.g. Portland, OR, US)"
+                    maxLength={80}
+                    required
+                  />
+                  <datalist id="delivery-area-suggestions">
+                    {["Portland, OR, US", "Chicago, IL, US", "Miami, FL, US", "Lima", "Arequipa", "Cusco"].map((area) => <option key={area} value={area} />)}
+                  </datalist>
+                </label>
+                <Button type={webStatus?.searchEnabled ? "button" : "submit"} variant={webStatus?.searchEnabled ? "secondary" : "primary"} onClick={webStatus?.searchEnabled ? () => explore() : undefined}>
+                  <Search size={18} />
+                  Explore example
+                </Button>
+                <Button
+                  type="submit"
+                  variant={webStatus?.searchEnabled ? "primary" : "secondary"}
+                  disabled={!webStatus?.searchEnabled || !term.trim() || !region.trim()}
+                >
+                  Search suppliers
+                </Button>
+                {persistenceEnabled && (
+                  <Button variant="text" type="button" onClick={() => {
+                    setResultsView("web");
+                    setShowStudy(false);
+                    requestAnimationFrame(() => document.getElementById("market-results")?.focus());
+                  }}>Saved research</Button>
+                )}
+                <p className="market-search-note">
+                  <Info size={16} />
+                  Sample data is separate from live search.{" "}
+                  {webStatus?.searchEnabled
+                    ? "Live search checks public supplier sources."
+                    : persistenceEnabled && !webStatus
+                      ? "Checking live search availability…"
+                      : "Live search is unavailable. You can still explore a sample study."}
+                </p>
+              </form>
+            </div>
+            {!search && !showStudy && (
+              <section
+                className="market-start"
+                aria-label="Sample study"
+              >
+                <span>Want to try it first?</span>
+                <Button variant="text" onClick={startExample}>
+                  Explore rice example <ArrowRight size={17} />
+                </Button>
+              </section>
+            )}
           </div>
-          <p className="market-search-note" id="market-search-help">
-            <Info size={16} />
-            {webStatus?.searchEnabled
-              ? "Busca fuentes en la web o explora datos sintéticos de arroz y abarrotes en Lima."
-              : "Explora datos sintéticos de arroz y abarrotes en Lima. La búsqueda web aún no está habilitada."}
+          {!search && !showStudy && resultsView !== "web" && <MarketHero />}
+        </div>
+        {error && !prepareOpen && (
+          <p id="market-search-error" className="notice error" role="alert">
+            {error}
           </p>
-          <a
-            className="button text-button mobile-tool-link"
-            href="#study-tools"
-          >
-            <FileText size={16} aria-hidden="true" /> Usar lista o archivo
-            <ArrowRight size={16} aria-hidden="true" />
-          </a>
-        </form>
+        )}
         <div className="market-workspace">
           <div className="market-content">
             {persistenceEnabled && (
               <div
+                id={resultsView === "web" && !showStudy ? "market-results" : undefined}
+                tabIndex={-1}
                 className="live-research-view"
-                hidden={showStudy}
-                id={
-                  resultsView === "web" && !showStudy
-                    ? "market-results"
-                    : undefined
-                }
-                tabIndex={resultsView === "web" && !showStudy ? -1 : undefined}
-                aria-label="Resultados de investigación web"
+                hidden={showStudy || resultsView !== "web"}
+                aria-label="Supplier search results"
               >
                 <LiveResearch
                   selections={webSelections}
@@ -370,9 +512,6 @@ export default function MarketStudy({
                   onOpenStudy={() => {
                     setShowStudy(true);
                     setFilter("all");
-                    requestAnimationFrame(() =>
-                      document.getElementById("results-title")?.focus(),
-                    );
                   }}
                   selectedProspectIds={prospects.map((item) => item.id)}
                   onProspect={toggleProspect}
@@ -382,472 +521,347 @@ export default function MarketStudy({
                 />
               </div>
             )}
-            {error && !prepareOpen && (
-              <p className="notice error" role="alert">
-                {error}
-              </p>
-            )}
-
-            {showExampleWorkspace &&
-              (!search && !showStudy ? (
-                <section
-                  className="market-start"
-                  id="market-results"
-                  tabIndex={-1}
-                  aria-labelledby="start-title"
-                >
+            {showExampleWorkspace && (search || showStudy) && (
+              <section id="market-results" tabIndex={-1} aria-labelledby="results-title">
+                <div className="section-heading">
                   <div>
-                    <h2 id="start-title">Empieza con arroz en Lima</h2>
+                    <h2 id="results-title" tabIndex={-1}>
+                      {showStudy ? "My market study" : sourceTitle}
+                    </h2>
                     <p>
-                      Un saco de 18 kg, una bolsa de 1 kg y un distribuidor sin
-                      precio publicado. Revisa qué puedes comparar y qué falta
-                      consultar.
+                      {showStudy
+                        ? `${selected.length} ${selected.length === 1 ? "selected option" : "selected options"} in this view`
+                        : `${results.length} sample results · Not a measure of market coverage`}
                     </p>
-                    <button className="button secondary" onClick={startExample}>
-                      Explorar ejemplo de arroz <ArrowRight size={17} />
-                    </button>
-                  </div>
-                  <dl className="example-preview">
-                    {marketExamples
-                      .filter(
-                        (item): item is CatalogResult =>
-                          item.kind === "catalog",
-                      )
-                      .map((item) => (
-                        <div key={item.id}>
-                          <dt>
-                            Presentación de{" "}
-                            {item.packageContent === null
-                              ? "peso pendiente"
-                              : `${numberLabel(item.packageContent)} ${item.packageUnit}`}
-                          </dt>
-                          <dd>
-                            {money(publishedUnitPrice(item), item.currency)}{" "}
-                            <span>/ {item.packageUnit}</span>
-                          </dd>
-                        </div>
-                      ))}
-                    <div>
-                      <dt>Otro distribuidor</dt>
-                      <dd>Por consultar</dd>
-                    </div>
-                  </dl>
-                </section>
-              ) : (
-                <section id="market-results" aria-labelledby="results-title">
-                  <div className="section-heading">
-                    <div>
-                      <h2 id="results-title" tabIndex={-1}>
-                        {showStudy ? "Mi estudio de mercado" : sourceTitle}
-                      </h2>
-                      <p>
-                        {showStudy
-                          ? `${optionCount} ${optionCount === 1 ? "opción seleccionada" : "opciones seleccionadas"} en esta vista`
-                          : `${results.length} resultados ilustrativos · No representan cobertura real del mercado`}
-                      </p>
-                    </div>
-                    {showStudy && (
-                      <button
-                        className="button secondary"
-                        onClick={() => {
-                          setShowStudy(false);
-                          setFilter("all");
-                        }}
-                      >
-                        Volver a resultados
-                      </button>
-                    )}
-                  </div>
-                  <div
-                    className="market-toolbar"
-                    aria-label="Tipos de resultado"
-                  >
-                    <SlidersHorizontal size={16} />
-                    {(
-                      [
-                        ["all", "Todos"],
-                        ["catalog", "Con precio"],
-                        ["distributor", "Sin precio"],
-                        ["reference", "Referencias"],
-                      ] as const
-                    ).map(([value, label]) => (
-                      <button
-                        key={value}
-                        className="filter-button"
-                        aria-pressed={filter === value}
-                        onClick={() => setFilter(value)}
-                      >
-                        {label}
-                      </button>
-                    ))}
                   </div>
                   {showStudy && (
-                    <StudySelections
-                      selections={webSelections}
-                      prospects={prospects}
-                      filter={filter}
-                      onRemove={(id) =>
-                        setWebSelections((current) =>
-                          current.filter((item) => item.sourceId !== id),
-                        )
-                      }
-                      onRemoveProspect={(id) =>
-                        setProspects((current) =>
-                          current.filter((item) => item.id !== id),
-                        )
-                      }
-                      onPrepare={onPrepare}
-                    />
-                  )}
-                  {visible.length === 0 ? (
-                    showStudy &&
-                    (webSelections.some(
-                      ({ seed }) =>
-                        filter === "all" ||
-                        (filter === "catalog" &&
-                          seed.offers[0].priceCents !== null) ||
-                        (filter === "distributor" &&
-                          seed.offers[0].priceCents === null),
-                    ) ||
-                      (prospects.length > 0 &&
-                        (filter === "all" ||
-                          filter === "distributor"))) ? null : (
-                      <div className="empty-state">
-                        <Search size={32} />
-                        <h3>
-                          {showStudy
-                            ? "Todavía no tienes opciones de este tipo"
-                            : "No hay ejemplos para esta búsqueda"}
-                        </h3>
-                        <p>
-                          {showStudy
-                            ? "Selecciona resultados para construir tu estudio. No necesitas preparar una compra."
-                            : "Esto no indica que no existan distribuidores. El prototipo solo contiene ejemplos de arroz y abarrotes en Lima."}
-                        </p>
-                        <button
-                          className="button secondary"
-                          onClick={startExample}
-                        >
-                          Ver ejemplo de arroz
-                        </button>
-                      </div>
-                    )
-                  ) : (
-                    <div className="market-results">
-                      {visible.map((result) => (
-                        <article
-                          key={result.id}
-                          className={`market-result ${result.kind} ${selectedIds.includes(result.id) ? "is-selected" : ""}`}
-                          aria-label={`Resultado: ${result.supplier}`}
-                        >
-                          <div className="result-main">
-                            <span className={`result-kind ${result.kind}`}>
-                              {kindLabel(result)}
-                            </span>
-                            <h3>{result.supplier}</h3>
-                            <p>{result.description}</p>
-                            <div className="result-location">
-                              <MapPin size={14} />
-                              {result.kind === "reference"
-                                ? `Zona de referencia: ${result.region}.`
-                                : `${result.region} · Reparto por confirmar`}
-                            </div>
-                            <button
-                              className="button text-button source-button"
-                              onClick={() => setSource(result)}
-                            >
-                              <FileText size={15} />
-                              Ver fuente de ejemplo{" "}
-                              <span>{dateLabel(result.source.observedAt)}</span>
-                            </button>
-                          </div>
-                          <div className="result-value">
-                            {result.kind === "catalog" ? (
-                              <>
-                                <span>Precio por unidad · ejemplo</span>
-                                <strong className="normalized-price">
-                                  {publishedUnitPrice(result) === null ? (
-                                    "Por confirmar"
-                                  ) : (
-                                    <>
-                                      {money(
-                                        publishedUnitPrice(result),
-                                        result.currency,
-                                      )}{" "}
-                                      <span>/ {result.packageUnit}</span>
-                                    </>
-                                  )}
-                                </strong>
-                                <p className="package-price">
-                                  {money(result.priceCents, result.currency)}{" "}
-                                  por{" "}
-                                  {result.packageContent === null
-                                    ? "presentación por confirmar"
-                                    : `${numberLabel(result.packageContent)} ${result.packageUnit}`}
-                                </p>
-                                <small>
-                                  No confirma stock, impuestos ni entrega.
-                                </small>
-                              </>
-                            ) : result.kind === "distributor" ? (
-                              <>
-                                <span>Precio no publicado</span>
-                                <strong className="contact-heading">
-                                  Consultar catálogo
-                                </strong>
-                                <p>
-                                  {result.contact
-                                    ? "Contacto comercial ilustrativo disponible"
-                                    : "Sin contacto confirmado"}
-                                </p>
-                                <button
-                                  className="button text-button"
-                                  onClick={() => setSource(result)}
-                                >
-                                  <Mail size={16} />
-                                  Ver contacto
-                                </button>
-                              </>
-                            ) : (
-                              <>
-                                <span>Contexto del mercado</span>
-                                <p>{result.note}</p>
-                              </>
-                            )}
-                          </div>
-                          <div className="result-actions">
-                            <button
-                              className={`button ${selectedIds.includes(result.id) ? "selected-button" : "secondary"}`}
-                              aria-pressed={selectedIds.includes(result.id)}
-                              onClick={() => toggle(result)}
-                            >
-                              {selectedIds.includes(result.id) ? (
-                                <Check size={16} />
-                              ) : (
-                                <Bookmark size={16} />
-                              )}
-                              {selectedIds.includes(result.id)
-                                ? "En mi estudio"
-                                : "Añadir a mi estudio"}
-                            </button>
-                            {result.kind !== "reference" && (
-                              <button
-                                className="button text-button"
-                                onClick={() => requestQuote(result)}
-                              >
-                                Preparar consulta <ArrowRight size={16} />
-                              </button>
-                            )}
-                          </div>
-                        </article>
-                      ))}
-                    </div>
-                  )}
-                  {selected.length > 0 && (
-                    <section
-                      className="study-next"
-                      aria-labelledby="study-next-title"
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setShowStudy(false);
+                        setFilter("all");
+                      }}
                     >
-                      <div>
-                        <h3 id="study-next-title">
-                          {selected.length}{" "}
-                          {selected.length === 1 ? "opción" : "opciones"} en tu
-                          estudio
-                        </h3>
-                        <p>Preparar una compra es opcional.</p>
-                      </div>
-                      <div className="study-next-actions">
-                        <button
-                          className="button secondary"
-                          onClick={() => {
-                            setShowStudy(true);
-                            setFilter("all");
-                          }}
-                        >
-                          Revisar selección
-                        </button>
-                        <button
-                          className="button primary"
-                          disabled={priced.length === 0}
-                          onClick={() => {
-                            setPrepareOpen(true);
-                            setConfirmed(false);
-                            setError("");
-                          }}
-                        >
-                          Preparar compra <ArrowRight size={17} />
-                        </button>
-                        {priced.length === 0 && (
-                          <small>
-                            Para calcular una compra, selecciona un precio o
-                            solicita cotización.
-                          </small>
-                        )}
-                      </div>
-                    </section>
+                      Back to results
+                    </Button>
                   )}
-                </section>
-              ))}
-            {showExampleWorkspace &&
-              persistenceEnabled &&
-              study.id &&
-              catalog
-                .filter(
-                  (item) =>
-                    item.kind === "distributor" &&
-                    selectedIds.includes(item.id),
-                )
-                .map((item) => (
-                  <div key={`${study.id}:${item.id}`}>
-                    <h3>Consultar a {item.supplier}</h3>
-                    <QuotationMail
-                      comparisonId={null}
-                      studyId={study.id!}
-                      resultId={item.id}
-                      offers={[]}
-                      onEditOffer={() => {}}
-                      onPrepare={onPrepare}
-                    />
+                </div>
+                <div className="market-toolbar">
+                  <SegmentedControl
+                    label="Result types"
+                    value={filter}
+                    onValueChange={setFilter}
+                    options={
+                      [
+                        { value: "all", label: "All" },
+                        { value: "catalog", label: "With prices" },
+                        { value: "distributor", label: "No price" },
+                        { value: "reference", label: "References" },
+                      ] as const
+                    }
+                  />
+                </div>
+                {showStudy && (
+                  <StudySelections
+                    selections={webSelections}
+                    prospects={prospects}
+                    filter={filter}
+                    onRemove={(id) =>
+                      setWebSelections((current) =>
+                        current.filter((item) => item.sourceId !== id),
+                      )
+                    }
+                    onRemoveProspect={(id) =>
+                      setProspects((current) =>
+                        current.filter((item) => item.id !== id),
+                      )
+                    }
+                    onPrepare={onPrepare}
+                  />
+                )}
+                {visible.length === 0 && !(showStudy && hasVisibleExternalSelection) ? (
+                  <div className="empty-state">
+                    <Search size={32} />
+                    <h3>
+                      {filteredEmpty
+                        ? "No options match this filter"
+                        : showStudy
+                          ? "Your study is empty"
+                          : "No examples match this search"}
+                    </h3>
+                    <p>
+                      {filteredEmpty
+                        ? "Your options are still here. Change the filter to see them."
+                        : showStudy
+                          ? "Add options to build your study. A purchase plan is optional."
+                          : "This does not mean there are no suppliers. Try live search or open a sample study."}
+                    </p>
+                    {filteredEmpty ? (
+                      <Button
+                        variant="secondary"
+                        onClick={() => setFilter("all")}
+                      >
+                        View all options
+                      </Button>
+                    ) : (
+                      <Button variant="secondary" onClick={startExample}>
+                        View rice example
+                      </Button>
+                    )}
                   </div>
-                ))}
+                ) : (
+                  <div className="market-results" data-filter={filter}>
+                    {visible.map((result) => (
+                      <MarketResultRow
+                        key={result.id}
+                        result={result}
+                        selected={selectedIds.includes(result.id)}
+                        onToggle={toggle}
+                        onSource={setSource}
+                        onQuote={requestQuote}
+                      />
+                    ))}
+                  </div>
+                )}
+              </section>
+            )}
           </div>
-          <aside className="study-panel" aria-labelledby="study-panel-title">
-            <div className="study-panel-heading">
-              <Bookmark size={18} aria-hidden="true" />
-              <h2 id="study-panel-title">Tu estudio</h2>
-              <span className="study-panel-count">
-                {optionCount} {optionCount === 1 ? "opción" : "opciones"}
-              </span>
+          <aside
+            id="study-summary"
+            className="study-rail"
+            aria-label="Study summary"
+          >
+            <div className="study-rail-heading">
+              <Bookmark size={20} />
+              <h2 id="study-summary-title" tabIndex={-1}>
+                {search || showStudy ? "Your study" : "Your saved studies"}
+              </h2>
+              {optionCount > 0 && (
+                <span className="study-count" aria-hidden="true">
+                  {optionCount}
+                </span>
+              )}
             </div>
-            <button
-              className="button text-button"
-              onClick={() => {
-                const next = term.trim() || search?.term || "Arroz";
-                if (optionCount > 0 || study.id) setNextIngredient(next);
-                else beginIngredientStudy(next);
-              }}
-            >
-              Nuevo estudio
-            </button>
-            {persistenceEnabled ? (
-              <SavedStudies
-                draft={{
-                  clientId: study.clientId,
-                  id: study.id,
-                  expectedRevision: study.revision,
-                  term: search?.term ?? "",
-                  region: search?.region ?? region,
-                  selectedIds,
-                  webSelections,
-                  prospects,
-                }}
-                onOpen={openStudy}
-                onSaved={(saved) =>
-                  setStudy((current) =>
-                    current.clientId === study.clientId
-                      ? { ...current, id: saved.id, revision: saved.revision }
-                      : current,
-                  )
-                }
-              />
-            ) : (
-              <p className="field-hint">
-                Guardado no configurado. Puedes explorar ejemplos; esta
-                selección se pierde al recargar.
+            {optionCount > 0 && (
+              <p className="study-total">
+                {optionCount}{" "}
+                {optionCount === 1 ? "option" : "options"} in your study
               </p>
             )}
-          </aside>
-          <aside
-            className="study-tools"
-            id="study-tools"
-            tabIndex={-1}
-            aria-label="Herramientas del estudio"
-          >
-            <div className="study-tool-heading">
-              <FileText size={18} aria-hidden="true" />
-              <h2>Tus insumos</h2>
-            </div>
-            <IngredientIntake
-              persistenceEnabled={persistenceEnabled}
-              activeIngredient={search?.term ?? null}
-              onExplore={(ingredient) => {
-                if (ingredient === search?.term) return;
-                if (optionCount > 0 || study.id) setNextIngredient(ingredient);
-                else beginIngredientStudy(ingredient);
-              }}
-            />
-            <details className="document-tools">
-              <summary>
-                <span>
-                  <FileText size={18} aria-hidden="true" /> Revisar una
-                  cotización
-                </span>
-                <ChevronDown
-                  size={18}
-                  className="disclosure-chevron"
-                  aria-hidden="true"
+            {(search || showStudy) && optionCount === 0 && (
+              <div className="study-empty">
+                <h3>Keep the options that matter.</h3>
+                <p>
+                  Add prices, supplier contacts or references. You can research without planning a purchase.
+                </p>
+              </div>
+            )}
+            {selected.length > 0 && !showStudy && (
+              <ul className="study-picks" aria-label="Selected options">
+                {selected.map((item) => (
+                  <li key={item.id}>
+                    <Check size={16} aria-hidden="true" />
+                    <div>
+                      <strong>{item.supplier}</strong>
+                      <span>{kindLabel(item)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <div className="study-library">
+              {persistenceEnabled ? (
+                <SavedStudies
+                  draft={{
+                    clientId: study.clientId,
+                    id: study.id,
+                    expectedRevision: study.revision,
+                    term: search?.term ?? "",
+                    region: search?.region ?? region,
+                    selectedIds,
+                    webSelections,
+                    prospects,
+                  }}
+                  onOpen={openStudy}
+                  onSaved={(saved) =>
+                    setStudy((current) =>
+                      current.clientId === study.clientId
+                        ? { ...current, id: saved.id, revision: saved.revision, savedSelectedIds: saved.selectedIds }
+                        : current,
+                    )
+                  }
                 />
-              </summary>
-              <p className="document-tools-hint">
-                Foto, PDF o entrada manual. Revisa los datos antes de comparar.
+              ) : (
+                <p className="field-hint">
+                  Saving is unavailable. You can explore examples, but this selection will be lost on reload.
+                </p>
+              )}
+            </div>
+            {optionCount > 0 && (
+              <section
+                className="study-next"
+                aria-labelledby="study-next-title"
+              >
+                <h3 id="study-next-title">Ready to plan a purchase?</h3>
+                <p>
+                  Use your selected prices, or keep researching.
+                </p>
+                <div className="study-next-actions">
+                  <Button
+                    variant="secondary"
+                    disabled={priced.length === 0 && webSelections.length === 0}
+                    onClick={() => {
+                      if (priced.length === 0 && webSelections.length > 0) {
+                        setShowStudy(true);
+                        setFilter("all");
+                        return;
+                      }
+                      setPrepareOpen(true);
+                      setConfirmed(false);
+                      setError("");
+                    }}
+                  >
+                    {priced.length === 0 && webSelections.length > 0 ? "Review purchase options" : "Plan purchase"} <ArrowRight size={17} />
+                  </Button>
+                  {priced.length === 0 && webSelections.length === 0 && (
+                    <small>
+                      Add a priced offer or request a quote to calculate a purchase.
+                    </small>
+                  )}
+                </div>
+              </section>
+            )}
+          </aside>
+        </div>
+        {persistenceEnabled &&
+          study.id &&
+          catalog
+            .filter((item) => item.kind === "distributor" && study.savedSelectedIds.includes(item.id))
+            .map((item) => (
+              <div key={`${study.id}:${item.id}`}>
+                <h3>Ask {item.supplier}</h3>
+                <QuotationMail
+                  comparisonId={null}
+                  studyId={study.id!}
+                  resultId={item.id}
+                  offers={[]}
+                  onEditOffer={() => {}}
+                  onPrepare={onPrepare}
+                />
+              </div>
+            ))}
+        <section
+          className="workspace-extras"
+          aria-labelledby="workspace-extras-title"
+        >
+          <div className="extras-heading">
+            <FolderOpen size={20} />
+            <div>
+              <h2 id="workspace-extras-title">Start with what you have</h2>
+              <p>
+                Bring an ingredient list or a quote to review.
               </p>
+            </div>
+          </div>
+          <div className="extras-grid">
+            <Disclosure
+              title="Ingredient list"
+              description="Research the ingredients on your list, one at a time."
+            >
+              <IngredientIntake
+                persistenceEnabled={persistenceEnabled}
+                activeIngredient={search?.term ?? null}
+                onExplore={(ingredient) => {
+                  if (ingredient === search?.term) return;
+                  if (optionCount > 0 || study.id)
+                    setNextIngredient(ingredient);
+                  else beginIngredientStudy(ingredient);
+                }}
+              />
+            </Disclosure>
+            <Disclosure
+              title="Quotes and documents"
+              description="Review a quote or enter its details."
+            >
               {persistenceEnabled && (
                 <DocumentExtraction onPrepare={onPrepare} />
               )}
               <ExtractionReview onPrepare={onPrepare} />
               <aside className="market-context">
-                <h3>¿Ya tienes una cotización?</h3>
+                <h3>Already have a quote?</h3>
                 <p>
-                  Puedes introducir precios y condiciones en la comparación
-                  manual. La lectura automática de foto/PDF está disponible para
-                  los ejemplos al configurar OpenAI. Los archivos propios
-                  conservan la alternativa manual.
+                  Enter the prices and terms from your quote. You can also review a sample document before comparing.
                 </p>
-                <button
-                  className="button text-button"
-                  onClick={onManualExample}
-                >
-                  Abrir alternativa de comparación manual{" "}
+                <Button variant="text" onClick={onManualExample}>
+                  Enter a quote manually{" "}
                   <ArrowRight size={16} />
-                </button>
+                </Button>
               </aside>
-            </details>
-          </aside>
-        </div>
+            </Disclosure>
+          </div>
+        </section>
+        <p
+          className="sr-only"
+          role="status"
+          aria-label="Study selection"
+          aria-live="polite"
+        >
+          {selectionMessage}
+        </p>
+        {optionCount > 0 && !summaryVisible && (
+          <Button
+            variant="primary"
+            className="mobile-study-link"
+            onClick={() => {
+              document
+                .getElementById("study-summary")
+                ?.scrollIntoView({ block: "start" });
+              document
+                .getElementById("study-summary-title")
+                ?.focus({ preventScroll: true });
+            }}
+          >
+            <Bookmark size={18} />
+            View summary{" "}
+            <span className="mobile-study-count">{optionCount}</span>
+            <ArrowRight size={18} />
+          </Button>
+        )}
         <footer>
           <span>
-            Guarda el estudio para recuperar fuentes revisadas, candidatos y
-            ejemplos seleccionados. Preparar una compra es opcional.
+            Save your study to return to your sources and shortlist. Save purchase comparisons separately.
           </span>
           <span>
-            Los ejemplos usan fuentes y contactos ficticios. Cada envío de
-            correo requiere revisión y autorización.
+            Examples use fictional data. Review each email before sending.
+            <a
+              className="brand-guide-link"
+              href="?view=brand"
+              target="_blank"
+              rel="noreferrer"
+            >
+              About Surtario
+            </a>
           </span>
         </footer>
       </main>
       {nextIngredient && (
         <Dialog
-          title="Investigar otro insumo"
+          title="Research another ingredient"
           onClose={() => setNextIngredient(null)}
         >
           <p>
-            Vas a iniciar un estudio de {nextIngredient}. La selección actual no
-            se trasladará. Si no la guardaste, vuelve al estudio y guárdala
-            antes de continuar.
+            Start a study for {nextIngredient}. Your current selection will not carry over. Save it first if you want to keep it.
           </p>
           <div className="dialog-actions">
-            <button
-              className="button secondary"
-              onClick={() => setNextIngredient(null)}
-            >
-              Volver al estudio
-            </button>
-            <button
-              className="button primary"
+            <Button variant="secondary" onClick={() => setNextIngredient(null)}>
+              Back to study
+            </Button>
+            <Button
+              variant="primary"
               onClick={() => beginIngredientStudy(nextIngredient)}
             >
-              Iniciar otro estudio
-            </button>
+              Start another study
+            </Button>
           </div>
         </Dialog>
       )}
@@ -855,51 +869,47 @@ export default function MarketStudy({
         <Dialog
           title={
             source.kind === "distributor"
-              ? "Fuente y contacto del distribuidor"
-              : "Origen del resultado"
+              ? "Supplier source and contact"
+              : "Result source"
           }
           onClose={() => setSource(null)}
         >
-          <span className="demo-badge">Datos ficticios</span>
+          <span className="demo-badge">Sample data</span>
           <div className="source-document">
             <h3>{source.source.title}</h3>
-            <p>Observación de ejemplo: {dateLabel(source.source.observedAt)}</p>
+            <p>Sample observed: {dateLabel(source.source.observedAt)}</p>
             <blockquote>{source.source.evidence}</blockquote>
             {source.kind === "distributor" && source.contact && (
               <div className="example-contact">
-                <strong>Correo de ejemplo</strong>
+                <strong>Sample email</strong>
                 <code>{source.contact.value}</code>
                 <small>
-                  Dirección ficticia sin verificar. No se habilita envío a este
-                  contacto.
+                  Fictional address. Messages cannot be sent to this contact.
                 </small>
               </div>
             )}
           </div>
           <p className="muted">
-            La versión conectada conservará la URL y el fragmento original. Este
-            ejemplo no procede de una búsqueda real.
+            This is sample data, not a live search result.
           </p>
         </Dialog>
       )}
       {quote && (
         <Dialog
-          title="Preparar consulta al distribuidor"
+          title="Prepare supplier inquiry"
           onClose={() => setQuote(null)}
         >
           <p className="muted">
-            Borrador para {quote.supplier}. Puedes consultar catálogo sin
-            definir cantidad. Este texto solo se copia; no envía correo.
+            Draft for {quote.supplier}. You can request a catalog without a quantity. Copying this text does not send an email.
           </p>
           {persistenceEnabled && (
             <p className="field-hint">
-              Para correo de prueba, guarda el estudio y abre «Consultar a{" "}
-              {quote.supplier}» en la página. Revisarás otro borrador y su
-              destinatario antes de autorizar el envío.
+              To email the test recipient, save the study and open “Ask{" "}
+              {quote.supplier}” on the page. Review the draft and recipient before approving the send.
             </p>
           )}
           <label className="field quote-field">
-            <span>Mensaje editable</span>
+            <span>Edit message</span>
             <textarea
               rows={8}
               value={quoteText}
@@ -911,24 +921,24 @@ export default function MarketStudy({
             />
           </label>
           <div className="dialog-actions">
-            <button className="button secondary" onClick={() => setQuote(null)}>
-              Cerrar
-            </button>
-            <button
-              className="button primary"
+            <Button variant="secondary" onClick={() => setQuote(null)}>
+              Close
+            </Button>
+            <Button
+              variant="primary"
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(quoteText);
-                  setCopyState("Texto copiado. No se envió ningún mensaje.");
+                  setCopyState("Text copied. No message was sent.");
                 } catch {
                   setCopyState(
-                    "No se pudo copiar. Selecciona el texto y cópialo manualmente.",
+                    "Could not copy. Select the text and copy it manually.",
                   );
                 }
               }}
             >
-              Copiar texto
-            </button>
+              Copy text
+            </Button>
           </div>
           <p role="status" className="field-hint">
             {copyState}
@@ -937,13 +947,13 @@ export default function MarketStudy({
       )}
       {prepareOpen && (
         <Dialog
-          title="Del estudio a una posible compra"
+          title="Plan a purchase from this study"
           onClose={() => setPrepareOpen(false)}
         >
           <p>
-            Usarás {priced.length}{" "}
-            {priced.length === 1 ? "precio de catálogo" : "precios de catálogo"}
-            . Todavía tendrás que indicar cantidad y confirmar condiciones.
+            You will use {priced.length}{" "}
+            {priced.length === 1 ? "catalog price" : "catalog prices"}
+            . You will still need to enter a quantity and confirm terms.
           </p>
           <ul className="review-list">
             {priced.map((result) => (
@@ -959,8 +969,7 @@ export default function MarketStudy({
           </ul>
           {selected.length > priced.length && (
             <p className="muted">
-              Los contactos sin precio y las referencias quedan en tu estudio;
-              no se convierten en ofertas.
+              Contacts without prices and market references stay in your study; they do not become offers.
             </p>
           )}
           <label className="checkbox">
@@ -970,8 +979,7 @@ export default function MarketStudy({
               onChange={(e) => setConfirmed(e.target.checked)}
             />
             <span>
-              Revisé las fuentes y confirmé que estos productos tienen la misma
-              especificación y calidad.
+              I reviewed the sources and confirmed that these products have the same specification and quality.
             </span>
           </label>
           {error && (
@@ -980,19 +988,12 @@ export default function MarketStudy({
             </p>
           )}
           <div className="dialog-actions">
-            <button
-              className="button secondary"
-              onClick={() => setPrepareOpen(false)}
-            >
-              Seguir investigando
-            </button>
-            <button
-              className="button primary"
-              disabled={!confirmed}
-              onClick={prepare}
-            >
-              Indicar cantidad y condiciones
-            </button>
+            <Button variant="secondary" onClick={() => setPrepareOpen(false)}>
+              Keep researching
+            </Button>
+            <Button variant="primary" disabled={!confirmed} onClick={prepare}>
+              Enter quantity and terms
+            </Button>
           </div>
         </Dialog>
       )}

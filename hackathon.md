@@ -1,6 +1,6 @@
 # Hackathon log
 
-- **Project:** restaurant-procurement
+- **Project:** Surtario
 - **Event:** Convex All Gas Hackathon
 - **What it does:** Researches ingredient suppliers, preserves reviewed evidence and compares purchasing scenarios with optional cash/coverage advice.
 - **Live app:** https://incredible-wolverine-122.convex.site
@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-10T20:38:39Z
+- **Last updated:** 2026-09-14T03:28:54Z
 
 ## Log
 
@@ -306,10 +306,24 @@ In-app browser verification saved a synthetic study containing one priced offer 
 Provider settings, production and private repository visibility were unchanged; no external provider call or email was sent. Work stops here for the separate branding pass. Direct OpenAI API, combined hosted provider acceptance, recording and contest submission remain pending.
 
 
-### 2026-09-12 - working tree · US mass and sample-market contract
-Added lb/oz calculation and extraction validation with independent conversion checks, USD sample offers and market-bound persisted studies. Parent review found a saved-study cross-market update; the fix rejects mismatched updates and idempotent replays without changing the original study.
-182 tests and frontend/backend TypeScript checks passed. This PR does not change the current frontend language, deploy code or exercise external providers.
+### 2026-09-12 - working tree · Surtario UI integration
+Integrated the bundled Surtario identity, tokens, typography, motion and shared controls with the reviewed application state. Unified studies, saved lists, source freshness, linked-reply extraction, purchasing advice and hosting/rehearsal guards remain in the combined code.
+The 175 unit/backend/configuration tests and frontend production build passed locally. Headless checks at 1920 × 1080 and 390 × 844 confirmed the Surtario identity and no horizontal overflow. Focused persistence/advisor browser coverage was not completed because the available anonymous backend lacked the current advisor function; no previous E2E evidence is presented as a fresh run.
+No deployment, provider call, email, environment copy, push, visibility change or submission occurred.
 
 
-### 2026-09-12 - working tree · unit PR review follow-up
-Addressed the automated review by wiring lb/oz into document, web, reply, and offer review selectors and lb into the requested quantity. Kept generated explanations in the existing interface language until the English frontend delivery; the authorized US example scope is now explicit in repository guidance. No deployment or provider call occurred.
+### 2026-09-12 - df02b03 · English-first US workflows and freight insight
+Integrated the Surtario visual work with research, saved studies/lists, quotation/reply review and the purchasing advisor. The application uses English with a fictional USD/lb Portland example; Peru fixtures remain for PEN/metric coverage. Source text is preserved. A missing-freight insight calculates the same-currency decision boundary and separates hypothetical cost exploration from confirmed offer edits.
+Independent Sol review and GitHub review produced scoped corrections to study market boundaries, unit selectors, currency defaults, hypothetical state and conditional labels. A real Luna rehearsal exposed an evidence reconstruction mismatch that hid new advisor output after persistence; shared reviewed-evidence construction and a backend round-trip regression correct it. Keyboard search and saved distributor inquiry scope were corrected during browser verification.
+197 unit/backend/configuration tests, all 63 browser journeys, frontend/backend typechecks and hosting checks passed locally. Three real Luna CLI calls exercised one extraction and two advisor generations with actual Convex Agent calculation/evidence tools; recovered advice required no extra generation. Web discovery/page data and mail transport were synthetic, and the bridge prescribed tool sequencing. No direct OpenAI API acceptance, external email, cloud deployment, visibility change or submission is claimed. Detailed evidence and remaining pilot/provider gates: `docs/desarrollo/ENGLISH_PRODUCT_VALIDATION.md`.
+
+
+### 2026-09-12 - d26b14c · US unit PR review corrections
+Addressed all three GitHub review findings in PR #27: added lb/oz review selectors to the prerequisite itself, retained coherent Spanish UI/model guidance in that intermediate PR, and documented the authorized US example scope. 182 tests, frontend/backend typechecks, production build and GitHub CI passed. The dependent English product integration changes UI and model language together.
+
+
+### 2026-09-12 - d2a70d1 · final Luna review correction
+Independent Luna max review found that saved source snapshots include unselected distributors, which could expose an unrelated catalog inquiry. Inquiry controls now use saved selected IDs, and the server rejects draft creation for distributors absent from that selection. US and Peru regression tests failed before the fix and passed afterward; browser checks cover US priced-only recovery and web-only studies. 199 unit/backend/configuration tests, three targeted browser checks, the full 64-journey browser suite, both typechecks and hosting checks passed. No external message or deployment occurred.
+
+### 2026-09-13 - working tree · pre-merge Sol correction
+Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.

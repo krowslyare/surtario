@@ -44,19 +44,19 @@ export default function StudySelections({
           <article
             className="study-selection"
             key={sourceId}
-            aria-label={`Oferta en estudio: ${offer.supplier}`}
+            aria-label={`Offer in study: ${offer.supplier}`}
           >
             <div className="study-selection-heading">
               <div>
                 <span className="eyebrow">
-                  Oferta revisada ·{" "}
-                  {source?.simulated ? "Ejemplo simulado" : "Fuente web"}
+                  Reviewed offer ·{" "}
+                  {source?.simulated ? "Simulated example" : "Web source"}
                 </span>
                 <h3>{offer.supplier}</h3>
               </div>
               <button
                 className="button text-button"
-                aria-label={`Quitar oferta de ${offer.supplier}`}
+                aria-label={`Remove offer from ${offer.supplier}`}
                 onClick={() => onRemove(sourceId)}
               >
                 <X size={18} />
@@ -67,21 +67,21 @@ export default function StudySelections({
             </p>
             <dl className="study-selection-facts">
               <div>
-                <dt>Precio por presentación</dt>
+                <dt>Price per package</dt>
                 <dd>{money(offer.priceCents, offer.currency)}</dd>
               </div>
               <div>
-                <dt>Contenido</dt>
+                <dt>Package size</dt>
                 <dd>
                   {offer.packageContent === null
-                    ? "Por confirmar"
+                    ? "Needs confirmation"
                     : `${numberLabel(offer.packageContent)} ${offer.packageUnit}`}
                 </dd>
               </div>
             </dl>
             <p className="field-hint">
-              Mínimo, impuestos y entrega por confirmar. Seleccionar esta oferta
-              no registra una compra.
+              Minimum order, tax, and delivery need confirmation. Selecting this
+              offer does not record a purchase.
             </p>
             {source?.url && (
               <a href={source.url} target="_blank" rel="noreferrer">
@@ -90,8 +90,8 @@ export default function StudySelections({
             )}
             {source && (
               <p className="field-hint">
-                Observado el{" "}
-                {new Date(source.observedAt).toLocaleDateString("es-PE")}
+                Observed on{" "}
+                {new Date(source.observedAt).toLocaleDateString("en-US")}
               </p>
             )}
           </article>
@@ -108,8 +108,8 @@ export default function StudySelections({
                   setConfirmedFingerprint(e.target.checked ? fingerprint : null)
                 }
               />
-              Confirmo que las ofertas web corresponden al mismo insumo,
-              especificación, unidad base y moneda
+              I confirm these web offers match the same ingredient,
+              specification, base unit, and currency
             </label>
           )}
           <button
@@ -128,16 +128,16 @@ export default function StudySelections({
                 setError(
                   cause instanceof Error
                     ? cause.message
-                    : "Revisa las ofertas seleccionadas.",
+                    : "Review the selected offers.",
                 );
               }
             }}
           >
-            Comparar ofertas revisadas <ArrowRight size={16} />
+            Compare reviewed offers <ArrowRight size={16} />
           </button>
           <p className="field-hint">
-            Opcional: indica después cuánto necesitas y revisa el desembolso.
-            Los ejemplos de catálogo se comparan por separado.
+            Optional: enter the amount you need next and review the total cost.
+            Catalog examples are compared separately.
           </p>
           {error && (
             <p className="notice error" role="alert">
@@ -151,23 +151,23 @@ export default function StudySelections({
           <article
             className="study-selection"
             key={item.id}
-            aria-label={`Distribuidor en estudio: ${item.supplier}`}
+            aria-label={`Distributor in study: ${item.supplier}`}
           >
             <div className="study-selection-heading">
               <div>
                 <span className="eyebrow">
-                  Distribuidor · Precio por consultar
+                  Distributor · Request pricing
                   {item.simulated === true
-                    ? " · Ejemplo simulado"
+                    ? " · Simulated example"
                     : item.simulated === false
-                      ? " · Fuente web"
-                      : " · Origen por verificar"}
+                      ? " · Web source"
+                      : " · Source needs verification"}
                 </span>
                 <h3>{item.supplier}</h3>
               </div>
               <button
                 className="button text-button"
-                aria-label={`Quitar distribuidor ${item.supplier}`}
+                aria-label={`Remove distributor ${item.supplier}`}
                 onClick={() => onRemoveProspect(item.id)}
               >
                 <X size={18} />
@@ -176,14 +176,15 @@ export default function StudySelections({
             <p>
               {item.ingredient} · {item.region}
             </p>
-            <p>Contacto: {item.contact ?? "Pendiente"}</p>
+            <p>Contact: {item.contact ?? "Pending"}</p>
             <a href={item.sourceUrl} target="_blank" rel="noreferrer">
               <ExternalLink size={14} /> {item.sourceTitle}
             </a>
             <p className="field-hint">
-              Fuente observada el{" "}
-              {new Date(item.observedAt).toLocaleDateString("es-PE")}. Contacto
-              revisado por ti; disponibilidad y cobertura por confirmar.
+              Source observed on{" "}
+              {new Date(item.observedAt).toLocaleDateString("en-US")}. You
+              reviewed the contact; availability and service area still need
+              confirmation.
             </p>
             <QuotationMail
               comparisonId={null}

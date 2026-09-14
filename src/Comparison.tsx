@@ -1,4 +1,6 @@
+import MissingConditionInsight from "./components/MissingConditionInsight";
 import Brand from "./components/Brand";
+import { Select } from "./components/ui/Select";
 import PurchasingAdvisor, {
   comparisonStateFingerprint,
 } from "./components/PurchasingAdvisor";
@@ -43,18 +45,18 @@ const initialSources = (): Record<string, Source> =>
     riceOffers.map((offer) => [
       offer.id,
       {
-        label: "Cotización de ejemplo",
+        label: "Sample quote",
         date: "2026-09-07",
         original: { ...offer },
         edited: false,
       },
     ]),
   );
-const unitName = (unit: string) => (unit === "unit" ? "unid." : unit);
+const unitName = (unit: string) => (unit === "unit" ? "units" : unit);
 const displayDate = (date: string) => {
   const value = new Date(`${date}T12:00:00Z`);
-  if (!Number.isFinite(value.getTime())) return "Fecha pendiente";
-  return new Intl.DateTimeFormat("es-PE", {
+  if (!Number.isFinite(value.getTime())) return "Date pending";
+  return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -65,11 +67,13 @@ const displayDate = (date: string) => {
 function OfferEditor({
   offer,
   request,
+  defaultCurrency,
   onSave,
   onClose,
 }: {
   offer?: SupplierOffer;
   request: ProcurementRequest;
+  defaultCurrency: SupplierOffer["currency"];
   onSave: (offer: SupplierOffer) => void;
   onClose: () => void;
 }) {
@@ -117,7 +121,7 @@ function OfferEditor({
     };
     if (!next.supplier || !next.ingredient || !next.specification) {
       setError(
-        "Completa proveedor, insumo y especificación para identificar la oferta.",
+        "Enter the supplier, ingredient and specification to identify this offer.",
       );
       return;
     }
@@ -130,7 +134,7 @@ function OfferEditor({
       ].some((value) => value !== null && !Number.isFinite(value))
     ) {
       setError(
-        "Usa números sin separador de miles. Los importes admiten hasta 2 decimales y el mínimo debe ser entero.",
+        "Use numbers without thousands separators. Amounts allow 2 decimals; minimum packs must be a whole number.",
       );
       return;
     }
@@ -140,7 +144,7 @@ function OfferEditor({
       (next.minimumPackages !== null && next.minimumPackages < 1)
     ) {
       setError(
-        "Contenido, precio y mínimo deben ser mayores que cero. Si falta un dato, déjalo vacío.",
+        "Pack size, price and minimum must be greater than zero. Leave unknown values blank.",
       );
       return;
     }
@@ -148,94 +152,94 @@ function OfferEditor({
   }
   return (
     <Dialog
-      title={offer ? "Editar oferta" : "Agregar oferta manual"}
+      title={offer ? "Edit offer" : "Add a quote manually"}
       onClose={onClose}
       wide
     >
       <p className="muted">
-        Copia las condiciones de la oferta. Si no conoces un dato, déjalo vacío:
-        quedará pendiente.
+        Enter the quoted terms. Leave unknown values blank to keep them pending.
       </p>
       <form onSubmit={save}>
         <div className="form-grid">
-          {field("supplier", "Proveedor", offer?.supplier)}
+          {field("supplier", "Supplier", offer?.supplier)}
           {field(
             "ingredient",
-            "Insumo",
+            "Ingredient",
             offer?.ingredient ?? request.ingredient,
           )}
           <div className="full-width">
             {field(
               "specification",
-              "Especificación / calidad",
+              "Specification / quality",
               offer?.specification ?? request.specification,
             )}
           </div>
           {field(
             "content",
-            "Contenido por presentación",
+            "Content per pack",
             offer?.packageContent,
-            "Ej. 18 para un saco de 18 kg",
+            "e.g. 25 for a 25 lb bag",
           )}
           <label className="field">
-            <span>Unidad del contenido</span>
-            <select
-              aria-label="Unidad del contenido"
+            <span>Pack unit</span>
+            <Select
+              aria-label="Pack unit"
               name="unit"
               defaultValue={offer?.packageUnit ?? ""}
-            >
-              <option value="">Por confirmar</option>
-              <option value="kg">Kilogramos (kg)</option>
-              <option value="lb">Libras (lb)</option>
-              <option value="oz">Onzas (oz, peso)</option>
-              <option value="g">Gramos (g)</option>
-              <option value="L">Litros (L)</option>
-              <option value="ml">Mililitros (ml)</option>
-              <option value="unit">Unidades</option>
-            </select>
+              options={[
+                { value: "", label: "To confirm" },
+                { value: "kg", label: "Kilograms (kg)" },
+                { value: "lb", label: "Pounds (lb)" },
+                { value: "oz", label: "Ounces (oz, weight)" },
+                { value: "g", label: "Grams (g)" },
+                { value: "L", label: "Liters (L)" },
+                { value: "ml", label: "Milliliters (ml)" },
+                { value: "unit", label: "Units" },
+              ]}
+            />
           </label>
           {field(
             "price",
-            "Precio por presentación",
+            "Price per pack",
             offer?.priceCents == null ? null : offer.priceCents / 100,
-            "Sin separadores de miles. Ej. 80,50",
+            "No thousands separators. e.g. 80.50",
           )}
           <label className="field">
-            <span>Moneda</span>
-            <select
-              aria-label="Moneda"
+            <span>Currency</span>
+            <Select
+              aria-label="Currency"
               name="currency"
-              defaultValue={offer?.currency ?? "PEN"}
-            >
-              <option value="PEN">Soles (PEN)</option>
-              <option value="USD">Dólares (USD)</option>
-            </select>
+              defaultValue={offer?.currency ?? defaultCurrency}
+              options={[
+                { value: "PEN", label: "Peruvian soles (PEN)" },
+                { value: "USD", label: "US dollars (USD)" },
+              ]}
+            />
           </label>
           {field(
             "minimum",
-            "Mínimo de presentaciones",
+            "Minimum packs",
             offer?.minimumPackages ?? null,
-            "Presentaciones completas, no kg",
+            "Whole packs, not weight",
           )}
           {field(
             "freight",
-            "Entrega por pedido",
+            "Delivery per order",
             offer?.freightCents == null ? null : offer.freightCents / 100,
-            "0 si está incluida. Vacío si falta confirmar.",
+            "0 if included. Leave blank if unknown.",
           )}
           <label className="field full-width">
-            <span>Impuestos del precio y la entrega</span>
-            <select
-              aria-label="Impuestos del precio y la entrega"
+            <span>Tax on goods and delivery</span>
+            <Select
+              aria-label="Tax on goods and delivery"
               name="tax"
               defaultValue={offer?.taxStatus ?? "unknown"}
-            >
-              <option value="unknown">Por confirmar</option>
-              <option value="included">
-                Importes finales, impuestos incluidos
-              </option>
-              <option value="excluded">Faltan impuestos por sumar</option>
-            </select>
+              options={[
+                { value: "unknown", label: "To confirm" },
+                { value: "included", label: "Final amounts, including tax" },
+                { value: "excluded", label: "Tax still needs to be added" },
+              ]}
+            />
           </label>
           <label className="checkbox full-width">
             <input
@@ -243,7 +247,7 @@ function OfferEditor({
               type="checkbox"
               defaultChecked={offer?.deliveryConfirmed ?? false}
             />
-            <span>El proveedor puede entregar cuando lo necesito</span>
+            <span>The supplier can deliver when I need it</span>
           </label>
         </div>
         {error && (
@@ -253,11 +257,11 @@ function OfferEditor({
         )}
         <div className="dialog-actions">
           <button type="button" className="button secondary" onClick={onClose}>
-            Cancelar
+            Cancel
           </button>
           <button className="button primary" type="submit">
             <Check size={18} />
-            Guardar oferta
+            Save offer
           </button>
         </div>
       </form>
@@ -350,7 +354,7 @@ export default function Comparison({
           entry.webReview !== undefined ||
           entry.documentReview !== undefined ||
           entry.replyReview !== undefined) &&
-        entry.label !== "Entrada manual" &&
+        entry.label !== "Manual entry" &&
         offer.supplier === entry.original.supplier &&
         offer.ingredient === entry.original.ingredient &&
         offer.specification === entry.original.specification
@@ -359,9 +363,9 @@ export default function Comparison({
   const pendingQuantity = quantity.trim() === "";
   const persistable = persistableScenario && (pendingQuantity || validQuantity);
   const blockedReason = !persistableScenario
-    ? "Esta demo solo guarda las ofertas originales del ejemplo de arroz o del catálogo, y revisiones vinculadas a fuentes web o documentos de ejemplo guardados. Las ofertas agregadas manualmente siguen disponibles en esta vista."
+    ? "Saving supports sample offers and quotes linked to reviewed sources. Manually added offers remain in this tab."
     : !pendingQuantity && !validQuantity
-      ? "Corrige la cantidad antes de guardar. Déjala vacía si todavía está pendiente."
+      ? "Correct the quantity before saving, or leave it blank if unknown."
       : null;
   const comparisonDraft = {
     clientId,
@@ -395,7 +399,7 @@ export default function Comparison({
     setSelectedOfferId(offerId);
     setSelectionFingerprint(fingerprint);
     setMessage(
-      "Oferta elegida para esta comparación. Esto no registra una compra.",
+      "Offer selected for this comparison. No purchase was recorded.",
     );
   }
 
@@ -429,7 +433,7 @@ export default function Comparison({
         offers: comparison.offers,
       }),
     );
-    setMessage("Comparación recuperada. Reemplazó el borrador de esta vista.");
+    setMessage("Comparison opened. It replaced the draft in this view.");
     window.scrollTo(0, 0);
   }
 
@@ -448,7 +452,7 @@ export default function Comparison({
     setSelectedOfferId(null);
     setSelectionFingerprint(null);
     setModal(null);
-    setMessage(seed ? "Selección inicial restaurada." : "Ejemplo restaurado.");
+    setMessage(seed ? "Initial selection restored." : "Example restored.");
   }
   async function saveComparisonForAdvisor() {
     const startedWith = currentFingerprintRef.current;
@@ -472,7 +476,7 @@ export default function Comparison({
       [offer.id]: current[offer.id]
         ? { ...current[offer.id], edited: true }
         : {
-            label: "Entrada manual",
+            label: "Manual entry",
             date: today(),
             original: { ...offer },
             edited: false,
@@ -480,7 +484,7 @@ export default function Comparison({
     }));
     setEditing(null);
     setModal(null);
-    setMessage("Oferta guardada en esta vista.");
+    setMessage("Offer updated in this view.");
   }
   function missingExample(kind: "weight" | "freight") {
     setOffers((current) =>
@@ -502,65 +506,65 @@ export default function Comparison({
       }));
     setMessage(
       kind === "weight"
-        ? "Se dejó el contenido de la primera oferta pendiente."
-        : "Se dejó la entrega de la primera oferta pendiente.",
+        ? "The first offer now has an unknown pack size."
+        : "The first offer now has unconfirmed delivery.",
     );
   }
 
   return (
     <>
       <a href="#comparison" className="skip-link">
-        Ir a la comparación
+        Skip to comparison
       </a>
       <header className="topbar">
         <Brand />
         <button
           className="button text-button"
-          aria-label="Cómo comparar"
+          aria-label="How to compare"
           onClick={() => setModal("help")}
         >
           <CircleHelp size={18} />
-          <span>Cómo comparar</span>
+          <span>How to compare</span>
         </button>
       </header>
       <main>
         {onBack && (
           <button className="button text-button" onClick={onBack}>
-            Volver al estudio de mercado
+            Back to market study
           </button>
         )}
         <div className="workspace-nav">
           <span>
-            <Scale size={16} /> Comparación de insumos
+            <Scale size={16} /> Ingredient comparison
           </span>
           <span className="demo-badge">
             {hasReviewedSources
-              ? "Fuentes revisadas"
+              ? "Reviewed sources"
               : seed
-                ? "Desde tu estudio de ejemplo"
-                : "Ejemplo sintético"}
+                ? "From your sample study"
+                : "Synthetic example"}
           </span>
         </div>
         <div className="page-title">
           <div>
-            <h1>Compara antes de comprar</h1>
+            <h1>Compare before you buy</h1>
             <p>
-              Añade cantidad y confirma condiciones para calcular el pedido.
+              Enter a quantity and confirm the terms to calculate the order.
             </p>
           </div>
         </div>
         <div className="comparison-setup">
           <section
             className="request-panel"
-            aria-label="Tu necesidad de compra"
+            aria-label="What you need"
           >
             <div className="request-title">
               <Package size={21} />
-              <h2>¿Qué necesitas comprar?</h2>
+              <h2>What do you need to buy?</h2>
             </div>
             <div className="request-fields">
               <label className="field ingredient">
-                <span>Insumo</span>
+                <span>Ingredient</span>
                 <input
                   value={request.ingredient}
                   onChange={(e) =>
@@ -570,7 +574,7 @@ export default function Comparison({
                 />
               </label>
               <label className="field specification">
-                <span>Especificación / calidad</span>
+                <span>Specification / quality</span>
                 <input
                   value={request.specification}
                   onChange={(e) =>
@@ -580,7 +584,7 @@ export default function Comparison({
                 />
               </label>
               <label className="field quantity">
-                <span>Cantidad necesaria</span>
+                <span>Required quantity</span>
                 <input
                   inputMode="decimal"
                   value={quantity}
@@ -593,36 +597,36 @@ export default function Comparison({
                 />
               </label>
               <label className="field unit">
-                <span>Unidad</span>
-                <select
+                <span>Unit</span>
+                <Select
+                  aria-label="Unit"
                   value={request.unit}
-                  onChange={(e) =>
-                    setRequest({ ...request, unit: e.target.value as BaseUnit })
+                  onValueChange={(unit) =>
+                    setRequest({ ...request, unit: unit as BaseUnit })
                   }
-                >
-                  <option value="kg">kg</option>
-                  <option value="lb">lb</option>
-                  <option value="L">L</option>
-                  <option value="unit">unid.</option>
-                </select>
+                  options={[
+                    { value: "kg", label: "kg" },
+                    { value: "lb", label: "lb" },
+                    { value: "L", label: "L" },
+                    { value: "unit", label: "unid." },
+                  ]}
+                />
               </label>
             </div>
             {!validQuantity ? (
               <p className="field-error" id="quantity-error">
-                Escribe una cantidad mayor que cero, con hasta 3 decimales y sin
-                separador de miles.
+                Enter a quantity greater than zero, with up to 3 decimals and no thousands separator.
               </p>
             ) : (
               <p className="field-hint" id="quantity-help">
-                Calculamos presentaciones completas para cubrir tu necesidad.
-                Puedes usar punto o coma decimal.
+                We calculate whole packs to cover your needs. You can use a decimal point or comma.
               </p>
             )}
           </section>
 
           <aside
             className="comparison-save"
-            aria-label="Guardar y recuperar comparación"
+            aria-label="Save and open comparisons"
           >
             {persistenceEnabled ? (
               <SavedComparisons
@@ -649,8 +653,7 @@ export default function Comparison({
               />
             ) : (
               <p className="notice info">
-                El guardado de comparaciones no está configurado. Puedes usar el
-                ejemplo durante esta visita.
+                Saving is unavailable. You can use this example during your visit.
               </p>
             )}
             <button
@@ -658,10 +661,11 @@ export default function Comparison({
               onClick={() => setModal("reset")}
             >
               <RotateCcw size={16} />
-              {seed ? "Restaurar selección" : "Restaurar ejemplo"}
+              {seed ? "Restore selection" : "Restore example"}
             </button>
           </aside>
         </div>
+        <MissingConditionInsight key={currentFingerprint} request={effectiveRequest} offers={offers} onEdit={setEditing} />
         {persistenceEnabled && (
           <PurchasingAdvisor
             key={clientId}
@@ -674,7 +678,7 @@ export default function Comparison({
             canSaveComparison={persistable && validQuantity}
             saveBlockedReason={
               !validQuantity
-                ? "Indica una cantidad válida para analizar esta compra."
+                ? "Enter a valid quantity to analyze this purchase."
                 : blockedReason
             }
             onSaveComparison={saveComparisonForAdvisor}
@@ -687,15 +691,15 @@ export default function Comparison({
         >
           <div className="section-heading">
             <div>
-              <h2 id="comparison-title">Tus ofertas, en la misma medida</h2>
+              <h2 id="comparison-title">Compare offers on equal terms</h2>
               <p>
                 {offers.length}{" "}
                 {offers.length === 1
-                  ? "oferta para revisar"
-                  : "ofertas para revisar"}{" "}
+                  ? "offer to review"
+                  : "offers to review"}{" "}
                 {hasReviewedSources
-                  ? "· Datos revisados con su fuente; condiciones por confirmar"
-                  : "· Precios de ejemplo, no cotizaciones reales"}
+                  ? "· Reviewed source; terms to confirm"
+                  : "· Sample prices, not live quotes"}
               </p>
             </div>
             <button
@@ -704,23 +708,22 @@ export default function Comparison({
               onClick={() => setModal("new")}
             >
               <Plus size={18} />
-              Agregar oferta
+              Add offer
             </button>
           </div>
           {offers.length === 0 ? (
             <div className="empty-state">
               <Package size={36} />
-              <h3>Empieza con una oferta</h3>
+              <h3>Start with an offer</h3>
               <p>
-                Agrega los datos que tengas. Podrás completar lo que falte
-                después.
+                Add what you know. You can fill in the remaining details later.
               </p>
               <button
                 className="button primary"
                 onClick={() => setModal("new")}
               >
                 <Plus size={18} />
-                Agregar primera oferta
+                Add first offer
               </button>
             </div>
           ) : (
@@ -740,14 +743,12 @@ export default function Comparison({
                         <div key={currency}>
                           <h3>
                             {difference === 0
-                              ? "Las ofertas requieren el mismo desembolso"
-                              : `${lowest.map((offer) => offer.supplier).join(" y ")} requiere ${money(difference, currency)} menos${count > 2 ? " que la oferta de mayor desembolso" : ""}`}
+                              ? "These offers have the same order total"
+                              : `${lowest.map((offer) => offer.supplier).join(" y ")} requires ${money(difference, currency)} less${count > 2 ? " than the highest order total" : ""}`}
                           </h3>
                           <p>
-                            Para {numberLabel(effectiveRequest.quantity)} {unit}
-                            . Incluye entrega e importes finales; revisa también
-                            cuánto recibirías. Comparación de {count} ofertas
-                            completas en {currency}.
+                            For {numberLabel(effectiveRequest.quantity)} {unit}
+                            . Includes delivery and final amounts. Also check the quantity received. Comparing {count} complete offers in {currency}.
                           </p>
                         </div>
                       ),
@@ -761,13 +762,13 @@ export default function Comparison({
                     <div>
                       <h3>
                         {offers.length === 1
-                          ? "Una oferta es un buen comienzo"
-                          : "Todavía no hay una comparación completa"}
+                          ? "One offer is a good start"
+                          : "No complete comparison yet"}
                       </h3>
                       <p>
                         {offers.length === 1
-                          ? "Agrega otra oferta del mismo insumo y calidad para comparar."
-                          : "Revisa los datos pendientes, la especificación y la moneda de cada oferta."}
+                          ? "Add another offer for the same ingredient and quality to compare."
+                          : "Review missing details, specifications and currency for each offer."}
                       </p>
                     </div>
                   </>
@@ -775,7 +776,7 @@ export default function Comparison({
               </div>
               <div
                 className="mobile-totals"
-                aria-label="Resumen de desembolsos"
+                aria-label="Order totals"
               >
                 {offers.map((offer, i) => (
                   <div key={offer.id}>
@@ -801,7 +802,7 @@ export default function Comparison({
                     <article
                       className="offer"
                       key={offer.id}
-                      aria-label={`Oferta de ${offer.supplier}`}
+                      aria-label={`Offer from ${offer.supplier}`}
                     >
                       <div className="offer-heading">
                         <div className="supplier-avatar">
@@ -811,20 +812,20 @@ export default function Comparison({
                           <h3>{offer.supplier}</h3>
                           <p>
                             {offer.packageContent === null
-                              ? "Contenido por confirmar"
-                              : `${numberLabel(offer.packageContent)} ${unitName(offer.packageUnit ?? "")} por presentación`}
+                              ? "Pack size to confirm"
+                              : `${numberLabel(offer.packageContent)} ${unitName(offer.packageUnit ?? "")} per pack`}
                           </p>
                         </div>
                         <button
                           className="icon-button"
-                          aria-label={`Editar ${offer.supplier}`}
+                          aria-label={`Edit ${offer.supplier}`}
                           onClick={() => setEditing(offer.id)}
                         >
                           <Pencil size={17} />
                         </button>
                       </div>
                       <div className="offer-total">
-                        <span>Desembolso del pedido</span>
+                        <span>Order total</span>
                         <strong data-testid={`total-${index}`}>
                           {money(result.totalCents, offer.currency)}
                         </strong>
@@ -837,8 +838,8 @@ export default function Comparison({
                             <Info size={14} />
                           )}
                           {isComplete
-                            ? "Condiciones completas"
-                            : "Faltan datos o condiciones"}
+                            ? "Terms confirmed"
+                            : "Details or terms are missing"}
                         </span>
                       </div>
                       <button
@@ -853,12 +854,12 @@ export default function Comparison({
                       >
                         <Check size={16} />
                         {activeSelection === offer.id
-                          ? "Oferta elegida"
-                          : "Elegir oferta"}
+                          ? "Selected offer"
+                          : "Choose offer"}
                       </button>
                       <dl className="offer-details">
                         <div>
-                          <dt>Recibirías</dt>
+                          <dt>You would receive</dt>
                           <dd>
                             {numberLabel(result.purchasedQuantity)}
                             {result.purchasedQuantity !== null
@@ -867,7 +868,7 @@ export default function Comparison({
                           </dd>
                         </div>
                         <div>
-                          <dt>Excedente sobre tu necesidad</dt>
+                          <dt>Quantity beyond your needs</dt>
                           <dd>
                             {numberLabel(result.excessQuantity)}
                             {result.excessQuantity !== null ? ` ${unit}` : ""}
@@ -875,59 +876,58 @@ export default function Comparison({
                         </div>
                         <div className="detail-separator">
                           <dt>
-                            Precio por {unit}
-                            <small>Sin entrega</small>
+                            Price per {unit}
+                            <small>Excluding delivery</small>
                           </dt>
                           <dd>
                             {money(result.unitPriceCents, offer.currency)}
                           </dd>
                         </div>
                         <div>
-                          <dt>Presentaciones a comprar</dt>
+                          <dt>Packs to order</dt>
                           <dd>{numberLabel(result.packageCount)}</dd>
                         </div>
                         <div>
                           <dt>
-                            Mercancía
+                            Goods
                             <small>
-                              {money(offer.priceCents, offer.currency)} por
-                              presentación
+                              {money(offer.priceCents, offer.currency)} per pack
                             </small>
                           </dt>
                           <dd>{money(result.subtotalCents, offer.currency)}</dd>
                         </div>
                         <div>
-                          <dt>Entrega por pedido</dt>
+                          <dt>Delivery per order</dt>
                           <dd>
                             {offer.freightCents === 0
-                              ? "Incluida"
+                              ? "Included"
                               : money(offer.freightCents, offer.currency)}
                           </dd>
                         </div>
                         <div>
-                          <dt>Mínimo del proveedor</dt>
+                          <dt>Supplier minimum</dt>
                           <dd>
                             {offer.minimumPackages === null
-                              ? "Pendiente"
-                              : `${offer.minimumPackages} ${offer.minimumPackages === 1 ? "presentación" : "presentaciones"}`}
+                              ? "Pending"
+                              : `${offer.minimumPackages} ${offer.minimumPackages === 1 ? "pack" : "packs"}`}
                           </dd>
                         </div>
                         <div>
-                          <dt>Impuestos</dt>
+                          <dt>Tax</dt>
                           <dd>
                             {offer.taxStatus === "included"
-                              ? "Incluidos"
+                              ? "Included"
                               : offer.taxStatus === "excluded"
-                                ? "Falta sumar"
-                                : "Por confirmar"}
+                                ? "Not included"
+                                : "To confirm"}
                           </dd>
                         </div>
                         <div>
-                          <dt>Entrega cuando necesitas</dt>
+                          <dt>Delivery when needed</dt>
                           <dd>
                             {offer.deliveryConfirmed
-                              ? "Confirmada"
-                              : "Por confirmar"}
+                              ? "Confirmed"
+                              : "To confirm"}
                           </dd>
                         </div>
                       </dl>
@@ -935,7 +935,7 @@ export default function Comparison({
                         <div className="offer-issues">
                           <strong>
                             <Info size={16} />
-                            Revisa esta oferta
+                            Review this offer
                           </strong>
                           <ul>
                             {issues.map((issue, i) => (
@@ -946,7 +946,7 @@ export default function Comparison({
                             className="button text-button"
                             onClick={() => setEditing(offer.id)}
                           >
-                            Completar datos <ArrowRight size={16} />
+                            Complete details <ArrowRight size={16} />
                           </button>
                         </div>
                       )}
@@ -954,11 +954,11 @@ export default function Comparison({
                         <div>
                           <FileText size={16} />
                           <span>
-                            {sourceInfo?.label ?? "Entrada manual"}
+                            {sourceInfo?.label ?? "Manual entry"}
                             <small>
                               {sourceInfo ? displayDate(sourceInfo.date) : ""}
                               {sourceInfo?.edited
-                                ? " · Editada manualmente"
+                                ? " · Edited manually"
                                 : ""}
                             </small>
                           </span>
@@ -967,7 +967,7 @@ export default function Comparison({
                           className="button text-button"
                           onClick={() => setSourceId(offer.id)}
                         >
-                          Ver origen
+                          View source
                         </button>
                       </div>
                       <button
@@ -975,7 +975,7 @@ export default function Comparison({
                         onClick={() => setDeleting(offer.id)}
                       >
                         <Trash2 size={14} />
-                        Quitar oferta
+                        Remove offer
                       </button>
                     </article>
                   );
@@ -983,18 +983,16 @@ export default function Comparison({
               </div>
               <p className="comparison-footnote">
                 <Info size={16} />
-                El excedente es lo que recibirías de más, no una pérdida
-                calculada. Esta comparación no realiza una compra.
+                Excess is the extra quantity you would receive, not a calculated loss. This comparison does not place an order.
               </p>
             </>
           )}
         </section>
-        <section className="try-panel" aria-label="Explorar datos incompletos">
+        <section className="try-panel" aria-label="Explore missing details">
           <div>
-            <h3>¿Y si falta un dato?</h3>
+            <h3>What if a detail is missing?</h3>
             <p>
-              Prueba cómo cambia la comparación cuando una oferta llega
-              incompleta.
+              See how the comparison changes when an offer is incomplete.
             </p>
           </div>
           <div className="try-actions">
@@ -1004,7 +1002,7 @@ export default function Comparison({
               onClick={() => missingExample("weight")}
             >
               <Package size={16} />
-              Falta el peso
+              Missing weight
             </button>
             <button
               className="button secondary"
@@ -1012,7 +1010,7 @@ export default function Comparison({
               onClick={() => missingExample("freight")}
             >
               <Truck size={16} />
-              Falta la entrega
+              Missing delivery
             </button>
           </div>
         </section>
@@ -1036,7 +1034,7 @@ export default function Comparison({
                     setSelectedOfferId(null);
                     setSelectionFingerprint(null);
                     setMessage(
-                      "Oferta añadida a esta vista. Guarda la comparación y vuelve a elegir cuando completes las condiciones.",
+                      "Offer added. Save the comparison and choose again once its terms are complete.",
                     );
                   }
                 : undefined
@@ -1046,10 +1044,10 @@ export default function Comparison({
         <footer>
           <span>
             {hasReviewedSources
-              ? "Guarda la comparación para conservar estas correcciones y condiciones."
-              : "Datos de prueba · Guarda la comparación para recuperarla."}
+              ? "Save the comparison to keep these corrections and terms."
+              : "Sample data · Save the comparison to return to it."}
           </span>
-          <span>Sin recetas ni historial de compras.</span>
+          <span>No recipes or purchase history required.</span>
         </footer>
         <p role="status" className="sr-only">
           {message}
@@ -1058,6 +1056,7 @@ export default function Comparison({
       {(modal === "new" || editingOffer) && (
         <OfferEditor
           offer={editingOffer}
+          defaultCurrency={offers[0]?.currency ?? "USD"}
           request={request}
           onSave={saveOffer}
           onClose={() => {
@@ -1069,53 +1068,48 @@ export default function Comparison({
       {modal === "reset" && (
         <Dialog
           title={
-            seed ? "¿Restaurar la selección inicial?" : "¿Restaurar el ejemplo?"
+            seed ? "Restore the initial selection?" : "Restore this example?"
           }
           onClose={() => setModal(null)}
         >
           <p>
             {seed
-              ? "Se recuperarán los precios seleccionados del estudio, sin cantidad ni condiciones confirmadas."
-              : "Se reemplazarán las ofertas y la cantidad de esta vista por el ejemplo inicial de arroz."}
+              ? "This restores your selected catalog prices without a quantity or confirmed terms."
+              : "This replaces the offers and quantity in this view with the original rice example."}
           </p>
           <div className="dialog-actions">
             <button className="button secondary" onClick={() => setModal(null)}>
-              Conservar cambios
+              Keep changes
             </button>
             <button className="button primary" onClick={reset}>
-              {seed ? "Restaurar selección" : "Restaurar ejemplo"}
+              {seed ? "Restore selection" : "Restore example"}
             </button>
           </div>
         </Dialog>
       )}
       {modal === "help" && (
         <Dialog
-          title="Una comparación, tres preguntas"
+          title="Three questions for every comparison"
           onClose={() => setModal(null)}
         >
           <div className="help-steps">
             <p>
-              <strong>¿Cuánto pagarías hoy?</strong> El desembolso suma las
-              presentaciones necesarias y la entrega. Si faltan impuestos o
-              condiciones, queda pendiente.
+              <strong>How much would you pay today?</strong> The order total includes whole packs and delivery. Missing tax or terms keep the total pending.
             </p>
             <p>
-              <strong>¿Cuánto recibirías?</strong> Respetamos las presentaciones
-              completas y el mínimo del proveedor, aunque necesites menos.
+              <strong>How much would you receive?</strong> We respect whole packs and supplier minimums, even when you need less.
             </p>
             <p>
-              <strong>¿Son ofertas equivalentes?</strong> Compara el mismo
-              insumo, calidad y moneda. El precio por unidad no basta para
-              decidir una compra.
+              <strong>Are these equivalent offers?</strong> Compare the same ingredient, quality and currency. Unit price alone does not determine the best purchase.
             </p>
           </div>
           <button className="button primary" onClick={() => setModal(null)}>
-            Entendido
+            Got it
           </button>
         </Dialog>
       )}
       {source && (
-        <Dialog title="Origen de la oferta" onClose={() => setSourceId(null)}>
+        <Dialog title="Offer source" onClose={() => setSourceId(null)}>
           <div className="source-document">
             <div className="source-document-head">
               <FileText size={28} />
@@ -1128,25 +1122,23 @@ export default function Comparison({
             )}
             {source.extraction && (
               <p>
-                El documento y la propuesta extraída se conservan arriba junto a
-                tus correcciones. Los siguientes importes son los que
-                confirmaste al entrar a la comparación.
+                The original document and extraction are preserved with your corrections. These are the values you confirmed when creating the comparison.
               </p>
             )}
             <dl className="offer-details">
               <div>
-                <dt>Insumo</dt>
+                <dt>Ingredient</dt>
                 <dd>{source.original.ingredient}</dd>
               </div>
               <div>
-                <dt>Especificación</dt>
+                <dt>Specification</dt>
                 <dd>{source.original.specification}</dd>
               </div>
               <div>
                 <dt>
                   {source.extraction
-                    ? "Contenido al confirmar revisión"
-                    : "Contenido original"}
+                    ? "Content when confirmed"
+                    : "Original content"}
                 </dt>
                 <dd>
                   {numberLabel(source.original.packageContent)}{" "}
@@ -1156,8 +1148,8 @@ export default function Comparison({
               <div>
                 <dt>
                   {source.extraction
-                    ? "Precio al confirmar revisión"
-                    : "Precio original"}
+                    ? "Price when confirmed"
+                    : "Original price"}
                 </dt>
                 <dd>
                   {money(source.original.priceCents, source.original.currency)}
@@ -1166,8 +1158,8 @@ export default function Comparison({
               <div>
                 <dt>
                   {source.extraction
-                    ? "Entrega al confirmar revisión"
-                    : "Entrega original"}
+                    ? "Delivery when confirmed"
+                    : "Original delivery"}
                 </dt>
                 <dd>
                   {money(
@@ -1186,31 +1178,31 @@ export default function Comparison({
               className="button text-button"
             >
               {source.documentReview
-                ? "Abrir documento original"
-                : "Abrir fuente original"}
+                ? "Open original document"
+                : "Open original source"}
             </a>
           )}
           <p className="muted">
             {source.edited
-              ? "La comparación usa tus cambios manuales. Aquí conservamos los valores de entrada."
+              ? "The comparison uses your edits. The original values are preserved here."
               : source.marketSource?.simulated === false
-                ? "Valores revisados desde la fuente indicada; confirma las condiciones pendientes antes de decidir."
-                : "Registro de datos sintéticos para probar la comparación. No es un documento de un proveedor real."}
+                ? "Values reviewed against this source. Confirm missing terms before deciding."
+                : "Sample data for exploring this comparison, not a real supplier document."}
           </p>
         </Dialog>
       )}
       {deleting && (
-        <Dialog title="¿Quitar esta oferta?" onClose={() => setDeleting(null)}>
+        <Dialog title="Remove this offer?" onClose={() => setDeleting(null)}>
           <p>
-            Se quitará {offers.find((offer) => offer.id === deleting)?.supplier}{" "}
-            de esta comparación.
+            Remove {offers.find((offer) => offer.id === deleting)?.supplier}{" "}
+            from this comparison.
           </p>
           <div className="dialog-actions">
             <button
               className="button secondary"
               onClick={() => setDeleting(null)}
             >
-              Cancelar
+              Cancel
             </button>
             <button
               className="button danger"
@@ -1219,10 +1211,10 @@ export default function Comparison({
                   current.filter((offer) => offer.id !== deleting),
                 );
                 setDeleting(null);
-                setMessage("Oferta quitada.");
+                setMessage("Offer removed.");
               }}
             >
-              Quitar oferta
+              Remove offer
             </button>
           </div>
         </Dialog>

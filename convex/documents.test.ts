@@ -35,7 +35,7 @@ test("disabled documents cannot call the provider", async () => {
   const t = convexTest(schema, modules);
   expect(await t.query(api.documents.status, {})).toBe(false);
   await expect(t.action(api.documents.extract, args)).rejects.toThrow(
-    /no está habilitada/,
+    /not enabled/,
   );
   expect(extractDocument).not.toHaveBeenCalled();
 });
@@ -69,7 +69,7 @@ test("running reservations cannot repeat a paid call or switch file identity", a
   expect((await t.action(api.documents.extract, args)).status).toBe("running");
   await expect(
     t.action(api.documents.extract, { ...args, kind: "pdf" }),
-  ).rejects.toThrow(/otro archivo/);
+  ).rejects.toThrow(/different file/);
   expect(extractDocument).not.toHaveBeenCalled();
 });
 test("provider failure is sanitized and not automatically retried", async () => {
@@ -93,7 +93,7 @@ test("cooldown and total quota reject before another provider call", async () =>
       ...args,
       clientId: "33333333-3333-4333-8333-333333333333",
     }),
-  ).rejects.toThrow(/30 segundos/);
+  ).rejects.toThrow(/30 seconds/);
   const full = convexTest(schema, modules);
   await full.run(async (ctx) => {
     for (let i = 0; i < 100; i++)
@@ -108,7 +108,7 @@ test("cooldown and total quota reject before another provider call", async () =>
       });
   });
   await expect(full.action(api.documents.extract, args)).rejects.toThrow(
-    /total/,
+    /limit/,
   );
   expect(extractDocument).not.toHaveBeenCalled();
 });
@@ -119,7 +119,7 @@ test("classification, citations and text bounds are enforced", () => {
   ).toThrow(/Non-quotation/);
   expect(() =>
     validateDocument({ ...result, transcript: "unrelated text" }),
-  ).toThrow(/cita/);
+  ).toThrow(/quote/);
   expect(() =>
     validateDocument({ ...result, transcript: "x".repeat(12001) }),
   ).toThrow();

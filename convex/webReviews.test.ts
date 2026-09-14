@@ -105,7 +105,7 @@ test("web review preserves source proposal, correction, conditions and idempoten
       id: saved.id,
       expectedRevision: 1,
     }),
-  ).rejects.toThrow(/otra vista/);
+  ).rejects.toThrow(/another view/);
 });
 test("synthetic provenance survives the saved run after rehearsal configuration is gone", async () => {
   const { t, args, ref } = await setup(true);
@@ -118,13 +118,13 @@ test("rejects foreign sources, missing extraction, malformed corrections and dup
   const { t, args } = await setup();
   await expect(
     t.mutation(api.comparisons.save, { ...args, token: "b".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.comparisons.save, {
       ...args,
       webReviews: [args.webReviews[0], args.webReviews[0]],
     }),
-  ).rejects.toThrow(/dos veces/);
+  ).rejects.toThrow(/twice/);
   for (const values of [
     { ...args.webReviews[0].values, price: "1,234.00" },
     { ...args.webReviews[0].values, supplier: "x".repeat(121) },
@@ -146,7 +146,7 @@ test("rejects foreign sources, missing extraction, malformed corrections and dup
     });
   });
   await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
-    /no está completa/,
+    /incomplete/,
   );
 });
 test("same offer values cannot disguise changed review evidence on create retry", async () => {
@@ -162,7 +162,7 @@ test("same offer values cannot disguise changed review evidence on create retry"
         },
       ],
     }),
-  ).rejects.toThrow(/otros datos/);
+  ).rejects.toThrow(/different data/);
 });
 
 test("legacy extractions cannot bypass current source quality checks", async () => {
@@ -178,7 +178,35 @@ test("legacy extractions cannot bypass current source quality checks", async () 
       });
     });
     await expect(t.mutation(api.comparisons.save, args)).rejects.toThrow(
-      /evidencia utilizable/,
+      /usable evidence/,
     );
   }
+});
+
+test("analyzed web evidence keeps the same source fingerprint after saving", async () => {
+  const { t, args, ref } = await setup(true);
+  await t.run(async ctx => {
+    const run = await ctx.db.get(args.webReviews[0].runId);
+    await ctx.db.patch(run!._id, {
+      sources: run!.sources.map(source => ({ ...source, analysis: {
+        kind: "product" as const, summary: "A synthetic rice quotation.",
+        evidence: ["Saco: S/ 80.00"], warnings: ["Pack weight requires review."],
+      } })),
+    });
+  });
+  const [run] = await t.query(api.research.list, { token });
+  const source = run.sources[0];
+  const { reviewedWebEvidence } = await import("../src/domain/webEvidence");
+  const clientSeed = extractionToPurchase({
+    id: ref, title: source.title, url: source.url,
+    text: reviewedWebEvidence(source),
+    observedAt: source.observedAt ?? run.observedAt, simulated: run.simulated,
+  }, source.extraction!, args.webReviews[0].values, true);
+  clientSeed.sources[ref].webReview = args.webReviews[0];
+  const saved = await t.mutation(api.comparisons.save, {
+    ...args, request: { ...clientSeed.request, quantity: 40 },
+    offers: clientSeed.offers, selectedOfferId: null,
+  });
+  expect(saved.sources[ref]).toEqual(clientSeed.sources[ref]);
+  expect(saved.sources[ref].marketSource?.evidence).toContain("Proposed source analysis (requires review): A synthetic rice quotation.");
 });

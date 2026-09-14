@@ -1,3 +1,4 @@
+import { researchLocation } from "../../src/domain/researchMarket";
 import { providerFetch } from "./providerTransport";
 import { publicSourceUrl } from "./sourceQuality";
 
@@ -35,7 +36,7 @@ export function parseDiscovery(value: unknown): DiscoveryResult {
   const body = record(value);
   const web = record(body.data).web;
   if (body.success !== true || !Array.isArray(web))
-    throw new Error("Firecrawl devolvió una respuesta no válida.");
+    throw new Error("Firecrawl returned an invalid response.");
   const sources: DiscoveredSource[] = [];
   const seen = new Set<string>();
   let discarded = 0;
@@ -64,7 +65,7 @@ export function parseDiscovery(value: unknown): DiscoveryResult {
           ? page.title.slice(0, 300)
           : typeof metadata.title === "string"
             ? metadata.title.slice(0, 300)
-            : "Fuente sin título",
+            : "Untitled source",
       description:
         typeof page.description === "string"
           ? page.description.slice(0, 2000)
@@ -83,7 +84,7 @@ export function parseDiscovery(value: unknown): DiscoveryResult {
 }
 async function limitedJson(response: Response): Promise<unknown> {
   const reader = response.body?.getReader();
-  if (!reader) throw new Error("Firecrawl devolvió una respuesta vacía.");
+  if (!reader) throw new Error("Firecrawl returned an empty response.");
   const decoder = new TextDecoder();
   let bytes = 0;
   let text = "";
@@ -94,7 +95,7 @@ async function limitedJson(response: Response): Promise<unknown> {
       bytes += value.byteLength;
       if (bytes > 1024 * 1024)
         throw new Error(
-          "La respuesta de Firecrawl excede el límite de lectura.",
+          "The Firecrawl response exceeds the reading limit.",
         );
       text += decoder.decode(value, { stream: true });
     }
@@ -102,7 +103,7 @@ async function limitedJson(response: Response): Promise<unknown> {
     try {
       return JSON.parse(text);
     } catch {
-      throw new Error("Firecrawl devolvió JSON no válido.");
+      throw new Error("Firecrawl returned invalid JSON.");
     }
   } finally {
     await reader.cancel();
@@ -114,10 +115,11 @@ export async function readProductPage(
   url: string,
   apiKey: string | undefined,
   request: typeof fetch = providerFetch,
+  region?: string,
 ): Promise<DiscoveredSource> {
   const target = publicSourceUrl(url);
   if (!target || !apiKey?.trim())
-    throw new Error("La ficha o la configuración de lectura no es válida.");
+    throw new Error("The product page or reading configuration is invalid.");
   const abort = new AbortController();
   const timeout = setTimeout(() => abort.abort(), 25000);
   try {
@@ -136,12 +138,12 @@ export async function readProductPage(
         maxAge: 0,
         timeout: 20000,
         parsers: [],
-        location: { country: "PE", languages: ["es-PE", "es"] },
+        ...(region ? { location: { country: researchLocation(region).country, languages: researchLocation(region).language === "es" ? ["es-PE", "es"] : ["en"] } } : {}),
       }),
     });
     if (!response.ok) {
       await response.body?.cancel();
-      throw new Error("Firecrawl no completó la lectura de la ficha.");
+      throw new Error("Firecrawl did not complete the product-page read.");
     }
     const body = record(await limitedJson(response));
     const data = record(body.data);
@@ -152,7 +154,7 @@ export async function readProductPage(
       !data.markdown.trim() ||
       !cleanPageStatus(metadata.statusCode)
     )
-      throw new Error("La ficha no devolvió contenido utilizable.");
+      throw new Error("The product page returned no usable content.");
     const returnedUrl =
       typeof metadata.url === "string"
         ? metadata.url
@@ -162,7 +164,7 @@ export async function readProductPage(
     const canonical = publicSourceUrl(returnedUrl);
     if (canonical !== target)
       throw new Error(
-        "La ficha cambió de dirección; revisa el enlace original.",
+        "The product page redirected elsewhere; review the original link.",
       );
     return {
       url: target,
@@ -193,11 +195,11 @@ export async function discoverSources(
     input.region.length > 80
   )
     throw new Error(
-      "Indica un insumo de hasta 120 caracteres y una zona de hasta 80.",
+      "Enter an ingredient of up to 120 characters and an area of up to 80.",
     );
   if (!apiKey?.trim())
     throw new Error(
-      "Configura FIRECRAWL_API_KEY en el backend para ejecutar esta prueba.",
+      "Configure FIRECRAWL_API_KEY in the backend to run this test.",
     );
   const abort = new AbortController();
   const timeout = setTimeout(() => abort.abort(), 25000);
@@ -211,9 +213,9 @@ export async function discoverSources(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        query: `${input.ingredient.trim()} proveedores distribuidores ${input.region.trim()} Perú`,
-        country: "PE",
-        location: `${input.region.trim()}, Peru`,
+        query: `${input.ingredient.trim()} ${researchLocation(input.region).language === "es" ? "proveedores distribuidores" : "wholesale restaurant suppliers"} ${researchLocation(input.region).location}`,
+        ...(researchLocation(input.region).country ? { country: researchLocation(input.region).country } : {}),
+        location: researchLocation(input.region).location,
         limit: 3,
         sources: ["web"],
         timeout: 20000,
@@ -228,25 +230,25 @@ export async function discoverSources(
     if (!response.ok) {
       await response.body?.cancel();
       if (response.status === 401 || response.status === 403)
-        throw new Error("Firecrawl rechazó la credencial o sus permisos.");
+        throw new Error("Firecrawl rejected the credential or its permissions.");
       if (response.status === 429 || response.status === 402)
         throw new Error(
-          "Firecrawl no permite más consultas ahora. Revisa saldo o límites.",
+          "Firecrawl is not accepting more requests now. Review the balance or limits.",
         );
       throw new Error(
-        "Firecrawl no completó la consulta. Comprueba su disponibilidad antes de repetirla.",
+        "Firecrawl did not complete the request. Check availability before trying again.",
       );
     }
     return parseDiscovery(await limitedJson(response));
   } catch (error) {
     if (abort.signal.aborted)
       throw new Error(
-        "Se agotó el tiempo de Firecrawl. La solicitud podría haber consumido créditos; no se reintenta automáticamente.",
+        "Firecrawl timed out. The request may have consumed credits and will not retry automatically.",
       );
     if (error instanceof Error && error.message.startsWith("Firecrawl"))
       throw error;
     throw new Error(
-      "No se pudo completar la lectura de Firecrawl. No se reintenta automáticamente.",
+      "The Firecrawl read could not be completed and will not retry automatically.",
     );
   } finally {
     clearTimeout(timeout);

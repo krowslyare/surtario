@@ -1,3 +1,4 @@
+import { reviewedWebEvidence } from "../domain/webEvidence";
 import { SaveWebProspect, WebProspectLibrary } from "./WebProspects";
 import {
   Component,
@@ -84,8 +85,8 @@ function safeUrl(value: string) {
 function observedLabel(value: string) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
-    ? "Fecha pendiente"
-    : new Intl.DateTimeFormat("es-PE", {
+    ? "Date pending"
+    : new Intl.DateTimeFormat("en-US", {
         day: "numeric",
         month: "short",
         year: "numeric",
@@ -166,7 +167,7 @@ export function ResearchWorkspace({
           setError(
             cause instanceof ConvexError && typeof cause.data === "string"
               ? cause.data
-              : "No se pudo completar la búsqueda. Vuelve a intentarlo.",
+              : "Could not complete the search. Try again.",
           );
       })
       .finally(() => current && setSearching(false));
@@ -206,7 +207,7 @@ export function ResearchWorkspace({
       setError(
         cause instanceof ConvexError && typeof cause.data === "string"
           ? cause.data
-          : "No se pudo extraer esta fuente. Puedes intentar de nuevo.",
+          : "Could not extract this source. You can try again.",
       );
     } finally {
       setExtracting((current) => current.filter((id) => id !== sourceId));
@@ -235,8 +236,8 @@ export function ResearchWorkspace({
       );
       setReadNotice(
         child?.readStatus === "failed"
-          ? "La ficha no pudo leerse. La lectura no se repetirá automáticamente."
-          : "Ficha leída. Revisa la nueva fuente antes de usar sus datos.",
+          ? "The product page could not be read. It will not retry automatically."
+          : "Product page read. Review the new source before using its data.",
       );
     } catch (cause) {
       setReadFailures((current) => ({
@@ -244,7 +245,7 @@ export function ResearchWorkspace({
         [sourceId]:
           cause instanceof ConvexError && typeof cause.data === "string"
             ? cause.data
-            : "No se pudo leer la ficha seleccionada. La lectura no se repetirá automáticamente.",
+            : "Could not read the selected page. It will not retry automatically.",
       }));
     } finally {
       setReading((current) => current.filter((id) => id !== sourceId));
@@ -284,15 +285,12 @@ export function ResearchWorkspace({
       setError("");
     } catch (cause) {
       setError(
-        cause instanceof Error
-          ? cause.message
-          : "Revisa las ofertas seleccionadas.",
+        cause instanceof Error ? cause.message : "Review the selected offers.",
       );
     }
   }
 
-  if (!status)
-    return <p className="notice info">Comprobando la búsqueda web…</p>;
+  if (!status) return <p className="notice info">Checking web search…</p>;
 
   // Keep the status subscription mounted without an empty duplicate search panel.
   if (!searching && !active && !error && !runs?.length) return null;
@@ -301,35 +299,31 @@ export function ResearchWorkspace({
     <section className="live-research" aria-labelledby="live-research-title">
       <div className="live-research-heading">
         <div>
-          <h2 id="live-research-title">Investigación web</h2>
+          <h2 id="live-research-title">Web research</h2>
           <p>
-            Las páginas encontradas son fuentes candidatas. Revisa el contenido
-            antes de tratarlas como ofertas de proveedores.
+            Found pages are candidate sources. Review the content before
+            treating them as supplier offers.
           </p>
         </div>
-        {searching && <span role="status">Buscando fuentes…</span>}
+        {searching && <span role="status">Searching sources…</span>}
       </div>
 
       {!status.searchEnabled && (
         <p className="notice info">
-          Búsqueda web no configurada. Puedes seguir explorando los ejemplos.
+          Web search is not configured. You can keep exploring the samples.
         </p>
       )}
 
       {runs && runs.length > 0 && (
-        <div
-          className="research-history"
-          aria-label="Investigaciones guardadas"
-        >
+        <div className="research-history" aria-label="Saved searches">
           <p className="field-hint">
             {onReview
-              ? "Tu selección permanece en Mi estudio al abrir otra investigación."
-              : "Abrir otra investigación reemplaza la selección revisada de esta vista."}{" "}
-            Hasta 10 búsquedas por navegador; borrar datos del sitio pierde
-            acceso.
+              ? "Your selection remains in My study when you open another search."
+              : "Opening another search replaces the reviewed selection in this view."}{" "}
+            Up to 10 searches per browser; clearing site data removes access.
           </p>
           <span>
-            <History size={16} /> Investigaciones guardadas
+            <History size={16} /> Saved searches
           </span>
           <div>
             {runs.map((run) => (
@@ -369,13 +363,13 @@ export function ResearchWorkspace({
         <div className="research-run">
           <div className="research-run-meta">
             <strong>
-              {active.ingredient} en {active.region}
+              {active.ingredient} in {active.region}
             </strong>
-            <span>Observado el {observedLabel(active.observedAt)}</span>
+            <span>Observed on {observedLabel(active.observedAt)}</span>
             {active.status === "running" && (
               <span role="status">
-                Búsqueda en curso. Si quedó interrumpida, no se repetirá
-                automáticamente.
+                Search in progress. If interrupted, it will not retry
+                automatically.
               </span>
             )}
           </div>
@@ -386,7 +380,7 @@ export function ResearchWorkspace({
           )}
           {active.warning && (
             <p className="notice info">
-              La búsqueda devolvió contenido parcial; revisa las fuentes.
+              The search returned partial content; review the sources.
             </p>
           )}
           {active.error && <p className="notice error">{active.error}</p>}
@@ -394,9 +388,9 @@ export function ResearchWorkspace({
             <p className="field-hint">
               {active.discarded}{" "}
               {active.discarded === 1
-                ? "resultado se descartó"
-                : "resultados se descartaron"}{" "}
-              por no cumplir los límites de la búsqueda.
+                ? "result was discarded"
+                : "results were discarded"}{" "}
+              for not meeting the search limits.
             </p>
           )}
           {active.sources.length > 0 &&
@@ -407,16 +401,15 @@ export function ResearchWorkspace({
                 source.analysis?.kind === "irrelevant",
             ) && (
               <p className="notice" role="status">
-                Ninguna fuente quedó lista para analizar como oferta. Puedes
-                revisar las páginas de origen o intentar una búsqueda más
-                específica.
+                No source is ready to analyze as an offer. You can review the
+                source pages or try a more specific search.
               </p>
             )}
           {active.status === "complete" && active.sources.length === 0 && (
             <div className="empty-state">
               <Search size={30} />
-              <h3>No se recuperaron fuentes utilizables</h3>
-              <p>Esto no confirma que no existan proveedores en la zona.</p>
+              <h3>No usable sources were retrieved</h3>
+              <p>This does not confirm that no suppliers serve the area.</p>
             </div>
           )}
           <div className="research-sources">
@@ -461,9 +454,7 @@ export function ResearchWorkspace({
               const extractionSource: ExtractionSource = {
                 id: sourceId,
                 title: source.title,
-                text: source.analysis
-                  ? `Título de la página: ${source.title.replace(/\s+/g, " ").trim()}\n\n${source.markdown ?? source.description}`
-                  : (source.markdown ?? source.description),
+                text: reviewedWebEvidence(source),
                 observedAt: source.observedAt ?? active.observedAt,
                 simulated: active.simulated,
                 ...(url ? { url } : {}),
@@ -476,8 +467,8 @@ export function ResearchWorkspace({
                   <div className="research-source-copy">
                     <span>
                       {isChild
-                        ? `Ficha leída desde ${parentTitle ?? "una fuente candidata"}`
-                        : "Fuente web candidata"}
+                        ? `Product page read from ${parentTitle ?? "a candidate source"}`
+                        : "Candidate web source"}
                     </span>
                     <h3>{source.title}</h3>
                     <p>{source.description}</p>
@@ -485,14 +476,16 @@ export function ResearchWorkspace({
                       <SourceQualitySummary analysis={source.analysis} />
                     )}
                     {source.contentTruncated && (
-                      <small>El contenido recuperado está incompleto.</small>
+                      <small>The retrieved content is incomplete.</small>
                     )}
                     {url ? (
                       <a href={url} target="_blank" rel="noopener noreferrer">
-                        Ver página de origen <ExternalLink size={14} />
+                        View source page <ExternalLink size={14} />
                       </a>
                     ) : (
-                      <small>La fuente no incluye una URL web válida.</small>
+                      <small>
+                        The source does not include a valid web URL.
+                      </small>
                     )}
                   </div>
                   <div className="research-source-action">
@@ -513,7 +506,7 @@ export function ResearchWorkspace({
                           Boolean(readFailure)
                         }
                       >
-                        <summary>Leer una ficha de este sitio</summary>
+                        <summary>Read a product page from this site</summary>
                         <ProductLinkReader
                           links={source.inspection.links}
                           selectedUrl={
@@ -547,8 +540,7 @@ export function ResearchWorkspace({
                         role="status"
                         aria-live="polite"
                       >
-                        La ficha se está leyendo. No se repetirá
-                        automáticamente.
+                        The page is being read. It will not retry automatically.
                       </p>
                     )}
                     {source.readStatus === "failed" && source.readError && (
@@ -558,20 +550,20 @@ export function ResearchWorkspace({
                     )}
                     {readBlocksAnalysis ? (
                       <p className="field-hint">
-                        Espera a que termine la lectura de esta página. Si
-                        falló, revisa el origen manualmente.
+                        Wait for this page to finish loading. If it failed,
+                        review the source manually.
                       </p>
                     ) : inspectionBlocksAnalysis ? (
                       <p className="field-hint">
                         {source.inspection?.state === "unrelated"
-                          ? "No encontramos coincidencias textuales suficientes con esta búsqueda. Revisa el origen si necesitas confirmarlo."
+                          ? "We did not find enough text matches for this search. Review the source if you need to confirm it."
                           : source.inspection?.reason ||
-                            "Esta página no tiene contenido legible para analizar."}
+                            "This page has no readable content to analyze."}
                       </p>
                     ) : !analysisIsProduct ? (
                       <p className="field-hint">
-                        Esta fuente aporta contexto o contacto, pero no una
-                        oferta de producto comparable.
+                        This source provides context or contact information, but
+                        not a comparable product offer.
                       </p>
                     ) : awaitingAnalysis ? (
                       <p
@@ -579,21 +571,21 @@ export function ResearchWorkspace({
                         role="status"
                         aria-live="polite"
                       >
-                        Clasificando la fuente antes de habilitar su revisión…
+                        Classifying the source before enabling review…
                       </p>
                     ) : !source.markdown ? (
-                      <p>Sin texto recuperado para extraer datos.</p>
+                      <p>No retrieved text is available for extraction.</p>
                     ) : !status.extractionEnabled && !proposal ? (
-                      <p>Extracción no configurada en el servidor.</p>
+                      <p>Extraction is not configured on the server.</p>
                     ) : proposal ? (
                       <ExtractionReview
                         source={extractionSource}
                         proposal={proposal}
                         triggerLabel={
-                          wasReviewed ? "Editar revisión" : "Revisar extracción"
+                          wasReviewed ? "Edit review" : "Review extraction"
                         }
-                        confirmLabel="Añadir al estudio"
-                        confirmationNote="Añade esta oferta revisada a Mi estudio. Guarda el estudio para recuperarla después; todavía no estás preparando una compra."
+                        confirmLabel="Add to study"
+                        confirmationNote="Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."
                         onPrepare={(seed) => {
                           const entry = seed.sources[sourceId];
                           if (entry.extraction)
@@ -615,15 +607,12 @@ export function ResearchWorkspace({
                           onClick={() => void extract(active, index)}
                         >
                           <FileSearch size={16} />
-                          {isExtracting
-                            ? "Analizando fuente…"
-                            : "Extraer datos"}
+                          {isExtracting ? "Analyzing source…" : "Extract data"}
                         </button>
                         {!isExtracting && (
                           <p className="field-hint">
-                            Primero identifica el tipo de página y cita la
-                            evidencia; solo una ficha de producto pasa a
-                            revisión.
+                            First identify the page type and cite the evidence;
+                            only a product page moves to review.
                           </p>
                         )}
                       </>
@@ -634,15 +623,17 @@ export function ResearchWorkspace({
                       )}
                     {isExtracting && (
                       <p className="field-hint">
-                        La IA está revisando la fuente y sus referencias. La
-                        solicitud no se repetirá automáticamente.
+                        AI is reviewing the source and its references. The
+                        request will not retry automatically.
                       </p>
                     )}
                     {wasReviewed && (
-                      <small>Oferta revisada añadida a esta selección.</small>
+                      <small>Reviewed offer added to this selection.</small>
                     )}
                     {!wasReviewed && reviewed.length >= 3 && proposal && (
-                      <small>Ya seleccionaste el máximo de 3 ofertas.</small>
+                      <small>
+                        You already selected the maximum of 3 offers.
+                      </small>
                     )}
                   </div>
                 </article>
@@ -657,15 +648,15 @@ export function ResearchWorkspace({
           <strong>
             {reviewed.length}{" "}
             {reviewed.length === 1
-              ? "oferta revisada en Mi estudio"
-              : "ofertas revisadas en Mi estudio"}
+              ? "offer reviewed in My study"
+              : "offers reviewed in My study"}
           </strong>
           <p>
-            Guarda el estudio para recuperar tus correcciones. Comparar una
-            compra es opcional.
+            Save the study to recover your corrections. Comparing a purchase is
+            optional.
           </p>
           <button className="button primary" onClick={onOpenStudy}>
-            Ver mi estudio
+            View my study
           </button>
         </div>
       )}
@@ -673,12 +664,11 @@ export function ResearchWorkspace({
         <div className="reviewed-research">
           <strong>
             {reviewed.length}{" "}
-            {reviewed.length === 1 ? "oferta revisada" : "ofertas revisadas"}
+            {reviewed.length === 1 ? "offer reviewed" : "offers reviewed"}
           </strong>
           <p>
-            Las correcciones de esta selección se conservan al guardar la
-            comparación. Las fuentes y extracciones ya permanecen en la
-            investigación.
+            Corrections in this selection are kept when you save the comparison.
+            Sources and extractions already remain in the research record.
           </p>
           {reviewed.length > 1 && (
             <label className="checkbox">
@@ -687,8 +677,8 @@ export function ResearchWorkspace({
                 checked={equivalent}
                 onChange={(event) => setEquivalent(event.target.checked)}
               />
-              Confirmo que corresponden al mismo insumo, especificación, unidad
-              base y moneda
+              I confirm they match the same ingredient, specification, base unit,
+              and currency.
             </label>
           )}
           <button
@@ -697,11 +687,11 @@ export function ResearchWorkspace({
             disabled={reviewed.length > 1 && !equivalent}
             onClick={compareReviewed}
           >
-            Comparar ofertas revisadas
+            Compare reviewed offers
           </button>
           <small>
-            La cantidad se indicará al preparar la compra; todavía no se
-            muestran totales.
+            Enter quantity when preparing the purchase; totals are not shown
+            yet.
           </small>
         </div>
       )}
@@ -741,8 +731,8 @@ export default function LiveResearch(props: LiveResearchProps) {
     return (
       <p className="notice info">
         {storageError
-          ? "El navegador no permite conservar esta sesión. La investigación web requiere el almacenamiento del sitio."
-          : "Preparando la sesión de investigación…"}
+          ? "Your browser cannot keep this session. Web research requires site storage."
+          : "Preparing the research session…"}
       </p>
     );
   return (
@@ -824,7 +814,7 @@ class ResearchBoundary extends Component<
   render() {
     return this.state.failed ? (
       <p className="notice error" role="alert">
-        La investigación web no está disponible. Los ejemplos siguen accesibles.
+        Web research is unavailable. The samples remain accessible.
       </p>
     ) : (
       this.props.children

@@ -70,12 +70,12 @@ async function reconstructWebReviews(
   reviews: WebReview[],
 ): Promise<PurchaseSeed> {
   if (!reviews.length || reviews.length > 3)
-    throw new ConvexError("Selecciona entre una y tres fuentes web revisadas.");
+    throw new ConvexError("Select between one and three reviewed web sources.");
   if (
     new Set(reviews.map((review) => `${review.runId}:${review.sourceIndex}`))
       .size !== reviews.length
   )
-    throw new ConvexError("Una misma fuente no puede aparecer dos veces.");
+    throw new ConvexError("The same source cannot appear twice.");
   const seeds = [];
   for (const review of reviews)
     seeds.push(await reconstructWebReview(ctx, owner, review));
@@ -83,7 +83,7 @@ async function reconstructWebReviews(
     return combineReviewedOffers(seeds, true);
   } catch (error) {
     throw new ConvexError(
-      error instanceof Error ? error.message : "Revisión web no válida.",
+      error instanceof Error ? error.message : "Invalid web review.",
     );
   }
 }
@@ -98,21 +98,21 @@ async function reconstructDocumentReview(
   },
 ): Promise<PurchaseSeed> {
   if (extractionFields.some((key) => review.values[key].length > 120))
-    throw new ConvexError("Revisión documental no válida.");
+    throw new ConvexError("Invalid document review.");
   const run = await ctx.db.get("documentRuns", review.runId);
   if (!run || run.ownerHash !== owner)
-    throw new ConvexError("Documento no disponible en esta sesión.");
+    throw new ConvexError("Document unavailable in this session.");
   if (
     run.status !== "complete" ||
     !run.result ||
     run.result.documentType !== "quotation"
   )
-    throw new ConvexError("Se necesita una lectura completa de cotización.");
+    throw new ConvexError("A complete quote reading is required.");
   try {
     const seed = extractionToPurchase(
       {
         id: run._id,
-        title: `Transcripción automática · cotización sintética · ${run.kind}`,
+        title: `Automatic transcript · synthetic quote · ${run.kind}`,
         text: run.result.transcript,
         observedAt: new Date(run.createdAt).toISOString().slice(0, 10),
         simulated: true,
@@ -126,7 +126,7 @@ async function reconstructDocumentReview(
     return seed;
   } catch (error) {
     throw new ConvexError(
-      error instanceof Error ? error.message : "Revisión documental no válida.",
+      error instanceof Error ? error.message : "Invalid document review.",
     );
   }
 }
@@ -151,16 +151,16 @@ async function reconstructReply(
         review.extractionAttempt > 2)) ||
     extractionFields.some((key) => review.values[key].length > 120)
   )
-    throw new ConvexError("Revisión de respuesta no válida.");
+    throw new ConvexError("Invalid reply review.");
   const request = await ctx.db.get(review.requestId);
   if (!request || request.ownerHash !== owner)
-    throw new ConvexError("Solicitud no disponible en esta sesión.");
+    throw new ConvexError("Request unavailable in this session.");
   const reply = await ctx.db
     .query("quotationReplies")
     .withIndex("by_messageId", (q) => q.eq("messageId", review.messageId))
     .unique();
   if (!reply || reply.requestId !== request._id)
-    throw new ConvexError("Respuesta no vinculada a esta solicitud.");
+    throw new ConvexError("Reply not linked to this request.");
   let proposal: typeof emptyReplyProposal | undefined;
   if (review.extractionAttempt !== undefined) {
     if (
@@ -169,7 +169,7 @@ async function reconstructReply(
       reply.extractionAttempt !== review.extractionAttempt
     )
       throw new ConvexError(
-        "La propuesta de IA cambió o no está completa. Abre de nuevo la respuesta antes de confirmar.",
+        "The AI proposal changed or is incomplete. Open the reply again before confirming.",
       );
     proposal = reply.extraction;
   }
@@ -191,7 +191,7 @@ async function reconstructReply(
     throw new ConvexError(
       error instanceof Error
         ? error.message
-        : "Revisión de respuesta no válida.",
+        : "Invalid reply review.",
     );
   }
 }
@@ -222,7 +222,7 @@ function validateScenario(
     new Set(offers.map((o) => o.id)).size !== offers.length
   )
     throw new ConvexError(
-      "Selecciona entre una y cuatro ofertas de ejemplo distintas.",
+      "Select between one and four distinct sample offers.",
     );
   const exampleContext = findMarketExampleContextByIds(
     offers.map((offer) => offer.id),
@@ -237,7 +237,7 @@ function validateScenario(
       riceOffers.map((o) => [
         o.id,
         {
-          label: "Cotización de ejemplo",
+          label: "Sample quote",
           date: "2026-09-07",
           original: { ...o },
           edited: false,
@@ -264,14 +264,14 @@ function validateScenario(
     request.unit !== baseline.request.unit
   )
     throw new ConvexError(
-      "La identidad de la comparación debe coincidir con el ejemplo o la revisión confirmada.",
+      "The comparison identity must match the sample or confirmed review.",
     );
   if (
     !Number.isFinite(request.quantity) ||
     request.quantity < 0 ||
     request.quantity > 1_000_000
   )
-    throw new ConvexError("Cantidad fuera del rango de la demo.");
+    throw new ConvexError("Quantity is outside the supported range.");
   for (const offer of offers) {
     const original = baseline.offers.find((o) => o.id === offer.id);
     if (
@@ -283,7 +283,7 @@ function validateScenario(
       )
     )
       throw new ConvexError(
-        "La oferta debe coincidir con su ejemplo o revisión confirmada; las entradas privadas siguen en esta pestaña.",
+        "The offer must match its sample or confirmed review; private entries remain in this tab.",
       );
     for (const key of [
       "priceCents",
@@ -301,7 +301,7 @@ function validateScenario(
           ((key === "minimumPackages" || key === "packageContent") &&
             value === 0))
       )
-        throw new ConvexError("Condiciones fuera del rango de la demo.");
+        throw new ConvexError("Conditions are outside the supported range.");
     }
   }
   return Object.fromEntries(
@@ -357,20 +357,20 @@ export const save = mutation({
       !Number.isSafeInteger(args.expectedRevision) ||
       args.expectedRevision < 0
     )
-      throw new ConvexError("Solicitud no válida.");
+      throw new ConvexError("Invalid request.");
     const previous = args.id ? await ctx.db.get("comparisons", args.id) : null;
     if (args.id && (!previous || previous.ownerHash !== hash))
-      throw new ConvexError("Comparación no disponible en esta sesión.");
+      throw new ConvexError("Comparison unavailable in this session.");
     if (previous && previous.revision !== args.expectedRevision)
       throw new ConvexError(
-        "La comparación cambió en otra vista. Ábrela desde Comparaciones guardadas antes de actualizar.",
+        "The comparison changed in another view. Open it from Saved comparisons before updating.",
       );
     if (
       [args.documentReview, args.webReviews, args.replyReview].filter(Boolean)
         .length > 1
     )
       throw new ConvexError(
-        "No mezcles referencias web, documentales y de respuesta en esta solicitud.",
+        "Do not mix web, document, and reply references in this request.",
       );
     const createdBaseline =
       !previous && args.webReviews
@@ -391,7 +391,7 @@ export const save = mutation({
         args.appendReplies.length > 3
       )
         throw new ConvexError(
-          "Añade respuestas solo a una comparación guardada.",
+          "Add replies only to a saved comparison.",
         );
       let baseline: PurchaseSeed = {
         request: previous.request,
@@ -404,17 +404,17 @@ export const save = mutation({
           baseline = mergeReplyOffer(baseline, incoming, addition.equivalent);
         } catch (error) {
           throw new ConvexError(
-            error instanceof Error ? error.message : "Equivalencia no válida.",
+            error instanceof Error ? error.message : "Invalid equivalence.",
           );
         }
         if (!args.offers.some((offer) => offer.id === incoming.offers[0].id))
           throw new ConvexError(
-            "La oferta añadida debe estar en la comparación.",
+            "The added offer must be in the comparison.",
           );
       }
       if (args.selectedOfferId !== null)
         throw new ConvexError(
-          "Vuelve a elegir después de guardar las nuevas ofertas.",
+          "Select an offer again after saving the new offers.",
         );
       validatedPrevious = { ...previous, sources: baseline.sources };
     }
@@ -428,7 +428,7 @@ export const save = mutation({
       const chosen = args.offers.find((o) => o.id === args.selectedOfferId);
       if (!chosen || !evaluateOffer(args.request, chosen).eligibleForComparison)
         throw new ConvexError(
-          "Completa cantidad y condiciones antes de elegir esta oferta.",
+          "Complete the quantity and conditions before selecting this offer.",
         );
     }
     const content = {
@@ -448,7 +448,7 @@ export const save = mutation({
       return publicComparison((await ctx.db.get("comparisons", args.id))!);
     }
     if (args.expectedRevision !== 0)
-      throw new ConvexError("Revisión no válida.");
+      throw new ConvexError("Invalid review.");
     const existing = await ctx.db
       .query("comparisons")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -469,7 +469,7 @@ export const save = mutation({
           !sameValue(sources, existing.sources))
       )
         throw new ConvexError(
-          "La solicitud ya se guardó con otros datos. Abre la comparación guardada antes de actualizar.",
+          "This request was already saved with different data. Open the saved comparison before updating.",
         );
       return publicComparison(existing);
     }
@@ -478,13 +478,13 @@ export const save = mutation({
       .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
       .take(10);
     if (own.length >= 10)
-      throw new ConvexError("Esta sesión admite hasta 10 comparaciones.");
+      throw new ConvexError("This session supports up to 10 comparisons.");
     const global = await ctx.db
       .query("comparisons")
       .withIndex("by_creation_time")
       .take(500);
     if (global.length >= 500)
-      throw new ConvexError("Se alcanzó la capacidad de la demo.");
+      throw new ConvexError("The demo capacity has been reached.");
     const id = await ctx.db.insert("comparisons", {
       ...content,
       sources,

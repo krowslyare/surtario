@@ -77,13 +77,13 @@ export function prepareReplyOffer(
       extractionAttempt < 1 ||
       extractionAttempt > 2)
   )
-    throw new Error("La generación de la propuesta de IA no es válida.");
+    throw new Error("The AI proposal is invalid.");
   const assisted = extractionAttempt !== undefined;
   const reviewedProposal = assisted ? proposal : emptyReplyProposal;
   const seed = extractionToPurchase(
     {
       id,
-      title: `Respuesta de cotización · revisión ${assisted ? "asistida" : "manual"}`,
+      title: `Quote reply · ${assisted ? "AI-assisted" : "manual"} review`,
       text: reply.text,
       observedAt: normalizedObservedAt(reply.receivedAt),
       simulated: reply.simulated ?? false,
@@ -121,31 +121,31 @@ export function mergeReplyOffer(
 ) {
   if (!equivalent)
     throw new Error(
-      "Confirma que la oferta corresponde al mismo insumo y especificación.",
+      "Confirm that the offer matches the same ingredient and specification.",
     );
   if (
     incoming.offers.length !== 1 ||
     !incoming.sources[incoming.offers[0].id]?.replyReview
   )
-    throw new Error("Selecciona una oferta revisada de respuesta.");
+    throw new Error("Select a reviewed reply offer.");
   if (
     current.request.ingredient !== incoming.request.ingredient ||
     current.request.specification !== incoming.request.specification ||
     current.request.unit !== incoming.request.unit
   )
     throw new Error(
-      "Insumo, especificación y unidad base deben coincidir con la comparación.",
+      "Ingredient, specification, and base unit must match the comparison.",
     );
   const offer = incoming.offers[0];
   if (current.offers.some((item) => item.currency !== offer.currency))
     throw new Error(
-      "Confirma la misma moneda para comparar; no se convierten monedas automáticamente.",
+      "Confirm the same currency before comparing; currencies are not converted automatically.",
     );
   if (current.sources[offer.id])
-    throw new Error("Esta respuesta ya pertenece a la comparación.");
+    throw new Error("This reply is already part of the comparison.");
   if (current.offers.length >= 4 || Object.keys(current.sources).length >= 4)
     throw new Error(
-      "La comparación admite hasta cuatro fuentes, incluidas las retiradas.",
+      "The comparison supports up to four sources, including removed sources.",
     );
   return {
     request: { ...current.request },

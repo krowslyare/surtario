@@ -60,7 +60,7 @@ test("source without price or extraction can be saved, recovered and queried wit
   expect(mail.recipient).toBe("authorized@example.test");
   expect(mail.text).not.toContain(args.contact);
   expect(mail.state).toBe("draft");
-  expect(mail.text).toContain("cantidad todavía está por definir");
+  expect(mail.text).toContain("Quantity is still to be determined");
   expect(await t.query(api.comparisons.list, { token })).toEqual([]);
   await expect(
     t.mutation(api.quotationMail.create, {
@@ -68,26 +68,26 @@ test("source without price or extraction can be saved, recovered and queried wit
       prospectId: saved.id,
       clientId: "33333333-3333-4333-8333-333333333333",
     }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
 });
 test("ownership, source identity and immutable review are enforced", async () => {
   const { t, args } = await setup();
   await expect(
     t.mutation(api.prospects.save, { ...args, token: "b".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.prospects.save, { ...args, sourceIndex: 1 }),
-  ).rejects.toThrow(/Fuente/);
+  ).rejects.toThrow(/source/);
   await expect(
     t.mutation(api.prospects.save, { ...args, sourceIndex: -1 }),
-  ).rejects.toThrow(/Fuente/);
+  ).rejects.toThrow(/source/);
   await expect(
     t.mutation(api.prospects.save, { ...args, supplier: "x\nInjected" }),
-  ).rejects.toThrow(/Revisa/);
+  ).rejects.toThrow(/Review/);
   const saved = await t.mutation(api.prospects.save, { ...args, contact: "" });
   expect(saved.contact).toBeNull();
   await expect(t.mutation(api.prospects.save, args)).rejects.toThrow(
-    /otros datos/,
+    /different data/,
   );
   expect(await t.query(api.prospects.list, { token: "b".repeat(64) })).toEqual(
     [],

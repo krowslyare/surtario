@@ -44,13 +44,13 @@ export function validateExtraction(
   for (const key of extractionFields) {
     const item = parsed[key];
     if (item.value !== null && (!item.value.trim() || !item.evidence?.trim()))
-      throw new Error("La extracción contiene un dato sin evidencia.");
+      throw new Error("The extraction contains a value without evidence.");
     if (
       item.evidence !== null &&
       (!item.evidence.trim() || !source.includes(item.evidence))
     )
       throw new Error(
-        "La extracción contiene una cita que no aparece en el documento.",
+        "The extraction contains a quote that does not appear in the document.",
       );
   }
   return parsed;

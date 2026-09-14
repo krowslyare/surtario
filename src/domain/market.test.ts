@@ -25,7 +25,7 @@ describe("Estudio autónomo y continuidad a compra", () => {
   });
   it("exige confirmar equivalencia y conserva pendientes las condiciones de catálogo", () => {
     expect(() => preparePurchaseFromCatalog(marketExamples, false)).toThrow(
-      /Confirma/,
+      /Confirm/,
     );
     const seed = preparePurchaseFromCatalog(marketExamples, true);
     expect(seed.request.quantity).toBe(0);
@@ -35,7 +35,7 @@ describe("Estudio autónomo y continuidad a compra", () => {
       expect(offer.taxStatus).toBe("unknown");
       expect(offer.deliveryConfirmed).toBe(false);
       expect(offer.minimumPackages).toBeNull();
-      expect(seed.sources[offer.id].label).toContain("catálogo");
+      expect(seed.sources[offer.id].label).toContain("Catalog");
       expect(seed.sources[offer.id].marketSource).toEqual(
         marketExamples.find((item) => item.id === offer.id)?.source,
       );
@@ -44,7 +44,7 @@ describe("Estudio autónomo y continuidad a compra", () => {
   it("un contacto o boletín no se convierte en precio de proveedor", () => {
     expect(() =>
       preparePurchaseFromCatalog(marketExamples.slice(2), true),
-    ).toThrow(/Selecciona/);
+    ).toThrow(/Select/);
   });
   it("no homologa especificaciones o monedas distintas", () => {
     const a = marketExamples[0] as CatalogResult;
@@ -53,12 +53,12 @@ describe("Estudio autónomo y continuidad a compra", () => {
         [a, { ...a, id: "other", currency: "USD" }],
         true,
       ),
-    ).toThrow(/distintas/);
+    ).toThrow(/differ/);
     expect(() =>
       preparePurchaseFromCatalog(
         [a, { ...a, id: "other", specification: "Arroz integral" }],
         true,
       ),
-    ).toThrow(/distintas/);
+    ).toThrow(/differ/);
   });
 });

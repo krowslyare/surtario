@@ -34,25 +34,25 @@ export function SaveWebProspect({
   return (
     <>
       <button className="button text-button" onClick={() => setOpen(true)}>
-        {saved ? "Ver candidato guardado" : "Guardar posible distribuidor"}
+        {saved ? "View saved candidate" : "Save potential distributor"}
       </button>
       {open && (
         <Dialog
-          title="Revisar posible distribuidor"
+          title="Review potential distributor"
           onClose={() => {
             if (!busy) setOpen(false);
           }}
         >
           <p>{title}</p>
           <a href={url} target="_blank" rel="noreferrer">
-            Revisar página de origen
+            Review source page
           </a>
           <p>
-            Confirma que la página es pertinente para investigar este insumo. No
-            confirma stock, reparto ni precio.
+            Confirm that the page is relevant to this ingredient. It does not
+            confirm inventory, delivery, or price.
           </p>
           <label className="field">
-            Nombre del posible distribuidor
+            Potential distributor name
             <input
               value={supplier}
               maxLength={120}
@@ -64,7 +64,7 @@ export function SaveWebProspect({
             />
           </label>
           <label className="field">
-            Contacto encontrado (opcional)
+            Contact found (optional)
             <input
               value={contact}
               maxLength={300}
@@ -76,8 +76,8 @@ export function SaveWebProspect({
             />
           </label>
           <p className="field-hint">
-            Anota un correo, teléfono o página de contacto si aparece en la
-            fuente. Queda como dato revisado por ti; no autoriza mensajes.
+            Add an email, phone number, or contact page only if it appears in
+            the source. It remains data you reviewed; it does not authorize messages.
           </p>
           <label className="checkbox">
             <input
@@ -86,13 +86,12 @@ export function SaveWebProspect({
               disabled={busy || saved}
               onChange={(e) => setConfirmed(e.target.checked)}
             />
-            Revisé la fuente y quiero conservar este candidato
+            I reviewed the source and want to save this candidate
           </label>
           {error && <p role="alert">{error}</p>}
           {saved ? (
             <p role="status">
-              Candidato guardado. Su consulta está en «Distribuidores web
-              guardados».
+              Candidate saved. Its inquiry is under “Saved web savings».
             </p>
           ) : (
             <button
@@ -118,14 +117,14 @@ export function SaveWebProspect({
                     cause instanceof ConvexError &&
                       typeof cause.data === "string"
                       ? cause.data
-                      : "No se confirmó el guardado. Reintenta con los mismos datos.",
+                      : "Saving was not confirmed. Try again with the same details.",
                   );
                 } finally {
                   setBusy(false);
                 }
               }}
             >
-              {busy ? "Guardando…" : "Guardar candidato"}
+              {busy ? "Saving…" : "Save candidate"}
             </button>
           )}
         </Dialog>
@@ -147,13 +146,10 @@ export function WebProspectLibrary({
   const prospects = useQuery(api.prospects.list, { token });
   if (!prospects?.length) return null;
   return (
-    <section
-      className="saved-studies"
-      aria-label="Distribuidores web guardados"
-    >
-      <h2>Distribuidores web guardados</h2>
+    <section className="saved-studies" aria-label="Saved web distributors">
+      <h2>Saved web distributors</h2>
       <p>
-        Candidatos revisados por ti. Precio, disponibilidad y cobertura por
+        Candidate reviewed by you. Price, availability, and service area need
         consultar.
       </p>
       {prospects.map((item) => (
@@ -164,15 +160,15 @@ export function WebProspectLibrary({
           </p>
           <p>
             Contacto anotado:{" "}
-            {item.contact ?? "Pendiente; revisa la página de origen"}
+            {item.contact ?? "Pending; review the source page"}
           </p>
           <a href={item.sourceUrl} target="_blank" rel="noreferrer">
             {item.sourceTitle}
           </a>
           <p className="field-hint">
-            Fuente observada el{" "}
+            Source observed on{" "}
             {new Date(item.observedAt).toLocaleDateString("es-PE")}. Contacto
-            sin verificación independiente.
+            not independently verified.
           </p>
           {onSelect ? (
             <button
@@ -185,8 +181,8 @@ export function WebProspectLibrary({
               onClick={() => onSelect(item)}
             >
               {selectedIds?.includes(item.id)
-                ? "En mi estudio"
-                : "Añadir a mi estudio"}
+                ? "In my study"
+                : "Add to my study"}
             </button>
           ) : (
             <QuotationMail

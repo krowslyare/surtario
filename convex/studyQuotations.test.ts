@@ -25,7 +25,7 @@ test("a saved study can request a distributor catalog without any comparison or 
   const request = await t.mutation(api.quotationMail.create, args);
   expect(request.comparisonId).toBeUndefined();
   expect(request.studyId).toBe(study.id);
-  expect(request.text).toContain("cantidad todavía está por definir");
+  expect(request.text).toContain("Quantity is still to be determined");
   expect(request.text).toContain("Lima");
   expect(request.recipient).toBeNull();
   expect(request.state).toBe("draft");
@@ -38,11 +38,28 @@ test("a saved study can request a distributor catalog without any comparison or 
   ).toEqual([]);
   await expect(
     t.mutation(api.quotationMail.create, { ...args, token: "b".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.quotationMail.create, { ...args, resultId: "catalog-a" }),
-  ).rejects.toThrow(/distribuidor/);
+  ).rejects.toThrow(/distributor/);
   await expect(
     t.mutation(api.quotationMail.create, { token, clientId: args.clientId }),
-  ).rejects.toThrow(/Indica/);
+  ).rejects.toThrow(/Choose one source/);
+});
+
+test.each([
+  { term: "Rice", region: "Portland, OR, US", selected: "us-catalog-a", distributor: "us-distributor-c" },
+  { term: "Arroz", region: "Lima", selected: "catalog-a", distributor: "distributor-c" },
+])("refuses an unselected distributor in the $region source snapshot", async ({ term, region, selected, distributor }) => {
+  const t = convexTest(schema, modules);
+  const study = await t.mutation(api.studies.save, {
+    token, clientId: "11111111-1111-4111-8111-111111111111",
+    id: null, expectedRevision: 0, term, region, selectedIds: [selected],
+  });
+  expect(study.results.some(result => result.id === distributor)).toBe(true);
+  await expect(t.mutation(api.quotationMail.create, {
+    token, studyId: study.id, resultId: distributor,
+    clientId: "22222222-2222-4222-8222-222222222222",
+  })).rejects.toThrow(/selected in the saved study/);
+  expect(await t.query(api.quotationMail.list, { token })).toEqual([]);
 });

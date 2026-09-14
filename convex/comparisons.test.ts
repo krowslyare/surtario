@@ -28,7 +28,7 @@ test("restores conditions, immutable evidence and a choice without writing purch
       ...draft,
       request: { ...riceRequest, quantity: 20 },
     }),
-  ).rejects.toThrow(/otros datos/);
+  ).rejects.toThrow(/different data/);
   const next = await t.mutation(api.comparisons.save, {
     ...draft,
     id: saved.id,
@@ -57,13 +57,13 @@ test("rejects another session and stale writes without overwriting a decision", 
       expectedRevision: 1,
       token: "b".repeat(64),
     }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.comparisons.save, { ...draft, id: saved.id }),
-  ).rejects.toThrow(/otra vista/);
+  ).rejects.toThrow(/another view/);
   await expect(
     t.query(api.comparisons.list, { token: "invalid" }),
-  ).rejects.toThrow(/Sesión/);
+  ).rejects.toThrow(/session/);
   expect(
     (await t.query(api.comparisons.list, { token: draft.token }))[0].revision,
   ).toBe(1);
@@ -87,16 +87,16 @@ test("pending catalog can be saved, but cannot be chosen until conditions are co
       expectedRevision: 1,
       selectedOfferId: "catalog-a",
     }),
-  ).rejects.toThrow(/Completa/);
+  ).rejects.toThrow(/Complete the quantity and conditions/);
   await expect(
     t.mutation(api.comparisons.save, { ...draft, selectedOfferId: "missing" }),
-  ).rejects.toThrow(/Completa/);
+  ).rejects.toThrow(/Complete the quantity and conditions/);
   await expect(
     t.mutation(api.comparisons.save, {
       ...draft,
       offers: riceOffers.map((o) => ({ ...o, freightCents: null })),
     }),
-  ).rejects.toThrow(/Completa/);
+  ).rejects.toThrow(/Complete the quantity and conditions/);
 });
 test("rejects arbitrary text, duplicate offers, malformed numbers and unbounded writes", async () => {
   const t = convexTest(schema, modules);
@@ -119,7 +119,7 @@ test("rejects arbitrary text, duplicate offers, malformed numbers and unbounded 
       clientId: `${String(i).padStart(8, "0")}-1111-4111-8111-111111111111`,
     });
   await expect(t.mutation(api.comparisons.save, draft)).rejects.toThrow(
-    /10 comparaciones/,
+    /10 comparisons/,
   );
 });
 

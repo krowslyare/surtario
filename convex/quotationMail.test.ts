@@ -60,7 +60,7 @@ test("creates an owned fixed draft without credentials and never accepts message
     clientId: "22222222-2222-4222-8222-222222222222",
   });
   expect(draft.recipient).toBeNull();
-  expect(draft.text).toContain("10 kg de Arroz");
+  expect(draft.text).toContain("10 kg of Arroz");
   expect(draft.text).toContain("Arroz blanco, misma calidad confirmada");
   expect(await t.query(api.quotationMail.status, {})).toEqual({
     enabled: false,
@@ -76,7 +76,7 @@ test("creates an owned fixed draft without credentials and never accepts message
       comparisonId: saved.id,
       clientId: "33333333-3333-4333-8333-333333333333",
     }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.action(api.quotationMail.send, {
       token,
@@ -84,7 +84,7 @@ test("creates an owned fixed draft without credentials and never accepts message
       expectedRevision: 1,
       confirmed: true,
     }),
-  ).rejects.toThrow(/no está habilitado/);
+  ).rejects.toThrow(/not enabled/);
 });
 
 test("reserves once, sends the frozen payload with idempotency, and prevents duplicate calls", async () => {
@@ -190,7 +190,7 @@ test("network ambiguity is terminal for the public API", async () => {
       expectedRevision: result.revision,
       confirmed: true,
     }),
-  ).rejects.toThrow(/operador/);
+  ).rejects.toThrow(/Operator/);
 });
 
 test("verified replies require frozen inbox, thread and sender; duplicates are harmless", async () => {
@@ -333,7 +333,7 @@ test("configuration drift and foreign sessions cannot send a reviewed draft", as
       expectedRevision: 1,
       confirmed: true,
     }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   vi.stubEnv("AGENTMAIL_INBOX_ID", "changed-inbox");
   await expect(
     t.action(api.quotationMail.send, {
@@ -342,7 +342,7 @@ test("configuration drift and foreign sessions cannot send a reviewed draft", as
       expectedRevision: 1,
       confirmed: true,
     }),
-  ).rejects.toThrow(/configuración cambió/);
+  ).rejects.toThrow(/configuration changed/);
   expect(fetch).not.toHaveBeenCalled();
 });
 
@@ -492,6 +492,6 @@ test("acknowledges and retains a visibly truncated signed long reply", async () 
   );
   expect(stored?.text.length).toBe(20_000);
   expect(stored?.text.startsWith("x".repeat(100))).toBe(true);
-  expect(stored?.text).toContain("Respuesta truncada");
+  expect(stored?.text).toContain("Reply truncated");
   expect(stored?.messageId).toBe("msg-long");
 });

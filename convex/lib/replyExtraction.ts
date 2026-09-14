@@ -51,12 +51,12 @@ export function validateReplyExtraction(value: unknown, source: string) {
     extractionFields.map((key) => {
       const item = raw[key];
       if ((item.value === null) !== (item.evidenceLineNumber === null))
-        throw new Error("La propuesta no vincula cada dato con su evidencia.");
+        throw new Error("The proposal does not link each value to its evidence.");
       if (item.evidenceLineNumber === null)
         return [key, { value: null, evidence: null }];
       const evidence = lines[item.evidenceLineNumber - 1];
       if (!evidence)
-        throw new Error("La propuesta cita una referencia inexistente.");
+        throw new Error("The proposal cites a nonexistent reference.");
       return [key, { value: item.value, evidence }];
     }),
   );

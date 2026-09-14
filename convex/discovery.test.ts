@@ -18,7 +18,7 @@ describe("prueba interna Firecrawl", () => {
         "synthetic-test",
         request,
       ),
-    ).rejects.toThrow("insumo");
+    ).rejects.toThrow("Enter an ingredient");
     expect(request).not.toHaveBeenCalled();
   });
   it("envía búsqueda acotada al host fijo y mantiene evidencia sin inventar precios", async () => {
@@ -164,7 +164,7 @@ describe("prueba interna Firecrawl", () => {
     expect(
       parseDiscovery({ success: true, data: { web: [] } }).sources,
     ).toEqual([]);
-    expect(() => parseDiscovery({ success: true })).toThrow("no válida");
+    expect(() => parseDiscovery({ success: true })).toThrow("invalid response");
   });
   it("no filtra mensajes del proveedor ni reintenta errores de cuota", async () => {
     const request = vi.fn(
@@ -176,7 +176,7 @@ describe("prueba interna Firecrawl", () => {
         "synthetic-test",
         request,
       ),
-    ).rejects.toThrow("saldo o límites");
+    ).rejects.toThrow("balance or limits");
     expect(request).toHaveBeenCalledOnce();
   });
   it("rechaza respuestas enormes y JSON inválido", async () => {
@@ -186,14 +186,14 @@ describe("prueba interna Firecrawl", () => {
         "synthetic-test",
         async () => new Response("x".repeat(1024 * 1024 + 1)),
       ),
-    ).rejects.toThrow("No se pudo");
+    ).rejects.toThrow("could not be completed");
     await expect(
       discoverSources(
         { ingredient: "Arroz", region: "Lima" },
         "synthetic-test",
         async () => new Response("<html>"),
       ),
-    ).rejects.toThrow("JSON no válido");
+    ).rejects.toThrow("invalid JSON");
   });
   it("aborta timeout sin segunda llamada", async () => {
     vi.useFakeTimers();
@@ -211,9 +211,35 @@ describe("prueba interna Firecrawl", () => {
         "synthetic-test",
         request,
       ),
-    ).rejects.toThrow("podría haber consumido créditos");
+    ).rejects.toThrow("may have consumed credits");
     await vi.advanceTimersByTimeAsync(25000);
     await pending;
     expect(request).toHaveBeenCalledOnce();
   });
+});
+
+it("uses explicit US geography without appending Peru", async () => {
+  const request = vi.fn(async () => Response.json({success:true,data:{web:[]}}));
+  await discoverSources({ingredient:"long grain white rice",region:"Portland, OR, US"},"synthetic-test",request);
+  const body = JSON.parse((request.mock.calls as unknown as [string, RequestInit][])[0][1].body as string);
+  expect(body.country).toBe("US");
+  expect(body.query).toBe("long grain white rice wholesale restaurant suppliers Portland, OR, US");
+  expect(body.query).not.toMatch(/Per[uú]/);
+});
+
+it("does not guess a country for an unspecified location", async () => {
+  const request = vi.fn(async () => Response.json({success:true,data:{web:[]}}));
+  await discoverSources({ingredient:"rice",region:"Springfield"},"synthetic-test",request);
+  const body = JSON.parse((request.mock.calls as unknown as [string, RequestInit][])[0][1].body as string);
+  expect(body.country).toBeUndefined();
+  expect(body.location).toBe("Springfield");
+});
+
+it("does not force Peru when reading a US product page", async () => {
+  const { readProductPage } = await import("./lib/firecrawl");
+  const url = "https://supplier.com/rice";
+  const request = vi.fn(async () => Response.json({success:true,data:{markdown:"Rice 25 lb",metadata:{url}}}));
+  await readProductPage(url,"synthetic-test",request,"Portland, OR, US");
+  const body = JSON.parse((request.mock.calls as unknown as [string, RequestInit][])[0][1].body as string);
+  expect(body.location).toEqual({country:"US",languages:["en"]});
 });

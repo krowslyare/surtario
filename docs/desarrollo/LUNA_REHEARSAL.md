@@ -5,7 +5,7 @@ This is an operator-run, synthetic rehearsal. The browser uses the real applicat
 | Boundary | What actually runs |
 | --- | --- |
 | React, validation, ownership, saved revisions | Application code and local Convex |
-| Web search | Three fixed synthetic sources for queries containing `arroz`; otherwise an empty result |
+| Web search | Three fixed Peru sources for queries containing `arroz`, or three fixed US sources for queries containing `rice`; otherwise an empty result |
 | Structured extraction and visual reading | Real `codex exec -m gpt-5.6-luna` calls with the application's JSON schema |
 | Purchasing advice | Actual Convex Agent tools, then a real Luna CLI response using their outputs |
 | AgentMail send | Local receipt only; no external email |
@@ -61,6 +61,16 @@ PDFs are rasterized locally before attaching their pages to Luna. This does not 
 9. Read the bundled PNG and PDF, compare against the original, and confirm PEN 80 / 18 kg. Tax, freight and minimum remain pending. Review before continuing to comparison.
 10. Import `tests/fixtures/insumos-ejemplo.xlsx` through the browser file picker. Choose **Insumos**, the second column and header row; review Arroz/Aceite. Save and reload. Only reviewed names should return, not the file or the price column. Also exercise manual entry, removal of a duplicate row and save/recovery.
 11. At 390 × 844, run an unknown-ingredient search. It must say no usable sources were retrieved, not that no suppliers exist. Reach document tools by keyboard, open/close the review and check focus and scrolling.
+
+### US scenario
+
+The US path is an additional scenario; the Peru checklist above remains available unchanged.
+
+1. Search `Rice` in `Portland, OR, US`. Verify two explicitly synthetic listings and one fictional distributor without a published price.
+2. Review the literal listing facts: Cascade Pantry Supply is `USD 20.00` per `25 lb` bag and Rose City Foodservice is `USD 35.00` per `50 lb` bag. Taxes, minimum order, stock, freight, and delivery remain unstated.
+3. Select an owned child-product link and confirm its source URL and synthetic wording survive extraction. An unknown or modified child URL must remain unsupported.
+4. Prepare an inquiry to the fictional no-price distributor. The bridge returns a local receipt and delivers the same signed webhook twice; exactly one English synthetic reply should appear, stating a `25 lb` package and `USD`, without contacting any external recipient.
+5. Any Luna extraction or advice still uses the real `gpt-5.6-luna` CLI. Web discovery, page reads, mail receipts, and incoming replies remain simulated by the loopback bridge.
 
 For the video, show one coherent decision: discovery → review → purchasing context → verdict. Use the no-price distributor and document routes as short branches or prepared examples. This verification was an interactive engineering rehearsal with fixes; it is **not evidence of a timed three-minute recording**, a submitted video or a full live-provider acceptance run.
 

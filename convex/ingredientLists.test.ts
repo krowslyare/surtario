@@ -20,7 +20,7 @@ test("stores only reviewed names, derives read-only labels, and retries idempote
   expect(saved).toMatchObject({
     ingredients: ["Arroz", "Aceite vegetal"],
     sourceKind: "spreadsheet",
-    sourceLabel: "XLSX o CSV revisado",
+    sourceLabel: "Reviewed XLSX or CSV",
   });
   expect(saved).not.toHaveProperty("ownerHash");
   expect(saved).not.toHaveProperty("clientId");
@@ -31,7 +31,7 @@ test("stores only reviewed names, derives read-only labels, and retries idempote
       ...draft,
       ingredients: ["Azúcar"],
     }),
-  ).rejects.toThrow(/otra lista/);
+  ).rejects.toThrow(/different list/);
 });
 
 test("isolates lists by browser capability and rejects invalid sessions", async () => {
@@ -42,7 +42,7 @@ test("isolates lists by browser capability and rejects invalid sessions", async 
   );
   await expect(
     t.query(api.ingredientLists.list, { token: "invalid" }),
-  ).rejects.toThrow(/Sesión/);
+  ).rejects.toThrow(/session/);
 });
 
 test("bounds names and lists per session", async () => {
@@ -64,7 +64,7 @@ test("bounds names and lists per session", async () => {
     });
   }
   await expect(t.mutation(api.ingredientLists.save, draft)).rejects.toThrow(
-    /10 listas/,
+    /10 saved lists/,
   );
   expect(
     await t.query(api.ingredientLists.list, { token: tokenA }),
@@ -88,5 +88,5 @@ test("enforces the global demo capacity", async () => {
       ...draft,
       token: "f".repeat(64),
     }),
-  ).rejects.toThrow(/capacidad/);
+  ).rejects.toThrow(/capacity/);
 });

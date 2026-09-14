@@ -65,7 +65,7 @@ function validateContext(
     (!Number.isSafeInteger(context.budgetCents) || context.budgetCents < 0)
   ) {
     errors.push(
-      "El presupuesto debe expresarse en céntimos enteros no negativos.",
+      "The budget must be a nonnegative whole number of cents.",
     );
   }
   if (
@@ -75,7 +75,7 @@ function validateContext(
       context.dailyUsage > Number.MAX_SAFE_INTEGER)
   ) {
     errors.push(
-      "El consumo diario debe ser un número finito mayor que cero dentro del rango seguro.",
+      "Daily usage must be a finite number greater than zero within the safe range.",
     );
   }
   if (
@@ -85,7 +85,7 @@ function validateContext(
       context.stockQuantity > Number.MAX_SAFE_INTEGER)
   ) {
     errors.push(
-      "El stock debe ser un número finito no negativo dentro del rango seguro.",
+      "Inventory must be a finite nonnegative number within the safe range.",
     );
   }
   if (
@@ -95,7 +95,7 @@ function validateContext(
       context.maxCoverageDays > Number.MAX_SAFE_INTEGER)
   ) {
     errors.push(
-      "La cobertura máxima debe ser un número finito mayor que cero dentro del rango seguro.",
+      "Maximum coverage must be a finite number greater than zero within the safe range.",
     );
   }
   if (
@@ -103,7 +103,7 @@ function validateContext(
     !offers.some((offer) => offer.id === context.preferredOfferId)
   ) {
     errors.push(
-      "El proveedor preferido no corresponde a una oferta disponible.",
+      "The preferred supplier does not match an available offer.",
     );
   }
   return errors;
@@ -155,14 +155,14 @@ export function analyzePurchase(
   const mixedCurrency = new Set(offers.map((o) => o.currency)).size > 1;
   if (mixedCurrency)
     contextErrors.push(
-      "Separa las ofertas por moneda antes de aplicar un presupuesto o recomendación; no se infiere un tipo de cambio.",
+      "Separate offers by currency before applying a budget or recommendation; no exchange rate is inferred.",
     );
   const missing: string[] = [];
   if (context.dailyUsage === null)
-    missing.push("Falta confirmar el consumo diario.");
+    missing.push("Daily usage needs confirmation.");
   if (context.stockQuantity === null)
-    missing.push("Falta confirmar el stock actual.");
-  if (offers.length === 0) missing.push("Falta una oferta para analizar.");
+    missing.push("Current inventory needs confirmation.");
+  if (offers.length === 0) missing.push("At least one offer is required for analysis.");
 
   const zeroQuantity =
     Number.isFinite(request.quantity) && request.quantity === 0;
@@ -172,7 +172,7 @@ export function analyzePurchase(
   }));
   for (const { offer, evaluation } of evaluations) {
     for (const pending of evaluation.pending) {
-      missing.push(`Oferta de ${offer.supplier || offer.id}: ${pending}`);
+      missing.push(`Offer from ${offer.supplier || offer.id}: ${pending}`);
     }
   }
   const alternatives = evaluations.map(
@@ -197,13 +197,13 @@ export function analyzePurchase(
             ? null
             : evaluation.totalCents <= context.budgetCents;
       if (affordable === false)
-        warnings.push("El desembolso supera el presupuesto indicado.");
+        warnings.push("The cash outlay exceeds the stated budget.");
       if (
         context.maxCoverageDays !== null &&
         coverageDays !== null &&
         coverageDays > context.maxCoverageDays
       ) {
-        warnings.push("La compra supera la cobertura máxima indicada.");
+        warnings.push("The purchase exceeds the stated maximum coverage.");
       }
       const withinCoverage =
         context.maxCoverageDays === null ||
@@ -233,15 +233,15 @@ export function analyzePurchase(
       recommendedOfferId: null,
       action: "research",
       recommendation:
-        "Define una cantidad de compra antes de elegir una oferta.",
+        "Enter a purchase quantity before selecting an offer.",
       impact:
-        "Las ofertas sirven como referencia; todavía no hay un pedido calculable.",
+        "The offers are references; there is no calculable order yet.",
       warning:
-        "Una referencia de mercado no registra una compra ni confirma sus condiciones.",
+        "A market reference does not record a purchase or confirm its terms.",
       negotiationDraft: null,
       missing: [
         ...missing,
-        "Falta definir una cantidad mayor que cero para comprar.",
+        "Enter a quantity greater than zero to purchase.",
       ],
     };
   }
@@ -252,9 +252,9 @@ export function analyzePurchase(
       recommendedOfferId: null,
       action: "clarify",
       recommendation:
-        "Corrige el contexto de decisión antes de comparar ofertas.",
+        "Correct the decision context before comparing offers.",
       impact:
-        "No se calculó una recomendación con datos fuera del rango válido.",
+        "No recommendation was calculated with out-of-range data.",
       warning: contextErrors.join(" "),
       negotiationDraft: null,
       missing: [...missing, ...contextErrors],
@@ -279,12 +279,12 @@ export function analyzePurchase(
       action: offers.length === 0 ? "research" : "clarify",
       recommendation:
         offers.length === 0
-          ? "Busca al menos una oferta verificable para esta solicitud."
-          : "Confirma los datos pendientes o ajusta las restricciones antes de elegir.",
+          ? "Find at least one verifiable offer for this request."
+          : "Confirm pending data or adjust the constraints before selecting.",
       impact:
-        "No hay un desembolso comparable y elegible con los datos actuales.",
+        "There is no eligible comparable cash outlay with the current data.",
       warning:
-        "No se infirieron precio, tributos, entrega ni equivalencias faltantes.",
+        "Missing price, tax, delivery, and equivalencies were not inferred.",
       negotiationDraft: null,
       missing,
     };
@@ -295,12 +295,12 @@ export function analyzePurchase(
       alternatives,
       recommendedOfferId: null,
       action: "research",
-      recommendation: "Busca otra oferta verificable antes de decidir.",
-      impact: `La única alternativa elegible exige ${formatMoney(candidates[0].alternative.totalCents!, candidates[0].offer.currency)} por este pedido.`,
+      recommendation: "Find another verifiable offer before deciding.",
+      impact: `The only eligible option requires ${formatMoney(candidates[0].alternative.totalCents!, candidates[0].offer.currency)} for this order.`,
       warning:
-        "Una sola oferta no permite comprobar si las condiciones son competitivas.",
+        "One offer is not enough to determine whether the terms are competitive.",
       negotiationDraft: null,
-      missing: [...missing, "Falta una segunda oferta comparable."],
+      missing: [...missing, "A second comparable offer is required."],
     };
   }
 
@@ -320,17 +320,17 @@ export function analyzePurchase(
       preferred.alternative.totalCents! - selected.alternative.totalCents!;
     const cashImpact =
       difference >= 0
-        ? `${selected.offer.supplier} exige ${formatMoney(difference, selected.offer.currency)} menos de caja en este pedido`
-        : `${selected.offer.supplier} exige ${formatMoney(-difference, selected.offer.currency)} más de caja en este pedido`;
+        ? `${selected.offer.supplier} requires ${formatMoney(difference, selected.offer.currency)} less cash for this order`
+        : `${selected.offer.supplier} requires ${formatMoney(-difference, selected.offer.currency)} more cash for this order`;
     return {
       alternatives,
       recommendedOfferId: preferred.offer.id,
       action: "negotiate",
-      recommendation: `Negocia con ${preferred.offer.supplier} usando la oferta comparable de ${selected.offer.supplier}.`,
-      impact: `${cashImpact} y deja ${formatQuantity(selected.alternative.excessQuantity ?? 0)} ${request.unit} de excedente. El excedente permanece como stock; no es ahorro realizado.`,
+      recommendation: `Negotiate with ${preferred.offer.supplier} using the comparable offer from ${selected.offer.supplier}.`,
+      impact: `${cashImpact} and leaves ${formatQuantity(selected.alternative.excessQuantity ?? 0)} ${request.unit} in excess. Excess remains as inventory; it is not realized savings.`,
       warning:
-        "Confirma que ambas cotizaciones mantengan la misma especificación, tributos y entrega al negociar.",
-      negotiationDraft: `Hola, tenemos una oferta comparable de ${selected.offer.supplier} por ${formatMoney(selected.alternative.totalCents!, selected.offer.currency)} para esta solicitud. ¿Podrían revisar su cotización y confirmar sus condiciones finales?`,
+        "Confirm that both quotes retain the same specification, tax, and delivery terms during negotiation.",
+      negotiationDraft: `Hello, we have a comparable offer from ${selected.offer.supplier} for ${formatMoney(selected.alternative.totalCents!, selected.offer.currency)} for this request. Could you review your quote and confirm the final terms?`,
       missing,
     };
   }
@@ -339,18 +339,18 @@ export function analyzePurchase(
     comparator.alternative.totalCents! - selected.alternative.totalCents!;
   const impact =
     cashDifference >= 0
-      ? `${selected.offer.supplier} exige ${formatMoney(cashDifference, selected.offer.currency)} menos de caja que ${comparator.offer.supplier} en este pedido y deja ${formatQuantity(selected.alternative.excessQuantity ?? 0)} ${request.unit} de excedente. El excedente permanece como stock; no es ahorro realizado.`
-      : `${selected.offer.supplier} exige ${formatMoney(-cashDifference, selected.offer.currency)} más de caja que ${comparator.offer.supplier} en este pedido y deja ${formatQuantity(selected.alternative.excessQuantity ?? 0)} ${request.unit} de excedente. El menor precio unitario solo se aprovecha si ese stock se utiliza.`;
+      ? `${selected.offer.supplier} requires ${formatMoney(cashDifference, selected.offer.currency)} less cash than ${comparator.offer.supplier} for this order and leaves ${formatQuantity(selected.alternative.excessQuantity ?? 0)} ${request.unit} in excess. Excess remains as inventory; it is not realized savings.`
+      : `${selected.offer.supplier} requires ${formatMoney(-cashDifference, selected.offer.currency)} more cash than ${comparator.offer.supplier} for this order and leaves ${formatQuantity(selected.alternative.excessQuantity ?? 0)} ${request.unit} in excess. The lower unit price only helps if that inventory is used.`;
   return {
     alternatives,
     recommendedOfferId: selected.offer.id,
     action: "buy",
-    recommendation: `Elige ${selected.offer.supplier} para la prioridad ${context.priority === "cash" ? "de caja" : context.priority === "unit_price" ? "de precio unitario" : "equilibrada"}.`,
+    recommendation: `Choose ${selected.offer.supplier} for the ${context.priority === "cash" ? "cash" : context.priority === "unit_price" ? "unit price" : "balanced"} priority.`,
     impact,
     warning:
       context.dailyUsage === null || context.stockQuantity === null
-        ? "La cobertura de inventario queda pendiente; no se proyectó demanda."
-        : "La recomendación solo compara este pedido y no acredita utilidad ni ahorro realizado.",
+        ? "Inventory coverage remains pending; demand was not projected."
+        : "The recommendation compares only this order and does not prove profit or realized savings.",
     negotiationDraft: null,
     missing,
   };

@@ -11,26 +11,31 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve, join } from "node:path";
+import { pathToFileURL } from "node:url";
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { Webhook } from "svix";
 
 const runFile = promisify(execFile);
 const directory = resolve(".local/rehearsal");
-const config = JSON.parse(
-  await readFile(join(directory, "bridge.json"), "utf8"),
-);
+const isMain =
+  typeof process.argv[1] === "string" &&
+  import.meta.url === pathToFileURL(process.argv[1]).href;
+const config = isMain
+  ? JSON.parse(await readFile(join(directory, "bridge.json"), "utf8"))
+  : { siteUrl: "http://127.0.0.1/", token: "test-only" };
 const site = new URL(config.siteUrl);
 if (
-  site.protocol !== "http:" ||
-  site.hostname !== "127.0.0.1" ||
-  site.pathname !== "/" ||
-  site.username ||
-  site.password ||
-  site.search ||
-  site.hash
+  isMain &&
+  (site.protocol !== "http:" ||
+    site.hostname !== "127.0.0.1" ||
+    site.pathname !== "/" ||
+    site.username ||
+    site.password ||
+    site.search ||
+    site.hash)
 )
   throw new Error("The webhook destination must be a loopback origin.");
-if (typeof config.token !== "string" || config.token.length < 32)
+if (isMain && (typeof config.token !== "string" || config.token.length < 32))
   throw new Error("Missing local rehearsal token.");
 const log = (event) =>
   appendFile(
@@ -39,7 +44,7 @@ const log = (event) =>
   );
 const ids = new Map();
 let active = false;
-const catalog = [
+const peruCatalog = [
   {
     url: "https://example.com/rehearsal/casero",
     title: "[Ensayo] Casero Norte — arroz extra",
@@ -63,6 +68,61 @@ const catalog = [
       "DATOS SINTÉTICOS DE ENSAYO. Distribuidor Central vende arroz extra para restaurantes. No publica precio ni presentación. Consultas: proveedor@example.com. Atención en Lima. Confirmar cotización, mínimo, impuestos y entrega.",
   },
 ];
+
+const usCatalog = [
+  {
+    url: "https://example.com/rehearsal/us/cascade",
+    productPath: "long-grain-rice-25lb",
+    productLabel: "Long-grain white rice — 25 lb bag",
+    title: "[Rehearsal] Cascade Pantry Supply — long-grain white rice",
+    description: "Fictional US restaurant-supply listing for the local rehearsal.",
+    markdown:
+      "SYNTHETIC REHEARSAL DATA. Supplier: Cascade Pantry Supply. Ingredient: Rice. Specification: Long-grain white rice. Package: 25 lb bag. Price per bag: USD 20.00. Currency: USD. Taxes, minimum order, stock, freight, and delivery are not stated.",
+  },
+  {
+    url: "https://example.com/rehearsal/us/rose-city",
+    productPath: "long-grain-rice-50lb",
+    productLabel: "Long-grain white rice — 50 lb bag",
+    title: "[Rehearsal] Rose City Foodservice — long-grain white rice",
+    description: "Fictional US bulk listing; review package and cash outlay.",
+    markdown:
+      "SYNTHETIC REHEARSAL DATA. Supplier: Rose City Foodservice. Ingredient: Rice. Specification: Long-grain white rice. Package: 50 lb bag. Price per bag: USD 35.00. Currency: USD. Taxes, minimum order, stock, freight, and delivery are not stated.",
+  },
+  {
+    url: "https://example.com/rehearsal/us/northwest",
+    productPath: "restaurant-rice-inquiry",
+    productLabel: "Restaurant rice supply — request a quote",
+    title: "[Rehearsal] Northwest Restaurant Goods — request a price",
+    description:
+      "Fictional distributor without a published price. Contact: supplier@example.com.",
+    markdown:
+      "SYNTHETIC REHEARSAL DATA. Northwest Restaurant Goods supplies rice to restaurants in Portland, Oregon. No price or package is published. Inquiries: supplier@example.com. Confirm package, price, minimum order, taxes, freight, and delivery. This is not a live supplier record.",
+  },
+];
+
+for (const source of peruCatalog) {
+  source.productPath = "producto-arroz";
+  source.productLabel = "Ficha de arroz extra";
+}
+
+export function sourcesForQuery(query) {
+  if (/\barroz\b/i.test(query ?? "")) return peruCatalog;
+  if (/\brice\b/i.test(query ?? "")) return usCatalog;
+  return [];
+}
+
+export function productSourceForUrl(url) {
+  return [...peruCatalog, ...usCatalog].find(
+    (source) => `${source.url}/${source.productPath}` === url,
+  );
+}
+
+export function syntheticReplyTextForMail(mail) {
+  const inquiry = JSON.stringify(mail ?? {});
+  if (/\b(?:rice|USD|lb|Portland)\b/i.test(inquiry))
+    return "SYNTHETIC REHEARSAL REPLY. Northwest Restaurant Goods: long-grain white rice, 25 lb bag at USD 19.00. Taxes, minimum order, delivery, and freight require confirmation. This simulation sends no email to suppliers.";
+  return "RESPUESTA SINTÉTICA DE ENSAYO. Distribuidor Central: arroz extra, saco de 10 kg a S/ 47 PEN. IGV incluido. Mínimo 1 saco. Entrega y flete por confirmar. Esta simulación no envía correo a proveedores.";
+}
 
 function reply(response, status, body) {
   if (!response.destroyed)
@@ -229,7 +289,7 @@ function envelope(output) {
     output,
   };
 }
-async function deliver(receipt, inboxId, recipient) {
+async function deliver(receipt, inboxId, recipient, replyText) {
   const eventId = `evt_${receipt.message_id}`;
   const payload = JSON.stringify({
     event_type: "message.received",
@@ -240,7 +300,7 @@ async function deliver(receipt, inboxId, recipient) {
       thread_id: receipt.thread_id,
       from: recipient,
       timestamp: new Date().toISOString(),
-      text: "RESPUESTA SINTÉTICA DE ENSAYO. Distribuidor Central: arroz extra, saco de 10 kg a S/ 47 PEN. IGV incluido. Mínimo 1 saco. Entrega y flete por confirmar. Esta simulación no envía correo a proveedores.",
+      text: replyText,
     },
   });
   const timestamp = new Date();
@@ -273,7 +333,8 @@ async function deliver(receipt, inboxId, recipient) {
   }
 }
 
-createServer(async (request, response) => {
+if (isMain) {
+  createServer(async (request, response) => {
   if (request.method !== "POST" || !authorized(request))
     return reply(response, 403, { error: "Local rehearsal only" });
   if (active)
@@ -289,7 +350,7 @@ createServer(async (request, response) => {
   try {
     const body = await jsonBody(request);
     if (request.url === "/firecrawl/v2/search") {
-      const web = /arroz/i.test(body.query ?? "") ? catalog : [];
+      const web = sourcesForQuery(body.query);
       await log({
         kind: "discovery",
         query: body.query,
@@ -301,14 +362,12 @@ createServer(async (request, response) => {
         data: {
           web: web.map((source) => ({
             ...source,
-            markdown: `${source.markdown}\n[Ficha de arroz extra](${source.url}/producto-arroz)`,
+            markdown: `${source.markdown}\n[${source.productLabel}](${source.url}/${source.productPath})`,
           })),
         },
       });
     } else if (request.url === "/firecrawl/v2/scrape") {
-      const source = catalog.find(
-        (item) => `${item.url}/producto-arroz` === body.url,
-      );
+      const source = productSourceForUrl(body.url);
       if (!source)
         throw new Error(
           "Only bundled synthetic product links can be read in this rehearsal.",
@@ -386,7 +445,12 @@ createServer(async (request, response) => {
         const inboxId = decodeURIComponent(request.url.split("/")[4]);
         setTimeout(
           () =>
-            deliver(receipt, inboxId, config.recipient).catch((error) =>
+            deliver(
+              receipt,
+              inboxId,
+              config.recipient,
+              syntheticReplyTextForMail(body),
+            ).catch((error) =>
               log({ kind: "webhook_error", error: error.message }),
             ),
           1500,
@@ -408,8 +472,9 @@ createServer(async (request, response) => {
     active = false;
     clearTimeout(timeout);
   }
-}).listen(config.port, "127.0.0.1", () =>
-  console.log(
-    `Local rehearsal bridge on http://127.0.0.1:${config.port}; Luna CLI real, web/mail simulated.`,
-  ),
-);
+  }).listen(config.port, "127.0.0.1", () =>
+    console.log(
+      `Local rehearsal bridge on http://127.0.0.1:${config.port}; Luna CLI real, web/mail simulated.`,
+    ),
+  );
+}

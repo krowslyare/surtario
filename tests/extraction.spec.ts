@@ -3,58 +3,57 @@ import { test, expect } from "@playwright/test";
 test("revisa evidencia, conserva pendientes y prepara comparación sin compra", async ({
   page,
 }) => {
-  await page.goto("/");
-  await page.getByText("Revisar una cotización", { exact: true }).click();
-  await page
-    .getByRole("button", { name: "Revisar ejemplo de cotización" })
-    .click();
+  await page.goto("/?example=pe");
+  await page.getByText("Quotes and documents", { exact: true }).click();
+  await page.getByRole("button", { name: "Review sample quote" }).click();
   const dialog = page.getByRole("dialog");
   expect(await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
     true,
   );
-  await expect(dialog).toContainText("El contenido de origen es ficticio");
+  await expect(dialog).toContainText("The source content is synthetic");
   await expect(dialog).toContainText("Saco: S/ 80.00");
-  await expect(dialog.getByText("Original: Pendiente")).toHaveCount(2);
+  await expect(dialog.getByText("Original: Pending")).toHaveCount(2);
   await expect(
-    dialog.getByRole("button", { name: "Continuar a comparación" }),
+    dialog.getByRole("button", { name: "Continue to comparison" }),
   ).toBeDisabled();
 
-  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
-  await dialog.getByLabel("Contenido por presentación").fill("18");
-  await dialog.getByLabel("Precio por presentación").fill("85");
-  await expect(dialog.getByText("Corregido manualmente")).toHaveCount(3);
+  await dialog.getByLabel("Package unit").click();
+  await page.getByRole("option", { name: "kg", exact: true }).click();
+  await dialog.getByLabel("Package size").fill("18");
+  await dialog.getByLabel("Price per package").fill("85");
+  await expect(dialog.getByText("Manually corrected")).toHaveCount(3);
   await dialog
     .getByLabel(
-      "Revisé el origen y confirmo los datos, incluidas mis correcciones",
+      "I reviewed the source and confirm the data, including my corrections",
     )
     .check();
-  await dialog.getByRole("button", { name: "Continuar a comparación" }).click();
+  await dialog.getByRole("button", { name: "Continue to comparison" }).click();
 
-  await expect(page.getByLabel("Cantidad necesaria")).toHaveValue("");
-  await expect(page.getByTestId("total-0")).toHaveText("Pendiente");
-  await page.getByRole("button", { name: "Ver origen" }).click();
+  await expect(page.getByLabel("Required quantity")).toHaveValue("");
+  await expect(page.getByTestId("total-0")).toHaveText("Pending");
+  await page.getByRole("button", { name: "View source" }).click();
   const sourceDialog = page.getByRole("dialog");
   await expect(sourceDialog).toContainText("Distribuidora de ejemplo");
-  await expect(sourceDialog).toContainText("corrección manual: 18");
-  await expect(sourceDialog).toContainText("corrección manual: kg");
-  await expect(sourceDialog).toContainText("Precio por presentación: 80.00");
-  await expect(sourceDialog).toContainText("corrección manual: 85");
-  await expect(sourceDialog).toContainText("Precio al confirmar revisión");
-  await expect(sourceDialog).not.toContainText("Precio original");
+  await expect(sourceDialog).toContainText("manual correction: 18");
+  await expect(sourceDialog).toContainText("manual correction: kg");
+  await expect(sourceDialog).toContainText("Price per package: 80.00");
+  await expect(sourceDialog).toContainText("manual correction: 85");
+  await expect(sourceDialog).toContainText("Price when confirmed");
+  await expect(sourceDialog).not.toContainText("Original price");
 });
 
 test("el diálogo conserva el borrador y no desborda a 320 px", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 320, height: 760 });
-  await page.goto("/");
-  await page.getByText("Revisar una cotización", { exact: true }).click();
+  await page.goto("/?example=pe");
+  await page.getByText("Quotes and documents", { exact: true }).click();
   const trigger = page.getByRole("button", {
-    name: "Revisar ejemplo de cotización",
+    name: "Review sample quote",
   });
   await trigger.click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Contenido por presentación").fill("18");
+  await dialog.getByLabel("Package size").fill("18");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -68,7 +67,7 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   await trigger.click();
-  await expect(dialog.getByLabel("Contenido por presentación")).toHaveValue(
+  await expect(dialog.getByLabel("Package size")).toHaveValue(
     "18",
   );
 });

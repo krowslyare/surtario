@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode, type ChangeEvent } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { FileSearch, PencilLine } from "lucide-react";
 import {
   draftValues,
@@ -12,38 +12,39 @@ import {
 import type { PurchaseSeed } from "../domain/market";
 import { extractionExample, extractionSource } from "../../fixtures/extraction";
 import { Dialog } from "./Dialog";
+import Select from "./ui/Select";
 import "../styles/extraction.css";
 
 const fieldCopy: Record<
   ExtractionField,
   { label: string; kind: "text" | "select"; options?: [string, string][] }
 > = {
-  supplier: { label: "Proveedor", kind: "text" },
-  ingredient: { label: "Insumo", kind: "text" },
-  specification: { label: "Especificación", kind: "text" },
-  packageContent: { label: "Contenido por presentación", kind: "text" },
+  supplier: { label: "Supplier", kind: "text" },
+  ingredient: { label: "Ingredient", kind: "text" },
+  specification: { label: "Specification", kind: "text" },
+  packageContent: { label: "Package size", kind: "text" },
   packageUnit: {
-    label: "Unidad de la presentación",
+    label: "Package unit",
     kind: "select",
     options: [
-      ["", "Pendiente"],
+      ["", "Pending"],
       ["kg", "kg"],
       ["g", "g"],
       ["lb", "lb"],
       ["oz", "oz"],
       ["L", "L"],
       ["ml", "ml"],
-      ["unit", "unidad"],
+      ["unit", "unit"],
     ],
   },
-  price: { label: "Precio por presentación", kind: "text" },
+  price: { label: "Price per package", kind: "text" },
   currency: {
-    label: "Moneda",
+    label: "Currency",
     kind: "select",
     options: [
-      ["", "Pendiente"],
-      ["PEN", "PEN · soles"],
-      ["USD", "USD · dólares"],
+      ["", "Pending"],
+      ["PEN", "PEN · Peruvian soles"],
+      ["USD", "USD · US dollars"],
     ],
   },
 };
@@ -51,12 +52,12 @@ const fieldCopy: Record<
 export default function ExtractionReview({
   source = extractionSource,
   proposal = extractionExample,
-  triggerLabel = "Revisar ejemplo de cotización",
+  triggerLabel = "Review sample quote",
   onPrepare,
-  confirmLabel = "Continuar a comparación",
-  confirmationNote = "Continuar prepara una comparación. No registra una compra ni guarda el documento.",
+  confirmLabel = "Continue to comparison",
+  confirmationNote = "Continuing prepares a comparison. It does not record a purchase or save the document.",
   originalPreview,
-  sourceTextLabel = "Texto original",
+  sourceTextLabel = "Original text",
 }: {
   confirmationNote?: string;
   originalPreview?: ReactNode;
@@ -81,13 +82,11 @@ export default function ExtractionReview({
     setError("");
   }, [source.id, proposalKey]);
 
-  const setField =
-    (field: ExtractionField) =>
-    (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-      setValues((current) => ({ ...current, [field]: event.target.value }));
-      setConfirmed(false);
-      setError("");
-    };
+  const setField = (field: ExtractionField, value: string) => {
+    setValues((current) => ({ ...current, [field]: value }));
+    setConfirmed(false);
+    setError("");
+  };
 
   const requiredReady =
     values.supplier.trim() !== "" &&
@@ -104,13 +103,13 @@ export default function ExtractionReview({
       setError("");
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "Revisa los datos extraídos.",
+        cause instanceof Error ? cause.message : "Review the extracted data.",
       );
     }
   }
 
   return (
-    <section className="extraction-entry" aria-label="Revisión de cotización">
+    <section className="extraction-entry" aria-label="Quote review">
       <button className="button secondary" onClick={() => setOpen(true)}>
         <FileSearch size={17} />
         {triggerLabel}
@@ -118,18 +117,18 @@ export default function ExtractionReview({
 
       {open && (
         <Dialog
-          title="Revisar datos de la cotización"
+          title="Review quote data"
           wide
           onClose={() => setOpen(false)}
         >
           <div className="extraction-intro">
             <span className="extraction-simulation">
-              {source.simulated ? "Ejemplo sintético" : "Fuente para revisión"}
+              {source.simulated ? "Synthetic example" : "Source for review"}
             </span>
             <p>
               {source.simulated
-                ? "El contenido de origen es ficticio. Revisa la propuesta y confirma los datos antes de continuar."
-                : "Compara cada propuesta con el texto recuperado de la fuente antes de usarla."}
+                ? "The source content is synthetic. Review the proposal and confirm the data before continuing."
+                : "Compare each proposal with the source text before using it."}
             </p>
           </div>
 
@@ -143,12 +142,12 @@ export default function ExtractionReview({
               <pre>{source.text}</pre>
               {source.url && (
                 <a href={source.url} target="_blank" rel="noopener noreferrer">
-                  Abrir página de origen
+                  Open source page
                 </a>
               )}
               <time dateTime={source.observedAt}>
-                Observado el{" "}
-                {new Intl.DateTimeFormat("es-PE", {
+                Observed on{" "}
+                {new Intl.DateTimeFormat("en-US", {
                   day: "numeric",
                   month: "short",
                   year: "numeric",
@@ -158,8 +157,8 @@ export default function ExtractionReview({
 
             <div className="extraction-review-fields">
               <div className="extraction-section-heading">
-                <h3>Campos para revisar</h3>
-                <p>Los datos ausentes permanecen pendientes.</p>
+                <h3>Fields to review</h3>
+                <p>Missing data remains pending.</p>
               </div>
               {extractionFields.map((field) => {
                 const copy = fieldCopy[field];
@@ -173,20 +172,23 @@ export default function ExtractionReview({
                     <label className="field">
                       <span>{copy.label}</span>
                       {copy.kind === "select" ? (
-                        <select
+                        <Select
+                          aria-label={copy.label}
+                          options={
+                            copy.options?.map(([value, label]) => ({
+                              value,
+                              label,
+                            })) ?? []
+                          }
                           value={values[field]}
-                          onChange={setField(field)}
-                        >
-                          {copy.options?.map(([value, label]) => (
-                            <option value={value} key={value || "pending"}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
+                          onValueChange={(value) => setField(field, value)}
+                        />
                       ) : (
                         <input
                           value={values[field]}
-                          onChange={setField(field)}
+                          onChange={(event) =>
+                            setField(field, event.target.value)
+                          }
                           maxLength={
                             field === "price" || field === "packageContent"
                               ? 24
@@ -199,7 +201,7 @@ export default function ExtractionReview({
                           }
                           placeholder={
                             field === "price" || field === "packageContent"
-                              ? "Pendiente"
+                              ? "Pending"
                               : undefined
                           }
                         />
@@ -207,14 +209,14 @@ export default function ExtractionReview({
                     </label>
                     <div className="extraction-evidence">
                       <span>
-                        Original: <strong>{original || "Pendiente"}</strong>
+                        Original: <strong>{original || "Pending"}</strong>
                       </span>
                       <span>
-                        Evidencia: {proposal[field].evidence ?? "No encontrada"}
+                        Evidence: {proposal[field].evidence ?? "Not found"}
                       </span>
                       {edited && (
                         <span className="extraction-edited">
-                          <PencilLine size={13} /> Corregido manualmente
+                          <PencilLine size={13} /> Manually corrected
                         </span>
                       )}
                     </div>
@@ -225,10 +227,10 @@ export default function ExtractionReview({
           </div>
 
           <div className="extraction-pending">
-            <strong>Condiciones adicionales pendientes</strong>
+            <strong>Additional terms pending</strong>
             <p>
-              Esta extracción no confirma pedido mínimo, costo de entrega ni
-              condición tributaria. Se revisarán por separado en la comparación.
+              This extraction does not confirm minimum order, delivery cost, or
+              tax status. Review them separately in the comparison.
             </p>
           </div>
 
@@ -241,7 +243,7 @@ export default function ExtractionReview({
                 setError("");
               }}
             />
-            Revisé el origen y confirmo los datos, incluidas mis correcciones
+            I reviewed the source and confirm the data, including my corrections
           </label>
           <p className="extraction-boundary">{confirmationNote}</p>
 
@@ -252,7 +254,7 @@ export default function ExtractionReview({
           )}
           <div className="dialog-actions extraction-actions">
             <button className="button secondary" onClick={() => setOpen(false)}>
-              Cerrar
+              Close
             </button>
             <button
               className="button primary"

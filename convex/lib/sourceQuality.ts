@@ -84,7 +84,7 @@ export function inspectSource(
     return {
       state: "unreadable",
       reason:
-        "Esta fuente no contiene texto recuperado. Puedes revisar la página original.",
+        "This source has no recovered text. You can review the original page.",
       links: [],
     };
   if (
@@ -96,7 +96,7 @@ export function inspectSource(
     return {
       state: "blocked",
       reason:
-        "La página devolvió un error o una pantalla de acceso; no contiene una oferta para extraer.",
+        "The page returned an error or access screen; it does not contain an offer to extract.",
       links: [],
     };
   const words = terms(ingredient);
@@ -107,7 +107,7 @@ export function inspectSource(
     return {
       state: "unrelated",
       reason:
-        "No encontramos coincidencias textuales con este insumo. Revisa el enlace o ajusta la búsqueda.",
+        "We found no text matches for this ingredient. Review the link or adjust the search.",
       links: [],
     };
   const root = publicSourceUrl(source.url);

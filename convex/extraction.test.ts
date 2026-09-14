@@ -22,13 +22,13 @@ test("rechaza campos fuera de contrato, citas inexistentes y valores sin fuente"
       },
       extractionSource.text,
     ),
-  ).toThrow("cita");
+  ).toThrow("quote");
   expect(() =>
     validateExtraction(
       { ...extractionExample, packageContent: { value: "18", evidence: null } },
       extractionSource.text,
     ),
-  ).toThrow("evidencia");
+  ).toThrow("evidence");
   expect(() =>
     validateExtraction(
       { ...extractionExample, currency: { value: "EUR", evidence: "S/" } },

@@ -7,15 +7,15 @@ test("no inventa peso, moneda ni confirmación al preparar documento ambiguo", (
   expect(values.packageContent).toBe("");
   expect(() =>
     extractionToPurchase(extractionSource, extractionExample, values, false),
-  ).toThrow("Revisa");
+  ).toThrow("Review");
   expect(() =>
     extractionToPurchase(extractionSource, extractionExample, values, true),
-  ).toThrow("unidad");
+  ).toThrow("unit");
   values.packageUnit = "kg";
   values.currency = "";
   expect(() =>
     extractionToPurchase(extractionSource, extractionExample, values, true),
-  ).toThrow("moneda");
+  ).toThrow("currency");
 });
 test("convierte corrección confirmada manteniendo fuente y condiciones pendientes", () => {
   const values = {
@@ -44,10 +44,10 @@ test("convierte corrección confirmada manteniendo fuente y condiciones pendient
     deliveryConfirmed: false,
   });
   expect(seed.sources["reviewed-document"].marketSource?.evidence).toContain(
-    "Contenido por presentación: Pendiente",
+    "Package size: Pending",
   );
   expect(seed.sources["reviewed-document"].marketSource?.evidence).toContain(
-    "corrección manual: 18",
+    "manual correction: 18",
   );
   expect(extractionExample.packageContent.value).toBeNull();
 });
@@ -72,7 +72,7 @@ test("contenido y precio pueden quedar pendientes; decimales ambiguos se rechaza
       { ...values, price: "1,234.00" },
       true,
     ),
-  ).toThrow("precio");
+  ).toThrow("price");
   expect(() =>
     extractionToPurchase(
       extractionSource,
@@ -80,7 +80,7 @@ test("contenido y precio pueden quedar pendientes; decimales ambiguos se rechaza
       { ...values, packageContent: "-18" },
       true,
     ),
-  ).toThrow("contenido");
+  ).toThrow("Package size");
 });
 
 test("separa propuesta estructurada y baseline confirmado sin alias mutable", () => {
@@ -125,7 +125,7 @@ test("fuentes web distintas conservan URL, fecha y equivalencia explícita", asy
     );
   const a = make("web-a"),
     b = make("web-b");
-  expect(() => combineReviewedOffers([a, b], false)).toThrow(/equivalencia/);
+  expect(() => combineReviewedOffers([a, b], false)).toThrow(/equivalent/);
   const combined = combineReviewedOffers([a, b], true);
   expect(combined.offers.map((o) => o.id)).toEqual(["web-a", "web-b"]);
   expect(combined.sources["web-a"].date).toBe("2026-09-08");
@@ -134,17 +134,17 @@ test("fuentes web distintas conservan URL, fecha y equivalencia explícita", asy
   );
   expect(combined.sources["web-a"].marketSource?.simulated).toBe(false);
   expect(combined.request.quantity).toBe(0);
-  expect(() => combineReviewedOffers([a, a], true)).toThrow(/dos veces/);
+  expect(() => combineReviewedOffers([a, a], true)).toThrow(/twice/);
   expect(() =>
     combineReviewedOffers(
       [a, { ...b, request: { ...b.request, specification: "Otra calidad" } }],
       true,
     ),
-  ).toThrow(/no son comparables/);
+  ).toThrow(/not comparable/);
   expect(() =>
     combineReviewedOffers(
       [a, { ...b, offers: [{ ...b.offers[0], currency: "USD" }] }],
       true,
     ),
-  ).toThrow(/no son comparables/);
+  ).toThrow(/not comparable/);
 });

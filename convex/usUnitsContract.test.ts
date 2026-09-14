@@ -75,7 +75,7 @@ test("US studies persist only the matching server-owned context", async () => {
       region: "Lima",
       selectedIds: ["catalog-a"],
     }),
-  ).rejects.toThrow(/conserva un insumo, una zona y sus fuentes/);
+  ).rejects.toThrow(/retains one ingredient, area, and its sources/);
   expect(
     (await t.query(api.studies.list, { token }))[0],
   ).toMatchObject({
@@ -92,7 +92,7 @@ test("US studies persist only the matching server-owned context", async () => {
       region: "Lima",
       selectedIds: ["catalog-a"],
     }),
-  ).rejects.toThrow(/otra selección/);
+  ).rejects.toThrow(/another selection/);
   await expect(
     t.mutation(api.studies.save, {
       ...draft,

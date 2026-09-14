@@ -11,57 +11,59 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  await page.goto("/?view=comparison");
-  const advisor = page.getByRole("region", { name: "Asesor de compras" });
+  await page.goto("/?view=comparison&example=pe");
+  const advisor = page.getByRole("region", { name: "Purchasing advisor" });
   expect(
     await page.locator(".advisor-panel").evaluate((advisorPanel) => {
       const comparison = document.querySelector("#comparison");
       return Boolean(
         comparison &&
-          (advisorPanel.compareDocumentPosition(comparison) &
-            Node.DOCUMENT_POSITION_FOLLOWING),
+        advisorPanel.compareDocumentPosition(comparison) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
       );
     }),
   ).toBe(true);
-  await advisor.getByText("Contexto de mi decisión · opcional").click();
-  await advisor.getByLabel("Prioridad").selectOption("cash");
-  await advisor.getByLabel("Presupuesto disponible").fill("60");
-  await expect(advisor.getByLabel("Stock actual confirmado")).toHaveValue("");
+  await advisor.getByText("Decision context · optional").click();
+  await advisor.getByLabel("Priority").selectOption("cash");
+  await advisor.getByLabel("Available budget").fill("60");
+  await expect(advisor.getByLabel("Confirmed current stock")).toHaveValue("");
   await expect(
     advisor.getByRole("button", {
-      name: "Guardar comparación y escenario",
+      name: "Save comparison and scenario",
     }),
   ).toBeEnabled();
-  await expect(advisor.getByLabel("Prioridad")).toHaveValue("cash");
-  await expect(advisor.getByLabel("Presupuesto disponible")).toHaveValue("60");
+  await expect(advisor.getByLabel("Priority")).toHaveValue("cash");
+  await expect(advisor.getByLabel("Available budget")).toHaveValue("60");
   await advisor
-    .getByRole("button", { name: "Guardar comparación y escenario" })
+    .getByRole("button", { name: "Save comparison and scenario" })
     .click();
   await expect(
-    page.getByRole("button", { name: "Comparaciones guardadas (1)" }),
+    page.getByRole("button", { name: "Saved comparisons (1)" }),
   ).toBeVisible();
   await expect(
-    advisor.getByText("Escenario guardado con cálculo verificable"),
+    advisor.getByText("Scenario saved with a verifiable calculation"),
   ).toBeVisible();
-  await expect(advisor.locator(".advisor-verdict")).toContainText("Proveedor B");
+  await expect(advisor.locator(".advisor-verdict")).toContainText(
+    "Proveedor B",
+  );
   await page.reload();
   await page
-    .getByRole("button", { name: "Comparaciones guardadas (1)" })
+    .getByRole("button", { name: "Saved comparisons (1)" })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
-  await advisor.getByText("Recuperar escenarios (1)").click();
-  await advisor.getByRole("button", { name: /Escenario .* · Caja/ }).click();
-  await advisor.getByText("Contexto de mi decisión · opcional").click();
-  await expect(advisor.getByLabel("Presupuesto disponible")).toHaveValue("60");
-  await expect(advisor.getByLabel("Stock actual confirmado")).toHaveValue("");
-  await expect(advisor.getByText(/desactualizado respecto/i)).toHaveCount(0);
-  await page.getByLabel("Cantidad necesaria").fill("20");
-  await expect(advisor.getByText(/desactualizado respecto/i)).toBeVisible();
-  await advisor.getByLabel("Presupuesto disponible").fill("abc");
-  await expect(advisor.getByRole("alert")).toContainText("Revisa los números");
+  await page.getByRole("button", { name: "Open comparison" }).click();
+  await advisor.getByText("Restore scenarios (1)").click();
+  await advisor.getByRole("button", { name: /Scenario .* · Cash/ }).click();
+  await advisor.getByText("Decision context · optional").click();
+  await expect(advisor.getByLabel("Available budget")).toHaveValue("60");
+  await expect(advisor.getByLabel("Confirmed current stock")).toHaveValue("");
+  await expect(advisor.getByText(/out of date for this view/i)).toHaveCount(0);
+  await page.getByLabel("Required quantity").fill("20");
+  await expect(advisor.getByText(/out of date for this view/i)).toBeVisible();
+  await advisor.getByLabel("Available budget").fill("abc");
+  await expect(advisor.getByRole("alert")).toContainText("Review the context values");
   await expect(
     advisor.getByRole("button", {
-      name: "Guardar comparación y escenario",
+      name: "Save comparison and scenario",
     }),
   ).toBeDisabled();
   expect(errors).toEqual([]);
@@ -70,78 +72,78 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
 test("a matching saved scenario is restored without preparing another run", async ({
   page,
 }) => {
-  await page.goto("/?view=comparison");
-  const advisor = page.getByRole("region", { name: "Asesor de compras" });
+  await page.goto("/?view=comparison&example=pe");
+  const advisor = page.getByRole("region", { name: "Purchasing advisor" });
   await advisor
-    .getByRole("button", { name: "Guardar comparación y escenario" })
+    .getByRole("button", { name: "Save comparison and scenario" })
     .click();
   await expect(
-    advisor.getByText("Escenario guardado con cálculo verificable"),
+    advisor.getByText("Scenario saved with a verifiable calculation"),
   ).toBeVisible();
-  await expect(advisor.getByText("Recuperar escenarios (1)")).toBeVisible();
+  await expect(advisor.getByText("Restore scenarios (1)")).toBeVisible();
 
   await page.reload();
   await page
-    .getByRole("button", { name: "Comparaciones guardadas (1)" })
+    .getByRole("button", { name: "Saved comparisons (1)" })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(
-    advisor.getByText("Escenario guardado con cálculo verificable"),
+    advisor.getByText("Scenario saved with a verifiable calculation"),
   ).toBeVisible();
-  await expect(advisor.getByText("Recuperar escenarios (1)")).toBeVisible();
+  await expect(advisor.getByText("Restore scenarios (1)")).toBeVisible();
   await expect(advisor.locator(".advisor-actions button")).toHaveCount(0);
-  await expect(advisor.getByText(/guardarás el cálculo/)).toHaveCount(0);
+  await expect(advisor.getByText(/save the calculation/)).toHaveCount(0);
 });
 
 test("removing an offer before the first save keeps the new scenario current", async ({
   page,
 }) => {
-  await page.goto("/?view=comparison");
-  const advisor = page.getByRole("region", { name: "Asesor de compras" });
+  await page.goto("/?view=comparison&example=pe");
+  const advisor = page.getByRole("region", { name: "Purchasing advisor" });
   await page
-    .getByRole("button", { name: "Quitar oferta", exact: true })
+    .getByRole("button", { name: "Remove offer", exact: true })
     .first()
     .click();
   await page
     .getByRole("dialog")
-    .getByRole("button", { name: "Quitar oferta", exact: true })
+    .getByRole("button", { name: "Remove offer", exact: true })
     .click();
 
   await advisor
-    .getByRole("button", { name: "Guardar comparación y escenario" })
+    .getByRole("button", { name: "Save comparison and scenario" })
     .click();
   await expect(
-    advisor.getByText("Escenario guardado con cálculo verificable"),
+    advisor.getByText("Scenario saved with a verifiable calculation"),
   ).toBeVisible();
-  await expect(advisor.getByText(/desactualizado respecto/i)).toHaveCount(0);
+  await expect(advisor.getByText(/out of date for this view/i)).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Editar Proveedor B" }).click();
-  await page.getByLabel("Precio por presentación").fill("96");
-  await page.getByRole("button", { name: "Guardar oferta" }).click();
-  await expect(advisor.getByText(/desactualizado respecto/i)).toBeVisible();
+  await page.getByRole("button", { name: "Edit Proveedor B" }).click();
+  await page.getByLabel("Price per pack").fill("96");
+  await page.getByRole("button", { name: "Save offer" }).click();
+  await expect(advisor.getByText(/out of date for this view/i)).toBeVisible();
 });
 
 test("pending quantity stays blocked after the comparison is saved", async ({
   page,
 }) => {
-  await page.goto("/?view=comparison");
-  const advisor = page.getByRole("region", { name: "Asesor de compras" });
-  await page.getByLabel("Cantidad necesaria").fill("");
+  await page.goto("/?view=comparison&example=pe");
+  const advisor = page.getByRole("region", { name: "Purchasing advisor" });
+  await page.getByLabel("Required quantity").fill("");
   await expect(
     advisor.getByRole("button", {
-      name: "Guardar comparación y escenario",
+      name: "Save comparison and scenario",
     }),
   ).toBeDisabled();
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
-    page.getByText("Comparación guardada", { exact: false }),
+    page.getByText("Comparison saved", { exact: false }),
   ).toBeVisible();
   await expect(
-    advisor.getByRole("button", { name: "Guardar escenario" }),
+    advisor.getByRole("button", { name: "Save scenario" }),
   ).toBeDisabled();
-  await expect(advisor.getByText(/cantidad válida/i)).toBeVisible();
+  await expect(advisor.getByText(/valid quantity/i)).toBeVisible();
 });
 
 for (const width of [390, 1280]) {
@@ -149,26 +151,26 @@ for (const width of [390, 1280]) {
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto("/?view=comparison");
-    const advisor = page.getByRole("region", { name: "Asesor de compras" });
-    await advisor.getByText("Contexto de mi decisión · opcional").click();
+    await page.goto("/?view=comparison&example=pe");
+    const advisor = page.getByRole("region", { name: "Purchasing advisor" });
+    await advisor.getByText("Decision context · optional").click();
     await advisor
-      .getByLabel("Proveedor habitual")
+      .getByLabel("Preferred supplier")
       .selectOption("rice-supplier-a");
-    await advisor.getByLabel("Consumo diario confirmado").fill("1");
-    await advisor.getByLabel("Stock actual confirmado").fill("2");
-    await advisor.getByText("Preparar conversación con mi proveedor").click();
+    await advisor.getByLabel("Confirmed daily usage").fill("1");
+    await advisor.getByLabel("Confirmed current stock").fill("2");
+    await advisor.getByText("Prepare supplier conversation").click();
     await expect(advisor.locator(".quotation-text")).toContainText(
       "Proveedor B",
     );
     await advisor
-      .getByText("Ver caja, cobertura y pendientes por proveedor")
+      .getByText("View cash outlay, coverage, and pending items by supplier")
       .click();
     await expect(advisor.locator(".advisor-alternatives")).toContainText(
-      "20 días",
+      "20 days",
     );
     await expect(advisor.locator(".advisor-alternatives")).toContainText(
-      "12 días",
+      "12 days",
     );
     await advisor.scrollIntoViewIfNeeded();
     expect(

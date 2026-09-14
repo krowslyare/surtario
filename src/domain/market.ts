@@ -118,9 +118,9 @@ export function preparePurchaseFromCatalog(
     (result): result is CatalogResult => result.kind === "catalog",
   );
   if (!equivalentConfirmed)
-    throw new Error("Confirma la equivalencia antes de preparar la compra.");
+    throw new Error("Confirm equivalence before preparing the purchase.");
   if (!catalogs.length || catalogs.length > 4)
-    throw new Error("Selecciona entre uno y cuatro precios de catálogo.");
+    throw new Error("Select one to four catalog prices.");
   const first = catalogs[0];
   if (
     catalogs.some(
@@ -132,7 +132,7 @@ export function preparePurchaseFromCatalog(
     )
   )
     throw new Error(
-      "Las especificaciones, unidades o monedas son distintas. Revisa las opciones por separado.",
+      "The specifications, units, or currencies differ. Review the options separately.",
     );
   const offers: SupplierOffer[] = catalogs.map((item) => ({
     id: item.id,
@@ -160,7 +160,7 @@ export function preparePurchaseFromCatalog(
       catalogs.map((item, i) => [
         item.id,
         {
-          label: `${item.source.simulated ? "Ejemplo de catálogo" : "Catálogo"}: ${item.source.title}`,
+          label: `${item.source.simulated ? "Catalog example" : "Catalog"}: ${item.source.title}`,
           date: item.source.observedAt,
           marketSource: { ...item.source },
           original: { ...offers[i] },

@@ -43,69 +43,67 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     (value) => localStorage.setItem("procurement-demo-session-v1", value),
     token,
   );
-  await page.goto("/");
-  await page.getByText("Revisar una cotización", { exact: true }).click();
-  await page.getByRole("button", { name: "Revisar datos leídos" }).click();
+  await page.goto("/?example=pe");
+  await page.getByText("Quotes and documents", { exact: true }).click();
+  await page.getByRole("button", { name: "Review extracted data" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Unidad de la presentación").selectOption("kg");
-  await dialog.getByLabel("Contenido por presentación").fill("18");
-  await dialog.getByLabel("Precio por presentación").fill("85");
+  await dialog.getByLabel("Package unit").click();
+  await page.getByRole("option", { name: "kg", exact: true }).click();
+  await dialog.getByLabel("Package size").fill("18");
+  await dialog.getByLabel("Price per package").fill("85");
   await dialog
     .getByLabel(
-      "Revisé el origen y confirmo los datos, incluidas mis correcciones",
+      "I reviewed the source and confirm the data, including my corrections",
     )
     .check();
-  await dialog.getByRole("button", { name: "Continuar a comparación" }).click();
-  await page.getByLabel("Cantidad necesaria").fill("10");
+  await dialog.getByRole("button", { name: "Continue to comparison" }).click();
+  await page.getByLabel("Required quantity").fill("10");
   await page
-    .getByRole("button", { name: "Editar Distribuidora de ejemplo" })
+    .getByRole("button", { name: "Edit Distribuidora de ejemplo" })
     .click();
-  await page.getByLabel("Mínimo de presentaciones", { exact: true }).fill("1");
-  await page.getByLabel("Entrega por pedido", { exact: true }).fill("15");
+  await page.getByLabel("Minimum packs", { exact: true }).fill("1");
+  await page.getByLabel("Delivery per order", { exact: true }).fill("15");
+  await page.getByLabel("Tax on goods and delivery", { exact: true }).click();
+  await page.getByRole("option", { name: "Final amounts, including tax", exact: true }).click();
   await page
-    .getByLabel("Impuestos del precio y la entrega", { exact: true })
-    .selectOption("included");
-  await page
-    .getByLabel("El proveedor puede entregar cuando lo necesito")
+    .getByLabel("The supplier can deliver when I need it")
     .check();
-  await page.getByRole("button", { name: "Guardar oferta" }).click();
+  await page.getByRole("button", { name: "Save offer" }).click();
   await expect(page.getByTestId("total-0")).toHaveText("S/ 100.00");
-  await page.getByRole("button", { name: "Elegir oferta" }).click();
+  await page.getByRole("button", { name: "Choose offer" }).click();
   await page
-    .getByRole("button", { name: "Guardar comparación", exact: true })
+    .getByRole("button", { name: "Save comparison", exact: true })
     .click();
   await expect(
-    page.getByText("Comparación guardada con una oferta elegida", {
+    page.getByText("Comparison saved with a selected offer", {
       exact: false,
     }),
   ).toBeVisible();
   await page.reload();
   await page
-    .getByRole("button", { name: "Comparaciones guardadas (1)" })
+    .getByRole("button", { name: "Saved comparisons (1)" })
     .click();
-  await page.getByRole("button", { name: "Abrir comparación" }).click();
+  await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(page.getByTestId("total-0")).toHaveText("S/ 100.00");
   await expect(
-    page.getByRole("button", { name: "Oferta elegida" }),
+    page.getByRole("button", { name: "Selected offer" }),
   ).toHaveAttribute("aria-pressed", "true");
-  await page.getByRole("button", { name: "Ver origen" }).click();
+  await page.getByRole("button", { name: "View source" }).click();
   await expect(page.getByRole("dialog")).toContainText(
-    "Precio por presentación: 80.00",
+    "Price per package: 80.00",
   );
-  await expect(page.getByRole("dialog")).toContainText("corrección manual: 85");
+  await expect(page.getByRole("dialog")).toContainText("manual correction: 85");
   await expect(
-    page.getByRole("link", { name: "Abrir documento original" }),
+    page.getByRole("link", { name: "Open original document" }),
   ).toHaveAttribute("href", "/examples/cotizacion-demo.pdf");
   await page.keyboard.press("Escape");
-  await page.getByLabel("Cantidad necesaria").fill("20");
+  await page.getByLabel("Required quantity").fill("20");
   await expect(
-    page.getByRole("button", { name: "Oferta elegida" }),
+    page.getByRole("button", { name: "Selected offer" }),
   ).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Guardar cambios de la comparación" })
-    .click();
+  await page.getByRole("button", { name: "Save comparison changes" }).click();
   await expect(
-    page.getByText("Comparación guardada. Los cambios posteriores", {
+    page.getByText("Comparison saved. Save again after making changes.", {
       exact: false,
     }),
   ).toBeVisible();

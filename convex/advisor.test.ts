@@ -57,7 +57,7 @@ test("interrupted analyses expire without retrying or accepting a late completio
   await t.finishAllScheduledFunctions(() => vi.runAllTimers());
   const expired = await t.action(api.advisor.explain, { token, id: run.id });
   expect(expired.status).toBe("failed");
-  expect(expired.error).toMatch(/no terminó a tiempo/);
+  expect(expired.error).toMatch(/did not finish in time/);
   expect(expired.report.alternatives[1].totalCents).toBe(5000);
   expect(explainPurchase).not.toHaveBeenCalled();
   const late = await t.mutation(internal.advisor.finish, {
@@ -107,16 +107,16 @@ test("owned snapshots preserve calculations and context, retries cannot change t
       ...args,
       context: { ...context, budgetCents: 100 },
     }),
-  ).rejects.toThrow(/otro análisis/);
+  ).rejects.toThrow(/another analysis/);
   await expect(
     t.query(api.advisor.list, {
       token: "b".repeat(64),
       comparisonId: comparison.id,
     }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.mutation(api.advisor.prepare, { ...args, token: "b".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await t.mutation(api.comparisons.save, {
     token,
     id: comparison.id,
@@ -133,7 +133,7 @@ test("owned snapshots preserve calculations and context, retries cannot change t
   expect((await t.mutation(api.advisor.prepare, args)).id).toBe(run.id);
   await expect(
     t.mutation(api.advisor.prepare, { ...args, clientId: crypto.randomUUID() }),
-  ).rejects.toThrow(/cambió/);
+  ).rejects.toThrow(/changed/);
 });
 test("new client requests reuse the same semantic run in every persisted state", async () => {
   vi.stubEnv("ADVISOR_ENABLED", "true");
@@ -212,7 +212,7 @@ test("a saved comparison with pending quantity cannot prepare an advisor run", a
       expectedRevision: 2,
       clientId: crypto.randomUUID(),
     }),
-  ).rejects.toThrow(/cantidad mayor que cero/);
+  ).rejects.toThrow(/quantity greater than zero/);
   expect(
     await t.query(api.advisor.list, {
       token,
@@ -225,7 +225,7 @@ test("disabled, failed and concurrent analyses never trigger an unapproved retry
   const run = await t.mutation(api.advisor.prepare, args);
   await expect(
     t.action(api.advisor.explain, { token, id: run.id }),
-  ).rejects.toThrow(/habilitado/);
+  ).rejects.toThrow(/not enabled/);
   expect(explainPurchase).not.toHaveBeenCalled();
   vi.stubEnv("ADVISOR_ENABLED", "true");
   vi.stubEnv("OPENAI_API_KEY", "test-key");

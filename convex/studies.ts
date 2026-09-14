@@ -80,12 +80,12 @@ export const save = mutation({
   handler: async (ctx, args) => {
     const hash = await ownerHash(args.token);
     if (!/^[a-f0-9-]{36}$/.test(args.clientId))
-      throw new ConvexError("Solicitud no válida.");
+      throw new ConvexError("Invalid request.");
     if (
       !Number.isSafeInteger(args.expectedRevision) ||
       args.expectedRevision < 0
     )
-      throw new ConvexError("Revisión no válida.");
+      throw new ConvexError("Invalid review.");
     const reviews = args.webReviews ?? [];
     const prospectIds = args.prospectIds ?? [];
     if (
@@ -96,7 +96,7 @@ export const save = mutation({
       new Set(prospectIds).size !== prospectIds.length
     )
       throw new ConvexError(
-        "Selecciona hasta tres ofertas web y tres distribuidores distintos.",
+        "Select up to three web offers and three distinct distributors.",
       );
     const webSelections = [];
     for (const review of reviews) {
@@ -113,7 +113,7 @@ export const save = mutation({
     for (const id of prospectIds) {
       const item = await ctx.db.get("webProspects", id);
       if (!item || item.ownerHash !== hash)
-        throw new ConvexError("Distribuidor no disponible en esta sesión.");
+        throw new ConvexError("Distributor unavailable in this session.");
       const { _id, _creationTime: _time, ownerHash: _owner, ...content } = item;
       const origin = await ctx.db.get("researchRuns", content.runId);
       prospects.push({
@@ -134,7 +134,7 @@ export const save = mutation({
     const requestedExampleContext = findMarketExampleContext(term, region);
     if (!context && !requestedExampleContext)
       throw new ConvexError(
-        "Por ahora solo se guardan estudios del ejemplo o fuentes web revisadas.",
+        "For now, only studies from the sample or reviewed web sources can be saved.",
       );
     if (
       args.selectedIds.length > 4 ||
@@ -144,7 +144,7 @@ export const save = mutation({
           (!context && selectedExampleContext !== requestedExampleContext)))
     )
       throw new ConvexError(
-        "Selecciona entre una y cuatro opciones del ejemplo, una oferta web o un distribuidor revisado.",
+        "Select one to four example options, one web offer, or one reviewed distributor.",
       );
     if (
       context &&
@@ -155,15 +155,15 @@ export const save = mutation({
             !sameStudyContext(context, selectedExampleContext))))
     )
       throw new ConvexError(
-        "Este estudio reúne un insumo y una zona. Guarda la selección e inicia otro estudio para cambiar de investigación.",
+        "This study covers one ingredient and one area. Save the selection and start another study to change the research.",
       );
     if (args.id) {
       const study = await ctx.db.get("studies", args.id);
       if (!study || study.ownerHash !== hash)
-        throw new ConvexError("Estudio no disponible en esta sesión.");
+        throw new ConvexError("Study unavailable in this session.");
       if (study.revision !== args.expectedRevision)
         throw new ConvexError(
-          "El estudio cambió en otra vista. Ábrelo desde Guardados antes de actualizar.",
+          "The study changed in another view. Open it from Saved before updating.",
         );
       const savedExampleContext = findMarketExampleContext(
         study.term,
@@ -180,7 +180,7 @@ export const save = mutation({
           ))
       )
         throw new ConvexError(
-          "Este estudio conserva un insumo, una zona y sus fuentes. Inicia otro estudio para cambiar de mercado.",
+          "This study retains one ingredient, area, and its sources. Start another study to change markets.",
         );
       // Preserve the original source snapshot when updating selection.
       await ctx.db.patch("studies", study._id, {
@@ -195,7 +195,7 @@ export const save = mutation({
       return publicStudy((await ctx.db.get("studies", study._id))!);
     }
     if (args.expectedRevision !== 0)
-      throw new ConvexError("Revisión no válida.");
+      throw new ConvexError("Invalid review.");
     const existing = await ctx.db
       .query("studies")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -215,7 +215,7 @@ export const save = mutation({
         selectedIds.some((id) => !existing.selectedIds.includes(id))
       ) {
         throw new ConvexError(
-          "La solicitud anterior ya fue guardada con otra selección. Abre el estudio desde Guardados antes de actualizar.",
+          "The previous request was saved with another selection. Open the study from Saved before updating.",
         );
       }
       return publicStudy(existing);
@@ -225,13 +225,13 @@ export const save = mutation({
       .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
       .take(MAX_PER_SESSION);
     if (own.length >= MAX_PER_SESSION)
-      throw new ConvexError("Esta sesión admite hasta 10 estudios.");
+      throw new ConvexError("This session supports up to 10 studies.");
     const all = await ctx.db
       .query("studies")
       .withIndex("by_creation_time")
       .take(MAX_DEMO_STUDIES);
     if (all.length >= MAX_DEMO_STUDIES)
-      throw new ConvexError("Se alcanzó la capacidad de esta demo local.");
+      throw new ConvexError("The local demo capacity has been reached.");
     const id = await ctx.db.insert("studies", {
       ownerHash: hash,
       clientId: args.clientId,

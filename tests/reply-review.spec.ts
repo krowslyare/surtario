@@ -68,49 +68,45 @@ for (const mode of ["new", "append"] as const)
       (value) => localStorage.setItem("procurement-demo-session-v1", value),
       token,
     );
-    await page.goto("/?view=comparison");
+    await page.goto("/?view=comparison&example=pe");
     await page
-      .getByRole("button", { name: "Comparaciones guardadas (1)" })
+      .getByRole("button", { name: "Saved comparisons (1)" })
       .click();
-    await page.getByRole("button", { name: "Abrir comparación" }).click();
-    await page.getByRole("button", { name: "Ver solicitud" }).click();
-    await page
-      .getByRole("button", { name: "Revisar como nueva oferta" })
-      .click();
+    await page.getByRole("button", { name: "Open comparison" }).click();
+    await page.getByRole("button", { name: "View request" }).click();
+    await page.getByRole("button", { name: "Review as new offer" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog).toContainText("Revisión manual");
+    await expect(dialog).toContainText("Manual review");
     await expect(
-      dialog.getByRole("button", { name: "Continuar con nueva oferta" }),
+      dialog.getByRole("button", { name: "Continue with new offer" }),
     ).toBeDisabled();
     await dialog
-      .getByLabel("Proveedor", { exact: true })
+      .getByLabel("Supplier", { exact: true })
       .fill("Distribuidor Respuesta");
-    await dialog.getByLabel("Insumo", { exact: true }).fill("Arroz");
+    await dialog.getByLabel("Ingredient", { exact: true }).fill("Arroz");
     await dialog
-      .getByLabel("Especificación", { exact: true })
+      .getByLabel("Specification", { exact: true })
       .fill(mode === "append" ? riceRequest.specification : "Blanco");
     await dialog
-      .getByLabel("Contenido por presentación", { exact: true })
+      .getByLabel("Package size", { exact: true })
       .fill("18");
+    await dialog.getByLabel("Package unit", { exact: true }).selectOption("kg");
     await dialog
-      .getByLabel("Unidad de la presentación", { exact: true })
-      .selectOption("kg");
-    await dialog
-      .getByLabel("Precio por presentación", { exact: true })
+      .getByLabel("Price per package", { exact: true })
       .fill("85");
-    await dialog.getByLabel("Moneda", { exact: true }).selectOption("PEN");
+    await dialog.getByLabel("Currency", { exact: true }).selectOption("PEN");
     await dialog
       .getByLabel(
-        "Confirmo que estos datos corresponden a una oferta de esta respuesta",
+        "I confirm these details represent an offer in this reply",
       )
       .check();
     if (mode === "append") {
       await expect(
-        dialog.getByRole("button", { name: "Añadir a comparación actual" }),
+        dialog.getByRole("button", { name: "Add to current comparison" }),
       ).toBeDisabled();
       await dialog
         .getByLabel(
-          "Confirmo equivalencia con el insumo y especificación de la comparación actual",
+          "I confirm it matches the ingredient and specification in the current comparison",
         )
         .check();
     }
@@ -125,59 +121,53 @@ for (const mode of ["new", "append"] as const)
       .getByRole("button", {
         name:
           mode === "append"
-            ? "Añadir a comparación actual"
-            : "Continuar con nueva oferta",
+            ? "Add to current comparison"
+            : "Continue with new offer",
       })
       .click();
     await expect(
-      page.getByLabel("Cantidad necesaria", { exact: true }),
+      page.getByLabel("Required quantity", { exact: true }),
     ).toHaveValue(mode === "append" ? "10" : "");
     if (mode === "append")
       await expect(
-        page.getByRole("button", { name: "Oferta elegida" }),
+        page.getByRole("button", { name: "Selected offer" }),
       ).toHaveCount(0);
     await page
       .getByRole("button", {
-        name:
-          mode === "append"
-            ? "Guardar cambios de la comparación"
-            : "Guardar comparación",
+        name: mode === "append" ? "Save comparison changes" : "Save comparison",
         exact: true,
       })
       .click();
     await expect(
-      page.getByText("Comparación guardada.", { exact: false }),
+      page.getByText("Comparison saved", { exact: false }),
     ).toBeVisible();
     await page.reload();
     await page
       .getByRole("button", {
         name:
           mode === "append"
-            ? "Comparaciones guardadas (1)"
-            : "Comparaciones guardadas (2)",
+            ? "Saved comparisons (1)"
+            : "Saved comparisons (2)",
       })
       .click();
-    await page
-      .getByRole("button", { name: "Abrir comparación" })
-      .first()
-      .click();
+    await page.getByRole("button", { name: "Open comparison" }).first().click();
     if (mode === "append") {
       await expect(
-        page.getByRole("button", { name: "Ver origen" }),
+        page.getByRole("button", { name: "View source" }),
       ).toHaveCount(3);
       await expect(
-        page.getByLabel("Cantidad necesaria", { exact: true }),
+        page.getByLabel("Required quantity", { exact: true }),
       ).toHaveValue("10");
       await expect(
-        page.getByRole("button", { name: "Oferta elegida" }),
+        page.getByRole("button", { name: "Selected offer" }),
       ).toHaveCount(0);
     }
-    await page.getByRole("button", { name: "Ver origen" }).last().click();
-    await expect(page.getByRole("dialog")).toContainText("Fecha pendiente");
+    await page.getByRole("button", { name: "View source" }).last().click();
+    await expect(page.getByRole("dialog")).toContainText("Date pending");
     await expect(page.getByRole("dialog")).not.toContainText("página pública");
     await expect(page.getByRole("dialog")).toContainText("PEN 80.00");
     await expect(page.getByRole("dialog")).toContainText(
-      "corrección manual: 85",
+      "manual correction: 85",
     );
   });
 
@@ -186,9 +176,7 @@ test("an open review receives a completed extraction without replacing edits", a
   context,
 }) => {
   await connectOnlyToLocalBackend(context);
-  const token = createHash("sha256")
-    .update(crypto.randomUUID())
-    .digest("hex");
+  const token = createHash("sha256").update(crypto.randomUUID()).digest("hex");
   const run = (fn: string, args: object) =>
     JSON.parse(runLocalConvex(["run", fn, JSON.stringify(args)]));
   const saved = run("comparisons:save", {
@@ -241,17 +229,15 @@ test("an open review receives a completed extraction without replacing edits", a
       (value) => localStorage.setItem("procurement-demo-session-v1", value),
       token,
     );
-    await page.goto("/?view=comparison");
+    await page.goto("/?view=comparison&example=pe");
     await page
-      .getByRole("button", { name: "Comparaciones guardadas (1)" })
+      .getByRole("button", { name: "Saved comparisons (1)" })
       .click();
-    await page.getByRole("button", { name: "Abrir comparación" }).click();
-    await page.getByRole("button", { name: "Ver solicitud" }).click();
-    await page
-      .getByRole("button", { name: "Revisar como nueva oferta" })
-      .click();
+    await page.getByRole("button", { name: "Open comparison" }).click();
+    await page.getByRole("button", { name: "View request" }).click();
+    await page.getByRole("button", { name: "Review as new offer" }).click();
     const dialog = page.getByRole("dialog");
-    await dialog.getByLabel("Proveedor", { exact: true }).fill("Mi corrección");
+    await dialog.getByLabel("Supplier", { exact: true }).fill("Mi corrección");
 
     const reservation = run("quotationMail:reserveReplyExtraction", {
       token,
@@ -259,7 +245,7 @@ test("an open review receives a completed extraction without replacing edits", a
       messageId,
     });
     expect(reservation.kind).toBe("reserved");
-    await expect(dialog.getByText("Extracción en curso…")).toBeVisible();
+    await expect(dialog.getByText("Extracting…")).toBeVisible();
     run("quotationMail:finishReplyExtraction", {
       replyId: reservation.replyId,
       attempt: reservation.attempt,
@@ -279,16 +265,16 @@ test("an open review receives a completed extraction without replacing edits", a
         currency: { value: "PEN", evidence: "Saco 18 kg: PEN 80.00" },
       },
     });
-    await expect(dialog.getByText(/La sugerencia está lista/)).toBeVisible();
-    await expect(dialog.getByLabel("Proveedor", { exact: true })).toHaveValue(
+    await expect(dialog.getByText(/The suggestion is ready/)).toBeVisible();
+    await expect(dialog.getByLabel("Supplier", { exact: true })).toHaveValue(
       "Mi corrección",
     );
     await expect(
-      dialog.getByRole("button", { name: "Aplicar sugerencia de IA" }),
+      dialog.getByRole("button", { name: "Apply AI suggestion" }),
     ).toBeVisible();
     await expect(
       dialog.getByLabel(
-        "Confirmo que estos datos corresponden a una oferta de esta respuesta",
+        "I confirm these details represent an offer in this reply",
       ),
     ).not.toBeChecked();
   } finally {

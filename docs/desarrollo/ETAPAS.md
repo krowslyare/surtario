@@ -281,10 +281,27 @@ PRs #21–#26 are merged; `6ed1dd1` was the deployed application revision. Publi
 The requested stop is after this deployment. Provider keys/gates, production and repository visibility were unchanged; no external provider call or email was sent. Direct OpenAI API, the combined hosted provider journey, branding, timed recording and submission remain pending. Stages 2–5 and 7 retain those acceptance requirements.
 
 
-## September 12, 2026 — US mass and sample-market contract
+## September 12, 2026 — local Surtario UI integration
 
-Pounds and ounces are supported across calculation, extraction validation, advisor input and saved comparisons. Separate fictional US examples preserve server-owned source context; a study cannot be updated into another market or replayed with a changed context. Existing Peru examples remain supported.
+Integrated the Surtario identity and polished market/comparison presentation with the reviewed `main` application behavior. Unified studies, saved ingredient lists, source-quality review, linked-reply extraction, the purchasing advisor and hosting/rehearsal guards remain present. The visual layer retains bundled brand assets and fonts, aubergine/radish/chili tokens, reduced-motion handling and shared controls; no provider, deployment or environment setting changed.
 
-182 domain/backend tests and both frontend/backend TypeScript checks passed. Independent parent review identified a cross-market update that could preserve an incompatible result snapshot; the fix and regression passed. UI selectors, English workflows, live provider acceptance and public deployment are outside this backend PR. No stage is marked complete by these checks.
+The 175 unit/backend/configuration tests and frontend production build passed in the isolated integration worktree. Headless desktop and mobile checks found the expected Surtario identity and zero horizontal overflow. A focused browser run was not completed because the already-running anonymous local backend lacked `advisor:status`; this entry does not replace the earlier 54-journey evidence or claim fresh persistence/advisor E2E coverage.
 
-La revisión automática del PR de unidades se atendió incluyendo lb/oz en todos los selectores de revisión y lb en la cantidad requerida. La interfaz y las explicaciones conservan juntas su idioma anterior hasta la entrega de frontend. El cambio de alcance autorizado quedó explícito en AGENTS y el plan.
+
+## September 12, 2026 — English-first product and US decision flow
+
+Integrated the existing Surtario visual work with the current research, unified studies, quote/reply review and advisor workflows. English is the product language; a fictional Portland rice example uses explicit USD/lb, and Peru fixtures remain available for PEN/metric regression. Source evidence retains its original language. Shared controls, keyboard submission, saved-research navigation and distributor inquiries operate within the active saved study.
+
+The new missing-freight insight calculates a boundary against an eligible same-currency offer, supports a clearly hypothetical cost, and requires a separate confirmed-term edit. Independent Sol review identified and closed scoped state, unit/currency and accessibility-label findings. GitHub review corrections on PR #27 add all lb/oz review selectors and align interim language and scope documentation. A real Luna rehearsal found a client/server evidence mismatch that hid fresh advisor output; shared evidence construction and a round-trip regression fix it.
+
+197 unit/backend/configuration tests and all 63 browser journeys passed locally, with frontend/backend typechecks and hosting checks. Three real Luna CLI calls covered extraction and advisor generation; corrected saved recovery made no new model call. Discovery/page data and mail transport in that rehearsal were synthetic. See [product validation](ENGLISH_PRODUCT_VALIDATION.md) for evidence and limits. The original working tree remains separate. No cloud deployment, external email, visibility change or contest submission occurred. Stages 2–5, 7 and private-pilot enablement retain their outstanding acceptance requirements.
+
+
+PR #27 is the reviewed prerequisite for US measurements. Its follow-up d26b14c includes editable lb/oz selectors, documented authorized scope, and coherent Spanish guidance during that intermediate delivery. Its 182 tests, both typechecks, build and GitHub CI passed. The dependent product integration supersedes the intermediate language with English UI and model explanations together.
+
+
+Final Luna max review found that saved source snapshots include unselected distributors. The product now uses saved selection IDs for inquiry controls, and `quotationMail.create` rejects unselected distributors on the server. Both US/Peru regression cases failed before the correction and passed afterward. The corrected pass has 199 unit/backend/configuration tests, three targeted browser journeys and the full 64-journey browser suite passing, plus both typechecks and hosting checks. Both PRs have passing GitHub test/build checks.
+
+## September 13, 2026 — pre-merge Sol correction
+
+Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.

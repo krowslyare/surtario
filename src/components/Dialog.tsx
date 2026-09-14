@@ -45,7 +45,7 @@ export function Dialog({
     >
       <div className="dialog-head">
         <h2 id="dialog-title">{title}</h2>
-        <button className="icon-button" aria-label="Cerrar" onClick={onClose}>
+        <button className="icon-button" aria-label="Close" onClick={onClose}>
           <X size={20} />
         </button>
       </div>

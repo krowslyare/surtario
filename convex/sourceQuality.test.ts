@@ -111,13 +111,13 @@ test("non-product analysis discards stray prices before validating offers and re
       { ...raw, analysis: { ...raw.analysis, evidenceLineNumbers: [2] } },
       "Arroz extra 49 kg S/200",
     ),
-  ).toThrow(/no existe/);
+  ).toThrow(/does not exist/);
   expect(() =>
     validateWebAnalysis(
       { ...raw, analysis: { ...raw.analysis, kind: "product" } },
       "Arroz extra 49 kg S/200",
     ),
-  ).toThrow(/no existe/);
+  ).toThrow(/does not exist/);
   expect(() =>
     validateWebAnalysis(
       {
@@ -130,7 +130,7 @@ test("non-product analysis discards stray prices before validating offers and re
       },
       "Arroz extra 49 kg S/200",
     ),
-  ).toThrow(/sin evidencia/);
+  ).toThrow(/without evidence/);
 });
 
 test("product reading accepts only an owned source link, preserves parent, and never repeats a read", async () => {
@@ -162,13 +162,13 @@ test("product reading accepts only an owned source link, preserves parent, and n
   const args = { token, runId, sourceIndex: 0, url: productUrl };
   await expect(
     t.action(api.research.readProduct, { ...args, token: "f".repeat(64) }),
-  ).rejects.toThrow(/no disponible/);
+  ).rejects.toThrow(/unavailable/);
   await expect(
     t.action(api.research.readProduct, {
       ...args,
       url: "https://other.com/arroz",
     }),
-  ).rejects.toThrow(/Selecciona un enlace/);
+  ).rejects.toThrow(/Select a product link/);
   expect(fetch).not.toHaveBeenCalled();
   const read = await t.action(api.research.readProduct, args);
   expect(read.sources).toHaveLength(2);
@@ -187,7 +187,7 @@ test("product reading accepts only an owned source link, preserves parent, and n
   ).toBe("Arroz extra 49 kg: S/200.");
   await expect(
     t.action(api.research.readProduct, { ...args, sourceIndex: 1 }),
-  ).rejects.toThrow(/fuente original/);
+  ).rejects.toThrow(/original source/);
 });
 
 test("multiline page titles retain their metadata label in every source reference", () => {
@@ -196,7 +196,7 @@ test("multiline page titles retain their metadata label in every source referenc
     markdown: "Consultar presentación y precio.",
   });
   expect(sourceEvidenceLines(text)).toEqual([
-    "Título de la página: Arroz extra S/ 10 por saco",
+    "Page title: Arroz extra S/ 10 por saco",
     "Consultar presentación y precio.",
   ]);
 });
@@ -226,10 +226,10 @@ test("scrape refuses changed source URLs, including same-site redirects, and nev
   );
   await expect(
     readProductPage("http://127.0.0.1/arroz", "test", fetch),
-  ).rejects.toThrow(/no es válida/);
+  ).rejects.toThrow(/is invalid/);
   expect(fetch).not.toHaveBeenCalled();
   await expect(readProductPage(productUrl, "test", fetch)).rejects.toThrow(
-    /cambió de dirección/,
+    /redirected elsewhere/,
   );
   expect(fetch).toHaveBeenCalledTimes(1);
   fetch.mockImplementation(async () =>
@@ -242,7 +242,7 @@ test("scrape refuses changed source URLs, including same-site redirects, and nev
     }),
   );
   await expect(readProductPage(productUrl, "test", fetch)).rejects.toThrow(
-    /cambió de dirección/,
+    /redirected elsewhere/,
   );
 });
 
@@ -257,7 +257,7 @@ test("scrape rejects non-clean page statuses even when Firecrawl returns markdow
     }),
   );
   await expect(readProductPage(productUrl, "test", moved)).rejects.toThrow(
-    /contenido utilizable/,
+    /usable content/,
   );
   const notModified = vi.fn(async () =>
     Response.json({
