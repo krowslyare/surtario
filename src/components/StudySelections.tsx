@@ -4,6 +4,7 @@ import { combineReviewedOffers } from "../domain/extraction";
 import type { PurchaseSeed } from "../domain/market";
 import type { StudyProspect, WebSelection } from "../domain/study";
 import { money, numberLabel } from "../numbers";
+import type { SavedComparison } from "./SavedComparisons";
 import QuotationMail from "./QuotationMail";
 import "../styles/study.css";
 
@@ -13,6 +14,9 @@ export default function StudySelections({
   onRemove,
   onRemoveProspect,
   onPrepare,
+  onReplyPrepare,
+  deliveryComparison,
+  onDeliveryApplied,
   filter,
 }: {
   selections: WebSelection[];
@@ -20,6 +24,9 @@ export default function StudySelections({
   onRemove: (sourceId: string) => void;
   onRemoveProspect: (id: string) => void;
   onPrepare: (seed: PurchaseSeed) => void;
+  onReplyPrepare: (seed: PurchaseSeed) => void;
+  deliveryComparison?: SavedComparison;
+  onDeliveryApplied?: (comparison: SavedComparison) => void;
   filter: "all" | "catalog" | "distributor" | "reference";
 }) {
   const [confirmedFingerprint, setConfirmedFingerprint] = useState<
@@ -191,7 +198,9 @@ export default function StudySelections({
               prospectId={item.id}
               offers={[]}
               onEditOffer={() => {}}
-              onPrepare={onPrepare}
+              onPrepare={onReplyPrepare}
+              deliveryComparison={deliveryComparison}
+              onDeliveryApplied={onDeliveryApplied}
             />
           </article>
         ))}

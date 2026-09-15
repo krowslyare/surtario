@@ -67,3 +67,17 @@ HTTP checks started at 20:36:58 UTC:
 | In-app browser | App loaded; synthetic study with a priced rice offer and a distributor without a price saved and reopened after reload with both options preserved |
 
 The application code matches reviewed main; the follow-up documentation commit records this deployment only. This verifies deployment and basic hosted persistence, not the combined real-provider journey. OpenAI API acceptance and final contest release remain pending. No external provider request, email, production deployment or repository visibility change occurred.
+
+
+## Development acceptance — September 15, 2026
+
+The development site was updated to merged PR #32 and subsequently to the uncommitted frontend readability/continuity changes in `codex/cloud-demo-acceptance-0915`. Firecrawl search is enabled; OpenAI remains pending. AgentMail test delivery, linked replies, manual offer review and USD 4 freight confirmation were exercised through the hosted UI. See [the stage evidence](ETAPAS.md) for boundaries and test results. The automatic deployment branch has not been published by this task.
+
+
+## Automatic development publication
+
+The `Verify` workflow includes a `deploy-demo` job after tests/build, only for pushes to `main`. Pull requests never receive deployment credentials or publish. Configure the repository Actions secret `CONVEX_DEV_DEPLOY_KEY` with a **deployment-scoped development key** for `incredible-wolverine-122`. Production, preview, project-wide, wrong-target and missing keys fail before publication; the key value must never be committed or pasted into logs.
+
+The job publishes backend functions with `convex deploy --yes` (the checked development key selects the destination), then uses `deploy:hosting:dev` to build/check/upload the frontend. `VITE_REHEARSAL=false` is explicit. Development publications are serialized and are not canceled midway by a newer push. Verification downloads every build file and compares exact bytes, checks the SPA route and requires a missing asset to return 404. A failure is visible in Actions; backend and frontend publication are separate operations, so a frontend failure may leave a newer backend. Fix the cause and rerun the workflow; there is no automatic rollback.
+
+The repository secret exists (verified September 15). Its value was not retrieved. Activation and credential acceptance remain pending until this workflow is merged into main and its first real Actions publication succeeds. Existing provider gates, credentials and per-email approval remain unchanged.

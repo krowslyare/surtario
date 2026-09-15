@@ -1,3 +1,5 @@
+import { MessageBody } from "./MessageBody";
+import "../styles/mail.css";
 import ReplyDeliveryReview, { type DeliveryReply } from "./ReplyDeliveryReview";
 import type { SavedComparison } from "./SavedComparisons";
 import type { AdvisorContext } from "../domain/advisor";
@@ -277,7 +279,8 @@ function Connected({
       ))}
       {active && (
         <Dialog
-          title="Review quote request"
+          title={active.state === "draft" ? "Review quote request" : "Supplier conversation"}
+          className="mail-dialog"
           onClose={() => {
             setActiveId(null);
             setConfirmed(false);
@@ -288,21 +291,17 @@ function Connected({
               {error}
             </p>
           )}
-          <p>
-            <strong>Test recipient:</strong>{" "}
-            {active.recipient ??
-              "Not configured; create another request after it is configured."}
-          </p>
-          <p>
-            <strong>{active.subject}</strong>
-          </p>
-          <pre className="quotation-text">{active.text}</pre>
+          <div className="mail-recipient"><span>Test recipient</span><strong>{active.recipient ?? "Not configured"}</strong></div>
+          {active.state === "draft" ? !editDraft && <>
+            <h3 className="mail-subject">{active.subject}</h3>
+            <p className="mail-message-text">{active.text}</p>
+          </> : <details className="mail-details">
+            <summary>Sent request</summary>
+            <h3 className="mail-subject">{active.subject}</h3>
+            <p className="mail-message-text">{active.text}</p>
+          </details>}
           {active.state === "draft" && (
             <div className="inquiry-drafting">
-              <p className="field-hint">
-                Ask about the missing terms that matter. The saved message above
-                is the version you approve for sending.
-              </p>
               {status?.draftEnabled && active.aiDraftStatus === "idle" && (
                 <button
                   className="button secondary"
@@ -453,17 +452,13 @@ function Connected({
               )}
             </div>
           )}
-          <p role="status">
-            {labels[active.state]}.{" "}
-            {active.state === "sent"
-              ? "Acceptance does not confirm delivery or a reply."
-              : "No purchase is made."}
+          <p className="mail-status" role="status">
+            {active.replies.length > 0 ? `${active.replies.length} ${active.replies.length === 1 ? "reply received" : "replies received"}` : active.state === "sent" ? "Sent. Waiting for a reply." : labels[active.state]}
           </p>
           {active.failure && <p className="notice error">{active.failure}</p>}
           {(active.state === "sending" || active.state === "uncertain") && (
             <p>
-              If sending was interrupted, an operator must review it. It will
-              not create another one to repeat it without checking the result.
+              Sending is unconfirmed. Check the inbox before trying again.
             </p>
           )}
           {active.state === "draft" && (
@@ -481,9 +476,9 @@ function Connected({
               I reviewed the recipient and message and authorize this test send
             </label>
           )}
-          <div className="dialog-actions">
+          <div className="dialog-actions mail-actions">
             <button
-              className="button secondary"
+              className="button text-button"
               onClick={async () => {
                 try {
                   await navigator.clipboard.writeText(active.text);
@@ -495,7 +490,7 @@ function Connected({
             >
               Copy for WhatsApp
             </button>
-            <button
+            {active.state === "draft" && <button
               className="button primary"
               disabled={
                 !status?.enabled ||
@@ -509,10 +504,11 @@ function Connected({
               onClick={sendReviewed}
             >
               Send test request
-            </button>
+            </button>}
           </div>
           {notice && <p role="status">{notice}</p>}
-          <h3>Request history</h3>
+          <details className="mail-details">
+          <summary>Request history</summary>
           <ul>
             <li>Prepared {new Date(active.createdAt).toLocaleString()}.</li>
             {active.approvedAt !== null && (
@@ -529,18 +525,18 @@ function Connected({
               </li>
             )}
           </ul>
-          <h3>Linked replies</h3>
+          </details>
+          {active.state !== "draft" && <h3>Supplier replies</h3>}
           {active.replies.length === 0 ? (
             <p>
-              No replies are linked yet. You can continue researching and return
-              to this saved request later.
+              Replies will appear here. You can close this window and return later.
             </p>
           ) : (
-            active.replies.map((reply) => (
-              <div key={reply.messageId}>
-                <p>Received {reply.receivedAt}</p>
-                <pre className="quotation-text">{reply.text}</pre>
-                <p>Review the reply before changing prices or terms.</p>
+            active.replies.map((reply, index) => (
+              <details className="mail-reply" key={reply.messageId} open={index === 0}>
+                <summary>{index === 0 ? "Latest reply" : "Earlier reply"}<time>{new Date(reply.receivedAt).toLocaleString("en-US", {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"})}</time></summary>
+                <MessageBody text={reply.text} />
+                <div className="mail-reply-actions">
                 {onPrepare && (
                   <button
                     className="button secondary"
@@ -588,7 +584,8 @@ function Connected({
                     Edit terms for {offer.supplier}
                   </button>
                 ))}
-              </div>
+                </div>
+              </details>
             ))
           )}
         </Dialog>

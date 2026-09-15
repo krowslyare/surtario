@@ -336,3 +336,21 @@ Independent pre-PR review found and closed two continuation defects: unchanged c
 A linked supplier reply can resolve freight in the existing comparison after explicit human confirmation of offer, amount, currency/tax basis and exact evidence. Before/after reports use the same buying preferences and persist with the comparison revision. Other terms stay unchanged, prior selection is cleared, and stale/conflicting confirmations are rejected. A late response preserves newer local drafts.
 
 225 unit/backend tests, frontend/backend TypeScript and hosting checks passed locally. Seven affected browser journeys passed, including both delivery confirmation paths (normal and delayed), reply extraction recovery and study/case continuity. Mobile/reduced-motion captures were checked. Independent review closed both findings; no remaining material findings. Evidence is synthetic and local. No cloud deployment, external email or new AI inference was performed. Hosted provider acceptance remains separate.
+
+
+## September 15, 2026 — cloud acceptance and supplier-dialog readability
+
+Development deployment `incredible-wolverine-122` was updated from main at `dfd3e02612fc930b544e4d0af2df6e34ba2789f4`, then received the frontend changes from `codex/cloud-demo-acceptance-0915` (uncommitted). Real Firecrawl search returned public rice sources; an unpriced candidate and its study survived reload. `LIVE_RESEARCH_ENABLED` is enabled. OpenAI remains unavailable and explicitly deferred by the user.
+
+Two synthetic requests were delivered through AgentMail to the configured test inbox; three replies returned through the signed webhook. Manual review created a 40 lb comparison: two 20 lb bags at USD 18, freight initially pending. A linked reply supplied USD 4 delivery, giving USD 40 total. Confirmation preserved the exact quote, updated the existing comparison and enabled selection. Reload recovered revision 4 with the selected offer and USD 40 total. No purchase or real supplier commitment was made. Browser sessions showed separate saved-study lists; this is UI isolation evidence, not a new adversarial authorization audit.
+
+The live walkthrough exposed excessive email/history text, mixed interface language, a zero count for one selected web candidate and lost comparison continuity when reviewing that candidate's reply. Dialogs now use a bounded literal email preview, expandable original/history, clearer form spacing and explicit delivery/total amounts. Candidate replies retain the sourcing-case comparison and can confirm freight without a second request. Historical cloud data created before this correction was completed through its already-linked test request.
+
+Verification: 225 unit/backend tests passed; build/hosting checks passed. Seven affected browser journeys passed across the focused run and targeted recheck, including direct-candidate freight, original evidence, stale/delayed responses and extraction updates preserving edits. Desktop/mobile captures were inspected, then the hosted real-email dialog was inspected and refined. Cloud publication matched 30 build files and checked SPA fallback/missing assets. These frontend changes have no commit, PR or CI result yet. Automatic deployment remains separate pending work. Live OpenAI extraction/advice and a seven-day watch remain unverified.
+
+
+## September 15, 2026 — development publication PR preparation
+
+Consolidated the cloud-tested supplier-dialog changes with the prepared main-only deployment job so automatic publication retains the tested UI. The workflow tests before publishing, rejects missing/non-dev/wrong-target keys, serializes deployments and compares all published files plus SPA/missing-asset behavior. `CONVEX_DEV_DEPLOY_KEY` exists in GitHub; its value was not read. Pull requests do not deploy or receive that credential. First Actions deployment and live credential acceptance remain pending until merge.
+
+Pre-PR review checked candidate/case linkage, retained full email evidence, pending freight and deployment target/secret boundaries. Fresh verification passed 233 tests (including eight credential guard cases), TypeScript/build/hosting checks and workflow YAML parsing. The seven focused UI journeys and real hosted acceptance above remain the behavioral evidence. No additional provider call or deployment was needed for this consolidation.

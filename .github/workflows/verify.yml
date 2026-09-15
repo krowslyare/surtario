@@ -10,7 +10,7 @@ permissions:
 
 concurrency:
   group: verify-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   test-and-build:
@@ -29,3 +29,37 @@ jobs:
         run: npm test
       - name: Typecheck and production build
         run: npm run build
+
+
+  deploy-demo:
+    needs: test-and-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: convex-development-demo
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Validate development deployment key
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEV_DEPLOY_KEY }}
+        run: node scripts/check-demo-target.mjs
+      - name: Publish development backend
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEV_DEPLOY_KEY }}
+        run: npx convex deploy --yes
+      - name: Publish development frontend
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEV_DEPLOY_KEY }}
+          VITE_REHEARSAL: 'false'
+        run: npm run deploy:hosting:dev
+      - name: Verify published files and SPA route
+        run: node scripts/verify-demo-publication.mjs

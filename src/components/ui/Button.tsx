@@ -32,7 +32,7 @@ export function Button({
       {busy && (
         <span className="button-progress">
           <LoaderCircle size={16} aria-hidden="true" />
-          {busyLabel ?? "Procesando…"}
+          {busyLabel ?? "Processing…"}
         </span>
       )}
     </button>

@@ -38,6 +38,7 @@ import LiveResearch, {
   type WebSearchRequest,
 } from "./components/LiveResearch";
 import ExtractionReview from "./components/ExtractionReview";
+import type { SavedComparison } from "./components/SavedComparisons";
 import QuotationMail from "./components/QuotationMail";
 import DocumentExtraction from "./components/DocumentExtraction";
 import IngredientIntake from "./components/IngredientIntake";
@@ -125,6 +126,11 @@ export default function MarketStudy({
       setCaseReply(seed);
       setReplyEquivalent(false);
     } else onPrepare({ ...seed, sourcingCaseId: currentStudyCase?.caseId });
+  }
+
+  function openUpdatedReplyComparison(comparison: SavedComparison) {
+    onPrepare({ ...comparison, sourcingCaseId: currentStudyCase?.caseId,
+      resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId } });
   }
 
   const [confirmed, setConfirmed] = useState(false);
@@ -625,7 +631,7 @@ export default function MarketStudy({
                     </h2>
                     <p>
                       {showStudy
-                        ? `${selected.length} ${selected.length === 1 ? "selected option" : "selected options"} in this view`
+                        ? `${optionCount} ${optionCount === 1 ? "selected option" : "selected options"} in this study`
                         : `${results.length} sample results · Not a measure of market coverage`}
                     </p>
                   </div>
@@ -672,6 +678,9 @@ export default function MarketStudy({
                       )
                     }
                     onPrepare={onPrepare}
+                    onReplyPrepare={prepareStudyReply}
+                    deliveryComparison={currentStudyCase?.comparison}
+                    onDeliveryApplied={openUpdatedReplyComparison}
                   />
                 )}
                 {visible.length === 0 && !(showStudy && hasVisibleExternalSelection) ? (
@@ -815,10 +824,10 @@ export default function MarketStudy({
                     variant="secondary"
                     disabled={
                       caseLinkPending ||
-                      (priced.length === 0 && webSelections.length === 0)
+                      (!currentStudyCase?.comparison && priced.length === 0 && webSelections.length === 0)
                     }
                     onClick={() => {
-                      if (priced.length === 0 && webSelections.length > 0) {
+                      if (!currentStudyCase?.comparison && priced.length === 0 && webSelections.length > 0) {
                         setShowStudy(true);
                         setFilter("all");
                         return;
@@ -879,6 +888,7 @@ export default function MarketStudy({
                   onEditOffer={() => {}}
                   deliveryComparison={currentStudyCase?.comparison}
                   onPrepare={prepareStudyReply}
+                  onDeliveryApplied={openUpdatedReplyComparison}
                   onAddReply={currentStudyCase?.comparison ? prepareStudyReply : undefined}
                   comparisonLabel={currentStudyCase?.comparison ? "this case comparison" : undefined}
                 />
