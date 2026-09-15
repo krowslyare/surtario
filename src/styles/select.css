@@ -160,3 +160,9 @@
 }
 
 .surtario-select-trigger > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Keep keyboard focus visible inside the menu rather than clipped outside it. */
+.surtario-select-item:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}

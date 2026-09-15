@@ -369,3 +369,7 @@ Verification: 225 unit/backend tests passed; build/hosting checks passed. Seven 
 Consolidated the cloud-tested supplier-dialog changes with the prepared main-only deployment job so automatic publication retains the tested UI. The workflow tests before publishing, rejects missing/non-dev/wrong-target keys, serializes deployments and compares all published files plus SPA/missing-asset behavior. `CONVEX_DEV_DEPLOY_KEY` exists in GitHub; its value was not read. Pull requests do not deploy or receive that credential. First Actions deployment and live credential acceptance remain pending until merge.
 
 Pre-PR review checked candidate/case linkage, retained full email evidence, pending freight and deployment target/secret boundaries. Fresh verification passed 233 tests (including eight credential guard cases), TypeScript/build/hosting checks and workflow YAML parsing. The seven focused UI journeys and real hosted acceptance above remain the behavioral evidence. No additional provider call or deployment was needed for this consolidation.
+
+
+### September 15, 2026 — direct comparison example and select focus
+The direct comparison entry now defaults to a separate English synthetic rice comparison (USD/lb, Supplier A/B); explicit `example=pe` retains the original Peru fixtures. Initial source evidence and reset use the same active example. Saved/reviewed offers retain their original terms. Select options use an inset aubergine focus ring instead of the clipped blue global ring; keyboard navigation and Escape/focus return remain supported.
