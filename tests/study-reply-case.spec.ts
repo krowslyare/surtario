@@ -6,14 +6,20 @@ import { join } from "node:path";
 import { riceOffers, riceRequest } from "../fixtures/procurement";
 import { connectOnlyToLocalBackend, runLocalConvex } from "./e2e-local";
 
-test("a reply opened directly from a study updates its existing case comparison", async ({ page, context }) => {
+for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandidate ? "web candidate" : "sample distributor"} updates its existing case comparison`, async ({ page, context }) => {
   await connectOnlyToLocalBackend(context);
   const token = createHash("sha256").update(randomUUID()).digest("hex");
   const run = (name: string, args: object) =>
     JSON.parse(runLocalConvex(["run", name, JSON.stringify(args)]));
+  let prospectId: string | undefined;
+  if (webCandidate) {
+    const reserved = run("research:reserveSearch", { token, clientId: randomUUID(), ingredient: "Arroz", region: "Lima" });
+    run("research:finishSearch", { id: reserved.run.id, sources: [{ url: "https://supplier.test/rice", title: "Arroz distributor", description: "Synthetic rice source", markdown: null, contentTruncated: false }], discarded: 0, warning: false, simulated: true });
+    prospectId = run("prospects:save", {token, runId: reserved.run.id, sourceIndex: 0, supplier: "Synthetic candidate", contact: "", confirmed: true}).id;
+  }
   const study = run("studies:save", {
     token, clientId: randomUUID(), id: null, expectedRevision: 0,
-    term: "Arroz", region: "Lima", selectedIds: ["distributor-c"],
+    term: "Arroz", region: "Lima", selectedIds: webCandidate ? [] : ["distributor-c"], ...(prospectId ? {prospectIds: [prospectId]} : {}),
   });
   const caseId = run("sourcing:create", {
     token, studyId: study.id, objective: "Compare the supplier reply with the saved offers",
@@ -35,7 +41,7 @@ test("a reply opened directly from a study updates its existing case comparison"
     const threadId = randomUUID();
     seed("quotationRequests", {
       ownerHash: createHash("sha256").update(token).digest("hex"),
-      clientId: randomUUID(), studyId: study.id, resultId: "distributor-c",
+      clientId: randomUUID(), ...(prospectId ? {prospectId} : {studyId: study.id, resultId: "distributor-c"}),
       recipient: null, inboxId: null, subject: "Synthetic study reply",
       text: "Synthetic inquiry for rice package terms.", state: "sent",
       simulated: true, revision: 3, idempotencyKey: randomUUID(),
@@ -46,7 +52,7 @@ test("a reply opened directly from a study updates its existing case comparison"
     seed("quotationReplies", {
       requestId, eventId: randomUUID(), messageId, threadId,
       from: "demo@example.test", receivedAt: new Date().toISOString(),
-      text: "Distribuidor Respuesta: arroz blanco, saco de 18 kg a PEN 85. Entrega por confirmar.",
+      text: "Distribuidor Respuesta: arroz blanco, saco de 18 kg a PEN 85. El flete es PEN 8 por pedido.",
     });
   } finally {
     rmSync(directory, { recursive: true });
@@ -58,6 +64,8 @@ test("a reply opened directly from a study updates its existing case comparison"
   await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(page.getByRole("button", { name: "Open saved case comparison", exact: true })).toBeVisible();
+  await expect(page.getByText("1 selected option in this study", {exact: true})).toBeVisible();
+  await expect(page.getByRole("button", {name: "Open saved case comparison", exact: true})).toBeEnabled();
   // Keep the case panel closed: this is the independent study mail entry point.
   await expect(page.getByRole("button", { name: "Open research case", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "View request", exact: true }).click();
@@ -86,6 +94,26 @@ test("a reply opened directly from a study updates its existing case comparison"
     ...riceOffers.map((offer) => offer.id), `reply:${requestId!}:${messageId}`,
   ]);
   expect(saved[0].selectedOfferId).toBeNull();
+  if (webCandidate) {
+    await page.goto("/?view=market&example=pe");
+    await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
+    await page.getByRole("button", { name: "Open study", exact: true }).click();
+    await page.getByRole("button", { name: "View request", exact: true }).click();
+    await page.getByRole("button", {name: "Use reply to confirm delivery", exact: true}).click();
+    const delivery = page.getByRole("dialog", {name: "Confirm delivery from this reply", exact: true});
+    await delivery.getByLabel("Offer to update", {exact: true}).selectOption(`reply:${requestId!}:${messageId}`);
+    await delivery.getByLabel("Delivery per order (PEN)", {exact: true}).fill("8");
+    await delivery.getByLabel("Exact phrase confirming delivery", {exact: true}).fill("El flete es PEN 8 por pedido.");
+    await delivery.getByRole("checkbox").check();
+    await delivery.getByRole("button", {name: "Confirm delivery and save", exact: true}).click();
+    await expect(page.getByLabel("Required quantity", {exact: true})).toHaveValue("10");
+    await expect(page.getByRole("button", {name: "Save comparison changes", exact: true})).toBeVisible();
+    expect(run("quotationMail:list", {token})).toHaveLength(1);
+    const updated = run("comparisons:list", {token});
+    expect(updated).toHaveLength(1);
+    expect(updated[0].id).toBe(comparison.id);
+    expect(updated[0].offers.at(-1).freightCents).toBe(800);
+  }
   const detail = run("sourcing:get", { token, caseId });
   expect(detail.case.comparisonId).toBe(comparison.id);
   expect(detail.events.some((event: { kind: string }) => event.kind === "mail_reviewed")).toBe(true);

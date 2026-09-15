@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-15T04:51:39Z
+- **Last updated:** 2026-09-15T18:36:15Z
 
 ## Log
 
@@ -351,3 +351,25 @@ Independent pre-PR review found and closed two continuation defects: unchanged c
 ### 2026-09-15 - working tree · supplier reply delivery confirmation
 A supplier reply can now resolve an unknown delivery charge in its linked comparison. The operator chooses the offer, enters the amount and confirms an exact excerpt. One mutation checks ownership, linkage and revision, updates freight only, clears the old selection and stores the before/after deterministic reports and original reply reference in `deliveryConfirmations`. Repeated confirmation is idempotent; the history identifies the confirmation date and comparison revision.
 225 unit/backend tests, both TypeScript checks, hosting checks and seven affected browser journeys passed locally, including mobile/reduced motion, saved evidence recovery and a delayed response that preserves a newer draft. Independent review found and closed late-response draft replacement and misleading historical “Now” labels. Test replies were synthetic; no external email, model call or cloud deployment occurred.
+
+
+### 2026-09-15 - working tree · cloud acceptance and supplier-dialog readability
+
+Development deployment `incredible-wolverine-122` was updated from main at `dfd3e02612fc930b544e4d0af2df6e34ba2789f4`, then received the frontend changes from `codex/cloud-demo-acceptance-0915` (uncommitted). Real Firecrawl search returned public rice sources; an unpriced candidate and its study survived reload. `LIVE_RESEARCH_ENABLED` is enabled. OpenAI remains unavailable and explicitly deferred by the user.
+
+Two synthetic requests were delivered through AgentMail to the configured test inbox; three replies returned through the signed webhook. Manual review created a 40 lb comparison: two 20 lb bags at USD 18, freight initially pending. A linked reply supplied USD 4 delivery, giving USD 40 total. Confirmation preserved the exact quote, updated the existing comparison and enabled selection. Reload recovered revision 4 with the selected offer and USD 40 total. No purchase or real supplier commitment was made. Browser sessions showed separate saved-study lists; this is UI isolation evidence, not a new adversarial authorization audit.
+
+The live walkthrough exposed excessive email/history text, mixed interface language, a zero count for one selected web candidate and lost comparison continuity when reviewing that candidate's reply. Dialogs now use a bounded literal email preview, expandable original/history, clearer form spacing and explicit delivery/total amounts. Candidate replies retain the sourcing-case comparison and can confirm freight without a second request. Historical cloud data created before this correction was completed through its already-linked test request.
+
+Verification: 225 unit/backend tests passed; build/hosting checks passed. Seven affected browser journeys passed across the focused run and targeted recheck, including direct-candidate freight, original evidence, stale/delayed responses and extraction updates preserving edits. Desktop/mobile captures were inspected, then the hosted real-email dialog was inspected and refined. Cloud publication matched 30 build files and checked SPA fallback/missing assets. These frontend changes have no commit, PR or CI result yet. Automatic deployment remains separate pending work. Live OpenAI extraction/advice and a seven-day watch remain unverified.
+
+
+### 2026-09-15 - working tree · development publication PR preparation
+
+Consolidated the cloud-tested supplier-dialog changes with the prepared main-only deployment job so automatic publication retains the tested UI. The workflow tests before publishing, rejects missing/non-dev/wrong-target keys, serializes deployments and compares all published files plus SPA/missing-asset behavior. `CONVEX_DEV_DEPLOY_KEY` exists in GitHub; its value was not read. Pull requests do not deploy or receive that credential. First Actions deployment and live credential acceptance remain pending until merge.
+
+Pre-PR review checked candidate/case linkage, retained full email evidence, pending freight and deployment target/secret boundaries. Fresh verification passed 233 tests (including eight credential guard cases), TypeScript/build/hosting checks and workflow YAML parsing. The seven focused UI journeys and real hosted acceptance above remain the behavioral evidence. No additional provider call or deployment was needed for this consolidation.
+
+
+### September 15, 2026 — direct comparison example and select focus
+The direct comparison entry now defaults to a separate English synthetic rice comparison (USD/lb, Supplier A/B); explicit `example=pe` retains the original Peru fixtures. Initial source evidence and reset use the same active example. Saved/reviewed offers retain their original terms. Select options use an inset aubergine focus ring instead of the clipped blue global ring; keyboard navigation and Escape/focus return remain supported.

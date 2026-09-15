@@ -149,8 +149,7 @@ export function WebProspectLibrary({
     <section className="saved-studies" aria-label="Saved web distributors">
       <h2>Saved web distributors</h2>
       <p>
-        Candidate reviewed by you. Price, availability, and service area need
-        consultar.
+        Price, availability and delivery area still need confirmation.
       </p>
       {prospects.map((item) => (
         <article key={item.id}>
@@ -159,7 +158,7 @@ export function WebProspectLibrary({
             {item.ingredient} · {item.region}
           </p>
           <p>
-            Contacto anotado:{" "}
+            Contact:{" "}
             {item.contact ?? "Pending; review the source page"}
           </p>
           <a href={item.sourceUrl} target="_blank" rel="noreferrer">
@@ -167,7 +166,7 @@ export function WebProspectLibrary({
           </a>
           <p className="field-hint">
             Source observed on{" "}
-            {new Date(item.observedAt).toLocaleDateString("es-PE")}. Contacto
+            {new Date(item.observedAt).toLocaleDateString("en-US")}. Contact
             not independently verified.
           </p>
           {onSelect ? (

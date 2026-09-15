@@ -1,3 +1,5 @@
+import { MessageBody } from "./MessageBody";
+import "../styles/mail.css";
 import { useEffect, useId, useState } from "react";
 import { useMutation } from "convex/react";
 import { ConvexError } from "convex/values";
@@ -6,7 +8,7 @@ import type { Id } from "../../convex/_generated/dataModel";
 import type { SavedComparison } from "./SavedComparisons";
 import type { AdvisorContext } from "../domain/advisor";
 import { analyzePurchase } from "../domain/advisor";
-import { parseCents } from "../numbers";
+import { money, parseCents } from "../numbers";
 import { Dialog } from "./Dialog";
 import { Button } from "./ui/Button";
 
@@ -74,6 +76,7 @@ export default function ReplyDeliveryReview({
   return (
     <Dialog
       title={done ? "Delivery saved" : "Confirm delivery from this reply"}
+      className="mail-dialog delivery-dialog"
       onClose={onClose}
     >
       {done ? (
@@ -90,19 +93,12 @@ export default function ReplyDeliveryReview({
         </>
       ) : (
         <>
-          <p>
-            Received {new Date(reply.receivedAt).toLocaleString()}.
-          </p>
-          <p className="field-hint">
-            Buying priority:{" "}
-            {context.priority === "cash"
-              ? "Preserve cash"
-              : context.priority === "unit_price"
-                ? "Lowest unit price"
-                : "Balanced"}
-            . The preview uses your comparison preferences.
-          </p>
-          <pre className="quotation-text">{reply.text}</pre>
+          <p>Match the delivery charge to an offer, then check the updated result.</p>
+          <details className="mail-details" open>
+            <summary>Supplier reply</summary>
+            <MessageBody text={reply.text} />
+          </details>
+          <div className="mail-form-grid">
           <div className="field">
             <label htmlFor={offerFieldId}>Offer to update</label>
             <select
@@ -131,6 +127,7 @@ export default function ReplyDeliveryReview({
               onChange={(event) => setAmount(event.target.value)}
             />
           </div>
+          </div>
           <div className="field">
             <label htmlFor={quoteFieldId}>
               Exact phrase confirming delivery
@@ -147,13 +144,14 @@ export default function ReplyDeliveryReview({
             </p>
           )}
           {after && (
-            <>
-              <h3>Before</h3>
-              <p>{before.recommendation}</p>
+            <section className="delivery-result" aria-label="Delivery preview">
               <h3>With this delivery cost</h3>
-              <p>{after.recommendation}</p>
-              <p>{after.impact}</p>
-            </>
+              <dl className="delivery-totals">
+                <div><dt>Delivery per order</dt><dd>{money(cents, offer?.currency)}</dd></div>
+                <div><dt>Updated order total</dt><dd>{money(after.alternatives.find(item => item.offerId === offerId)?.totalCents ?? null, offer?.currency)}</dd></div>
+              </dl>
+              <details className="mail-details"><summary>Compare with before</summary><p>{before.recommendation}</p></details>
+            </section>
           )}
           <label className="checkbox">
             <input

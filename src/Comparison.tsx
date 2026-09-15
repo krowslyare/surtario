@@ -36,7 +36,7 @@ import {
   Trash2,
   Truck,
 } from "lucide-react";
-import { riceOffers, riceRequest } from "../fixtures/procurement";
+import { riceOffers, riceRequest, usRiceOffers, usRiceRequest } from "../fixtures/procurement";
 import {
   compareProcurement,
   type SupplierOffer,
@@ -50,9 +50,9 @@ const today = () => {
   const date = new Date();
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 };
-const initialSources = (): Record<string, Source> =>
+const initialSources = (offers: SupplierOffer[]): Record<string, Source> =>
   Object.fromEntries(
-    riceOffers.map((offer) => [
+    offers.map((offer) => [
       offer.id,
       {
         label: "Sample quote",
@@ -290,21 +290,24 @@ export default function Comparison({
   onBack?: () => void;
   persistenceEnabled: boolean;
 }) {
+  const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
+  const exampleRequest = samplePeru ? riceRequest : usRiceRequest;
+  const exampleOffers = samplePeru ? riceOffers : usRiceOffers;
   const [request, setRequest] = useState<ProcurementRequest>({
-    ...(seed?.request ?? riceRequest),
+    ...(seed?.request ?? exampleRequest),
   });
   const [quantity, setQuantity] = useState(
     seed?.resumeComparison
       ? String(seed.request.quantity || "")
       : seed
         ? ""
-        : String(riceRequest.quantity),
+        : String(exampleRequest.quantity),
   );
   const [offers, setOffers] = useState<SupplierOffer[]>(() =>
-    (seed?.offers ?? riceOffers).map((offer) => ({ ...offer })),
+    (seed?.offers ?? exampleOffers).map((offer) => ({ ...offer })),
   );
   const [sources, setSources] = useState(
-    () => seed?.sources ?? initialSources(),
+    () => seed?.sources ?? initialSources(exampleOffers),
   );
   const [modal, setModal] = useState<"new" | "reset" | "help" | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
@@ -324,7 +327,7 @@ export default function Comparison({
   const [clientId, setClientId] = useState(() => crypto.randomUUID());
   const currentClientId = useRef(clientId);
   const [baselineRequest, setBaselineRequest] = useState<ProcurementRequest>(
-    () => ({ ...(seed?.request ?? riceRequest) }),
+    () => ({ ...(seed?.request ?? exampleRequest) }),
   );
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(seed?.resumeComparison?.selectedOfferId ?? null);
   const [selectionFingerprint, setSelectionFingerprint] = useState<
@@ -469,16 +472,16 @@ export default function Comparison({
 
   function reset() {
     setSourcingCaseId(seed?.sourcingCaseId);
-    setRequest({ ...(seed?.request ?? riceRequest) });
+    setRequest({ ...(seed?.request ?? exampleRequest) });
     setQuantity(
       seed?.resumeComparison
         ? String(seed.request.quantity)
         : seed
           ? ""
-          : String(riceRequest.quantity),
+          : String(exampleRequest.quantity),
     );
-    setOffers((seed?.offers ?? riceOffers).map((offer) => ({ ...offer })));
-    setSources(seed?.sources ?? initialSources());
+    setOffers((seed?.offers ?? exampleOffers).map((offer) => ({ ...offer })));
+    setSources(seed?.sources ?? initialSources(exampleOffers));
     setSavedId(
       (seed?.resumeComparison?.id as Id<"comparisons"> | undefined) ?? null,
     );
@@ -493,7 +496,7 @@ export default function Comparison({
     const nextClientId = crypto.randomUUID();
     currentClientId.current = nextClientId;
     setClientId(nextClientId);
-    setBaselineRequest({ ...(seed?.request ?? riceRequest) });
+    setBaselineRequest({ ...(seed?.request ?? exampleRequest) });
     setSelectedOfferId(null);
     setSelectionFingerprint(null);
     setModal(null);
@@ -675,7 +678,7 @@ export default function Comparison({
                     { value: "kg", label: "kg" },
                     { value: "lb", label: "lb" },
                     { value: "L", label: "L" },
-                    { value: "unit", label: "unid." },
+                    { value: "unit", label: "units" },
                   ]}
                 />
               </label>

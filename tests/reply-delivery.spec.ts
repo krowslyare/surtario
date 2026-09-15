@@ -88,7 +88,7 @@ for (const delayed of [false, true]) {
         threadId,
         from: "demo@example.test",
         receivedAt,
-        text: replyText,
+        text: replyText + "\n\nPrevious correspondence:\n" + "Synthetic quoted request history. ".repeat(60),
       });
     } finally {
       rmSync(directory, { recursive: true });
@@ -155,6 +155,8 @@ for (const delayed of [false, true]) {
     await quote.fill(replyText);
     await expect(approval).not.toBeChecked();
     await expect(save).toBeDisabled();
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await review.screenshot({path: testInfo.outputPath("delivery-review-desktop.png")});
     await page.setViewportSize({ width: 390, height: 844 });
     await page.emulateMedia({ reducedMotion: "reduce" });
     expect(

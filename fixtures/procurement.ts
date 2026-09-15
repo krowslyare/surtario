@@ -40,3 +40,25 @@ export const riceOffers: SupplierOffer[] = [
     deliveryConfirmed: true,
   },
 ];
+
+// Separate synthetic comparison; these are not converted Peru prices.
+export const usRiceRequest: ProcurementRequest = {
+  ingredient: "Rice",
+  specification: "Long-grain white rice",
+  quantity: 40,
+  unit: "lb",
+};
+export const usRiceOffers: SupplierOffer[] = [
+  {
+    id: "us-rice-supplier-a", supplier: "Supplier A",
+    ingredient: usRiceRequest.ingredient, specification: usRiceRequest.specification,
+    packageContent: 25, packageUnit: "lb", priceCents: 2000, currency: "USD",
+    minimumPackages: 1, freightCents: 500, taxStatus: "included", deliveryConfirmed: true,
+  },
+  {
+    id: "us-rice-supplier-b", supplier: "Supplier B",
+    ingredient: usRiceRequest.ingredient, specification: usRiceRequest.specification,
+    packageContent: 50, packageUnit: "lb", priceCents: 3500, currency: "USD",
+    minimumPackages: 1, freightCents: 0, taxStatus: "included", deliveryConfirmed: true,
+  },
+];

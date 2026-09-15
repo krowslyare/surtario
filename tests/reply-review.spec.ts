@@ -76,7 +76,7 @@ for (const mode of ["new", "append"] as const)
     await page.getByRole("button", { name: "View request" }).click();
     await page.getByRole("button", { name: "Review as new offer" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog).toContainText("Manual review");
+    await expect(dialog).toContainText("Enter the offer manually.");
     await expect(
       dialog.getByRole("button", { name: "Continue with new offer" }),
     ).toBeDisabled();

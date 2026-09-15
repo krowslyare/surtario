@@ -4,7 +4,7 @@ export default defineConfig({
     include: [
       "src/**/*.test.ts",
       "convex/**/*.test.ts",
-      "scripts/rehearsal/*.test.ts",
+      "scripts/**/*.test.ts",
     ],
   },
 });

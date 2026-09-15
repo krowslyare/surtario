@@ -12,6 +12,8 @@ import {
 } from "../domain/replyReview";
 import type { ExtractedOffer, ReviewedValues } from "../domain/extraction";
 import type { PurchaseSeed } from "../domain/market";
+import { MessageBody } from "./MessageBody";
+import "../styles/mail.css";
 import { Dialog } from "./Dialog";
 const labels = {
   supplier: "Supplier",
@@ -174,14 +176,10 @@ export default function ReplyOfferReview({
     pendingSuggestion?.proposal ??
     (appliedAttempt !== undefined ? appliedProposal : null);
   return (
-    <Dialog title="Prepare offer from reply" wide onClose={onClose}>
-      <p>
-        Review one offer from the email. AI only proposes fields with quoted
-        evidence; you confirm or correct each value. If price or package size is
-        missing, leave it pending. Manual review is always available.
-      </p>
-      <pre className="quotation-text">{reply.text}</pre>
-      {status !== "complete" && (
+    <Dialog title="Prepare offer from reply" wide className="mail-dialog" onClose={onClose}>
+      <p>Enter the terms you can verify in this reply. Leave missing details blank.</p>
+      <MessageBody text={reply.text} />
+      {(aiEnabled || extracting || status === "running") && status !== "complete" && (
         <button
           className="button secondary"
           disabled={
@@ -196,10 +194,9 @@ export default function ReplyOfferReview({
               : "Suggest fields with AI"}
         </button>
       )}
-      {!aiEnabled && status !== "complete" && (
+      {!aiEnabled && !extracting && status !== "running" && status !== "complete" && (
         <p className="notice info">
-          Reply extraction is not configured. You can complete all fields
-          manually.
+          Enter the offer manually. AI suggestions are unavailable.
         </p>
       )}
       {status === "complete" && (
@@ -279,9 +276,7 @@ export default function ReplyOfferReview({
         I confirm these details represent an offer in this reply
       </label>
       <p className="field-hint">
-        “Continue with new offer” opens a new comparison without recording a
-        purchase. You can then complete delivery, tax, and minimum order details
-        and save the comparison.
+        Next, confirm quantity, delivery and tax. This does not place an order.
       </p>
       {onAdd && (
         <>
