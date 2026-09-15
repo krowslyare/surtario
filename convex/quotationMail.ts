@@ -1,3 +1,7 @@
+import { advisorContext } from "./advisorValidators";
+import { savedComparisonValidator } from "./comparisonValidators";
+import { savedDeliveryConfirmation } from "./deliveryValidators";
+import { analyzePurchase } from "../src/domain/advisor";
 import { ConvexError, v } from "convex/values";
 import {
   providerFetch,
@@ -1111,5 +1115,110 @@ export const recordReceived = internalMutation({
     if (unmatched.length >= 100) return "discarded" as const;
     await ctx.db.insert("quotationUnmatchedEvents", { ...args, from: sender });
     return "unmatched" as const;
+  },
+});
+
+function deliveryView(doc: Doc<"deliveryConfirmations">) {
+  const { _id: id, _creationTime: _, ...fields } = doc;
+  return { id, ...fields };
+}
+
+export const listDeliveryConfirmations = query({
+  args: { token: v.string(), comparisonId: v.id("comparisons") },
+  returns: v.array(savedDeliveryConfirmation),
+  handler: async (ctx, args) => {
+    const owner = await ownerHash(args.token);
+    const comparison = await ctx.db.get(args.comparisonId);
+    if (!comparison || comparison.ownerHash !== owner)
+      throw new ConvexError("Comparison unavailable in this session.");
+    return (await ctx.db.query("deliveryConfirmations")
+      .withIndex("by_comparisonId", q => q.eq("comparisonId", comparison._id))
+      .order("desc").take(40)).map(deliveryView);
+  },
+});
+
+// A human explicitly assigns a quoted reply to one unresolved delivery charge.
+// The reply is evidence, never authorization or an instruction to select/buy.
+export const confirmReplyDelivery = mutation({
+  args: {
+    token: v.string(), requestId: v.id("quotationRequests"), messageId: v.string(),
+    comparisonId: v.id("comparisons"), expectedRevision: v.number(),
+    offerId: v.string(), freightCents: v.number(), evidenceQuote: v.string(),
+    context: advisorContext, confirmed: v.literal(true),
+  },
+  returns: v.object({ comparison: savedComparisonValidator, confirmation: savedDeliveryConfirmation, alreadyApplied: v.boolean() }),
+  handler: async (ctx, args) => {
+    const owner = await ownerHash(args.token);
+    const comparison = await ctx.db.get(args.comparisonId);
+    const request = await ctx.db.get(args.requestId);
+    if (!comparison || comparison.ownerHash !== owner || !request || request.ownerHash !== owner)
+      throw new ConvexError("Comparison or request unavailable in this session.");
+    const linkedCase = await ctx.db.query("sourcingCases")
+      .withIndex("by_comparisonId", q => q.eq("comparisonId", comparison._id)).unique();
+    let linked = request.comparisonId === comparison._id;
+    if (!request.comparisonId && linkedCase?.ownerHash === owner) {
+      linked = Boolean(request.studyId && linkedCase.studyId === request.studyId);
+      if (!linked && request.prospectId) {
+        const prospect = await ctx.db.get(request.prospectId);
+        const study = linkedCase.studyId ? await ctx.db.get(linkedCase.studyId) : null;
+        linked = Boolean(prospect?.ownerHash === owner && (
+          linkedCase.researchRunIds.includes(prospect.runId) ||
+          study?.prospects?.some(item => item.id === prospect._id)
+        ));
+      }
+    }
+    if (!linked) throw new ConvexError("This reply is not linked to this comparison.");
+    const reply = await ctx.db.query("quotationReplies")
+      .withIndex("by_messageId", q => q.eq("messageId", args.messageId)).unique();
+    if (!reply || reply.requestId !== request._id)
+      throw new ConvexError("Reply not linked to this request.");
+    if (!args.evidenceQuote.trim() || args.evidenceQuote.length > 2000 || !reply.text.includes(args.evidenceQuote))
+      throw new ConvexError("Quote the delivery information exactly as it appears in the reply.");
+    if (!Number.isSafeInteger(args.freightCents) || args.freightCents < 0 || args.freightCents > 100_000_000 ||
+        !Number.isSafeInteger(args.expectedRevision) || args.expectedRevision < 1)
+      throw new ConvexError("Enter a valid delivery amount and comparison revision.");
+    const c = args.context;
+    if ([c.budgetCents, c.dailyUsage, c.stockQuantity, c.maxCoverageDays].some(x => x !== null && (!Number.isFinite(x) || x < 0 || x > 1_000_000_000)) ||
+        (c.budgetCents !== null && !Number.isSafeInteger(c.budgetCents)) || c.dailyUsage === 0 || c.maxCoverageDays === 0 ||
+        (c.preferredOfferId !== null && !comparison.offers.some(o => o.id === c.preferredOfferId)))
+      throw new ConvexError("Review the decision priorities and quantities.");
+    const publicComparison = () => {
+      const { _id: id, request, offers, sources, selectedOfferId, revision, updatedAt } = comparison;
+      return { id, request, offers, sources, selectedOfferId, revision, updatedAt };
+    };
+    const existing = await ctx.db.query("deliveryConfirmations")
+      .withIndex("by_comparisonId_and_messageId_and_offerId", q => q.eq("comparisonId", comparison._id).eq("messageId", args.messageId).eq("offerId", args.offerId)).unique();
+    if (existing) {
+      if (existing.requestId !== request._id || existing.freightCents !== args.freightCents || existing.evidenceQuote !== args.evidenceQuote ||
+          Object.keys(c).some(key => c[key as keyof typeof c] !== existing.context[key as keyof typeof c]))
+        throw new ConvexError("This reply was already confirmed with different data.");
+      return { comparison: publicComparison(), confirmation: deliveryView(existing), alreadyApplied: true };
+    }
+    if (comparison.revision !== args.expectedRevision)
+      throw new ConvexError("The comparison changed in another view. Open it again before confirming delivery.");
+    const offer = comparison.offers.find(o => o.id === args.offerId);
+    if (!offer || !comparison.sources[args.offerId]) throw new ConvexError("Choose an offer in this comparison.");
+    if (offer.freightCents !== null) throw new ConvexError("Delivery is already confirmed for this offer.");
+    const offers = comparison.offers.map(o => o.id === offer.id ? { ...o, freightCents: args.freightCents } : o);
+    const before = analyzePurchase(comparison.request, comparison.offers, c);
+    const after = analyzePurchase(comparison.request, offers, c);
+    const createdAt = Date.now();
+    const revision = comparison.revision + 1;
+    await ctx.db.patch(comparison._id, {
+      offers, revision, selectedOfferId: null, updatedAt: createdAt,
+      sources: { ...comparison.sources, [offer.id]: { ...comparison.sources[offer.id], edited: true } },
+    });
+    const id = await ctx.db.insert("deliveryConfirmations", {
+      requestId: request._id, messageId: reply.messageId, comparisonId: comparison._id,
+      offerId: offer.id, freightCents: args.freightCents, evidenceQuote: args.evidenceQuote,
+      receivedAt: reply.receivedAt, context: c, before, after, comparisonRevision: revision, createdAt,
+    });
+    await appendCaseEvent(ctx, {
+      comparisonId: comparison._id, kind: "delivery_confirmed",
+      eventKey: `delivery:${id}`, sourceId: `reply:${request._id}:${reply.messageId}`,
+      summary: `Delivery confirmed for ${offer.supplier}: ${offer.currency} ${(args.freightCents / 100).toFixed(2)}. ${before.recommendedOfferId !== after.recommendedOfferId || before.action !== after.action ? "Recommendation changed." : "Recommendation unchanged."} ${after.recommendation}`,
+    });
+    const updated = (await ctx.db.get(comparison._id))!;
+    return { comparison: { ...publicComparison(), offers: updated.offers, sources: updated.sources, selectedOfferId: updated.selectedOfferId, revision, updatedAt: createdAt }, confirmation: deliveryView((await ctx.db.get(id))!), alreadyApplied: false };
   },
 });

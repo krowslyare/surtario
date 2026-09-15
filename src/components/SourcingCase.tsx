@@ -43,6 +43,7 @@ type Props = {
 
 const eventTitles: Record<string, string> = {
   created: "Research question saved",
+  delivery_confirmed: "Delivery confirmed from supplier reply",
   study_linked: "Market study linked",
   comparison_saved: "Reviewed comparison saved",
   started: "Research started",
@@ -351,6 +352,7 @@ function CaseDetail({
 }) {
   const detail = useQuery(api.sourcing.get, { token, caseId });
   const runs = useQuery(api.sourcing.research, { token, caseId });
+  const deliveryConfirmations = useQuery(api.quotationMail.listDeliveryConfirmations, detail?.case.comparisonId ? { token, comparisonId: detail.case.comparisonId } : "skip");
   const researchStatus = useQuery(api.research.status, {});
   const comparisons = useQuery(api.comparisons.list, { token });
   const requests = useQuery(api.quotationMail.list, { token });
@@ -414,7 +416,7 @@ function CaseDetail({
   const selectedRequest = linkedRequests.find(
     (request) => request.id === mailId,
   );
-  const reviewedIds = Object.keys(savedComparison?.sources ?? {});
+  const reviewedIds = [...Object.keys(savedComparison?.sources ?? {}), ...(deliveryConfirmations ?? []).map((item) => `reply:${item.requestId}:${item.messageId}`)];
   const hasEvidence =
     runs?.some((run) =>
       run.sources.some(
@@ -437,7 +439,8 @@ function CaseDetail({
     reviewedReplyIds: reviewedIds,
   });
   const progressLoaded =
-    requests !== undefined && runs !== undefined && comparisons !== undefined;
+    requests !== undefined && runs !== undefined && comparisons !== undefined &&
+    (!detail.case.comparisonId || deliveryConfirmations !== undefined);
   const runsExhausted =
     detail.events.filter((event) => event.kind === "started").length >= 3;
   const openComparison = () => {
@@ -725,6 +728,7 @@ function CaseDetail({
               prospectId={selectedRequest.prospectId}
               resultId={selectedRequest.resultId}
               offers={[]}
+              deliveryComparison={savedComparison}
               onEditOffer={openComparison}
               onPrepare={(seed) => {
                 if (savedComparison) {

@@ -1111,6 +1111,16 @@ export default function Comparison({
         {persistenceEnabled && (
           <QuotationMail
             comparisonId={savedId}
+            deliveryComparison={savedId ? { id: savedId, revision: savedRevision, request: effectiveRequest, offers, sources, selectedOfferId: activeSelection, updatedAt: 0 } : undefined}
+            deliveryContext={decisionState.context}
+            deliveryBlocked={!comparisonCurrent || decisionState.invalid}
+            onDeliveryApplied={(comparison) => {
+              if (currentClientId.current !== clientId || currentFingerprintRef.current !== currentFingerprint) {
+                setMessage("Delivery was saved to the previous comparison. Your current draft is preserved.");
+                return;
+              }
+              openSaved(comparison);
+            }}
             offers={offers}
             onEditOffer={setEditing}
             onPrepare={onPrepare}

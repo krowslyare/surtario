@@ -877,6 +877,7 @@ export default function MarketStudy({
                   resultId={item.id}
                   offers={[]}
                   onEditOffer={() => {}}
+                  deliveryComparison={currentStudyCase?.comparison}
                   onPrepare={prepareStudyReply}
                   onAddReply={currentStudyCase?.comparison ? prepareStudyReply : undefined}
                   comparisonLabel={currentStudyCase?.comparison ? "this case comparison" : undefined}

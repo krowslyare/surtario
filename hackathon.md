@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-14T19:30:30Z
+- **Last updated:** 2026-09-15T04:51:39Z
 
 ## Log
 
@@ -346,3 +346,8 @@ Persistent sourcing cases now connect an optional saved study, bounded research 
 Local verification covers capability ownership, canceled/late work, duplicate events, immutable mail approval, stale comparison revisions, saved-study context, offline recovery and responsive layouts. Provider calls in these tests are mocked or synthetic. The workflow component is registered; no cloud deployment or provider flags were changed. Real OpenAI API behavior, the combined hosted flow and a seven-day live watch remain unverified. See [the architecture and configuration contract](docs/desarrollo/CASOS_ABASTECIMIENTO.md).
 
 Independent pre-PR review found and closed two continuation defects: unchanged case comparisons now retain their selected offer, and replies opened directly from a study update the existing case comparison instead of creating an unlinked one. Added focused browser regressions for both. Fresh verification passed 222 unit/backend tests, frontend/backend TypeScript and hosting checks. The full browser run passed 71/72; the remaining failure was an incomplete research-module test stub, corrected without removing assertions. The new direct-study reply test and both workspace tests then passed; selection recovery was checked separately. This is local synthetic evidence; CI and hosted acceptance are separate checks.
+
+
+### 2026-09-15 - working tree · supplier reply delivery confirmation
+A supplier reply can now resolve an unknown delivery charge in its linked comparison. The operator chooses the offer, enters the amount and confirms an exact excerpt. One mutation checks ownership, linkage and revision, updates freight only, clears the old selection and stores the before/after deterministic reports and original reply reference in `deliveryConfirmations`. Repeated confirmation is idempotent; the history identifies the confirmation date and comparison revision.
+225 unit/backend tests, both TypeScript checks, hosting checks and seven affected browser journeys passed locally, including mobile/reduced motion, saved evidence recovery and a delayed response that preserves a newer draft. Independent review found and closed late-response draft replacement and misleading historical “Now” labels. Test replies were synthetic; no external email, model call or cloud deployment occurred.

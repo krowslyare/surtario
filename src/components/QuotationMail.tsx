@@ -1,3 +1,7 @@
+import ReplyDeliveryReview, { type DeliveryReply } from "./ReplyDeliveryReview";
+import type { SavedComparison } from "./SavedComparisons";
+import type { AdvisorContext } from "../domain/advisor";
+import { defaultAdvisorContext } from "./PurchasingAdvisor";
 import ReplyOfferReview from "./ReplyOfferReview";
 import type { PurchaseSeed } from "../domain/market";
 import { Component, useEffect, useRef, useState, type ReactNode } from "react";
@@ -32,6 +36,10 @@ export default function QuotationMail(props: {
   onPrepare?: (seed: PurchaseSeed) => void;
   onAddReply?: (seed: PurchaseSeed) => void;
   comparisonLabel?: string;
+  deliveryComparison?: SavedComparison;
+  deliveryContext?: AdvisorContext;
+  deliveryBlocked?: boolean;
+  onDeliveryApplied?: (comparison: SavedComparison) => void;
 }) {
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
@@ -66,6 +74,10 @@ function Connected({
   onAddReply,
   comparisonLabel,
   initialRequestId,
+  deliveryComparison,
+  deliveryContext,
+  deliveryBlocked = false,
+  onDeliveryApplied,
 }: {
   token: string;
   comparisonId: Id<"comparisons"> | null;
@@ -78,7 +90,16 @@ function Connected({
   onPrepare?: (seed: PurchaseSeed) => void;
   onAddReply?: (seed: PurchaseSeed) => void;
   comparisonLabel?: string;
+  deliveryComparison?: SavedComparison;
+  deliveryContext?: AdvisorContext;
+  deliveryBlocked?: boolean;
+  onDeliveryApplied?: (comparison: SavedComparison) => void;
 }) {
+  const [deliveryReply, setDeliveryReply] = useState<DeliveryReply | null>(null);
+  const confirmations = useQuery(api.quotationMail.listDeliveryConfirmations, deliveryComparison ? {token, comparisonId: deliveryComparison.id} : "skip");
+  const deliveryAnalyses = useQuery(api.advisor.list, deliveryComparison && !deliveryContext ? {token, comparisonId: deliveryComparison.id} : "skip");
+  const effectiveDeliveryContext = deliveryContext ?? deliveryAnalyses?.[0]?.context ?? defaultAdvisorContext;
+  const deliveryLoading = Boolean(deliveryComparison && !deliveryContext && deliveryAnalyses === undefined);
   const status = useQuery(api.quotationMail.status, {});
   const requests = useQuery(api.quotationMail.list, { token });
   const create = useMutation(api.quotationMail.create);
@@ -543,6 +564,18 @@ function Connected({
                     Review as new offer
                   </button>
                 )}
+                {deliveryComparison && deliveryComparison.offers.some((offer) => offer.freightCents === null) && <>
+                  <button className="button secondary" disabled={deliveryBlocked || deliveryLoading} onClick={() => {
+                    setDeliveryReply({ requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt });
+                    setActiveId(null);
+                  }}>Use reply to confirm delivery</button>
+                  {deliveryBlocked && <p className="field-hint">Save your comparison changes and check your preferences before confirming delivery.</p>}
+                </>}
+                {confirmations?.filter((item) => item.requestId === active.id && item.messageId === reply.messageId).map((item) => <div key={item.id}>
+                  <h4>Delivery confirmed</h4><blockquote>{item.evidenceQuote}</blockquote>
+                  <p className="field-hint">Confirmed {new Date(item.createdAt).toLocaleString()} · comparison revision {item.comparisonRevision}</p>
+                  <p>Before confirmation: {item.before.recommendation}</p><p>After confirmation: {item.after.recommendation}</p>
+                </div>)}
                 {offers.map((offer) => (
                   <button
                     className="button text-button"
@@ -560,6 +593,7 @@ function Connected({
           )}
         </Dialog>
       )}
+      {deliveryReply && deliveryComparison && <ReplyDeliveryReview token={token} reply={deliveryReply} comparison={deliveryComparison} context={effectiveDeliveryContext} onApplied={onDeliveryApplied} onClose={() => setDeliveryReply(null)} />}
       {reviewReply && onPrepare && (
         <ReplyOfferReview
           reply={{
