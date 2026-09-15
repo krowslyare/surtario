@@ -105,3 +105,12 @@ Deferred: continuous global discovery, multi-ingredient optimization, learned bu
 ### Progressive disclosure in the case
 
 The case highlights one fact-derived next action. Conversations and selected-source watches expand on demand. A latest-event preview opens a focus-managed history dialog; short dated milestones expose the original event text through “View details”. Unknown event types retain their original summary. Message approval and evidence review continue in their existing flows, without nesting them inside the history dialog.
+
+
+## Partial supplier answers: delivery cost
+
+From a linked request, “Use reply to confirm delivery” opens a review of the original reply. The operator chooses an offer with unknown freight, enters the per-order amount in that offer's currency/tax basis, copies the exact evidence and confirms. Comparison views require saved changes and valid preferences; case/study views use the latest saved advisor preferences, or the default when no analysis exists.
+
+`quotationMail.confirmReplyDelivery` validates session ownership, request/reply/case linkage, comparison revision, amount and verbatim evidence. It changes only freight, marks the source edited while preserving its original, clears the selected offer and stores immutable before/after reports in `deliveryConfirmations`. Exact retries reuse the event; conflicting retries, stale revisions and overwriting confirmed freight are refused. The evidence query is scoped to the comparison owner. History labels reports with their confirmation date/revision; they are historical results, not fresh recommendations after later edits.
+
+This is explicit human interpretation, not AI extraction or automatic supplier negotiation. Unknown tax, equivalence and other terms remain pending. A confirmation response arriving after a local edit does not replace that newer draft. The confirmation dialog and persisted reply history connect back to the existing comparison; no duplicate purchase or automatic order is created.

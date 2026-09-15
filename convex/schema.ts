@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { deliveryConfirmationFields } from "./deliveryValidators";
 import { comparisonContent } from "./comparisonValidators";
 import { studyContent } from "./studyValidators";
 import {
@@ -14,6 +15,9 @@ import { prospectContent } from "./prospectValidators";
 import { advisorRunContent } from "./advisorValidators";
 import { caseFields, eventFields, watchFields } from "./sourcingValidators";
 export default defineSchema({
+  deliveryConfirmations: defineTable(deliveryConfirmationFields)
+    .index("by_comparisonId", ["comparisonId"])
+    .index("by_comparisonId_and_messageId_and_offerId", ["comparisonId", "messageId", "offerId"]),
   sourcingCases: defineTable({
     ownerHash: v.string(),
     ...caseFields,
