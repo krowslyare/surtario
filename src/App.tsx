@@ -27,6 +27,8 @@ function ReadyWorkspace({ persistenceEnabled, onReady }: { persistenceEnabled: b
 
 export default function App({ persistenceEnabled }: { persistenceEnabled: boolean }) {
   const [ready, setReady] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [onFinished] = useState(() => () => setRevealed(true));
   const [onReady] = useState(() => () => setReady(true));
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view");
@@ -37,10 +39,12 @@ export default function App({ persistenceEnabled }: { persistenceEnabled: boolea
   if (!workspaceRequested) return <Landing />;
   return (
     <WorkspaceBoundary>
-      <Suspense fallback={null}>
-        <ReadyWorkspace persistenceEnabled={persistenceEnabled} onReady={onReady} />
-      </Suspense>
-      <WorkspaceArrival ready={ready} />
+      <div className="workspace-content" inert={!revealed || undefined} aria-hidden={!revealed || undefined}>
+        <Suspense fallback={null}>
+          <ReadyWorkspace persistenceEnabled={persistenceEnabled} onReady={onReady} />
+        </Suspense>
+      </div>
+      <WorkspaceArrival ready={ready} onFinished={onFinished} />
     </WorkspaceBoundary>
   );
 }

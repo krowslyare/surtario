@@ -71,3 +71,23 @@ test("failed workspace download offers a retry instead of indefinite loading", a
   await expect(page.getByRole("link", { name: "Try again" })).toBeVisible();
   await expect(page.getByText("Loading your workspace.")).toHaveCount(0);
 });
+
+for (const reducedMotion of ["reduce", "no-preference"] as const) {
+  test(`arrival blocks hidden workspace keyboard access (${reducedMotion})`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion });
+    await page.clock.install();
+    await page.goto("/?view=market");
+    const content = page.locator(".workspace-content");
+    await expect(content.locator("button").first()).toBeAttached();
+    await expect(content).toHaveAttribute("inert", "");
+    await expect(content).toHaveAttribute("aria-hidden", "true");
+    await page.keyboard.press("Tab");
+    expect(await content.evaluate(el => el.contains(document.activeElement))).toBe(false);
+    await page.clock.fastForward(2100);
+    await expect(page.locator(".workspace-arrival")).toHaveCount(0);
+    await expect(content).not.toHaveAttribute("inert");
+    await expect(content).not.toHaveAttribute("aria-hidden");
+    await page.keyboard.press("Tab");
+    await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
+  });
+}

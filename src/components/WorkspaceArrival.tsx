@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Brand from "./Brand";
 import "../styles/arrival.css";
 
-export default function WorkspaceArrival({ ready }: { ready: boolean }) {
+export default function WorkspaceArrival({ ready, onFinished }: { ready: boolean; onFinished: () => void }) {
   const [finished, setFinished] = useState(false);
   const [minimumElapsed, setMinimumElapsed] = useState(false);
   const leaving = ready && minimumElapsed;
@@ -12,10 +12,10 @@ export default function WorkspaceArrival({ ready }: { ready: boolean }) {
   }, []);
   useEffect(() => {
     if (!leaving) return;
-    const timer = window.setTimeout(() => setFinished(true),
+    const timer = window.setTimeout(() => { setFinished(true); onFinished(); },
       window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220);
     return () => window.clearTimeout(timer);
-  }, [leaving]);
+  }, [leaving, onFinished]);
   if (finished) return null;
   return (
     <div className="workspace-arrival" data-ready={leaving} aria-hidden={leaving || undefined}>
