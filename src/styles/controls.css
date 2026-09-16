@@ -57,7 +57,7 @@
 ):focus-visible {
   outline: var(--focus-width) solid var(--color-focus);
   outline-offset: var(--focus-offset);
-  box-shadow: 0 0 0 4px rgb(23 92 211 / 16%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 16%, transparent);
 }
 
 :where(
@@ -102,7 +102,7 @@
 :where(input[type="checkbox"], input[type="radio"]):focus-visible {
   outline: var(--focus-width) solid var(--color-focus);
   outline-offset: var(--focus-offset);
-  box-shadow: 0 0 0 4px rgb(23 92 211 / 16%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 16%, transparent);
 }
 
 :where(input[type="checkbox"], input[type="radio"]):disabled {
@@ -124,7 +124,7 @@
 .disclosure-trigger:focus-visible {
   outline: var(--focus-width) solid var(--color-focus);
   outline-offset: var(--focus-offset);
-  box-shadow: 0 0 0 4px rgb(23 92 211 / 16%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 16%, transparent);
 }
 
 .button:not(:disabled):active,

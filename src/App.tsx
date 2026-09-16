@@ -1,9 +1,35 @@
-import { lazy, Suspense } from "react";
+import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import Landing from "./Landing";
+import WorkspaceArrival from "./components/WorkspaceArrival";
 
 const Workspace = lazy(() => import("./Workspace"));
 
+class WorkspaceBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() {
+    return this.state.failed ? (
+      <main className="workspace-arrival">
+        <div className="workspace-arrival-content">
+          <h1>Let’s try that again.</h1>
+          <p>Your workspace couldn’t load. Check your connection and retry.</p>
+          <a className="button secondary" href={window.location.href}>Try again</a>
+        </div>
+      </main>
+    ) : this.props.children;
+  }
+}
+
+function ReadyWorkspace({ persistenceEnabled, onReady }: { persistenceEnabled: boolean; onReady: () => void }) {
+  useEffect(onReady, [onReady]);
+  return <Workspace persistenceEnabled={persistenceEnabled} />;
+}
+
 export default function App({ persistenceEnabled }: { persistenceEnabled: boolean }) {
+  const [ready, setReady] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const [onFinished] = useState(() => () => setRevealed(true));
+  const [onReady] = useState(() => () => setReady(true));
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view");
   const workspaceRequested =
@@ -12,8 +38,13 @@ export default function App({ persistenceEnabled }: { persistenceEnabled: boolea
 
   if (!workspaceRequested) return <Landing />;
   return (
-    <Suspense fallback={<main><p role="status">Opening Surtario…</p></main>}>
-      <Workspace persistenceEnabled={persistenceEnabled} />
-    </Suspense>
+    <WorkspaceBoundary>
+      <div className="workspace-content" inert={!revealed || undefined} aria-hidden={!revealed || undefined}>
+        <Suspense fallback={null}>
+          <ReadyWorkspace persistenceEnabled={persistenceEnabled} onReady={onReady} />
+        </Suspense>
+      </div>
+      <WorkspaceArrival ready={ready} onFinished={onFinished} />
+    </WorkspaceBoundary>
   );
 }

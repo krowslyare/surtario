@@ -18,7 +18,7 @@
   --color-info-surface: #eff8ff;
   --color-border: #e0d9db;
   --color-control-border: #99858d;
-  --color-focus: #175cd3;
+  --color-focus: var(--color-primary);
 
   --font-sans:
     "Manrope Variable", ui-sans-serif, system-ui, -apple-system,
