@@ -1,0 +1,40 @@
+.workspace-arrival {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: #f0d8dc;
+  color: var(--color-text);
+  opacity: 1;
+  transition: opacity 220ms ease;
+}
+.workspace-arrival[data-ready="true"] { opacity: 0; pointer-events: none; }
+.workspace-arrival-content { text-align: center; }
+.workspace-arrival .brand {
+  justify-content: center;
+  animation: arrival-logo-drop 680ms both;
+}
+.workspace-arrival .brand-wordmark { font-size: clamp(42px, 7vw, 64px); }
+.workspace-arrival .brand-symbol { width: 48px; height: 48px; }
+.workspace-arrival p {
+  margin: 24px 0 0;
+  font-size: 14px;
+  line-height: 1.6;
+  animation: arrival-copy-in 260ms 420ms ease-out both;
+}
+@keyframes arrival-logo-drop {
+  0% { opacity: 0; transform: translateY(-64px); animation-timing-function: cubic-bezier(.32, 0, .67, 1); }
+  55% { opacity: 1; transform: translateY(5px); animation-timing-function: cubic-bezier(.16, 1, .3, 1); }
+  78% { opacity: 1; transform: translateY(-3px); animation-timing-function: ease-in-out; }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes arrival-copy-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .workspace-arrival { transition: none; }
+  .workspace-arrival .brand, .workspace-arrival p { animation: none; }
+}

@@ -2,7 +2,7 @@
 
 - **Project:** Surtario
 - **Event:** Convex All Gas Hackathon
-- **What it does:** Researches ingredient suppliers, preserves reviewed evidence and compares purchasing scenarios with optional cash/coverage advice.
+- **What it does:** Maintains persistent ingredient-sourcing cases, preserving supplier evidence, reviewed comparisons and decision follow-up from research through confirmed delivery terms.
 - **Live app:** https://incredible-wolverine-122.convex.site
 - **Repo:** private
 - **Frontend:** Convex static hosting
@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-15T18:36:15Z
+- **Last updated:** 2026-09-16T07:27:13Z
 
 ## Log
 
@@ -373,3 +373,8 @@ Pre-PR review checked candidate/case linkage, retained full email evidence, pend
 
 ### September 15, 2026 — direct comparison example and select focus
 The direct comparison entry now defaults to a separate English synthetic rice comparison (USD/lb, Supplier A/B); explicit `example=pe` retains the original Peru fixtures. Initial source evidence and reset use the same active example. Saved/reviewed offers retain their original terms. Select options use an inset aubergine focus ring instead of the clipped blue global ring; keyboard navigation and Escape/focus return remain supported.
+
+
+### 2026-09-16 — branded workspace entrance
+Replaced the plain loading message with a rose brand screen, a short logo drop and restrained bounce, and a readable tagline. The screen stays at least 1.7 seconds and exits only once the workspace mounts; reduced motion disables animation. Failed module downloads offer a retry. The brand-guide link is removed from the product and its route is development-only. Focus indicators retain their visibility using the brand aubergine.
+Build and seven of eight landing/interaction browser tests passed locally. The remaining mobile-summary test also fails on clean pre-change HEAD 9fb09a3; it was not weakened. Desktop/mobile loading states were inspected. This verifies local UI behavior, not hosted acceptance or provider integrations. No deployment was performed in this round.

@@ -80,9 +80,9 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
   await tools.click();
   await expect(tools).toHaveAttribute("aria-expanded", "false");
   await expect(review).toHaveCount(0);
-  await tools.press("Tab");
+  await tools.press("Shift+Tab");
   await expect(
-    page.getByRole("link", { name: "About Surtario" }),
+    page.getByRole("button", { name: "Ingredient list", exact: true }),
   ).toBeFocused();
   await tools.click();
   await review.click();

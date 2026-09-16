@@ -73,3 +73,8 @@ Sobre el estado combinado actual: build/tipos satisfactorios; 13 E2E de explorac
 Sin commit, push ni despliegue remoto. El CLI descargó una actualización del backend local para poder ejecutar las pruebas. No se cambiaron funciones Convex.
 
 Auditoría final de Luna sobre capturas: sin hallazgos P0/P1 en exploración; comparación fuera de esta ronda. Se corrigió su único hallazgo P2, texto de acciones móvil de 11 a 12 px, conservando la composición de Gemini.
+
+
+### 2026-09-16 · entrada de marca al workspace
+Transición rosa con logo: caída de 64 px, rebote contenido (+5 / −3 px) y asentamiento en 680 ms; frase aparece desde 420 ms. Permanencia mínima de 1,7 s y salida de 220 ms tras montar el workspace. Movimiento reducido omite animaciones. Fallo de descarga ofrece reintento. Guía de marca sin enlace en producto y ruta limitada a desarrollo. Foco global borgoña conservando grosor y visibilidad.
+Build y 7/8 E2E de landing/interacción pasan; fallo de View summary 1 reproducido también sobre HEAD limpio 9fb09a3 con las mismas fuentes. Sin relajar aserciones. Capturas de carga en escritorio y 390 px revisadas y descarga reanudada hasta workspace visible. Cambios locales verificados, sin despliegue ni llamadas reales de proveedores. Los cambios anteriores del checkout raíz español quedan fuera de esta entrega.

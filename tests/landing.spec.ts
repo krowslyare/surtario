@@ -52,3 +52,22 @@ test("landing controls support keyboard and reduced motion", async ({ page }) =>
   await expect(page.getByRole("button", { name: "Replay example" })).toHaveAttribute("aria-pressed", "true");
   expect(await page.locator(".landing-answer").evaluate(el => getComputedStyle(el).transitionDuration)).toBe("0s");
 });
+
+test("branded arrival follows loading and leaves when the workspace is ready", async ({ page }) => {
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  await page.route("**/src/Workspace.tsx", async route => { await gate; await route.continue(); });
+  await page.goto("/?view=market", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("status")).toContainText("Loading your workspace");
+  await expect(page.locator(".workspace-arrival")).toContainText("Good ingredients. Better decisions.");
+  release();
+  await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
+  await expect(page.locator(".workspace-arrival")).toHaveCount(0);
+});
+
+test("failed workspace download offers a retry instead of indefinite loading", async ({ page }) => {
+  await page.route("**/src/Workspace.tsx", route => route.abort());
+  await page.goto("/?view=market", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("link", { name: "Try again" })).toBeVisible();
+  await expect(page.getByText("Loading your workspace.")).toHaveCount(0);
+});

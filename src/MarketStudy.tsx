@@ -976,14 +976,6 @@ export default function MarketStudy({
           </span>
           <span>
             Examples use fictional data. Review each email before sending.
-            <a
-              className="brand-guide-link"
-              href="?view=brand"
-              target="_blank"
-              rel="noreferrer"
-            >
-              About Surtario
-            </a>
           </span>
         </footer>
       </main>

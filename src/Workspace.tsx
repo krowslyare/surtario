@@ -12,7 +12,7 @@ export default function Workspace({
 }) {
   const [view, setView] = useState<"market" | "comparison" | "brand">(() => {
     const requested = new URLSearchParams(window.location.search).get("view");
-    return requested === "brand" || requested === "comparison"
+    return (import.meta.env.DEV && requested === "brand") || requested === "comparison"
       ? requested
       : "market";
   });

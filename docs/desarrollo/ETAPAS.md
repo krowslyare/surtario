@@ -358,3 +358,5 @@ Pre-PR review checked candidate/case linkage, retained full email evidence, pend
 
 ### September 15, 2026 — direct comparison example and select focus
 The direct comparison entry now defaults to a separate English synthetic rice comparison (USD/lb, Supplier A/B); explicit `example=pe` retains the original Peru fixtures. Initial source evidence and reset use the same active example. Saved/reviewed offers retain their original terms. Select options use an inset aubergine focus ring instead of the clipped blue global ring; keyboard navigation and Escape/focus return remain supported.
+
+Entrada al workspace refinada localmente con transición de marca y recuperación ante fallo de descarga; guía de marca solo en desarrollo. Evidencia 2026-09-16 en INTERACCION.md; sin despliegue.
