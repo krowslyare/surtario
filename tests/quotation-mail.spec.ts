@@ -56,6 +56,6 @@ test("prepara correo desde comparación guardada sin enviar al faltar configurac
   await page.getByRole("button", { name: "View request" }).click();
   await expect(page.getByRole("dialog")).toContainText("Draft");
   await expect(page.getByRole("dialog")).toContainText(
-    "Replies will appear here",
+    "No replies are linked yet",
   );
 });

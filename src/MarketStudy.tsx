@@ -409,7 +409,7 @@ export default function MarketStudy({
       </header>
       <main
         id="market-main"
-        className={`market-main ${search || showStudy ? "has-results" : "is-intro"} ${showStudy ? "is-study" : ""}`}
+        className={`market-main ${search || showStudy ? "has-results" : "is-intro"} ${showStudy ? "is-study" : ""} ${resultsView === "web" ? "is-live-research" : ""}`}
       >
         <div className="workspace-nav">
           <span>
@@ -577,27 +577,28 @@ export default function MarketStudy({
             {error}
           </p>
         )}
-        {persistenceEnabled && (
-          <SourcingCase
-            ingredient={term}
-            region={region}
-            studyId={
-              study.savedContext?.term.trim().toLowerCase() ===
-                term.trim().toLowerCase() &&
-              study.savedContext?.region.trim().toLowerCase() ===
-                region.trim().toLowerCase()
-                ? study.id
-                : null
-            }
-            onPrepare={onPrepare}
-            onStudyCase={setStudyCase}
-            comparisonStudyId={study.id}
-            onReview={addReview}
-            onProspect={toggleProspect}
-            selections={webSelections}
-          />
-        )}
-        <div className="market-workspace">
+        <div className="market-support">
+          {persistenceEnabled && (
+            <SourcingCase
+              ingredient={term}
+              region={region}
+              studyId={
+                study.savedContext?.term.trim().toLowerCase() ===
+                  term.trim().toLowerCase() &&
+                study.savedContext?.region.trim().toLowerCase() ===
+                  region.trim().toLowerCase()
+                  ? study.id
+                  : null
+              }
+              onPrepare={onPrepare}
+              onStudyCase={setStudyCase}
+              comparisonStudyId={study.id}
+              onReview={addReview}
+              onProspect={toggleProspect}
+              selections={webSelections}
+            />
+          )}
+          <div className="market-workspace">
           <div className="market-content">
             {persistenceEnabled && (
               <div
@@ -870,6 +871,7 @@ export default function MarketStudy({
               </section>
             )}
           </aside>
+          </div>
         </div>
         {persistenceEnabled &&
           study.id &&

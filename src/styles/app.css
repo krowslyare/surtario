@@ -1033,8 +1033,8 @@ footer {
   border-top: 1px solid var(--color-border);
 }
 .market-result.is-selected {
-  box-shadow: inset 3px 0 var(--color-primary);
-  background: var(--color-success-surface);
+  box-shadow: none;
+  background: transparent;
 }
 .result-kind {
   display: inline-block;
@@ -1616,6 +1616,9 @@ footer {
   margin: var(--space-4) 0;
   border-block: 1px solid var(--color-border);
 }
+.advisor-context > .disclosure-trigger {
+  border-bottom: 0;
+}
 .advisor-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1687,4 +1690,18 @@ footer {
 /* Buying guidance reads as one section, with the unresolved work visible. */
 .advisor-verdict > .advisor-recommendation { margin-top: 0; }
 .advisor-mode:empty { display: none; }
-.advisor-verdict > .disclosure { margin-top: var(--space-4); border-top: 1px solid var(--color-border); }
+.advisor-verdict > .disclosure {
+  margin-top: 0;
+  border-top: 1px solid var(--color-border);
+}
+.advisor-verdict > .disclosure:first-of-type {
+  margin-top: var(--space-4);
+}
+.advisor-verdict > .disclosure > .disclosure-trigger,
+.advisor-panel > .advisor-alternatives > .disclosure-trigger {
+  border-bottom: 0;
+  padding-block: var(--space-4);
+}
+.advisor-panel > .advisor-alternatives {
+  border-top: 1px solid var(--color-border);
+}
