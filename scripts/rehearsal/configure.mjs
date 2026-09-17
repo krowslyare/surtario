@@ -54,12 +54,12 @@ if (config.siteUrl !== `http://127.0.0.1:${local.ports.site}`)
   throw new Error("Rehearsal backend changed; inspect configuration first.");
 // Normalize existing, empty or duplicate flags before enabling simulated providers.
 const rehearsalEnv = envText.replace(
-  /^\s*(?:export\s+)?VITE_REHEARSAL\s*=.*$/gm,
+  /^\s*(?:export\s+)?VITE_(?:REHEARSAL|LIVE_RESEARCH)\s*=.*$/gm,
   "",
 );
 await writeFile(
   ".env.local",
-  rehearsalEnv.trimEnd() + "\nVITE_REHEARSAL=true\n",
+  rehearsalEnv.trimEnd() + "\nVITE_REHEARSAL=true\nVITE_LIVE_RESEARCH=false\n",
 );
 await writeFile(
   ".local/rehearsal/bridge.json",
@@ -76,6 +76,7 @@ const values = {
   OPENAI_EXTRACTION_MODEL: "gpt-5.6-luna",
   OPENAI_ADVISOR_MODEL: "gpt-5.6-luna",
   FIRECRAWL_API_KEY: "local-rehearsal-only",
+  REHEARSAL_LIVE_FIRECRAWL: "false",
   AGENTMAIL_API_KEY: "local-rehearsal-only",
   DOCUMENT_EXTRACTION_ENABLED: "true",
   REPLY_EXTRACTION_ENABLED: "true",

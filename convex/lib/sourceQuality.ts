@@ -34,6 +34,10 @@ const normalize = (text: string) =>
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 const generic = new Set([
+  "ingredient", "ingredients", "nonexistent", "supplier", "suppliers",
+  "wholesale", "restaurant", "restaurants", "distributor", "distributors",
+  "buy", "online", "price", "prices", "case", "pack", "bulk", "fresh",
+  "delivery", "near", "for", "the", "and", "with", "new", "york", "usa",
   "ingrediente",
   "insumo",
   "inexistente",
@@ -58,16 +62,22 @@ const generic = new Set([
   "con",
   "sin",
 ]);
-function terms(ingredient: string) {
+function singularTerm(term: string) {
+  if (term.endsWith("ies") && term.length > 4) return term.slice(0, -3) + "y";
+  if (term.endsWith("oes") && term.length > 4) return term.slice(0, -2);
+  return term.endsWith("s") && !term.endsWith("ss") ? term.slice(0, -1) : term;
+}
+export function containsIngredientTerm(text: string, term: string) {
+  return normalize(text).split(/[^a-z0-9]+/).some(word => singularTerm(word) === term);
+}
+export function ingredientTerms(ingredient: string) {
   return normalize(ingredient)
     .split(/[^a-z0-9]+/)
-    .filter((t) => t.length >= 3 && !generic.has(t) && !/^\d+$/.test(t));
+    .filter((t) => t.length >= 3 && !generic.has(t) && !/^\d+$/.test(t))
+    .map(singularTerm);
 }
 function matches(text: string, words: string[]) {
-  const content = normalize(text);
-  return words.some((word) =>
-    new RegExp(`\\b${word}(?:s|es)?\\b`).test(content),
-  );
+  return words.some(word => containsIngredientTerm(text, word));
 }
 
 export function inspectSource(
@@ -99,7 +109,7 @@ export function inspectSource(
         "The page returned an error or access screen; it does not contain an offer to extract.",
       links: [],
     };
-  const words = terms(ingredient);
+  const words = ingredientTerms(ingredient);
   if (
     words.length &&
     !matches(`${source.title}\n${source.description}\n${text}`, words)

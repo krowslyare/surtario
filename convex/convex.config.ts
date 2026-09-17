@@ -6,6 +6,7 @@ import workflow from "@convex-dev/workflow/convex.config";
 const app = defineApp({
   env: {
     REHEARSAL_BRIDGE_URL: v.optional(v.string()),
+    REHEARSAL_LIVE_FIRECRAWL: v.optional(v.string()),
     REHEARSAL_BRIDGE_TOKEN: v.optional(v.string()),
     QUOTATION_DRAFT_ENABLED: v.optional(v.string()),
     SOURCING_ENABLED: v.optional(v.string()),

@@ -142,7 +142,7 @@ function envelope(output: unknown) {
     { headers: { "Content-Type": "application/json" } },
   );
 }
-test("durable workflow researches, observes the result, then stops; no emails or duplicate start", async () => {
+test("workflow refuses one-source completion, expands queries, then stops after two rounds without new evidence", async () => {
   enable();
   vi.useFakeTimers();
   const t = instance(),
@@ -213,15 +213,19 @@ test("durable workflow researches, observes the result, then stops; no emails or
   await t.finishAllScheduledFunctions(vi.runAllTimers);
   const result = await t.query(api.sourcing.get, { token, caseId: id });
   expect(result.case.status).toBe("complete");
-  expect(result.case.steps).toBe(1);
-  expect(plans).toBe(2);
-  expect(fetch).toHaveBeenCalledTimes(4);
+  expect(result.case.steps).toBe(3);
+  expect(plans).toBe(3);
+  expect(fetch).toHaveBeenCalledTimes(7);
   const runs = await t.query(api.sourcing.research, { token, caseId: id });
   expect(runs[0].sources[0].extraction?.price.value).toBe("20");
-  expect(result.case.summary).toContain("missing delivery");
+  expect(result.case.stopReason).toBe("diminishing_returns");
+  expect(result.case.summary).toContain("incomplete");
+  expect(
+    fetch.mock.calls.every(([url]) => !String(url).includes("agentmail")),
+  ).toBe(true);
 });
 
-test("planner refuses links absent from evidence and duplicate searches stop before external IO", async () => {
+test("planner refuses unauthorized links and replaces duplicate searches with a new gap-directed query", async () => {
   enable();
   const t = instance(),
     id = await create(t);
@@ -266,7 +270,7 @@ test("planner refuses links absent from evidence and duplicate searches stop bef
         revision: 2,
       })
     )?.action,
-  ).toBe("stop");
+  ).toBe("search");
 });
 
 async function watched(t: ReturnType<typeof instance>) {
@@ -459,4 +463,171 @@ test("watch registration requires owned selected real reviewed source and has on
   await expect(
     t.mutation(api.sourcing.attachStudy, { token: other, caseId: id, studyId }),
   ).rejects.toThrow(/unavailable/);
+});
+
+test("incremental interpretation preserves ownership, revision, and idempotency", async () => {
+  const t = instance(),
+    id = await create(t);
+  await t.run((ctx) => ctx.db.patch(id, { status: "running", revision: 2 }));
+  const idle = {
+    ...source,
+    analysis: undefined,
+    extraction: null,
+    extractionStatus: "idle" as const,
+    extractionAttempts: 0,
+  };
+  await t.mutation(internal.sourcing.recordStep, {
+    caseId: id,
+    revision: 2,
+    step: 0,
+    query: "Rice price",
+    reason: "Explore",
+    sources: [idle],
+  });
+  const runs = await t.query(api.sourcing.research, { token, caseId: id });
+  const args = {
+    caseId: id,
+    revision: 2,
+    runId: runs[0].id,
+    sourceIndex: 0,
+    source,
+  };
+  await t.mutation(internal.sourcing.recordAnalysis, { ...args, revision: 1 });
+  expect(
+    (await t.query(api.sourcing.research, { token, caseId: id }))[0].sources[0]
+      .extractionStatus,
+  ).toBe("idle");
+  await t.mutation(internal.sourcing.recordAnalysis, args);
+  await t.mutation(internal.sourcing.recordAnalysis, {
+    ...args,
+    source: { ...source, extraction: { ...offer, price: field("999") } },
+  });
+  expect(
+    (await t.query(api.sourcing.research, { token, caseId: id }))[0].sources[0]
+      .extraction?.price.value,
+  ).toBe("20");
+  await expect(
+    t.query(api.sourcing.research, { token: "c".repeat(64), caseId: id }),
+  ).rejects.toThrow();
+  await t.mutation(api.sourcing.cancel, { token, caseId: id });
+  await t.mutation(internal.sourcing.recordAnalysis, args);
+  expect(
+    (await t.query(api.sourcing.get, { token, caseId: id })).case.status,
+  ).toBe("canceled");
+});
+
+test("later rounds can add a better-priced candidate and budget exhaustion never claims completeness", async () => {
+  enable();
+  vi.useFakeTimers();
+  const t = instance(),
+    id = await create(t);
+  let plans = 0,
+    searches = 0;
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: unknown, init?: RequestInit) => {
+      const body = JSON.parse(String(init?.body));
+      if (String(url).includes("firecrawl")) {
+        searches++;
+        return Response.json({
+          success: true,
+          data: {
+            web: [
+              {
+                url: `https://supplier${searches}.com/product/rice`,
+                title: "Rice wholesale",
+                markdown: `Rice supplier ${searches}\nRice\n25 lb\nUSD ${searches === 6 ? "12" : "20"}`,
+              },
+            ],
+          },
+        });
+      }
+      if (body.text.format.schema.properties.action) {
+        plans++;
+        return envelope({
+          action: "search",
+          query: `Rice independent supplier round ${plans}`,
+          url: "",
+          reason:
+            "Investigate independent alternatives and missing delivery evidence.",
+        });
+      }
+      const f = (value: string, line: number) => ({
+        value,
+        evidenceLineNumber: line,
+      });
+      return envelope({
+        analysis: {
+          kind: "product",
+          summary: "Published rice package; delivery unknown.",
+          warnings: ["Delivery unknown."],
+          evidenceLineNumbers: [3, 4, 5],
+        },
+        offer: {
+          supplier: f(`Rice supplier ${searches}`, 2),
+          ingredient: f("Rice", 3),
+          specification: f("Rice", 3),
+          packageContent: f("25", 4),
+          packageUnit: f("lb", 4),
+          price: f(searches === 6 ? "12" : "20", 5),
+          currency: f("USD", 5),
+        },
+      });
+    }),
+  );
+  await t.mutation(api.sourcing.start, { token, caseId: id }); // Six rounds schedule more than the harness default 100 workflow/workpool jobs.
+  await t.finishAllScheduledFunctions(vi.runAllTimers, 250);
+  const detail = await t.query(api.sourcing.get, { token, caseId: id });
+  const runs = await t.query(api.sourcing.research, { token, caseId: id });
+  expect(searches).toBe(6);
+  expect(detail.case.stopReason).toBe("budget");
+  expect(detail.case.summary).toContain("incomplete");
+  expect(runs).toHaveLength(6);
+  expect(runs[5].sources[0].extraction?.price.value).toBe("12");
+  expect(runs[0].sources[0].extraction?.price.value).toBe("20");
+});
+
+test("an unreadable allowed page is preserved as failed evidence without crashing the case", async () => {
+  enable();
+  const t = instance(),
+    id = await create(t);
+  await t.run((ctx) => ctx.db.patch(id, { status: "running", revision: 2 }));
+  const unread = {
+    ...source,
+    markdown: null,
+    analysis: undefined,
+    extraction: null,
+    extractionStatus: "idle" as const,
+    extractionAttempts: 0,
+  };
+  await t.mutation(internal.sourcing.recordStep, {
+    caseId: id,
+    revision: 2,
+    step: 0,
+    reason: "Discover",
+    query: "Rice suppliers",
+    sources: [unread],
+  });
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async () =>
+      Response.json({ success: true, data: { markdown: "", metadata: {} } }),
+    ),
+  );
+  const result = await t.action(internal.sourcingWorkflow.investigate, {
+    caseId: id,
+    revision: 2,
+    plan: {
+      action: "read",
+      url: source.url,
+      query: "",
+      reason: "Recover price",
+    },
+  });
+  expect(result?.warning).toBe(true);
+  expect(result?.sources[0].extractionStatus).toBe("failed");
+  expect(result?.sources[0].markdown).toBeNull();
+  expect(
+    (await t.query(api.sourcing.get, { token, caseId: id })).case.status,
+  ).toBe("running");
 });

@@ -70,7 +70,7 @@ printf 'configured\\n' >> calls.txt
       expect(updated).toContain("VITE_OTHER=preserved\n");
       expect(
         readFileSync(join(directory, "calls.txt"), "utf8").trim().split("\n"),
-      ).toHaveLength(15);
+      ).toHaveLength(16);
     } finally {
       rmSync(directory, { recursive: true, force: true });
     }

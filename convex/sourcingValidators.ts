@@ -20,6 +20,15 @@ export const caseFields = {
   steps: v.number(),
   researchRunIds: v.array(v.id("researchRuns")),
   summary: v.string(),
+  stopReason: v.optional(
+    v.union(
+      v.literal("review_ready"),
+      v.literal("diminishing_returns"),
+      v.literal("needs_confirmation"),
+      v.literal("budget"),
+      v.literal("failed"),
+    ),
+  ),
   createdAt: v.number(),
   updatedAt: v.number(),
 };

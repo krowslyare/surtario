@@ -84,3 +84,8 @@ For the video, show one coherent decision: discovery → review → purchasing c
 - Provider transport refusal/credential stripping tests, real Agent boundary tests and the existing suite pass: 138 unit/backend tests. Typecheck and hosting build checks passed. All 51 browser journeys passed on another anonymous local backend. After correcting a shared-dependency font path in that test checkout, all 12 focused responsive/keyboard checks passed again with a normal local install.
 
 Local evidence stays outside Git: `.local/rehearsal/events.jsonl` records model calls, tool envelopes and duplicate webhook delivery; `persistence-evidence.json` contains a bounded, sanitized read-back of the local tables. CLI result/event files are retained in the temporary directories named in the log. No credentials, session token or private restaurant data belong in these artifacts.
+
+
+## Optional real web during local rehearsal
+
+`REHEARSAL_LIVE_FIRECRAWL=true` permits the Firecrawl transport to call the real provider while AI continues through the local Luna bridge. It requires the existing validated loopback backend/bridge configuration and a real server-side Firecrawl key. It never enables a cloud bridge. `VITE_LIVE_RESEARCH=true` labels that mode in the local frontend; mail remains simulated. The configure script resets both live-web flags to false when restoring the synthetic rehearsal. Do not put the provider key in a browser variable. Real web observations are marked as such rather than synthetic.

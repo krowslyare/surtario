@@ -1,3 +1,4 @@
+import { researchCoverage, RESEARCH_POLICY } from "../domain/researchCoverage";
 import { Disclosure } from "./ui/Disclosure";
 import { Component, useEffect, useState, type ReactNode } from "react";
 import {
@@ -204,7 +205,8 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
         </Button>
       </div>
       <p>
-        Follow a question, keep the evidence, and return when something changes.
+        Investigate beyond the first search. Follow evidence gaps and build a
+        shortlist across research rounds.
       </p>
       {expanded && (
         <div id="sourcing-body">
@@ -352,7 +354,12 @@ function CaseDetail({
 }) {
   const detail = useQuery(api.sourcing.get, { token, caseId });
   const runs = useQuery(api.sourcing.research, { token, caseId });
-  const deliveryConfirmations = useQuery(api.quotationMail.listDeliveryConfirmations, detail?.case.comparisonId ? { token, comparisonId: detail.case.comparisonId } : "skip");
+  const deliveryConfirmations = useQuery(
+    api.quotationMail.listDeliveryConfirmations,
+    detail?.case.comparisonId
+      ? { token, comparisonId: detail.case.comparisonId }
+      : "skip",
+  );
   const researchStatus = useQuery(api.research.status, {});
   const comparisons = useQuery(api.comparisons.list, { token });
   const requests = useQuery(api.quotationMail.list, { token });
@@ -400,6 +407,14 @@ function CaseDetail({
       </p>
     );
   const running = item.status === "running";
+  const coverage = researchCoverage(runs ?? []);
+  const stopLabels = {
+    review_ready: "Candidates ready for review",
+    diminishing_returns: "Further rounds added no new evidence",
+    needs_confirmation: "Remaining conditions need confirmation",
+    budget: "Research budget reached — coverage incomplete",
+    failed: "Research interrupted",
+  };
   const savedComparison = comparisons?.find(
     (comparison) => comparison.id === item.comparisonId,
   );
@@ -416,7 +431,12 @@ function CaseDetail({
   const selectedRequest = linkedRequests.find(
     (request) => request.id === mailId,
   );
-  const reviewedIds = [...Object.keys(savedComparison?.sources ?? {}), ...(deliveryConfirmations ?? []).map((item) => `reply:${item.requestId}:${item.messageId}`)];
+  const reviewedIds = [
+    ...Object.keys(savedComparison?.sources ?? {}),
+    ...(deliveryConfirmations ?? []).map(
+      (item) => `reply:${item.requestId}:${item.messageId}`,
+    ),
+  ];
   const hasEvidence =
     runs?.some((run) =>
       run.sources.some(
@@ -439,7 +459,9 @@ function CaseDetail({
     reviewedReplyIds: reviewedIds,
   });
   const progressLoaded =
-    requests !== undefined && runs !== undefined && comparisons !== undefined &&
+    requests !== undefined &&
+    runs !== undefined &&
+    comparisons !== undefined &&
     (!detail.case.comparisonId || deliveryConfirmations !== undefined);
   const runsExhausted =
     detail.events.filter((event) => event.kind === "started").length >= 3;
@@ -625,7 +647,11 @@ function CaseDetail({
                 )
               }
             >
-              {running ? "Research in progress" : "Investigate this question"}
+              {running
+                ? "Research in progress"
+                : item.status === "complete"
+                  ? "Continue research from these findings"
+                  : "Investigate this question"}
             </Button>
           )}
         {running && (
@@ -657,6 +683,81 @@ function CaseDetail({
           </Button>
         )}
       </div>
+      {(running || coverage.total > 0 || item.stopReason) && (
+        <section className="sourcing-next" aria-label="Research coverage">
+          <div>
+            <h3>
+              {running
+                ? `Research round ${Math.max(1, item.steps)} of up to ${RESEARCH_POLICY.maxRounds}`
+                : item.stopReason
+                  ? stopLabels[item.stopReason]
+                  : "Collected research"}
+            </h3>
+            <p>{item.summary}</p>
+            <p>
+              {coverage.total} unique sources · {coverage.analyzed} interpreted
+              · {coverage.priceDomains} independent domains with published
+              prices.
+            </p>
+            <p className="field-hint">
+              Sources are not approved offers. Delivery, equivalence and final
+              cost still need review.
+            </p>
+            {coverage.shortlist.length > 0 && (
+              <>
+                <h4>Start with these sources</h4>
+                <p className="field-hint">
+                  Prioritized by product evidence and completeness, with one
+                  source per domain. This is not a lowest-price ranking.
+                </p>
+                <ol>
+                  {coverage.shortlist.map((source) => (
+                    <li key={source.url}>
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {source.title}
+                      </a>
+                      <p>{source.analysis?.summary}</p>
+                      {source.analysis?.warnings.length ? (
+                        <details>
+                          <summary>
+                            Conditions to verify (
+                            {source.analysis.warnings.length})
+                          </summary>
+                          <ul>
+                            {source.analysis.warnings.map((warning, index) => (
+                              <li key={index}>{warning}</li>
+                            ))}
+                          </ul>
+                        </details>
+                      ) : null}
+                    </li>
+                  ))}
+                </ol>
+                <Button
+                  onClick={() => {
+                    setReviewOpen(true);
+                    focusSection(".sourcing-reviews");
+                  }}
+                >
+                  Review all research evidence
+                </Button>
+              </>
+            )}
+            <details>
+              <summary>Remaining evidence gaps</summary>
+              <ul>
+                {coverage.gaps.map((gap) => (
+                  <li key={gap}>{gap}</li>
+                ))}
+              </ul>
+            </details>
+          </div>
+        </section>
+      )}
       {runsExhausted && (
         <p className="field-hint">
           This case has used its three research runs. You can still review

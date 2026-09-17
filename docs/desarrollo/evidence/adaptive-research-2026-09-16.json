@@ -1,0 +1,481 @@
+{
+  "verifiedAt": "2026-09-16T22:11:06.218Z",
+  "environment": "Local anonymous Convex, real Firecrawl, real gpt-5.6-luna CLI; no direct OpenAI API, emails or remote deployment",
+  "policy": {
+    "maxRounds": 6,
+    "analysesPerRound": 6,
+    "shortlistSize": 5,
+    "minimumPriceDomains": 3
+  },
+  "qualification": "Gala results accumulate across three starts: a development workflow reload interrupted the first; an unreadable page aborted the second; after the fix, the third completed all six rounds. Negative control is a separate fresh case. Source prices are observations, not approved or comparable delivered offers.",
+  "earlierFailures": [
+    "Workflow journal mismatch during development reload; active old instances must finish or be stopped before deployment.",
+    "Unreadable saved page aborted the second run; fixed with a per-page failed result and regression test."
+  ],
+  "positive": {
+    "ingredient": "Gala apples",
+    "region": "New York, US",
+    "status": "complete",
+    "stopReason": "budget",
+    "roundsInFinalRun": 6,
+    "finalRunDurationMs": 271757,
+    "summary": "The six-round research budget was reached. Coverage is incomplete, not evidence that these are the market's best offers. Review findings or continue research with the saved evidence.",
+    "coverage": {
+      "unique": 19,
+      "interpreted": 16,
+      "priced": 5,
+      "priceDomains": 5,
+      "structuredDomains": 0,
+      "shortlist": 5,
+      "pending": 0
+    },
+    "steps": [
+      {
+        "query": "Gala apples published price package contents case count supplier",
+        "url": null,
+        "reason": "Published price and explicit package contents are missing across all alternatives, so search for supplier listings that state both the price basis and pack size. (6 source(s); query: Gala apples published price package contents case count supplier)"
+      },
+      {
+        "query": "https://www.webstaurantstore.com/fresh-royal-gala-apples-case/877JVI04597.html",
+        "url": null,
+        "reason": "This supplier listing is an independent alternative that likely addresses the main gap by providing an explicit case count and published product price; delivery to New York still requires separate confirmation. (1 source(s); query: https://www.webstaurantstore.com/fresh-royal-gala-apples-case/877JVI04597.html)"
+      },
+      {
+        "query": "https://www.gfsstore.com/products/461745/",
+        "url": null,
+        "reason": "Interpret this independent Gala apples product page to look for explicit package contents, price basis, and currency, addressing the current gaps in comparable supplier evidence. (1 source(s); query: https://www.gfsstore.com/products/461745/)"
+      },
+      {
+        "query": "https://www.honeycrisp.com/apples-gala-50g",
+        "url": null,
+        "reason": "This independent supplier candidate may add a third priced domain and clarify package contents and price basis, which remain the main comparability gaps. Delivery to New York would still require separate confirmation. (1 source(s); query: https://www.honeycrisp.com/apples-gala-50g)"
+      },
+      {
+        "query": "https://www.thefruitcompany.com/pages/gala-apples",
+        "url": null,
+        "reason": "Interpret this independent Gala apples supplier page for explicit package contents, published price, currency, and price basis; these comparability fields remain missing, while New York delivery still requires separate confirmation. (1 source(s); query: https://www.thefruitcompany.com/pages/gala-apples)"
+      },
+      {
+        "query": "Gala apples explicit package count published USD price supplier listing",
+        "url": null,
+        "reason": "Several alternatives still lack explicit currency or a clearly comparable package-and-price basis, and delivery to New York remains unconfirmed. Search for an independent supplier listing that states both package contents and currency. (4 source(s); query: Gala apples explicit package count published USD price supplier listing)"
+      },
+      {
+        "query": "https://www.gfsstore.com/products/569392/",
+        "url": null,
+        "reason": "Interpret this saved Gordon Food Service Gala apples page for explicit package contents, published price, currency, and price basis; these comparability fields remain incomplete, and delivery to New York still requires separate confirmation. (1 source(s); query: https://www.gfsstore.com/products/569392/)"
+      },
+      {
+        "query": "Gala apples 5 lb case published USD price supplier New York",
+        "url": null,
+        "reason": "Several candidates have price or package evidence, but no supplier listing yet clearly establishes both an explicit package basis and USD price in a directly comparable offer. Search for an independent supplier listing that states both; New York delivery remains unconfirmed. (7 source(s); query: Gala apples 5 lb case published USD price supplier New York)"
+      },
+      {
+        "query": "https://catalog.kssenterprises.com/p/%5EGRR90000032/National-Brand-Fresh-Gala-Apples-8-Carton-Ships-in-1-3-business-days/",
+        "url": null,
+        "reason": "Interpret this saved supplier listing to determine whether it provides an explicit package basis, published USD price, and shipping details, addressing the remaining comparability gap. (1 source(s); query: https://catalog.kssenterprises.com/p/%5EGRR90000032/National-Brand-Fresh-Gala-Apples-8-Carton-Ships-in-1-3-business-days/)"
+      },
+      {
+        "query": "https://www.honeycrisp.com/gala-apples.html",
+        "url": null,
+        "reason": "One saved candidate still needs interpretation and may clarify package, price basis, currency, or fulfillment evidence for an independent supplier; these fields remain the main comparability gaps. (1 source(s); query: https://www.honeycrisp.com/gala-apples.html)"
+      }
+    ],
+    "sources": [
+      {
+        "title": "Gala apples Wholesale Price NYC: $0.69/1 ct — September 2026 | Foodomarket",
+        "url": "https://www.foodomarket.com/en-us/products/fresh-fruits-and-vegetables/gala-apples",
+        "status": "complete",
+        "kind": "uncertain",
+        "summary": "The source concerns wholesale Gala apples in NYC, but the package is inconsistently described as 80 × 1 count and a 40 lb case. Confirm the package specification before purchasing.",
+        "warnings": [
+          "Package description conflicts: line 9 states 80 × 1 count, while line 29 states a 40 lb case."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "title": "Bulk Gala Apples - Gordon Food Service Store",
+        "url": "https://www.gfsstore.com/products/569392/",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Gordon Food Service Store lists fresh Gala apples in a 138-count package, one case. No price is published for the primary product, and availability may depend on the selected store.",
+        "warnings": [
+          "The product is described as sized according to a standard 42-pound carton, but this does not establish an exact package weight.",
+          "The source states the item may not be available in the selected store."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala apples",
+          "packageContent": "138",
+          "packageUnit": "unit",
+          "price": null,
+          "specification": "Fresh, 138 Ct Package, 1/Case",
+          "supplier": "Gordon Food Service Store"
+        }
+      },
+      {
+        "title": "Fresh Royal Gala Apples - 88/Case",
+        "url": "https://www.webstaurantstore.com/fresh-royal-gala-apples-case/877JVI04597.html",
+        "status": "complete",
+        "kind": "product",
+        "summary": "A single fresh Royal Gala apples product is offered as an 88-count case for the regular package price. Confirm delivery timing and stock before ordering.",
+        "warnings": [
+          "The page also lists a discounted Plus Member price of 84.00 per case; 104.99 per case is the regular price.",
+          "This is a special-order refrigerated item; delivery date, processing time, transit time, and stock availability vary.",
+          "The source does not establish the seller name in page text or seller details.",
+          "The case has an explicit 88-count package and a 45 lb shipping weight; exact net product weight is not stated."
+        ],
+        "fields": {
+          "currency": "USD",
+          "ingredient": "Gala apples",
+          "packageContent": null,
+          "packageUnit": "unit",
+          "price": "104.99",
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "title": "National Brand Fresh Gala Apples, 8/Carton ; Ships in 1-3 business days",
+        "url": "https://catalog.kssenterprises.com/p/%5EGRR90000032/National-Brand-Fresh-Gala-Apples-8-Carton-Ships-in-1-3-business-days/",
+        "status": "failed",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "title": "Gala Apples: Taste, Season, Nutrition & How to Buy | Honeycrisp.com",
+        "url": "https://www.honeycrisp.com/gala-apples.html",
+        "status": "complete",
+        "kind": "catalog",
+        "summary": "The source lists multiple primary Gala apple package options from Honeycrisp.com, including count gift boxes and a 1/2 bushel case. Select the desired package before purchasing.",
+        "warnings": [
+          "The document is content-truncated.",
+          "Several package sizes and prices are listed, so no single offer can be selected.",
+          "The source does not state exact package weights for the count boxes or 1/2 bushel case."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "title": "\n      Gala Apples\n – The Fruit Company®",
+        "url": "https://www.thefruitcompany.com/pages/gala-apples",
+        "status": "complete",
+        "kind": "contact",
+        "summary": "The source provides information about Gala apples and identifies The Fruit Company with customer-service contact, but it does not publish a purchasable package, price, or delivery details.",
+        "warnings": [
+          "No package size, price, currency, or local delivery evidence is provided.",
+          "Related gift products are not primary offers on this page."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "title": "Gala Apples - Gordon Food Service Store",
+        "url": "https://www.gfsstore.com/products/461745/",
+        "status": "complete",
+        "kind": "product",
+        "summary": "A single primary product matching Gala apples is listed by Gordon Food Service Store. It is a fresh 5 lb package priced at 10.99, with pickup availability shown only for selected store locations; confirm whether fulfillment is available in New York and clarify the currency.",
+        "warnings": [
+          "The currency is not identified because the source uses only a bare dollar sign.",
+          "The listing states 8 packages per case, but the offer price is for one package.",
+          "Pickup evidence names Greensburg, Monroeville, Pleasant Hills, and Robinson; it does not establish delivery or availability in New York."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala apples",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": "10.99",
+          "specification": "Fresh, 5 Lb Package, 8/Case",
+          "supplier": "Gordon Food Service Store"
+        }
+      },
+      {
+        "title": "Gala Apples – 50 Count Gift Box | Honeycrisp.com",
+        "url": "https://www.honeycrisp.com/apples-gala-50g",
+        "status": "complete",
+        "kind": "product",
+        "summary": "A primary offer for Gala apples is listed as a 50-count gift box from Honeycrisp.com. The package price is published, but the bare dollar symbol does not establish USD; delivery to the requested area is not confirmed.",
+        "warnings": [
+          "Currency is ambiguous because the source uses a bare \"$\" symbol.",
+          "Delivery to New York, US is not explicitly confirmed.",
+          "The package is sold by count, not weight or volume.",
+          "Container count does not establish net product contents; confirm weight or product units."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala apples",
+          "packageContent": null,
+          "packageUnit": null,
+          "price": "86.00",
+          "specification": "50 Count Gift Box",
+          "supplier": "Honeycrisp.com"
+        }
+      },
+      {
+        "title": "Royal Gala Apples  Imports | royal gala apples  import price | Zauba",
+        "url": "https://www.zauba.com/import-royal+gala+apples-hs-code.html",
+        "status": "complete",
+        "kind": "catalog",
+        "summary": "The source provides a historical import-data catalog for Royal Gala apples, with multiple shipment records, package descriptions, origins, and import prices. It is not a current merchant offer for delivery to New York, US; use it only as market context and seek a supplier listing for procurement.",
+        "warnings": [
+          "Multiple primary shipment records require a choice.",
+          "Historical import data is not evidence of current availability, seller identity, or delivery to New York, US.",
+          "Package sizes and prices vary across records.",
+          "Prices are import values in USD and are not necessarily merchant selling prices."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "title": "Gala - NY Apple Sales",
+        "url": "https://growers.newyorkapplesales.com/apples/gala/",
+        "status": "complete",
+        "kind": "product",
+        "summary": "The source is a Gala apples variety page from NY Apple Sales, confirming relevance but providing no package, price, or delivery details. Verify commercial availability and purchasing terms with the supplier.",
+        "warnings": [
+          "The page describes Gala apples but does not state package contents, weight, unit, price, currency, or delivery terms."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala apples",
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": "Gala",
+          "supplier": "NY Apple Sales"
+        }
+      },
+      {
+        "title": "Fresh Gala Apple Jordan Prices & Trade Data | Market Overview 2026 | Tridge",
+        "url": "https://www.tridge.com/market-overview/fresh-gala-apple/JO",
+        "status": "complete",
+        "kind": "irrelevant",
+        "summary": "The source provides Jordan market intelligence and trade statistics for fresh Gala apples, not a merchant offer for delivery to New York, US.",
+        "warnings": [
+          "The page concerns Jordan and does not establish local fulfillment or delivery to New York, US.",
+          "Trade statistics and historical market data are not a package-level product offer."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "title": "America’s top apple is now the Gala",
+        "url": "https://www.ajc.com/lifestyles/food--cooking/america-top-apple-now-the-gala/GIuWvMLKxNpJDeXcK7t5HP/",
+        "status": "complete",
+        "kind": "irrelevant",
+        "summary": "The source is an article about Gala apples, not a merchant offer or supplier listing.",
+        "warnings": [],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "title": "Gala Apple Bag, 5LB Same-Day Delivery or Pickup | Market 32 and Price Chopper",
+        "url": "https://shop.pricechopper.com/store/price-chopper-ny/products/16613338-gala-apple-bag-5-lbs",
+        "status": "complete",
+        "kind": "product",
+        "summary": "The source identifies one Gala apple bag product, but it is out of stock and provides only a per-pound price rather than an explicit package price.",
+        "warnings": [
+          "The product is explicitly out of stock.",
+          "The displayed price is per pound, not an explicit price for the 5 lb package.",
+          "Actual weight may vary.",
+          "Currency needs explicit source evidence; a bare $ is not enough."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala apples",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": null,
+          "specification": "Gala",
+          "supplier": "Market 32 and Price Chopper"
+        }
+      },
+      {
+        "title": "Gala Apples from New York, 4 lbs. | BJ's Wholesale Club",
+        "url": "https://www.bjs.com/product/gala-apples-from-new-york-4-lbs/3000000000004223777/",
+        "status": "complete",
+        "kind": "product",
+        "summary": "BJ’s Wholesale Club lists one 4 lb bag of fresh Gala apples from New York, priced at $5.49, but it is currently unavailable. Verify local availability for New York delivery or pickup.",
+        "warnings": [
+          "Pickup and delivery are marked sold out; the displayed pickup location is Fairfax, VA, not New York.",
+          "Supplier-origin information identifies the apples as grown and packed in New York, but does not establish fulfillment in New York.",
+          "Currency needs explicit source evidence; a bare $ is not enough.",
+          "The proposed specification was not fully supported by its cited line; review the product details."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala apples",
+          "packageContent": "4",
+          "packageUnit": "lb",
+          "price": "5.49",
+          "specification": null,
+          "supplier": "BJ’s Wholesale Club"
+        }
+      },
+      {
+        "title": "Gala Apples, 5 Lb Bag | Apples | Martins - Emerald",
+        "url": "https://www.martinsgroceriestogo.com/shop/produce/gala_apples_5_lb_bag/p/2340951",
+        "status": "complete",
+        "kind": "product",
+        "summary": "A primary product matching Gala apples is listed by Martins - Emerald in a 5 lb bag. No price is published, and fulfillment location or delivery availability is not established.",
+        "warnings": [
+          "Pickup is described, but the specific store and delivery availability are unknown.",
+          "The proposed specification was not fully supported by its cited line; review the product details."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala apples",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": null,
+          "specification": null,
+          "supplier": "Martins - Emerald"
+        }
+      },
+      {
+        "title": "Organic Gala Apple Organic Gala Apples (5 Lbs.) - Instacart",
+        "url": "https://www.instacart.com/products/18302019-organic-gala-apple-organic-gala-apples-5-lbs-each",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "title": "Gala Apple Same-Day Delivery or Pickup | The Fresh Market",
+        "url": "https://shop.thefreshmarket.com/store/the-fresh-market/products/3251365-gala-apple-each",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "title": "Buy Online Gala Apples (5 Lb.) | NY USA.",
+        "url": "https://www.kesargrocery.com/gala-apples-6-lb.-sc_nysku_37463/",
+        "status": "complete",
+        "kind": "uncertain",
+        "summary": "The source lists Gala apples, but the package weight conflicts between 5 lb. in the title and 6.00 lbs in the product details. The package and offer should be verified with the merchant.",
+        "warnings": [
+          "Conflicting stated package weights: 5 lb. versus 6.00 lbs.",
+          "The price uses a bare \"$\", so the currency is ambiguous.",
+          "Delivery is stated as standard delivery on September 17, 2026, but no broader delivery-area claim is established."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "title": "Freshness Guaranteed Fresh Gala Apples 3 lb Bag Sweet Mild with Floral Aroma - Walmart.com",
+        "url": "https://www.walmart.com/ip/Fresh-Gala-Apples-3-lb-Bag/44390958",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Walmart.com lists a fresh 3 lb bag of Gala apples with a current online price; fulfillment evidence is specific to Sacramento, California, so delivery to New York should be confirmed separately.",
+        "warnings": [
+          "The source shows Sacramento pickup and store delivery eligibility, not fulfillment to New York.",
+          "The current price is promotional compared with the stated previous price of $3.78.",
+          "Currency needs explicit source evidence; a bare $ is not enough."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala apples",
+          "packageContent": "3",
+          "packageUnit": "lb",
+          "price": "3.24",
+          "specification": "Fresh",
+          "supplier": "Walmart.com"
+        }
+      }
+    ]
+  },
+  "negative": {
+    "ingredient": "Zorblaxium nonexistent ingredient",
+    "region": "New York, US",
+    "status": "complete",
+    "stopReason": "diminishing_returns",
+    "roundsInFinalRun": 2,
+    "finalRunDurationMs": 25164,
+    "summary": "Two consecutive rounds added no new sources or completed interpretations. Coverage is incomplete; change the question or verify missing conditions with suppliers. Research remains incomplete; review the remaining gaps.",
+    "coverage": {
+      "unique": 0,
+      "interpreted": 0,
+      "priced": 0,
+      "priceDomains": 0,
+      "structuredDomains": 0,
+      "shortlist": 0,
+      "pending": 0
+    },
+    "steps": [
+      {
+        "query": "\"Zorblaxium nonexistent ingredient\" product price package contents supplier",
+        "url": null,
+        "reason": "No sources or analyzed candidates exist yet. Search for the exact ingredient with explicit price and package-content terms to test whether any comparable supplier evidence is available. (0 source(s); query: \"Zorblaxium nonexistent ingredient\" product price package contents supplier)"
+      },
+      {
+        "query": "\"Zorblaxium nonexistent ingredient\" supplier price package size",
+        "url": null,
+        "reason": "Test whether any independent supplier has explicit product pricing and package-size evidence for this exact ingredient; none is currently available. (0 source(s); query: \"Zorblaxium nonexistent ingredient\" supplier price package size)"
+      }
+    ],
+    "sources": []
+  },
+  "checks": {
+    "unitBackendTests": 253,
+    "testFiles": 42,
+    "focusedBrowserTests": 3,
+    "typecheckBuild": "passed",
+    "mobile390": "no horizontal overflow; saved coverage survives reload"
+  }
+}

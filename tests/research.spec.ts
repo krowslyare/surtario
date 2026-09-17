@@ -33,7 +33,7 @@ test("respuesta simulada: revisa fuente realista, corrige y pasa a comparación 
     const code = `import React from 'react';import ReactDOM from'react-dom/client';const {useState}=React;const {createRoot}=ReactDOM;import{ResearchWorkspace}from'/src/components/LiveResearch.tsx';import Comparison from'/src/Comparison.tsx';import'/src/styles/tokens.css';import'/src/styles/app.css';
 const proposal=${JSON.stringify(extractionExample)};
 const run={id:'test-run',ingredient:'Arroz',region:'Lima',observedAt:'2026-09-08T16:00:00Z',status:'complete',error:null,warning:true,discarded:0,sources:[{url:'https://supplier.test/rice',title:'Catálogo de prueba',description:'Fuente simulada para probar UI',markdown:'Distribuidora de ejemplo\\nArroz blanco extra\\nSaco: S/ 80.00',contentTruncated:true,extraction:proposal,extractionStatus:'complete',extractionError:null}]};
-function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison seed={seed} persistenceEnabled={false}/>:<ResearchWorkspace status={{searchEnabled:true,extractionEnabled:true}} runs={[{...run,status:'running',sources:[]}]} request={{id:1,ingredient:'Arroz',region:'Lima'}} onStatus={()=>{}} onSearch={async()=>run} onExtract={async()=>proposal} onPrepare={setSeed}/>};createRoot(document.getElementById('root')).render(<Harness/>);`;
+function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison seed={seed} persistenceEnabled={false}/>:<ResearchWorkspace status={{searchEnabled:true,extractionEnabled:true}} runs={[{...run,status:'running',sources:[]},{...run,id:'another-run',ingredient:'Other saved search',observedAt:'2026-09-16',sources:[]}]} request={{id:1,ingredient:'Arroz',region:'Lima'}} onStatus={()=>{}} onSearch={async()=>run} onExtract={async()=>proposal} onPrepare={setSeed}/>};createRoot(document.getElementById('root')).render(<Harness/>);`;
     const { transform } = await import("esbuild");
     const mainModule = await (await page.request.get("/src/main.tsx")).text();
     const reactUrl = mainModule.match(/"([^" ]*\/react\.js[^" ]*)"/)![1];
@@ -76,6 +76,13 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
     )
     .check();
   await dialog.getByRole("button", { name: "Add to study" }).click();
+  await expect(
+    page.getByRole("button", { name: /Other saved search/ }),
+  ).toContainText("Sep 16, 2026");
+  await page.getByRole("button", { name: /Other saved search/ }).click();
+  await expect(
+    page.getByText("1 offer reviewed", { exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Compare reviewed offers" }).click();
   await expect(page.getByLabel("Required quantity")).toHaveValue("");
   await expect(page.getByTestId("total-0")).toHaveText("Pending");
@@ -155,7 +162,9 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
     }),
   ).toBeVisible();
   await expect(
-    page.getByText("Product page read. Review the new source", { exact: false }),
+    page.getByText("Product page read. Review the new source", {
+      exact: false,
+    }),
   ).toBeVisible();
   expect(
     await page.evaluate(
@@ -173,9 +182,7 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
     "datetime",
     "2026-09-10T18:30:00Z",
   );
-  await expect(
-    dialog.getByText("Page title: Arroz extra 5 kg"),
-  ).toBeVisible();
+  await expect(dialog.getByText("Page title: Arroz extra 5 kg")).toBeVisible();
   await page.goto("/__source_quality_test?unusable=1");
   await expect(
     page.getByText("No source is ready to analyze as an offer", {

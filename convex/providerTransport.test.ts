@@ -78,3 +78,17 @@ describe("local provider rehearsal transport", () => {
     expect(request).not.toHaveBeenCalled();
   });
 });
+
+it("live Firecrawl stays direct in local hybrid mode while OpenAI secrets stay out of the CLI bridge", async () => {
+  const request=vi.fn(async()=>Response.json({}));
+  const transport=createProviderTransport({...local,liveFirecrawl:true},request);
+  await transport("https://api.firecrawl.dev/v2/search",{method:"POST",body:"{}",headers:{Authorization:"Bearer live-test"}});
+  const direct=(request.mock.calls as unknown as [Request][])[0][0];
+  expect(direct.url).toBe("https://api.firecrawl.dev/v2/search");
+  expect(direct.headers.get("Authorization")).toBe("Bearer live-test");
+  await transport("https://api.openai.com/v1/responses",{method:"POST",body:"{}",headers:{Authorization:"Bearer dummy"}});
+  const [url,init]=request.mock.calls[1] as unknown as [URL,RequestInit];
+  expect(url.origin).toBe("http://127.0.0.1:8789");
+  expect(new Headers(init.headers).has("Authorization")).toBe(false);
+  expect(()=>createProviderTransport({...local,cloudUrl:"https://cloud.convex.cloud",liveFirecrawl:true},request)).toThrow();
+});

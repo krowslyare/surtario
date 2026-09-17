@@ -203,7 +203,7 @@ export const check = internalAction({
       if (!source.markdown) throw new Error("No readable evidence");
       const parsed = await analyzeWebSourceWithAgent(
         ctx,
-        { ...source, markdown: source.markdown!, ingredient: args.ingredient },
+        { ...source, markdown: source.markdown!, ingredient: args.ingredient, region: args.region },
         env.OPENAI_API_KEY!,
         env.OPENAI_EXTRACTION_MODEL!,
       );

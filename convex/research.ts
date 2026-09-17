@@ -1,3 +1,4 @@
+import { MAX_RESEARCH_SOURCES } from "./lib/firecrawl";
 import { ConvexError, v } from "convex/values";
 import { action, env, internalMutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
@@ -11,7 +12,7 @@ import {
 import { analyzeWebSourceWithAgent } from "./lib/agentExtraction";
 import { inspectSource } from "./lib/sourceQuality";
 import type { WebAnalysis } from "./lib/webAnalysis";
-import { providerRehearsalEnabled } from "./lib/providerTransport";
+import { webResearchSimulated } from "./lib/providerTransport";
 import {
   extractedOfferValidator,
   savedResearchValidator,
@@ -184,7 +185,7 @@ export const finishSearch = internalMutation({
   returns: savedResearchValidator,
   handler: async (ctx, args) => {
     if (
-      args.sources.length > 3 ||
+      args.sources.length > MAX_RESEARCH_SOURCES ||
       args.sources.some(
         (source) =>
           source.url.length > 2000 ||
@@ -252,7 +253,7 @@ export const search = action({
       return await ctx.runMutation(internal.research.finishSearch, {
         id: reservation.run.id,
         ...result,
-        simulated: providerRehearsalEnabled(),
+        simulated: webResearchSimulated(),
       });
     } catch {
       return await ctx.runMutation(internal.research.failSearch, {
@@ -268,6 +269,7 @@ const extractionReservation = v.union(
   v.object({
     kind: v.literal("reserved"),
     markdown: v.string(),
+    region: v.string(),
     ingredient: v.string(),
     title: v.string(),
     url: v.string(),
@@ -318,6 +320,7 @@ export const reserveExtraction = internalMutation({
       kind: "reserved" as const,
       markdown: source.markdown,
       ingredient: run.ingredient,
+      region: run.region,
       title: source.title,
       url: source.url,
       contentTruncated: source.contentTruncated,
@@ -390,6 +393,7 @@ export const extract = action({
       | {
           kind: "reserved";
           markdown: string;
+          region: string;
           ingredient: string;
           title: string;
           url: string;
@@ -405,6 +409,7 @@ export const extract = action({
         {
           markdown: reservation.markdown,
           ingredient: reservation.ingredient,
+          region: reservation.region,
           title: reservation.title,
           url: reservation.url,
           contentTruncated: reservation.contentTruncated,
@@ -483,7 +488,7 @@ export const reserveProductRead = internalMutation({
         childIndex: existing,
       };
     }
-    if (run.sources.length >= 6)
+    if (run.sources.length >= MAX_RESEARCH_SOURCES * 2)
       throw new ConvexError("This search has reached the product-page limit.");
     const sources = [
       ...run.sources,
@@ -569,7 +574,7 @@ export const readProduct = action({
       childIndex: number;
     } = await ctx.runMutation(internal.research.reserveProductRead, {
       ...args,
-      simulated: providerRehearsalEnabled(),
+      simulated: webResearchSimulated(),
     });
     if (reservation.kind === "existing") return reservation.run;
     let page;
