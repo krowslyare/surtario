@@ -130,7 +130,7 @@ export default function MarketStudy({
 
   function openUpdatedReplyComparison(comparison: SavedComparison) {
     onPrepare({ ...comparison, sourcingCaseId: currentStudyCase?.caseId,
-      resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId } });
+      resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true } });
   }
 
   const [confirmed, setConfirmed] = useState(false);
@@ -841,6 +841,7 @@ export default function MarketStudy({
                             id: comparison.id,
                             revision: comparison.revision,
                             selectedOfferId: comparison.selectedOfferId,
+                            unchanged: true,
                           },
                         });
                         return;

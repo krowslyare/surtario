@@ -324,7 +324,9 @@ export default function Comparison({
     seed?.resumeComparison?.revision ?? 0,
   );
   const [sourcingCaseId, setSourcingCaseId] = useState(seed?.sourcingCaseId);
-  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
+  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(() =>
+    seed?.resumeComparison?.unchanged ? comparisonStateFingerprint({ request: seed.request, offers: seed.offers, sources: seed.sources, selectedOfferId: seed.resumeComparison.selectedOfferId ?? null }) : null,
+  );
   const savedComparisons = useRef<SavedComparisonsHandle>(null);
   const [savingAvailable, setSavingAvailable] = useState(false);
   const [clientId, setClientId] = useState(() => crypto.randomUUID());

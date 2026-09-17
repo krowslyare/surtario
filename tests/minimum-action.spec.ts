@@ -13,8 +13,8 @@ test('minimum proposal stays in its case; a partial reply recalculates and survi
  const caseId=run('sourcing:create',{token,ingredient:'Rice',region:'Portland, OR, US',objective:'Review the minimum against the budget'});
  const comparison=run('comparisons:save',{token,sourcingCaseId:caseId,clientId:randomUUID(),id:null,expectedRevision:0,request:usRiceRequest,offers:usRiceOffers.map((o,i)=>i===0?{...o,minimumPackages:5}:o),selectedOfferId:null});
  await context.addInitScript(value=>localStorage.setItem('procurement-demo-session-v1',value),token);
- await page.goto('/?view=comparison');
- await page.getByRole('button',{name:'Saved comparisons (1)'}).click();await page.getByRole('button',{name:'Open comparison',exact:true}).click();
+ await page.goto('/?view=market');
+ await page.getByRole('button',{name:'Open research case',exact:true}).click();await page.locator('.sourcing-case-link').filter({hasText:'Rice'}).click();await page.getByRole('button',{name:'Open case comparison',exact:true}).click();
  const advisor=page.getByRole('region',{name:'Purchasing advisor'});await advisor.getByText('Budget and preferences').click();await advisor.getByLabel('Available budget').fill('50');
  await page.getByRole('button',{name:'Prepare minimum proposal'}).click();
  const dialog=page.getByRole('dialog');await expect(dialog).toContainText('minimum of 2 packs');await expect(dialog).not.toContainText('Supplier B');

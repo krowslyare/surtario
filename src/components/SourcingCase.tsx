@@ -479,6 +479,7 @@ function CaseDetail({
           id: savedComparison.id,
           revision: savedComparison.revision,
           selectedOfferId: savedComparison.selectedOfferId,
+          unchanged: true,
         },
         sourcingCaseId: caseId,
       });
