@@ -98,6 +98,7 @@ export default function ReplyDeliveryReview({
         </>
       ) : (
         <>
+          <p className="field-hint">Decision preferences: {context.priority === "cash" ? "Cash" : context.priority === "unit_price" ? "Unit price" : "Balanced"}{context.budgetCents !== null ? ` · Budget ${money(context.budgetCents, offer?.currency)}` : ""}. The same preferences apply before and after.</p>
           <p>Match the quoted term to its offer, then check the updated result. Confirm only this term; review any other changes separately.</p>
           <details className="mail-details" open>
             <summary>Supplier reply</summary>

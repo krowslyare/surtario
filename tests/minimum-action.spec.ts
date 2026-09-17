@@ -22,7 +22,9 @@ test('minimum proposal stays in its case; a partial reply recalculates and survi
  const request=run('quotationMail:list',{token})[0];
  const directory=mkdtempSync(join(tmpdir(),'minimum-reply-'));const reply='We confirm a minimum of 2 packs; other terms unchanged.';
  try{const file=join(directory,'reply.json');writeFileSync(file,JSON.stringify([{requestId:request.id,eventId:randomUUID(),messageId:randomUUID(),threadId:'synthetic-thread',from:'demo@example.test',text:reply,receivedAt:new Date().toISOString()}]));runLocalConvex(['import','--append','--table','quotationReplies',file]);}finally{rmSync(directory,{recursive:true,force:true});}
+ await advisor.getByLabel('Available budget').fill('500');
  await page.getByRole('button',{name:'View request',exact:true}).click();await page.getByRole('button',{name:'Use reply to confirm minimum'}).click();
+ await expect(page.getByRole('dialog')).toContainText('Budget USD 50.00');
  await page.getByLabel('Minimum packs',{exact:true}).fill('2');await page.getByLabel('Exact phrase confirming minimum').fill(reply);
  await page.getByLabel('I confirm this reply gives the minimum number of packs for this offer.',{exact:false}).check();await page.getByRole('button',{name:'Confirm minimum and save'}).click();
  await expect(page.getByRole('heading',{name:'Minimum saved'})).toBeVisible();await expect(page.getByRole('dialog')).toContainText('Supplier B');await page.getByRole('button',{name:'Done',exact:true}).click();

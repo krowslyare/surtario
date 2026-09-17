@@ -98,7 +98,7 @@ function Connected({
   deliveryBlocked?: boolean;
   onDeliveryApplied?: (comparison: SavedComparison) => void;
 }) {
-  const [deliveryReply, setDeliveryReply] = useState<(DeliveryReply & { term?: DecisionActionKind; offerId?: string }) | null>(null);
+  const [deliveryReply, setDeliveryReply] = useState<(DeliveryReply & { term?: DecisionActionKind; offerId?: string; context?: AdvisorContext }) | null>(null);
   const confirmations = useQuery(api.quotationMail.listDeliveryConfirmations, deliveryComparison ? {token, comparisonId: deliveryComparison.id} : "skip");
   const deliveryAnalyses = useQuery(api.advisor.list, deliveryComparison && !deliveryContext ? {token, comparisonId: deliveryComparison.id} : "skip");
   const effectiveDeliveryContext = deliveryContext ?? deliveryAnalyses?.[0]?.context ?? defaultAdvisorContext;
@@ -580,13 +580,13 @@ function Connected({
                 )}
                 {deliveryComparison && active.decisionAction?.kind !== "minimum" && deliveryComparison.offers.some((offer) => offer.freightCents === null) && <>
                   <button className="button secondary" disabled={deliveryBlocked || deliveryLoading || staleAction} onClick={() => {
-                    setDeliveryReply({ requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, offerId: active.decisionAction?.offerId });
+                    setDeliveryReply({ requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, offerId: active.decisionAction?.offerId, context: active.decisionAction?.context });
                     setActiveId(null);
                   }}>Use reply to confirm delivery</button>
                   {deliveryBlocked && <p className="field-hint">Save your comparison changes and check your preferences before confirming delivery.</p>}
                 </>}
                 {deliveryComparison && active.decisionAction?.kind === "minimum" && <button className="button secondary" disabled={deliveryBlocked || deliveryLoading || staleAction} onClick={() => {
-                  setDeliveryReply({requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, term: "minimum", offerId: active.decisionAction!.offerId}); setActiveId(null);
+                  setDeliveryReply({requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, term: "minimum", offerId: active.decisionAction!.offerId, context: active.decisionAction!.context}); setActiveId(null);
                 }}>Use reply to confirm minimum</button>}
                 {confirmations?.filter((item) => item.requestId === active.id && item.messageId === reply.messageId).map((item) => <div key={item.id}>
                   <h4>{item.minimumPackages !== undefined ? "Minimum confirmed" : "Delivery confirmed"}</h4><blockquote>{item.evidenceQuote}</blockquote>
@@ -611,7 +611,7 @@ function Connected({
           )}
         </Dialog>
       )}
-      {deliveryReply && deliveryComparison && <ReplyDeliveryReview token={token} reply={deliveryReply} term={deliveryReply.term} targetOfferId={deliveryReply.offerId} comparison={deliveryComparison} context={effectiveDeliveryContext} onApplied={onDeliveryApplied} onClose={() => setDeliveryReply(null)} />}
+      {deliveryReply && deliveryComparison && <ReplyDeliveryReview token={token} reply={deliveryReply} term={deliveryReply.term} targetOfferId={deliveryReply.offerId} comparison={deliveryComparison} context={deliveryReply.context ?? effectiveDeliveryContext} onApplied={onDeliveryApplied} onClose={() => setDeliveryReply(null)} />}
       {reviewReply && onPrepare && (
         <ReplyOfferReview
           reply={{

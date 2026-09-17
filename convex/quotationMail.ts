@@ -1231,6 +1231,8 @@ export const confirmReplyDelivery = mutation({
     }
     if (request.decisionAction && (request.decisionAction.offerId !== args.offerId || request.decisionAction.kind !== term || request.decisionAction.comparisonRevision !== comparison.revision))
       throw new ConvexError("This action belongs to an earlier comparison or another term. Prepare a current action.");
+    if (request.decisionAction && Object.keys(c).some(key => c[key as keyof typeof c] !== request.decisionAction!.context[key as keyof typeof c]))
+      throw new ConvexError("Use the decision preferences saved with this question when confirming its reply.");
     if (minimum && !request.decisionAction)
       throw new ConvexError("Prepare a linked minimum-order action before confirming this term.");
     if (comparison.revision !== args.expectedRevision)

@@ -38,6 +38,7 @@ test("minimum action is grounded, private alternatives stay out of the message, 
 test("stale actions cannot send or confirm and other sessions cannot apply a reply",async()=>{
  const {t,comparison,draft,confirmation}=await setup();
  await expect(t.mutation(api.quotationMail.confirmReplyDelivery,{...confirmation,token:"b".repeat(64)})).rejects.toThrow(/unavailable/);
+ await expect(t.mutation(api.quotationMail.confirmReplyDelivery,{...confirmation,context:{...context,budgetCents:null}})).rejects.toThrow(/preferences saved/);
  await t.run(ctx=>ctx.db.patch(comparison.id,{revision:2}));
  await expect(t.mutation(internal.quotationMail.reserveSend,{token,id:draft.id,expectedRevision:draft.revision,confirmed:true})).rejects.toThrow(/comparison changed/);
  await expect(t.mutation(api.quotationMail.confirmReplyDelivery,{...confirmation,expectedRevision:2})).rejects.toThrow(/earlier comparison/);
