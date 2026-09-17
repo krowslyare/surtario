@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-17T01:45:49Z
+- **Last updated:** 2026-09-17T04:06:22Z
 
 ## Log
 
@@ -387,3 +387,18 @@ Separated adaptive research, discovery/reading budgets, canonical deduplication 
 Fresh research-only tree: 263 tests, TypeScript/build/hosting checks and two research browser journeys passed. External Codex review and CI are not yet complete. UI refinement and source-dialog presentation remain in a separate worktree. Main merge triggers development publication, which needs an active-workflow check.
 
 Codex Review of PR #35 identified three issues: Spanish adaptive rounds ignored refinements/exclusions, decimal-comma citations could lose supported values, and catalog children could repeat a previously read URL. Corrected all three. Eleven additional cases cover Spanish/English localized refinement, exclusion of prior catalog links, decimal/grouping formats and rejection of concatenated fabricated numbers. Eight regression cases failed on the reviewed commit; all 274 tests pass after the fixes. Frontend/backend types and hosting build checks passed. Remote CI of the final commit remains the merge gate.
+
+
+### 2026-09-17 - working tree · case decision consolidation after PR #35
+
+Isolated the current main baseline (`3483f8a`) and preserved the original dirty worktrees. Shared direct US/Peru example authorization, consistent eighteen-artifact retention, separate ten-search quick quota and web-transport watch provenance are fixed (`bf5317f`). Added versioned freight/minimum action context, deterministic proposals, stale-action/send guards, partial human-confirmed terms and before/after decisions (`909440c`). Existing UI work now presents concise source facts, progressive raw evidence, a case decision brief and a bounded case-priority list (`910c327`, `58b3cac`). Review also caught and corrected draft retry comparison by JSON key order and competitor quotation exposure to the optional inquiry writer.
+
+Local verification: 288 tests passed, frontend/backend typechecks and the 30-file hosting build passed. The full browser pass passed 84 of 85 journeys; the remaining test caught a lost synthetic source label. Restoring the label passed its focused rerun, covering all 85 journeys across the pass and correction. `test:demo` passed separately. Controlled watch tests cover unchanged/change/error, lease expiry, cancellation and late/duplicate observations; no seven-day real monitoring claim.
+
+The dedicated anonymous local rehearsal completed two adaptive runs, then a quick search, reviewed two synthetic product pages, saved a same-case comparison and ran real Luna CLI extraction, advisor explanation, inquiry drafting and partial reply interpretation. The advisor executed its calculation/evidence tools; mail and signed linked duplicate inbound events used the simulated bridge. Preparation took 118.924 seconds in this session. Twelve Luna CLI calls, eight simulated searches, two simulated page reads and one simulated send were recorded. No new real Firecrawl request, real email or cloud deployment occurred. The previous flour measurement remains historical evidence, not this rehearsal's latency. Direct OpenAI API and final hosted acceptance remain pending by scope.
+
+The timed rehearsal first exposed an additional continuity defect: opening a saved comparison from its case marked it unsaved and blocked reply confirmation. The correction distinguishes unchanged saved snapshots from reviewed merges; four affected browser journeys, fresh hosting/build and backend types passed. The same prepared case and reply were reused without another provider call or send.
+
+The result audit then caught default preferences replacing the saved question context on reopening. Reply confirmation now displays and enforces the immutable action preferences; the regression changes current form preferences and checks the original budget is used. The synthetic case was explicitly returned to freight-pending via a normal revisioned save for another take, preserving prior conversations and confirmation history. One additional, distinct synthetic request was approved; no real mail, model retry or new web research was used.
+
+The verified main walkthrough took **114.971 seconds**. A separately timed closing segment saved and explicitly restored the updated cash-priority scenario in **13.640 seconds**. Combined screen time is **128.611 seconds (2:09 rounded)**, with an explicit edit between segments of the same case. These are automated browser rehearsals with reading holds, not a narrated/exported video. The final result check confirmed the saved USD 50 budget, USD 45/39 totals, original evidence, one reply/confirmation for the current request, and recovered selection. The final scene shows the current saved scenario rather than stale AI advice. Desktop and mobile views were inspected. Final direct OpenAI API, hosted acceptance and narrated/exported recording remain separate.

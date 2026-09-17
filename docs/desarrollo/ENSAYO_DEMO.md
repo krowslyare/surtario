@@ -1,50 +1,37 @@
-# Under-three-minute demo rehearsal
+# Demo: a useful answer changes the decision
 
-This is the recording plan for the contest video. The proposed shot budget is **170 seconds (2:50)**, leaving ten seconds below the three-minute limit. It has not yet been rehearsed with a stopwatch, so none of the timings below are measured results.
+Current local story after PR #35. Use the same saved case throughout. The final narrated video and direct OpenAI API/hosted acceptance remain separate release steps.
 
-The demo tells one continuous story: research one restaurant ingredient, preserve reviewed evidence in one study, compare compatible offers, ask the purchasing advisor what to do, then incorporate a quotation received through the approved test-email flow. A quantity is needed only when moving from research to a possible purchase. Selecting an offer or accepting AI suggestions never records a purchase.
+“Encontramos alternativas, pero falta una condición para decidir. Surtario identifica qué preguntar, ayuda a obtener la respuesta y muestra cómo cambia la compra recomendada.”
 
-## Evidence boundary for the recording
+## Recording sequence
 
-- The main Firecrawl shot must come from the final hosted acceptance run. Show the original URL, observation date, source classification and the explicitly read product page. A saved run is acceptable when introduced as a real run completed before recording; do not imply that a network request happened during the shot.
-- OpenAI suggestions are proposals. Show literal evidence, make an evidence-supported correction when needed, and use the manual confirmation control. The deterministic totals and executive verdict remain the source for amounts; the AI interpretation explains the saved scenario and cites its active sources.
-- AgentMail may use a reply received before recording because email latency is unpredictable. Say that it is a previously received test reply, and show that it remains linked to the approved request and the owned test recipient. Do not send a second message for the video.
-- Keep every `Ejemplo simulado` marker visible if a fixture is used. Synthetic data may illustrate a second offer or a failure state, but it does not prove Firecrawl, OpenAI or AgentMail execution.
-- Leave missing price, minimum, freight, tax, stock, delivery and coverage values pending unless the visible source or the operator explicitly confirms them. Do not describe cash difference as realized savings.
-
-## Shot plan
-
-| Budget | Screen action | Narration and proof |
+| Scene | What to show | Evidence boundary |
 | --- | --- | --- |
-| **0:00–0:10 · 10 s** | Open the final hosted app on market research. Enter the chosen ingredient and Lima; do not provide a recipe, document or quantity. | “A restaurant can begin with one ingredient and a location. It does not need purchase history or a committed order.” |
-| **0:10–0:38 · 28 s** | Open the prepared real Firecrawl research run. Show a catalog/contact classification with its cited evidence and warning, choose its product link, then show the child page produced by **Leer ficha del producto**. Keep the URL and observation date visible. | Explain that a search result is only a candidate. The product page is read separately before it can become a comparable offer; missing price or delivery stays pending. |
-| **0:38–1:04 · 26 s** | Open **Revisar extracción** on the product page. Show proposed fields beside literal evidence, correct at least one field only if the page supports the correction, confirm the review and choose **Añadir al estudio**. Add a second compatible reviewed offer or a distributor with no published price that was prepared for the same ingredient and region. | “The model proposes structured fields; the buyer owns the correction and confirmation. The original proposal, edited value, source and date remain together.” |
-| **1:04–1:22 · 18 s** | Open **Mi estudio**. Show the real/simulated provenance on every card, the no-price candidate as `Pendiente`, and the combined option count. Use **Guardar estudio**, reload or open **Guardados**, and recover it. | “Offers and distributor leads now live in one recoverable study. Saving evidence does not create a purchase.” |
-| **1:22–1:56 · 34 s** | Compare the compatible reviewed offers. Enter the required quantity and confirm only the known minimum, freight, tax and delivery conditions. Open the advisor, set one concise decision context such as cash priority and budget, then use **Guardar escenario y pedir análisis de IA**. Hold on **Qué haría**, **Impacto en este pedido**, **Condición para decidir**, and the cited **Interpretación de IA**. | Read the executive verdict, one cash/coverage consequence and one unresolved condition. State that package counts, excess and outlay are deterministic; AI explains rather than replaces them. |
-| **1:56–2:32 · 36 s** | Open the saved AgentMail request. Show the safe, owned test recipient, `Aceptado por AgentMail`, and the linked reply received before recording. Choose **Revisar como nueva oferta**, then show **Sugerir campos con IA** results and their evidence. Correct any unsupported field, manually confirm the offer and equivalence, and choose **Añadir a comparación actual**. | “This reply came from our owned test mailbox and stayed linked by the provider thread. AI proposes fields from untrusted email text; a person verifies them before the offer can affect the comparison.” |
-| **2:32–2:50 · 18 s** | Save the changed comparison. Show that the previous choice or advisor analysis is stale until the updated scenario is reviewed, then finish on the new offer, source link and remaining pending condition. | “The new evidence updates the decision without inventing delivery or stock. Nothing was purchased, and every consequential step required review.” |
+| Start with one case | Rice, Portland and the saved research question; what we know, what remains and next action. | No documents, recipe or purchase history required. |
+| Explicit cut to completed research | Open the results of that same case and a reviewed source. | Say “research completed before this take”. The earlier flour run took 592 seconds; that is one measured run, not a universal latency. |
+| The unresolved decision | A: USD 45 per order; B: freight pending. Open the contextual question. | USD 10 is a calculated freight boundary against the complete alternative, not an offered discount or quoted freight. |
+| What we asked and received | Saved, human-reviewed message and its linked reply. | Local take: synthetic web/mail and real Luna CLI. Reply is pre-received test evidence; no real negotiation or supplier communication. |
+| Human confirmation | USD 4 freight and the literal confirming phrase. | Only freight changes. All other terms and original evidence are preserved. |
+| Revised decision | Before/after under cash priority and USD 50 budget: B totals USD 39 versus A USD 45. | An order comparison, not realized savings. No purchase is recorded. |
+| Recovery | Choose after review, save, reload, reopen; save and restore the updated cash-priority scenario. | Same case and sources; updated terms and selection survive. |
 
-The editor may shorten loading or use a visible cut to a completed real run. Do not hide a provider failure, splice a synthetic success into a real claim, or narrate a pre-existing result as live. If any essential state cannot be read comfortably within its shot, simplify the narration rather than speed through the evidence.
+Use readable holds and a visible disclosure. Do not accelerate a provider wait invisibly or splice a different research case into the result. The main scene is freight; minimum negotiation is a separate supporting demonstration, not a second storyline competing for the three-minute budget.
 
-## Rehearsal and recording checklist
+The minimum example makes the distinction between viability and recommendation: reducing A's minimum from five packs to two makes it fit the USD 50 budget at USD 45, while B at USD 35 stays recommended. A reply retaining five packs leaves the blocking condition unchanged.
 
-### Provider and data readiness
+## Timing and artifacts
 
-- [ ] Confirm the exact OpenAI account and project intended for the demo; configure its server-side key and compatible extraction/advisor models on the verified target.
-- [ ] Complete direct OpenAI API acceptance inside the app for Firecrawl-source extraction, advisor tool execution and reply-field suggestions. Luna CLI rehearsal is separate evidence and does not satisfy this item.
-- [ ] Complete one final hosted journey on the intended release deployment: real Firecrawl discovery/product read, direct OpenAI review and advice, one explicitly approved AgentMail send to a display-safe owned test recipient, signed linked reply, and manual reply-to-offer confirmation.
-- [ ] Preload only the same owned browser session and the approved test reply needed for the take. Remove credentials, private message bodies and unrelated customer data from every visible surface.
-- [ ] Verify the empty-result and provider-failure states separately. They need not consume video time, but the final demo must not invent suppliers when a provider returns nothing.
+The verified main walkthrough took **114.971 seconds**. A separately timed closing segment saved and explicitly restored the updated cash-priority scenario in **13.640 seconds**. Combined screen time is **128.611 seconds (2:09 rounded)**, with an explicit edit between segments of the same case. These are automated browser rehearsals with reading holds, not a narrated/exported video. The final result check confirmed the saved USD 50 budget, USD 45/39 totals, original evidence, one reply/confirmation for the current request, and recovered selection. The final scene shows the current saved scenario rather than stale AI advice.
 
-### Take readiness
+The measured local browser rehearsal is recorded in the current consolidation evidence. Its timing includes navigation, confirmation, save/reload and deliberate reading holds. It is an automated walkthrough, not a narrated exported video. Final recording must be timed again with actual narration and an exported duration below 180 seconds.
 
-- [ ] Rehearse this exact path with a stopwatch and record the measured duration; the current measurement is pending.
-- [ ] Confirm each real source, observation date, reviewed edit, option count, restored study, deterministic total, advisor source citation, AgentMail request state and reply linkage immediately before recording.
-- [ ] Keep a short disclosure ready for any pre-completed Firecrawl run, pre-generated AI result or pre-received AgentMail reply used to avoid provider latency.
-- [ ] Record at readable scale, review the final cut end to end, and verify its exported duration is below three minutes.
+Local artifacts are under `.local/rehearsal/`: sanitized timing/acceptance records and desktop/mobile captures; the session file contains a capability token and must not be committed or shared. Do not commit private messages or credentials.
 
-### Release and submission still remaining
+## Before the final take
 
-- [ ] Run the final hosted acceptance checks for the public URL, assets, SPA reload, session isolation and signed webhook route.
-- [ ] Review tracked files and history for secrets or private data, then make the repository public only with the author's release authorization.
-- [ ] Upload the final video, verify that its link is accessible, and complete the contest submission. A local rehearsal, development preview or repository push is not submission evidence.
+- Keep the synthetic/previously completed disclosures visible wherever applicable.
+- Verify the original URL, observation date, reviewed fields, received reply and current comparison revision in the selected session.
+- Keep the final story in one case. Evidence details and timeline open only when they explain a decision.
+- Complete the direct OpenAI API and deployed journey described in [current consolidation](CONSOLIDACION_DECISION.md) when the key is available and the target is authorized. Luna CLI success does not satisfy that acceptance.
+- A real test-mail send, deployment, public repository change, video upload and contest submission each require their corresponding authorization. None happened as an implicit recording step.

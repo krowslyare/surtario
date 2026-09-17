@@ -119,6 +119,9 @@ export function productSourceForUrl(url) {
 
 export function syntheticReplyTextForMail(mail) {
   const inquiry = JSON.stringify(mail ?? {});
+  // Explicit operator-selected fixture for the partial-freight closing scene.
+  if (mail?.subject === "[rehearsal:delivery] Rice freight confirmation")
+    return "SYNTHETIC REHEARSAL REPLY. Rose City Foodservice: Freight is USD 4 per order. This confirms freight only; all other previously reviewed terms remain unchanged. No email was sent.";
   if (/\b(?:rice|USD|lb|Portland)\b/i.test(inquiry))
     return "SYNTHETIC REHEARSAL REPLY. Northwest Restaurant Goods: long-grain white rice, 25 lb bag at USD 19.00. Taxes, minimum order, delivery, and freight require confirmation. This simulation sends no email to suppliers.";
   return "RESPUESTA SINTÉTICA DE ENSAYO. Distribuidor Central: arroz extra, saco de 10 kg a S/ 47 PEN. IGV incluido. Mínimo 1 saco. Entrega y flete por confirmar. Esta simulación no envía correo a proveedores.";

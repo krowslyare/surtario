@@ -50,11 +50,13 @@ A catalog purchase started from a linked saved study resolves that study's case 
 
 ## Research contract
 
-- Up to three explicit runs per case, each with at most three planning steps. Each step may search, read one discovered link or stop. Search results are deduplicated; at most three new sources are interpreted per step.
+- Up to three explicit runs per case, each with at most six planning steps. Each step may search, read one discovered link or stop. Search results are deduplicated; at most six new sources are interpreted per step.
 - The planner receives the objective, recent action history, candidate links, selected saved-study evidence, the linked comparison and its current advisor analysis. It can refine a search or stop after sufficient evidence; limits prevent repeating a query or following arbitrary model-generated URLs.
 - Every model response is schema-validated. External actions have bounded timeouts and no automatic model/workflow action retry. Cancellation advances the case revision; late results cannot change canceled or superseded state. A provider request already in flight can still finish and consume its request budget.
-- Ten cases per anonymous demo session, 500 total cases, the nine most recent research artifacts linked in the case view (earlier persisted artifacts remain stored). The timeline displays the latest 100 events. This is the existing isolated capability-token demo, not restaurant accounts or a private-data pilot.
+- Ten cases per anonymous demo session, 500 total cases, the eighteen most recent research/watch artifacts linked in the case view (earlier persisted artifacts remain stored). The timeline displays the latest 100 events. This is the existing isolated capability-token demo, not restaurant accounts or a private-data pilot.
 - A failed run retains earlier evidence. Completing research means the run stopped; it does not mean an offer is confirmed or a purchase is ready.
+
+Quick searches have a separate lifetime limit of ten per session and a separate cooldown. Existing UUID client IDs identify quick searches; server-generated `case:` and `watch:` IDs identify adaptive and monitoring records. The indexed reader includes legacy UUID records without counting adaptive rounds. Global demo safety limits remain unchanged. All case writers retain the latest eighteen IDs in chronological order; a thirteenth watch observation preserves twelve prior research rounds. Beyond eighteen, older documents remain stored but leave the bounded case/planner context. Coverage counts describe retained evidence, not an all-time total.
 
 ## Supplier conversations
 

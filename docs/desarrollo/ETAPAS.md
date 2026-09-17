@@ -1,5 +1,7 @@
 # Etapas de desarrollo
 
+**Current iteration after PR #35:** [implemented behavior, local verification and remaining API/release acceptance](CONSOLIDACION_DECISION.md). Older test counts below belong to their dated deliveries, not this checkout. No cloud publication is included in this iteration.
+
 Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo con evidencia de su criterio de salida. El calendario del plan es orientativo; ante retrasos aplicar sus recortes, sin afirmar resultados no ejecutados.
 
 ## Estado

@@ -1,5 +1,7 @@
 # Surtario
 
+**Current iteration after PR #35:** [implemented behavior, local verification and remaining API/release acceptance](docs/desarrollo/CONSOLIDACION_DECISION.md). Older test counts below belong to their dated deliveries, not this checkout. No cloud publication is included in this iteration.
+
 **Sourcing for your kitchen.** Surtario is a restaurant purchasing assistant built with React, TypeScript, Vite and Convex. Start with an ingredient and location, research prices and distributors, save the evidence, and prepare a purchase only when needed. The interface is English-first, with explicit currencies and units. The optional Portland rice example uses USD/lb; the Peru examples remain available through `?example=pe`.
 
 Research does not require recipes, purchase history, stock or a document. Supplier offers, market references and completed purchases are different facts. Choosing an offer does not place or record a purchase.
@@ -14,7 +16,7 @@ Research does not require recipes, purchase history, stock or a document. Suppli
 - Enter a manual list or review an XLSX/CSV ingredient column. Save reviewed names by browser session and recover them after reload. File bytes and other columns remain local.
 - Inspect bundled synthetic PNG/PDF documents, request extraction when enabled, correct proposed fields and preserve the reviewed comparison. Private image/PDF inputs currently support local manual transcription only.
 - Compare whole packages, minimum orders, freight, confirmed tax conditions, excess and cash outlay. Unknown critical values remain pending. Resolve a missing freight quote with a calculated boundary and a separate hypothetical scenario before entering confirmed terms.
-- Connect a missing-delivery finding to a supplier question, a hypothetical decision preview, and an explicitly confirmed answer. See the before/after recommendation using your actual advisor context, then save the confirmed terms. [Flow and verification](docs/desarrollo/DECISION_FOLLOWTHROUGH.md).
+- Prepare contextual freight or minimum-order questions from saved comparisons. Review linked partial replies and compare before/after using the preferences saved with that question, without replacing other terms or recording a purchase. [Flow and verification](docs/desarrollo/DECISION_FOLLOWTHROUGH.md).
 - Set purchasing priorities, available budget, confirmed daily usage/stock and maximum coverage. Save an executive verdict, inspect alternatives and copy a negotiation draft. An optional Agent action explains the saved scenario using read-only calculation and evidence tools. Changed inputs visibly invalidate old analyses.
 - Prepare an explicitly reviewed quotation email to one configured test recipient. Optionally suggest fields from a linked reply with AI, then confirm the editable proposal before adding an offer; internal operator recovery handles uncertain sends and unmatched replies without resending.
 - Serve the development preview through Convex static hosting while preserving the signed AgentMail webhook route.
