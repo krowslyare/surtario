@@ -1276,6 +1276,7 @@ export default function Comparison({
                 </dd>
               </div>
             </dl>
+            <p className="field-hint">{source.marketSource?.simulated ? (source.extraction ? "Reviewed synthetic document" : "Synthetic example") : (source.extraction ? "Reviewed source" : "Source record")}</p>
             <SourceEvidence title={source.marketSource?.title ?? source.label} text={source.marketSource?.evidence} extraction={source.extraction} />
           </div>
           {source.marketSource?.url && (
