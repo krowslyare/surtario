@@ -8,6 +8,8 @@ The PR #36 review corrections are described in [the current consolidation record
 
 ## Estado
 
+September 17 live follow-up: [current provider checks](LIVE_PROVIDER_CHECKS.md) found real Firecrawl partial coverage (13 sources / 11 with text; 128.459 s), a missing AgentMail `inbox_read` permission, and absent OpenAI credentials/models. Added a reproducible redacted preflight/probe command. Full integrated API acceptance remains blocked; CI does not certify it.
+
 | Etapa | Resultado | Estado | Evidencia actual |
 | --- | --- | --- | --- |
 | 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |

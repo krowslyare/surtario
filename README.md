@@ -77,6 +77,8 @@ Local verification includes desktop/mobile reflow, session isolation, stale revi
 
 ## Connect providers after implementation
 
+Run `npm run check:providers` to inspect the fixed development deployment without changing its configuration. `npm run check:providers -- --live` additionally exercises the deployed Firecrawl discovery probe (consumes provider credits) and reads the configured AgentMail inbox. Reports are redacted and saved under `.local/provider-checks/`; missing configuration or failed/partial probes exit with code 2. Neither command sends mail or certifies the integrated journey. See [the live acceptance boundary](docs/desarrollo/LIVE_PROVIDER_CHECKS.md).
+
 Follow the [credential and complete E2E procedure](docs/desarrollo/CREDENTIALS_AND_E2E.md). Keys belong only in the Convex backend environment. Do not put them in Git, chat, browser variables or `VITE_*` settings. Provider capabilities have separate explicit gates and remain disabled when unconfigured.
 
 AgentMail needs an author-approved test recipient, a public HTTPS callback and a webhook signing secret. The UI requires review before sending; copied WhatsApp/negotiation drafts are not sent by the app. A timeout does not authorize an automatic retry.

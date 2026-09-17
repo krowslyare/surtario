@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-17T05:19:29Z
+- **Last updated:** 2026-09-17T09:31:12Z
 
 ## Log
 
@@ -410,3 +410,6 @@ Final visual review corrected synthetic mail labels in the saved-request list an
 Comparison questions now originate only from their saved comparison; study distributors and web candidates explicitly open that comparison instead of attaching an incompatible origin or suggesting another supplier's action inside a distributor card. The case brief and library share invalid-input, compatibility/delivery and missing-term blockers. Reply confirmation displays the confirmed minimum/freight, order-total and budget/eligibility effect, including unchanged winners and unchanged minimums. Email styling uses a stable class. No server validation was relaxed; these corrections do not alter the workflow or enable an integration.
 
 Final review verification: 290 unit/backend tests in 44 files, frontend/backend typechecks and the 30-file hosting check passed. The final uninterrupted E2E run passed all 87 journeys in 8.5 minutes; `test:demo` passed separately in 15.8 seconds. Earlier review attempts exposed test-fixture/expectation mistakes (eligibility, cooldown and the one-comparable-offer verdict), corrected without weakening product guards. Desktop/320/390 source and confirmation captures were inspected; keyboard, reduced motion and reload paths passed. Automated providers were disabled. No new Luna/Firecrawl/OpenAI API call, real mail, merge or deployment was performed; prior Luna timing remains historical, and direct API/hosted acceptance remains separate. See `CONSOLIDACION_DECISION.md` for exact scope and observed non-failing dev-console notifications.
+
+### 2026-09-17 — working tree: live provider readiness
+Added a reproducible configuration check and explicit live probes with redacted reports. A real deployed Firecrawl probe returned 13 sources, 11 with text, in 128.459 seconds with a partial-coverage warning. AgentMail inbox inspection returned a confirmed missing read permission; send permission and delivery were not tested. OpenAI credentials/models and AI feature gates are absent on the development target, so integrated API acceptance remains blocked. Three focused runner tests and TypeScript passed. No project creation, deployment, credential changes or mail sends occurred. See `docs/desarrollo/LIVE_PROVIDER_CHECKS.md`.
