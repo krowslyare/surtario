@@ -46,14 +46,19 @@ interface Candidate {
 }
 
 const formatMoney = (cents: number, currency: SupplierOffer["currency"]) =>
-  new Intl.NumberFormat("es-PE", {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 2,
-  }).format(cents / 100);
+  currency === "PEN"
+    ? new Intl.NumberFormat("es-PE", {
+        style: "currency",
+        currency,
+        minimumFractionDigits: 2,
+      }).format(cents / 100)
+    : `USD ${new Intl.NumberFormat("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(cents / 100)}`;
 
 const formatQuantity = (quantity: number) =>
-  new Intl.NumberFormat("es-PE", { maximumFractionDigits: 3 }).format(quantity);
+  new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 }).format(quantity);
 
 export function validateContext(
   context: AdvisorContext,

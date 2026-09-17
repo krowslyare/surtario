@@ -24,11 +24,13 @@
     "Manrope Variable", ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-display: "Bricolage Grotesque Variable", var(--font-sans);
+  --text-page: 2.5rem;
   --text-meta: 0.75rem;
   --text-label: 0.875rem;
   --text-body: 1rem;
   --text-section: 1.25rem;
   --text-title: 1.75rem;
+  --text-conclusion: clamp(1.5rem, 2vw, 1.75rem);
   --text-amount: 2rem;
   --leading-body: 1.5;
   --leading-heading: 1.2;

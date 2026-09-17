@@ -37,20 +37,25 @@ p {
   margin: 0;
 }
 h1 {
-  font-size: 32px;
-  line-height: 1.2;
-  font-weight: 650;
-  letter-spacing: -0.9px;
+  font-family: var(--font-display);
+  font-size: var(--text-page);
+  line-height: var(--leading-heading);
+  font-weight: 700;
+  letter-spacing: -0.025em;
 }
 h2 {
-  font-size: 19px;
-  line-height: 1.35;
+  font-family: var(--font-display);
+  font-size: var(--text-section);
+  line-height: var(--leading-heading);
   font-weight: 650;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.02em;
 }
 h3 {
-  font-size: 16px;
+  font-family: var(--font-display);
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
   font-weight: 650;
+  letter-spacing: -0.01em;
 }
 svg {
   flex-shrink: 0;
@@ -253,24 +258,25 @@ main {
   display: flex;
   gap: 16px;
   align-items: center;
-  background: var(--color-surface);
+  background: var(--color-surface-subtle);
   padding: 20px 24px;
   border: 1px solid var(--color-border-subtle);
-  border-left: 4px solid var(--color-primary);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
   margin-bottom: 24px;
 }
 .comparison-summary h3 {
-  font-size: 18px;
+  font-family: var(--font-display);
+  font-size: var(--text-conclusion);
+  line-height: var(--leading-heading);
   font-weight: 700;
   color: var(--color-text);
 }
 .comparison-summary p {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--text-body);
   margin-top: 4px;
-  line-height: 1.5;
+  line-height: var(--leading-body);
+  max-width: 70ch;
 }
 .summary-icon {
   display: grid;
@@ -322,7 +328,8 @@ main {
   overflow-wrap: anywhere;
 }
 .offer-heading p {
-  font-size: 13px;
+  font-size: var(--text-meta);
+  line-height: var(--leading-body);
   color: var(--color-text-muted);
   margin-top: 3px;
 }
@@ -348,12 +355,13 @@ main {
 }
 .offer-total > span:first-child {
   color: var(--color-text-muted);
-  font-size: 13px;
+  font-size: var(--text-label);
 }
 .offer-total strong {
-  font-size: 34px;
-  letter-spacing: -1px;
-  line-height: 1.2;
+  font-family: var(--font-display);
+  font-size: var(--text-amount);
+  letter-spacing: -0.025em;
+  line-height: var(--leading-heading);
   font-weight: 650;
   font-variant-numeric: tabular-nums;
 }
@@ -730,7 +738,7 @@ footer {
     margin-bottom: 22px;
   }
   h1 {
-    font-size: 28px;
+    font-size: var(--text-title);
   }
   .page-title p {
     font-size: 14px;
@@ -752,7 +760,7 @@ footer {
     grid-column: 1/-1;
   }
   .request-title h2 {
-    font-size: 17px;
+    font-size: var(--text-section);
   }
   .section-heading {
     align-items: flex-start;
@@ -760,7 +768,7 @@ footer {
     gap: 14px;
   }
   .section-heading h2 {
-    font-size: 19px;
+    font-size: var(--text-section);
   }
   .comparison-summary {
     align-items: flex-start;
@@ -775,10 +783,10 @@ footer {
     width: 18px;
   }
   .comparison-summary h3 {
-    font-size: 15px;
+    font-size: var(--text-conclusion);
   }
   .comparison-summary p {
-    font-size: 12px;
+    font-size: var(--text-body);
   }
   .offers-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -1350,12 +1358,13 @@ footer {
   opacity: 0.55;
 }
 .page-title h1 {
-  font-size: 40px;
-  letter-spacing: -1.6px;
+  font-size: var(--text-page);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.025em;
 }
 @media (max-width: 600px) {
   .page-title h1 {
-    font-size: 32px;
+    font-size: var(--text-title);
   }
 }
 
@@ -1590,8 +1599,8 @@ footer {
 .advisor-panel {
   margin: var(--space-3) 0 var(--space-8);
   padding: var(--space-6);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-subtle);
   border-radius: var(--radius-panel);
 }
 .advisor-heading {
@@ -1599,8 +1608,9 @@ footer {
 }
 .advisor-heading h2 {
   margin: 0;
-  font-size: clamp(1.45rem, 3vw, 1.8rem);
-  letter-spacing: -0.025em;
+  font-size: var(--text-section);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.02em;
 }
 .advisor-context {
   margin: var(--space-4) 0;
@@ -1621,9 +1631,16 @@ footer {
   padding-block: var(--space-4);
 }
 .advisor-recommendation {
-  font-size: clamp(1.15rem, 2.4vw, 1.35rem);
-  font-weight: 650;
-  line-height: 1.4;
+  font-family: var(--font-display);
+  font-size: var(--text-conclusion);
+  font-weight: 700;
+  line-height: var(--leading-heading);
+  max-width: 65ch;
+}
+.advisor-verdict > p:not(.advisor-recommendation) {
+  font-size: var(--text-body);
+  line-height: var(--leading-body);
+  max-width: 70ch;
 }
 .advisor-actions {
   display: flex;
@@ -1631,7 +1648,7 @@ footer {
   gap: 0.75rem;
   margin-top: 1.25rem;
 }
-.advisor-actions .button.primary {
+.advisor-actions .button {
   min-width: min(100%, 22rem);
 }
 .advisor-action-hint {
@@ -1662,12 +1679,12 @@ footer {
   .advisor-fields {
     grid-template-columns: 1fr;
   }
-    .advisor-actions .button.primary {
+  .advisor-actions .button {
     width: 100%;
   }
 }
 
 /* Buying guidance reads as one section, with the unresolved work visible. */
-.advisor-verdict > .advisor-recommendation { margin-top: 0; font-family: var(--font-display); max-width: 55ch; }
+.advisor-verdict > .advisor-recommendation { margin-top: 0; }
 .advisor-mode:empty { display: none; }
 .advisor-verdict > .disclosure { margin-top: var(--space-4); border-top: 1px solid var(--color-border); }

@@ -806,7 +806,7 @@ export default function Comparison({
                           <h3>
                             {difference === 0
                               ? "These offers have the same order total"
-                              : `${lowest.map((offer) => offer.supplier).join(" y ")} requires ${money(difference, currency)} less${count > 2 ? " than the highest order total" : ""}`}
+                              : `${lowest.map((offer) => offer.supplier).join(" and ")} requires ${money(difference, currency)} less${count > 2 ? " than the highest order total" : ""}`}
                           </h3>
                           <p>
                             For {numberLabel(effectiveRequest.quantity)} {unit}
@@ -1097,7 +1097,7 @@ export default function Comparison({
 
         <section className="try-panel" aria-label="Explore missing details">
           <div>
-            <h3>What if a detail is missing?</h3>
+            <h2>What if a detail is missing?</h2>
             <p>
               See how the comparison changes when an offer is incomplete.
             </p>

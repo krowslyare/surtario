@@ -131,7 +131,7 @@ function Connected({
       {visible.map((run) => (
         <div className="intake-batch" key={run.id}>
           <h3>
-            {run.kind === "pdf" ? "PDF" : "Imagen"} ·{" "}
+            {run.kind === "pdf" ? "PDF" : "Image"} ·{" "}
             {new Date(run.createdAt).toLocaleString("en-US")}
           </h3>
           <button

@@ -11,7 +11,7 @@ import {
   type AdvisorReport,
 } from "../domain/advisor";
 import type { ProcurementRequest, SupplierOffer } from "../domain/procurement";
-import { parseCents, parseDecimal } from "../numbers";
+import { money, numberLabel, parseCents, parseDecimal } from "../numbers";
 export const defaultAdvisorContext: AdvisorContext = {
   priority: "balanced",
   budgetCents: null,
@@ -135,10 +135,7 @@ function ScenarioDetails({
           )?.currency;
           const total =
             alternative.totalCents !== null && currency
-              ? new Intl.NumberFormat("es-PE", {
-                  style: "currency",
-                  currency,
-                }).format(alternative.totalCents / 100)
+              ? money(alternative.totalCents, currency)
               : "Pending";
           return (
             <li key={alternative.offerId}>
@@ -147,7 +144,7 @@ function ScenarioDetails({
                 Cash outlay: {total}. Coverage:{" "}
                 {alternative.coverageDays === null
                   ? "pending"
-                  : `${new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 }).format(alternative.coverageDays)} days`}
+                  : `${numberLabel(alternative.coverageDays)} days`}
                 .
               </p>
               <p>
@@ -476,7 +473,7 @@ function Connected({
             [
               [
                 "budgetCents",
-                `Available budget (${offers[0]?.currency ?? "PEN"})`,
+                `Available budget (${offers[0]?.currency ?? "USD"})`,
               ],
               ["dailyUsage", `Confirmed daily usage (${request.unit})`],
               ["stockQuantity", `Confirmed current stock (${request.unit})`],
@@ -551,7 +548,7 @@ function Connected({
       {actionAvailable && (
         <div className="advisor-actions">
           <button
-            className="button primary"
+            className="button secondary"
             disabled={
               busy ||
               invalid ||

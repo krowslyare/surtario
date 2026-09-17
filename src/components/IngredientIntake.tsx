@@ -395,7 +395,7 @@ function IntakeDialog({
                     maxLength={12500}
                     rows={5}
                     onChange={(event) => setText(event.target.value)}
-                    placeholder={"Arroz\nAceite vegetal\nCebolla roja"}
+                    placeholder={"Rice\nVegetable oil\nRed onion"}
                   />
                 </label>
               </>

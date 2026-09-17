@@ -76,6 +76,17 @@ describe("analyzePurchase", () => {
     expect(result.missing).toContain("Daily usage needs confirmation.");
   });
 
+  it("mantiene el formato English-first para ofertas USD", () => {
+    const result = analyzePurchase(
+      request,
+      offers.map((offer) => ({ ...offer, currency: "USD" as const })),
+      context,
+    );
+
+    expect(result.impact).toContain("USD 45.00");
+    expect(result.impact).not.toContain("S/");
+  });
+
   it("respeta presupuesto y cobertura incluso con prioridad de precio unitario", () => {
     const result = analyzePurchase(request, offers, {
       ...context,

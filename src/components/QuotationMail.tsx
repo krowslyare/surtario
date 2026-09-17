@@ -249,9 +249,9 @@ function Connected({
         <p className="field-hint">Checking email availability…</p>
       )}
       {status && !status.enabled && (
-        <p className="notice info">
-          Test email is unavailable. You can prepare and copy the message; will
-          not be sent.
+        <p className="notice info email-availability">
+          Test email is unavailable. You can still prepare and copy the message;
+          it will not be sent.
         </p>
       )}
       {!initialRequestId && !comparisonActionContext && deliveryComparison && onOpenComparison && <div className="decision-actions">
@@ -537,18 +537,18 @@ function Connected({
           <details className="mail-details">
           <summary>Request history</summary>
           <ul>
-            <li>Prepared {new Date(active.createdAt).toLocaleString()}.</li>
+            <li>Prepared {new Date(active.createdAt).toLocaleString("en-US")}.</li>
             {active.approvedAt !== null && (
               <li>
                 Approved revision {active.approvedRevision} for the recipient
                 and message above on{" "}
-                {new Date(active.approvedAt).toLocaleString()}.
+                {new Date(active.approvedAt).toLocaleString("en-US")}.
               </li>
             )}
             {active.state !== "draft" && (
               <li>
                 {active.simulated && active.state === "sent" ? "Simulated send" : labels[active.state]} ·{" "}
-                {new Date(active.updatedAt).toLocaleString()}.
+                {new Date(active.updatedAt).toLocaleString("en-US")}.
               </li>
             )}
           </ul>
@@ -556,7 +556,8 @@ function Connected({
           {active.state !== "draft" && <h3>Supplier replies</h3>}
           {active.replies.length === 0 ? (
             <p>
-              Replies will appear here. You can close this window and return later.
+              No replies are linked yet. They will appear here when available.
+              You can close this window and return later.
             </p>
           ) : (
             active.replies.map((reply, index) => (

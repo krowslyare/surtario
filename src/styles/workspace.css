@@ -147,7 +147,7 @@
 }
 .workflow-steps li[aria-current="step"] {
   color: var(--color-primary);
-  background: var(--color-primary-surface);
+  background: var(--color-surface-hover);
 }
 .comparison-main .workspace-nav .text-button {
   padding-left: 0;
@@ -156,6 +156,23 @@
   padding-bottom: 20px;
   margin-bottom: 24px;
   border-bottom: 1px solid var(--color-border);
+}
+.comparison-main .page-title h1 {
+  font-size: var(--text-page);
+  line-height: var(--leading-heading);
+}
+.comparison-main .section-heading h2 {
+  font-size: var(--text-section);
+  line-height: var(--leading-heading);
+}
+.comparison-main .comparison-summary {
+  background: var(--color-surface-subtle);
+  border-left: 1px solid var(--color-border-subtle);
+  box-shadow: none;
+}
+.comparison-main .comparison-summary h3 {
+  font-size: var(--text-conclusion);
+  line-height: var(--leading-heading);
 }
 .comparison-main .request-panel {
   margin-bottom: 24px;
@@ -169,8 +186,9 @@
   margin-bottom: 24px;
 }
 .comparison-main .request-title h2 {
-  font-size: 25px;
-  letter-spacing: -0.5px;
+  font-size: var(--text-section);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.02em;
 }
 .comparison-library {
   margin: 20px 0 28px;
@@ -181,17 +199,31 @@
   border: 0;
 }
 .comparison-main .quotation-mail {
-  background: var(--color-surface);
+  background: var(--color-surface-subtle);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  padding: 24px 28px;
-  margin-top: 24px;
+  box-shadow: none;
+  padding: 20px 24px;
+  margin-top: 32px;
 }
 .comparison-main .quotation-mail h2 {
-  font-size: 17px;
+  font-size: var(--text-section);
+  line-height: var(--leading-heading);
   font-weight: 700;
   margin-bottom: 6px;
+}
+.comparison-main .quotation-mail .email-availability {
+  max-width: 72ch;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: var(--color-surface-hover);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  line-height: var(--leading-body);
+}
+.comparison-main .quotation-mail > .button {
+  margin-top: var(--space-3);
 }
 .comparison-main .offer {
   padding: 28px;
@@ -215,13 +247,15 @@
 }
 .comparison-main .offer-heading h3 {
   font-family: var(--font-display);
-  font-size: 24px;
-  letter-spacing: -0.5px;
+  font-size: var(--text-section);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.02em;
 }
 .comparison-main .offer-total strong {
   font-family: var(--font-display);
-  font-size: 48px;
-  letter-spacing: -1.5px;
+  font-size: var(--text-amount);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.025em;
 }
 .comparison-main #comparison {
   padding-top: 8px;
@@ -254,7 +288,10 @@
     margin-bottom: 28px;
   }
   .comparison-main .offer-total strong {
-    font-size: 40px;
+    font-size: var(--text-amount);
+  }
+  .comparison-main .page-title h1 {
+    font-size: var(--text-title);
   }
 }
 @media (max-width: 580px) {
