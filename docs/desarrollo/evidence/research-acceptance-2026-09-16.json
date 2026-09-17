@@ -1,0 +1,719 @@
+{
+  "verifiedAt": "2026-09-16T22:29:13.105Z",
+  "mode": "Local anonymous Convex, real Firecrawl, real gpt-5.6-luna CLI. No direct OpenAI API, supplier contact, order or remote deployment.",
+  "flour": {
+    "ingredient": "all purpose flour",
+    "region": "New York, US",
+    "freshCase": true,
+    "durationMs": 592431,
+    "rounds": 6,
+    "stopReason": "budget",
+    "counts": {
+      "unique": 24,
+      "readable": 23,
+      "interpreted": 22,
+      "pricedSources": 12,
+      "priceDomains": 11,
+      "structuredDomains": 5,
+      "failed": 0
+    },
+    "shortlist": [
+      "https://shop.kingarthurbaking.com/items/unbleached-all-purpose-flour",
+      "https://www.bakersauthority.com/products/5lb-heckers-all-purpose-flour-unbleached-unbromated-presifted",
+      "https://www.weisenberger.com/products/unbleached-all-purpose-flour",
+      "https://www.samsclub.com/ip/members-mark-all-purpose-flour-25-lbs/13602764464",
+      "https://www.walmart.com/ip/Gold-Medal-Flour-All-Purpose-Flour-Baking-And-Cooking-Ingredient-10-lb/10311308"
+    ],
+    "sources": [
+      {
+        "url": "https://groundupgrain.com/products/all-purpose-flour",
+        "title": "All-Purpose Flour – Ground Up\n",
+        "status": "complete",
+        "kind": "catalog",
+        "summary": "The source lists Ground Up all-purpose flour in multiple bag sizes, so a package choice is required before treating it as a single product offer.",
+        "warnings": [
+          "Delivery to New York is not established; the source shows a Holyoke, Massachusetts address and one size marked pickup only.",
+          "The displayed price is tied to the one-time purchase selection, while multiple sizes are listed. "
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "url": "https://www.bakersauthority.com/products/5lb-heckers-all-purpose-flour-unbleached-unbromated-presifted",
+        "title": "\n      \n        Bulk Heckers All Purpose Flour (5 LB) - Wholesale Pricing\n      \n – Bakers Authority",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Bakers Authority offers Heckers all-purpose flour in a 5 lb bag, with an alternative 8-bag case option. Pickup is available at its Queens, New York location; delivery availability is not established.",
+        "warnings": [
+          "An alternative case option is listed at $40.22 for 8 bags (40 lb total), while the selected 5 lb bag is $4.70.",
+          "Pickup evidence is local to Queens, NY; delivery to the requested area is not otherwise established."
+        ],
+        "fields": {
+          "currency": "USD",
+          "ingredient": "all purpose flour",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": "4.70",
+          "specification": "Unbleached, presifted",
+          "supplier": "Bakers Authority"
+        }
+      },
+      {
+        "url": "https://delivery.strackandvantil.com/store/strack-van-til/products/21943952-pillsbury-all-purpose-flour-unbleached-enriched-5-lb",
+        "title": "Pillsbury Best Unbleached All Purpose Flour, 5 lb Bag Same-Day Delivery or Pickup | Strack & Van Til",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Strack & Van Til lists one relevant Pillsbury unbleached all-purpose flour product in a 5 lb bag with a current displayed price of $4.99. Delivery or pickup is shown for Highland, ZIP 46322, so fulfillment for New York is not established.",
+        "warnings": [
+          "The source shows an ambiguous price string \"$4.995 lb\" and a separate current price of $4.99.",
+          "Actual weight may vary, and item pricing and availability may vary.",
+          "The displayed fulfillment location is Highland, ZIP 46322, which does not establish delivery to New York."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": "4.99",
+          "specification": "Pillsbury Best Unbleached All Purpose Flour",
+          "supplier": "Strack & Van Til"
+        }
+      },
+      {
+        "url": "https://order.dagnyc.com/store/dagnyc/products/21943952-pillsbury-all-purpose-flour-unbleached-enriched-5-lb",
+        "title": "Pillsbury Best Unbleached All Purpose Flour, 5 lb Bag Same-Day Delivery | D'Agostino",
+        "status": "complete",
+        "kind": "product",
+        "summary": "D'Agostino lists one Pillsbury Best Unbleached All Purpose Flour product in a 5 lb bag for $7.89. Delivery and availability are location-dependent.",
+        "warnings": [
+          "The source states that actual weight may vary and that estimated pricing is approximate.",
+          "Item pricing and availability may vary.",
+          "Currency needs explicit source evidence; a bare $ is not enough."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": "7.89",
+          "specification": "Pillsbury Best Unbleached All Purpose Flour",
+          "supplier": "D'Agostino"
+        }
+      },
+      {
+        "url": "https://www.walmart.com/browse/food/all-purpose-flour/976759_976780_9959366_9084673_7544865",
+        "title": "All Purpose Flour in Flours & Meals - Walmart.com",
+        "status": "complete",
+        "kind": "catalog",
+        "summary": "The source is a Walmart catalog listing multiple all-purpose flour products, including different brands and package sizes. Select a specific product and verify its current package price and delivery details before purchasing.",
+        "warnings": [
+          "The document is explicitly truncated.",
+          "Several primary products are listed, so no single offer can be selected.",
+          "Some prices appear malformed or concatenated with unit-price text.",
+          "Delivery information is shown for some listings but is location-dependent and not confirmed for the requested region."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "url": "https://davidrosenbakerysupply.com/products/all-purpose-flour-5lb",
+        "title": "\n      Bulk All - Purpose Flour 5 LB - Wholesale Pricing\n – The One Stop Shop For Retail And Commercial Bakers",
+        "status": "complete",
+        "kind": "product",
+        "summary": "The source lists one all-purpose flour product in a 5 lb bag. No package price or delivery information is published.",
+        "warnings": [
+          "Price is unavailable.",
+          "Bleached and unbleached forms are both mentioned, but the selected form is not specified.",
+          "Delivery to New York is unknown."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all-purpose flour",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": null,
+          "specification": "Milled from a blend of hard and soft wheat",
+          "supplier": null
+        }
+      },
+      {
+        "url": "https://www.samsclub.com/ip/members-mark-all-purpose-flour-25-lbs/13602764464",
+        "title": "Member's Mark All Purpose Flour, 25 lbs. - Samsclub.com",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Sam's Club lists Member's Mark all-purpose flour in a 25-pound package for USD 9.98. Shipping is shown for a Dallas address, while pickup and delivery are unavailable; New York fulfillment is not established.",
+        "warnings": [
+          "The source is explicitly truncated.",
+          "Shipping availability and arrival information applies to Dallas, not the requested New York delivery area.",
+          "Prices may vary in club and online."
+        ],
+        "fields": {
+          "currency": "USD",
+          "ingredient": "all purpose flour",
+          "packageContent": "25",
+          "packageUnit": "lb",
+          "price": "9.98",
+          "specification": "enriched bleached flour",
+          "supplier": "Sam's Club"
+        }
+      },
+      {
+        "url": "https://www.bakersauthority.com/collections/bulk-all-purpose-flours",
+        "title": "\n      \n        Bulk All-Purpose & Unbleached Flour for Baking & Bread\n      \n – Bakers Authority",
+        "status": "complete",
+        "kind": "catalog",
+        "summary": "The source is a Bakers Authority collection offering multiple all-purpose and specialty flour products, including bulk options. Select a specific product and confirm current availability, package details, price, and delivery to New York.",
+        "warnings": [
+          "The document is explicitly truncated.",
+          "The collection includes several flour types and package sizes, so no single primary product can be selected.",
+          "Some listed products are marked sold out."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "url": "https://www.walmart.com/ip/Gold-Medal-Flour-All-Purpose-Flour-Baking-And-Cooking-Ingredient-10-lb/10311308",
+        "title": "Gold Medal All Purpose Flour, Baking Flour, 10 lb Bag - Walmart.com",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Walmart lists Gold Medal all-purpose flour in a 10 lb bag for $7.52. Delivery availability for New York is not established in the source.",
+        "warnings": [
+          "The source is explicitly truncated.",
+          "The displayed dollar symbol is not sufficient to establish USD currency."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "10",
+          "packageUnit": "lb",
+          "price": "7.52",
+          "specification": "Gold Medal All Purpose Flour, Baking Flour",
+          "supplier": "Walmart"
+        }
+      },
+      {
+        "url": "https://fondsguilhem.fr/mall/items/Purpose-Flour-Pre-Sifted-For-Baking-Cooking/1105919",
+        "title": "10 Lb Bag Unbleached Enriched All-Purpose Flour – Pre-Sifted For ...",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "url": "https://ozarkvalleymarket.com/products/all-purpose-flour",
+        "title": "\n      All-Purpose Flour\n – Ozark Valley Market",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Ozark Valley Market lists all-purpose flour with a selected 2 lb package priced at $2.74, but the product and listed size variants are sold out. Pickup is available at a Missouri location; New York delivery is not established.",
+        "warnings": [
+          "The page also lists 5 lb and 10 lb packages with different prices.",
+          "The product is marked sold out and the listed variants are unavailable.",
+          "Pickup evidence is for Ozark, Missouri, not the requested New York region.",
+          "Shipping is calculated at checkout; delivery to New York is unknown."
+        ],
+        "fields": {
+          "currency": "USD",
+          "ingredient": "all purpose flour",
+          "packageContent": "2",
+          "packageUnit": "lb",
+          "price": "2.74",
+          "specification": "All-Purpose Flour",
+          "supplier": "Ozark Valley Market"
+        }
+      },
+      {
+        "url": "https://giantfood.com/groceries/product/giant-bleached-all-purpose-flour-10-lb-bag/173811",
+        "title": "Giant Bleached All Purpose Flour | Giant Food",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Giant Food lists one unambiguous all-purpose flour product in a 10 lb bag; no package price is published in the source.",
+        "warnings": [
+          "The product is bleached all-purpose flour.",
+          "Price is not provided; the source only links to “See Best Price.”"
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "10",
+          "packageUnit": "lb",
+          "price": null,
+          "specification": "Bleached",
+          "supplier": "Giant Food"
+        }
+      },
+      {
+        "url": "https://shop.kingarthurbaking.com/items/unbleached-all-purpose-flour",
+        "title": "All-Purpose Flour - King Arthur Baking Company",
+        "status": "complete",
+        "kind": "product",
+        "summary": "King Arthur Baking Company offers unbleached all-purpose flour in a 5-pound bag for USD 6.95. The source states it is in stock and ready to ship; delivery to New York is not specified.",
+        "warnings": [],
+        "fields": {
+          "currency": "USD",
+          "ingredient": "all-purpose flour",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": "6.95",
+          "specification": "Unbleached and unbromated",
+          "supplier": "King Arthur Baking Company"
+        }
+      },
+      {
+        "url": "https://shop.luckysupermarkets.com/store/lucky-supermarkets/products/2718145-gold-medal-all-purpose-flour-10-000-lbs",
+        "title": "Gold Medal All Purpose Flour Same-Day Delivery or Pickup | Lucky Supermarkets",
+        "status": "complete",
+        "kind": "product",
+        "summary": "The source identifies a Gold Medal all-purpose flour product in a 10 lb package from Lucky Supermarkets, priced at $10.99, but it is out of stock. Delivery or pickup details shown are for ZIP 94566, not the requested New York region.",
+        "warnings": [
+          "The product is explicitly out of stock.",
+          "The displayed fulfillment ZIP code, 94566, is outside the requested New York region; local delivery to New York is unconfirmed.",
+          "Product information and packaging may not be current or complete.",
+          "The proposed number is not explicitly present in its cited evidence; review the source."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all-purpose flour",
+          "packageContent": "10",
+          "packageUnit": "lb",
+          "price": null,
+          "specification": "Gold Medal",
+          "supplier": "Lucky Supermarkets"
+        }
+      },
+      {
+        "url": "https://www.cub.com/store/cub/products/22061447-pillsbury-all-purpose-flour-bleached-enriched-10-lb",
+        "title": "Pillsbury Best Bleached All Purpose Flour, 10 lb Bag Same-Day Delivery or Pickup | Cub",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Primary product is Pillsbury Best Bleached All Purpose Flour, offered by Cub in a 10 lb bag for $9.29. The source shows fulfillment for Roseville West, not the requested New York region; confirm local availability and delivery separately.",
+        "warnings": [
+          "The displayed fulfillment location is Roseville West, ZIP 55113, which does not match the requested New York region.",
+          "Actual weight may vary, and item pricing and availability may vary.",
+          "Currency needs explicit source evidence; a bare $ is not enough."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "10",
+          "packageUnit": "lb",
+          "price": "9.29",
+          "specification": "bleached enriched",
+          "supplier": "Cub"
+        }
+      },
+      {
+        "url": "https://shop.harmonsgrocery.com/store/harmons/products/140543-king-arthur-baking-company-all-purpose-flour-unbleached-10-lb",
+        "title": "King Arthur Baking Company All Purpose Unbleached Flour, Non-GMO Project Verified, Kosher, No Preservatives Same-Day Delivery or Pickup | Harmons",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Harmons lists one King Arthur all-purpose flour product in a 10 lb package for $13.99. Delivery and pickup details shown are for a Harmons store in ZIP 84047, not the requested New York region.",
+        "warnings": [
+          "The source shows local fulfillment details for ZIP 84047 and 7th Street, which conflicts with the requested New York delivery area; availability in New York is unconfirmed.",
+          "The source states that item pricing and availability may vary.",
+          "The proposed number is not explicitly present in its cited evidence; review the source.",
+          "Currency needs explicit source evidence; a bare $ is not enough."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "10",
+          "packageUnit": "lb",
+          "price": null,
+          "specification": "King Arthur Baking Company All Purpose Unbleached Flour, Non-GMO Project Verified, Kosher, No Preservatives",
+          "supplier": "Harmons"
+        }
+      },
+      {
+        "url": "https://shop.pricechopper.com/store/price-chopper-ny/products/140543-king-arthur-baking-company-all-purpose-flour-unbleached-10-lb",
+        "title": "King Arthur Baking Company All Purpose Unbleached Flour, Non-GMO Project Verified, Kosher, No Preservatives Same-Day Delivery or Pickup | Market 32 and Price Chopper",
+        "status": "complete",
+        "kind": "product",
+        "summary": "A single 10 lb all-purpose flour product is offered by Market 32 and Price Chopper, with a listed current price and local delivery/pickup options shown for the selected store.",
+        "warnings": [
+          "The source states that item pricing and availability may vary.",
+          "The source notes that actual weight may vary based on seasonality and other factors."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "10",
+          "packageUnit": "lb",
+          "price": "11.89",
+          "specification": "All Purpose Unbleached Flour, Non-GMO Project Verified, Kosher, No Preservatives",
+          "supplier": "Market 32 and Price Chopper"
+        }
+      },
+      {
+        "url": "https://www.walmart.com/ip/Gold-Medal-Unbleached-All-Purpose-Flour-10-pounds/10311380",
+        "title": "Gold Medal Unbleached All Purpose Flour, 10 lb Bag, Presifted - Walmart.com",
+        "status": "complete",
+        "kind": "product",
+        "summary": "A single Gold Medal all-purpose flour product is offered by Walmart.com with a 10 lb package and a listed one-time price. Delivery evidence is for Sacramento, not the requested New York region; verify New York fulfillment separately.",
+        "warnings": [
+          "The source content is truncated.",
+          "Local fulfillment is explicitly shown for Sacramento, 95829, rather than New York.",
+          "The proposed number is not explicitly present in its cited evidence; review the source."
+        ],
+        "fields": {
+          "currency": "USD",
+          "ingredient": "Gold Medal Unbleached All Purpose Flour",
+          "packageContent": "10",
+          "packageUnit": "lb",
+          "price": null,
+          "specification": "Unbleached, presifted",
+          "supplier": "Walmart.com"
+        }
+      },
+      {
+        "url": "https://delivery.mothersmarket.com/store/mothers-market/collections/n-flours-13343/subjects/n11974498182017948-all-purpose-flour-57450",
+        "title": "All Purpose Flour Same-Day Delivery or Pickup | Mother's Market",
+        "status": "complete",
+        "kind": "catalog",
+        "summary": "Mother's Market lists multiple all-purpose flour products with differing brands, package sizes, prices, and variants; choose a specific product and verify New York fulfillment separately.",
+        "warnings": [
+          "The source is configured for Costa Mesa, ZIP 92627, not New York, US.",
+          "Several listed products are gluten-free or flour blends rather than standard all-purpose flour; confirm equivalence before purchasing.",
+          "Prices and package sizes vary across products."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "url": "https://shop.pricechopper.com/store/price-chopper-ny/products/216821-king-arthur-baking-company-flour-all-purpose-organic-unbleached-32-oz",
+        "title": "King Arthur Baking Company 100% Organic Unbleached All-Purpose Flour Same-Day Delivery or Pickup | Market 32 and Price Chopper",
+        "status": "complete",
+        "kind": "product",
+        "summary": "The source presents one primary 32 oz organic unbleached all-purpose flour product with a listed current price. Delivery and pickup options are shown for specific New York-area stores; confirm final availability and pricing at checkout.",
+        "warnings": [
+          "The seller is presented as both Market 32 and Price Chopper, so a single selling merchant cannot be established.",
+          "The price uses a bare dollar sign, so the currency is ambiguous.",
+          "The source notes that item pricing and availability may vary and that estimated prices are approximate."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "32",
+          "packageUnit": "oz",
+          "price": "6.79",
+          "specification": "100% organic unbleached",
+          "supplier": null
+        }
+      },
+      {
+        "url": "https://shop.yokesfreshmarkets.com/store/yokes-fresh-market/products/37930-gold-medal-unbleached-all-purpose-flour-5-000-lbs",
+        "title": "Gold Medal Unbleached All Purpose Flour Same-Day Delivery or Pickup | Yoke's Fresh Market",
+        "status": "complete",
+        "kind": "product",
+        "summary": "A single Gold Medal unbleached all-purpose flour product is listed by Yoke's Fresh Market in a 5 lb bag for a current displayed price of $4.99. The fulfillment details shown are for a Spokane-area store, so delivery to New York is unconfirmed.",
+        "warnings": [
+          "The source shows fulfillment information for ZIP 99019 and a Spokane, Washington store, not the requested New York region.",
+          "The source notes that item pricing and availability may vary and that actual weight may vary; the $4.995/lb display is consistent with the rounded $4.99 package price."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "flour",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": "4.99",
+          "specification": "Gold Medal Unbleached All Purpose Flour",
+          "supplier": "Yoke's Fresh Market"
+        }
+      },
+      {
+        "url": "https://www.weisenberger.com/products/unbleached-all-purpose-flour",
+        "title": "UNBLEACHED ALL PURPOSE FLOUR\n",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Weisenberger Mill offers unbleached all-purpose flour in a 5 lb variant for $5.75; delivery to New York is not established.",
+        "warnings": [
+          "The page lists multiple size variants, and the extracted variant pricing is concatenated, so the selected 5 lb package should be confirmed before ordering.",
+          "Shipping to the requested region is not confirmed."
+        ],
+        "fields": {
+          "currency": "USD",
+          "ingredient": "all-purpose flour",
+          "packageContent": "5",
+          "packageUnit": "lb",
+          "price": "5.75",
+          "specification": "unbleached",
+          "supplier": "Weisenberger Mill"
+        }
+      },
+      {
+        "url": "https://www.traderjoes.com/home/products/pdp/organic-unbleached-all-purpose-flour-069793",
+        "title": "Product detail page | Trader Joe's",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "url": "https://boxed.com/product/6466/kirkland-signature-organic-unbleached-all-purpose-flour-10-lbs-2-count",
+        "title": "Kirkland Signature Organic Unbleached All Purpose Flour, 10 lbs, 2 count",
+        "status": "complete",
+        "kind": "product",
+        "summary": "The source identifies one relevant flour product with a 10 lb, 2-count package; pricing and seller details are not published in the available content.",
+        "warnings": [
+          "Content is truncated.",
+          "The title states both 10 lbs and 2 count; the relationship between the weight and count is not further explained.",
+          "Delivery availability for New York is not established; same-day delivery is qualified as available only in some areas."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "all purpose flour",
+          "packageContent": "10",
+          "packageUnit": "lb",
+          "price": null,
+          "specification": "Kirkland Signature Organic Unbleached All Purpose Flour",
+          "supplier": null
+        }
+      }
+    ]
+  },
+  "gala": {
+    "ingredient": "Gala apples",
+    "region": "New York, US",
+    "discoveryDurationMs": 127475,
+    "analysisScope": "Fresh discovery; four selected pages interpreted with real Luna; not all recovered pages analyzed.",
+    "counts": {
+      "unique": 11,
+      "readable": 9,
+      "interpreted": 4,
+      "pricedSources": 3,
+      "priceDomains": 3,
+      "structuredDomains": 1,
+      "failed": 0
+    },
+    "shortlist": [
+      "https://www.walmart.com/ip/Fresh-Gala-Apples-3-lb-Bag/44390958",
+      "https://www.bjs.com/product/gala-apples-from-new-york-4-lbs/3000000000004223777/",
+      "https://www.freshcaliforniafruit.com/shop-online/apples/gala-apples/buy-gala-apples-usa/",
+      "https://kauffman.farm/gala-apples/"
+    ],
+    "sources": [
+      {
+        "url": "https://www.foodomarket.com/en-us/products/fresh-fruits-and-vegetables/gala-apples",
+        "title": "Gala apples Wholesale Price NYC: $0.69/1 ct — September 2026 | Foodomarket",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "url": "https://www.bjs.com/product/gala-apples-from-new-york-4-lbs/3000000000004223777/",
+        "title": "Gala Apples from New York, 4 lbs. | BJ's Wholesale Club",
+        "status": "complete",
+        "kind": "product",
+        "summary": "BJ's Wholesale Club lists a 4 lb bag of fresh Gala apples from New York, priced at $5.49, but the source marks it unavailable and sold out.",
+        "warnings": [
+          "Pickup and delivery are both marked sold out; local fulfillment for New York is not established.",
+          "The dollar symbol is bare, so the currency cannot be determined from the source."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala Apples",
+          "packageContent": "4",
+          "packageUnit": "lb",
+          "price": "5.49",
+          "specification": "Fresh Fruit",
+          "supplier": "BJ's Wholesale Club"
+        }
+      },
+      {
+        "url": "https://www.kerrysfresh.co.uk/product/gala-apples/",
+        "title": "Gala Apples | Fresh Fruit - Delivery Available | Kerry’s Fresh",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "url": "https://www.wholesaleclub.ca/en/royal-gala-apples/p/20083526001_KG",
+        "title": "Royal Gala Apples | Wholesale Club",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "url": "https://kauffman.farm/gala-apples/",
+        "title": "Fresh Gala Apples, Hand-Picked In Our Own Orchard",
+        "status": "complete",
+        "kind": "catalog",
+        "summary": "The source lists fresh Gala apples from Kauffman Orchards in three package sizes with different prices. A package size must be selected before creating a specific offer.",
+        "warnings": [
+          "The source states approximate weight ranges for each count, not exact package contents.",
+          "Shipping is described as free to the lower 48 states, but delivery to New York is not explicitly confirmed.",
+          "Prices vary by selected package size: $33.99–$123.99."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": null,
+          "packageContent": null,
+          "packageUnit": null,
+          "price": null,
+          "specification": null,
+          "supplier": null
+        }
+      },
+      {
+        "url": "https://www.freshcaliforniafruit.com/shop-online/apples/gala-apples/buy-gala-apples-usa/",
+        "title": "Buy Fresh Gala Apples | USA Home Delivery | Wholesale | Bulk | Export Directly From The Farm | Fast Shipping",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Fresh Gala apples offered by Fresh California Fruit at 3.64 per pound; confirm currency and delivery availability to New York before ordering.",
+        "warnings": [
+          "The source uses a bare \"$\" without explicitly identifying USD.",
+          "This is a pre-order with limited quantities and seasonal shipping; New York delivery is not specifically confirmed.",
+          "The displayed price is promotional, reduced from 3.99."
+        ],
+        "fields": {
+          "currency": null,
+          "ingredient": "Gala Apples",
+          "packageContent": null,
+          "packageUnit": "lb",
+          "price": "3.64",
+          "specification": "Fresh",
+          "supplier": "Fresh California Fruit"
+        }
+      },
+      {
+        "url": "https://www.honeycrisp.com/gala-apples.html",
+        "title": "Gala Apples: Taste, Season, Nutrition & How to Buy | Honeycrisp.com",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "url": "https://www.walmart.com/ip/Fresh-Gala-Apples-3-lb-Bag/44390958",
+        "title": "Freshness Guaranteed Fresh Gala Apples 3 lb Bag Sweet Mild with Floral Aroma - Walmart.com",
+        "status": "complete",
+        "kind": "product",
+        "summary": "Walmart.com offers a 3 lb bag of fresh Gala apples. The source shows a current price, but fulfillment details are for Sacramento, California, not New York; verify New York availability and delivery eligibility.",
+        "warnings": [
+          "The source explicitly shows Sacramento pickup/store fulfillment, while the requested region is New York, US.",
+          "The current price is promotional or reduced from the stated prior price of $3.78.",
+          "Delivery eligibility is not confirmed for the requested region."
+        ],
+        "fields": {
+          "currency": "USD",
+          "ingredient": "Gala apples",
+          "packageContent": "3",
+          "packageUnit": "lb",
+          "price": "3.24",
+          "specification": "Fresh",
+          "supplier": "Walmart.com"
+        }
+      },
+      {
+        "url": "https://www.made-in-china.com/video-channel/jiafenggood_NOMGXAvKlyTf_Bulk-Fresh-Gala-Apples-Food-Industry-Grade.html",
+        "title": "\n        Videos about What is Bulk Fresh Gala Apples Food Industry Grade\n    ",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "url": "https://growers.newyorkapplesales.com/apples/gala/gala-2/",
+        "title": "Gala - NY Apple Sales",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      },
+      {
+        "url": "https://wholesaler.made-in-china.com/wholesale/fresh-gala-apples.html",
+        "title": "Wholesale Fresh Gala Apples",
+        "status": "idle",
+        "kind": null,
+        "summary": null,
+        "warnings": [],
+        "fields": null
+      }
+    ]
+  },
+  "browserAcceptance": {
+    "mode": "Isolated test session; source-based manual review is not user purchase approval",
+    "sources": [
+      "https://www.bakersauthority.com/products/5lb-heckers-all-purpose-flour-unbleached-unbromated-presifted",
+      "https://shop.kingarthurbaking.com/items/unbleached-all-purpose-flour"
+    ],
+    "reviewCorrections": {
+      "ingredient": "all purpose flour",
+      "specification": "Unbleached all-purpose flour"
+    },
+    "requiredQuantityLb": 10,
+    "packageLb": [
+      5,
+      5
+    ],
+    "pricesCents": [
+      470,
+      695
+    ],
+    "expectedUnitCentsPerLb": [
+      94,
+      139
+    ],
+    "assertions": [
+      "Two reviewed sources from different rounds remain selected",
+      "Unit prices match independent arithmetic",
+      "Totals remain Pending with unknown minimum, delivery and tax",
+      "Save and reload retain quantities and terms",
+      "Original source URL and manual correction audit persist",
+      "Mobile 390x844 has no horizontal overflow"
+    ]
+  },
+  "checks": {
+    "tests": 265,
+    "testFiles": 42,
+    "typecheckBuild": "passed",
+    "focusedBrowserJourneys": 5,
+    "affectedJourneysRerunAfterFinalUiChange": 2,
+    "actualSourceBrowserAcceptance": "passed"
+  },
+  "limits": [
+    "Research budget is not exhaustive market coverage",
+    "Delivery and final order terms need direct evidence",
+    "Review is required before treating extracted fields as commercial facts",
+    "The flour run took about 10 minutes locally; no latency SLA is established",
+    "English cases only; no remote hosted validation in this run"
+  ]
+}

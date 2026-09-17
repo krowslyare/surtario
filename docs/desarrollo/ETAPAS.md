@@ -360,3 +360,10 @@ Pre-PR review checked candidate/case linkage, retained full email evidence, pend
 The direct comparison entry now defaults to a separate English synthetic rice comparison (USD/lb, Supplier A/B); explicit `example=pe` retains the original Peru fixtures. Initial source evidence and reset use the same active example. Saved/reviewed offers retain their original terms. Select options use an inset aubergine focus ring instead of the clipped blue global ring; keyboard navigation and Escape/focus return remain supported.
 
 Entrada al workspace refinada localmente con transición de marca y recuperación ante fallo de descarga; guía de marca solo en desarrollo. Evidencia 2026-09-16 en INTERACCION.md; sin despliegue.
+
+
+## September 17, 2026 — isolated Firecrawl research PR
+
+Separated research from the pending UI refinement and saved-example work. The change adds bounded diversified discovery, independent page reads, canonical deduplication, conservative cited-field extraction and adaptive research with explicit stop reasons and preserved per-round evidence. Real-provider records from September 16 remain historical local evidence; they do not certify hosted behavior or complete commercial terms.
+
+Fresh validation of this research-only tree: 263 tests across 42 files, frontend TypeScript/build and hosting asset checks passed; two focused research browser journeys passed with simulated transport. They exercise source review, corrections, cross-round selection, original evidence, pending totals and page-read classification. UI redesign and source-dialog disclosures are intentionally excluded. Codex PR review and CI follow publication. Merging main triggers the existing development deployment workflow; check active sourcing workflows before that publication.

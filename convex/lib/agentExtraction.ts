@@ -10,7 +10,7 @@ import {
 } from "./extraction";
 import {
   webAnalysisInstructions,
-  webAnalysisSchema,
+  boundedWebAnalysisSchema,
   validateWebAnalysis,
   webSourceText,
   sourceEvidenceLines,
@@ -21,6 +21,7 @@ export async function analyzeWebSourceWithAgent(
   input: {
     markdown: string;
     ingredient: string;
+    region: string;
     title: string;
     url: string;
     contentTruncated: boolean;
@@ -48,7 +49,7 @@ export async function analyzeWebSourceWithAgent(
           text,
         })),
       }),
-      schema: webAnalysisSchema,
+      schema: boundedWebAnalysisSchema(sourceEvidenceLines(source).length),
       maxRetries: 0,
       maxOutputTokens: 2600,
       abortSignal: AbortSignal.timeout(30000),

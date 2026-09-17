@@ -52,7 +52,9 @@ export default function Workspace({
     <>
       {import.meta.env.DEV && import.meta.env.VITE_REHEARSAL === "true" && (
         <aside className="rehearsal-notice" aria-label="Rehearsal mode">
-          Local rehearsal · Luna CLI AI · Simulated web and email · Sample data
+          {import.meta.env.VITE_LIVE_RESEARCH === "true"
+            ? "Local research · Real Firecrawl web · Luna CLI AI · Email simulated"
+            : "Local rehearsal · Luna CLI AI · Simulated web and email · Sample data"}
         </aside>
       )}
       <div hidden={view !== "market"}>

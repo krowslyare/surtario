@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-16T07:27:13Z
+- **Last updated:** 2026-09-17T01:45:49Z
 
 ## Log
 
@@ -380,3 +380,8 @@ Replaced the plain loading message with a rose brand screen, a short logo drop a
 Build and seven of eight landing/interaction browser tests passed locally. The remaining mobile-summary test also fails on clean pre-change HEAD 9fb09a3; it was not weakened. Desktop/mobile loading states were inspected. This verifies local UI behavior, not hosted acceptance or provider integrations. No deployment was performed in this round.
 
 PR review fixes: covered workspace remains inert and hidden from assistive technology until the arrival screen finishes; all focus halos derive from the shared focus token. Build and six landing/arrival E2E pass, including keyboard isolation with and without reduced motion.
+
+
+### 2026-09-17 - working tree · isolated Firecrawl research PR
+Separated adaptive research, discovery/reading budgets, canonical deduplication and cited-field validation from visual and example changes. Retained minimal coverage UI and cross-round selection. Historical real Firecrawl/Luna records document source limitations and incomplete results; no new paid provider request in this separation.
+Fresh research-only tree: 263 tests, TypeScript/build/hosting checks and two research browser journeys passed. External Codex review and CI are not yet complete. UI refinement and source-dialog presentation remain in a separate worktree. Main merge triggers development publication, which needs an active-workflow check.

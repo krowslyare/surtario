@@ -1,3 +1,9 @@
+import {
+  researchCoverage,
+  RESEARCH_POLICY,
+} from "../src/domain/researchCoverage";
+import { inspectSource } from "./lib/sourceQuality";
+import { MAX_RESEARCH_SOURCES } from "./lib/firecrawl";
 import { ConvexError, v } from "convex/values";
 import {
   mutation,
@@ -24,10 +30,10 @@ import {
 } from "./sourcingValidators";
 import { savedResearchValidator } from "./researchValidators";
 import { publicRun } from "./research";
-import { providerRehearsalEnabled } from "./lib/providerTransport";
+import { webResearchSimulated } from "./lib/providerTransport";
 import { watchSources } from "./lib/watchEvidence";
 import { createWatch, stopSourceWatch } from "./sourcingWatch";
-export const MAX_STEPS = 3;
+export const MAX_STEPS = RESEARCH_POLICY.maxRounds;
 export function sourcingEnabled() {
   return (
     env.SOURCING_ENABLED === "true" &&
@@ -310,6 +316,7 @@ export const start = mutation({
       status: "running",
       revision,
       steps: 0,
+      stopReason: undefined,
       runs: row.runs + 1,
       summary: "Planning evidence-based research.",
       updatedAt: Date.now(),
@@ -319,7 +326,7 @@ export const start = mutation({
       row._id,
       `start:${revision}`,
       "started",
-      "Research started: at most three steps, with no automatic retries or emails.",
+      "Adaptive research started: at most six rounds; findings are preserved and no emails are sent.",
     );
     const workflowId = await startWorkflow(
       ctx,
@@ -443,6 +450,8 @@ export const recordStep = internalMutation({
     reason: v.string(),
     query: v.string(),
     sources: v.array(candidate),
+    warning: v.optional(v.boolean()),
+    discarded: v.optional(v.number()),
   },
   returns: v.boolean(),
   handler: async (ctx, args) => {
@@ -455,13 +464,13 @@ export const recordStep = internalMutation({
       args.step >= MAX_STEPS
     )
       return false;
-    if (args.sources.length > 3)
+    if (args.sources.length > MAX_RESEARCH_SOURCES)
       throw new ConvexError("Source limit exceeded.");
     const now = Date.now();
     const runId = await ctx.db.insert("researchRuns", {
       ownerHash: row.ownerHash,
       clientId: `case:${row._id}:${args.revision}:${args.step}`,
-      simulated: providerRehearsalEnabled(),
+      simulated: webResearchSimulated(),
       ingredient: row.ingredient,
       region: row.region,
       observedAt: new Date(now).toISOString().slice(0, 10),
@@ -469,12 +478,12 @@ export const recordStep = internalMutation({
       status: "complete",
       error: null,
       sources: args.sources,
-      discarded: 0,
-      warning: false,
+      discarded: args.discarded ?? 0,
+      warning: args.warning ?? false,
     });
     await ctx.db.patch(row._id, {
       steps: row.steps + 1,
-      researchRunIds: [...row.researchRunIds, runId].slice(-9),
+      researchRunIds: [...row.researchRunIds, runId].slice(-18),
       summary: args.reason.slice(0, 1500),
       updatedAt: now,
     });
@@ -494,12 +503,59 @@ export const recordStep = internalMutation({
     return true;
   },
 });
+export const recordAnalysis = internalMutation({
+  args: {
+    caseId: v.id("sourcingCases"),
+    revision: v.number(),
+    runId: v.id("researchRuns"),
+    sourceIndex: v.number(),
+    source: candidate,
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.caseId);
+    if (
+      !row ||
+      row.status !== "running" ||
+      row.revision !== args.revision ||
+      !row.researchRunIds.includes(args.runId)
+    )
+      return null;
+    const run = await ctx.db.get(args.runId),
+      source = run?.sources[args.sourceIndex];
+    if (
+      !run ||
+      run.ownerHash !== row.ownerHash ||
+      !source ||
+      source.url !== args.source.url ||
+      source.extractionStatus !== "idle"
+    )
+      return null;
+    const sources = [...run.sources];
+    sources[args.sourceIndex] = args.source;
+    await ctx.db.patch(run._id, { sources });
+    await ctx.db.patch(row._id, {
+      summary: `Round ${row.steps}: interpreted ${sources.filter((source) => source.extractionStatus === "complete").length} of ${sources.length} candidate pages.`,
+      updatedAt: Date.now(),
+    });
+    return null;
+  },
+});
 export const finish = internalMutation({
   args: {
     caseId: v.id("sourcingCases"),
     revision: v.number(),
     summary: v.string(),
     failed: v.boolean(),
+    stopReason: v.optional(
+      v.union(
+        v.literal("review_ready"),
+        v.literal("diminishing_returns"),
+        v.literal("needs_confirmation"),
+        v.literal("budget"),
+        v.literal("failed"),
+      ),
+    ),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -508,6 +564,7 @@ export const finish = internalMutation({
       return null;
     await ctx.db.patch(row._id, {
       status: args.failed ? "failed" : "complete",
+      stopReason: args.failed ? "failed" : args.stopReason,
       summary: args.summary.slice(0, 1500),
       updatedAt: Date.now(),
     });
@@ -535,4 +592,47 @@ export const stopWatch = mutation({
   args: { token: v.string(), watchId: v.id("sourceWatches") },
   returns: v.null(),
   handler: stopSourceWatch,
+});
+
+/** Compact workflow checkpoint: do not persist full page bodies in workflow history. */
+export const checkpoint = internalQuery({
+  args: { caseId: v.id("sourcingCases"), revision: v.number() },
+  returns: v.union(
+    v.null(),
+    v.object({
+      runId: v.union(v.id("researchRuns"), v.null()),
+      indices: v.array(v.number()),
+      reviewable: v.boolean(),
+      diminishing: v.boolean(),
+    }),
+  ),
+  handler: async (ctx, args) => {
+    const row = await ctx.db.get(args.caseId);
+    if (!row || row.status !== "running" || row.revision !== args.revision)
+      return null;
+    const records = await Promise.all(
+      row.researchRunIds.map((id) => ctx.db.get(id)),
+    );
+    const runs = records.filter(
+      (r): r is Doc<"researchRuns"> => !!r && r.ownerHash === row.ownerHash,
+    );
+    const coverage = researchCoverage(runs);
+    const latest = runs[runs.length - 1];
+    return {
+      runId: latest?._id ?? null,
+      indices: latest
+        ? latest.sources
+            .flatMap((s, i) =>
+              s.extractionStatus === "idle" &&
+              s.markdown &&
+              inspectSource(s, row.ingredient).state === "readable"
+                ? [i]
+                : [],
+            )
+            .slice(0, RESEARCH_POLICY.analysesPerRound)
+        : [],
+      reviewable: coverage.reviewable,
+      diminishing: row.steps >= 2 && coverage.diminishing,
+    };
+  },
 });

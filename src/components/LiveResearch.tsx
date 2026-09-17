@@ -90,6 +90,7 @@ function observedLabel(value: string) {
         day: "numeric",
         month: "short",
         year: "numeric",
+        ...(/^\d{4}-\d{2}-\d{2}$/.test(value) ? { timeZone: "UTC" } : {}),
       }).format(date);
 }
 
@@ -319,7 +320,7 @@ export function ResearchWorkspace({
           <p className="field-hint">
             {onReview
               ? "Your selection remains in My study when you open another search."
-              : "Opening another search replaces the reviewed selection in this view."}{" "}
+              : "Reviewed selections remain available across saved searches."}{" "}
             Up to 10 searches per browser; clearing site data removes access.
           </p>
           <span>
@@ -337,7 +338,6 @@ export function ResearchWorkspace({
                   if (activeId === run.id) return;
                   setActiveId(run.id);
                   setLocalRun(null);
-                  setReviewed([]);
                   setEquivalent(false);
                   setReadFailures({});
                   setSelectedLinks({});
@@ -378,6 +378,16 @@ export function ResearchWorkspace({
               {readNotice}
             </p>
           )}
+          {active.sources.length > 0 && (
+            <p className="field-hint">
+              {active.sources.length} candidate sources ·{" "}
+              {active.sources.filter((source) => source.markdown).length} with
+              recovered text ·{" "}
+              {active.sources.filter((source) => !source.markdown).length}{" "}
+              without readable text. Coverage is limited; these counts do not
+              establish supplier availability or comparable prices.
+            </p>
+          )}
           {active.warning && (
             <p className="notice info">
               The search returned partial content; review the sources.
@@ -390,7 +400,7 @@ export function ResearchWorkspace({
               {active.discarded === 1
                 ? "result was discarded"
                 : "results were discarded"}{" "}
-              for not meeting the search limits.
+              because of relevance, duplicate sources, or reading limits.
             </p>
           )}
           {active.sources.length > 0 &&
@@ -474,6 +484,17 @@ export function ResearchWorkspace({
                     <p>{source.description}</p>
                     {source.analysis && (
                       <SourceQualitySummary analysis={source.analysis} />
+                    )}
+                    {analysisIsProduct && proposal?.price.value && (
+                      <p className="field-hint">
+                        Extracted price: {proposal.price.value}{" "}
+                        {proposal.currency.value ?? "(currency unconfirmed)"}
+                        {proposal.packageContent.value &&
+                        proposal.packageUnit.value
+                          ? ` · ${proposal.packageContent.value} ${proposal.packageUnit.value} per package`
+                          : " · package contents need review"}
+                        {" · Review before comparing."}
+                      </p>
                     )}
                     {source.contentTruncated && (
                       <small>The retrieved content is incomplete.</small>
@@ -677,8 +698,8 @@ export function ResearchWorkspace({
                 checked={equivalent}
                 onChange={(event) => setEquivalent(event.target.checked)}
               />
-              I confirm they match the same ingredient, specification, base unit,
-              and currency.
+              I confirm they match the same ingredient, specification, base
+              unit, and currency.
             </label>
           )}
           <button

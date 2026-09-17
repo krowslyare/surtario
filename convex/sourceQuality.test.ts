@@ -6,6 +6,7 @@ import { api, internal } from "./_generated/api";
 import { inspectSource } from "./lib/sourceQuality";
 import {
   validateWebAnalysis,
+  boundedWebAnalysisSchema,
   webSourceText,
   sourceEvidenceLines,
 } from "./lib/webAnalysis";
@@ -317,4 +318,157 @@ test("the real Agent receives the query and saves a grounded non-product assessm
   const saved = (await t.query(api.research.list, { token }))[0].sources[0];
   expect(saved.analysis?.kind).toBe("catalog");
   expect(saved.inspection?.links[0].url).toBe(productUrl);
+});
+
+test("generation schema bounds references before accepting a structured model result", () => {
+  const schema = boundedWebAnalysisSchema(12);
+  const proposal = {
+    analysis: {
+      kind: "uncertain",
+      summary: "Conflicting package descriptions",
+      warnings: [],
+      evidenceLineNumbers: [929],
+    },
+    offer: noOffer,
+  };
+  expect(schema.safeParse(proposal).success).toBe(false);
+  expect(
+    schema.safeParse({
+      ...proposal,
+      analysis: { ...proposal.analysis, evidenceLineNumbers: [12] },
+    }).success,
+  ).toBe(true);
+});
+
+test("web analysis keeps the published price but clears invented currency, attributes and approximate weight", () => {
+  const source = "$109.99\nThis product is fresh\nApprox. 40 lb case";
+  const result = validateWebAnalysis(
+    {
+      analysis: {
+        kind: "product",
+        summary: "Chicken case; confirm details.",
+        warnings: [],
+        evidenceLineNumbers: [1, 2],
+      },
+      offer: {
+        ...noOffer,
+        price: { value: "109.99", evidenceLineNumber: 1 },
+        currency: { value: "USD", evidenceLineNumber: 1 },
+        specification: {
+          value: "Fresh hormone-free chicken",
+          evidenceLineNumber: 2,
+        },
+        packageContent: { value: "40", evidenceLineNumber: 3 },
+      },
+    },
+    source,
+  );
+  expect(result.offer.price.value).toBe("109.99");
+  expect(result.offer.currency.value).toBeNull();
+  expect(result.offer.specification.value).toBeNull();
+  expect(result.offer.packageContent.value).toBeNull();
+});
+
+test("container counts do not become comparable product units", () => {
+  const result = validateWebAnalysis(
+    {
+      analysis: {
+        kind: "product",
+        summary: "Rice in six pouches.",
+        warnings: [],
+        evidenceLineNumbers: [1],
+      },
+      offer: {
+        ...noOffer,
+        packageContent: { value: "6", evidenceLineNumber: 1 },
+        packageUnit: { value: "unit", evidenceLineNumber: 1 },
+        price: { value: "39.99", evidenceLineNumber: 2 },
+      },
+    },
+    "Includes 6 pouches\nCurrent price $39.99",
+  );
+  expect(result.offer.packageContent.value).toBeNull();
+  expect(result.offer.packageUnit.value).toBeNull();
+  expect(result.offer.price.value).toBe("39.99");
+});
+
+test.each([
+  [
+    "Quantity88/CaseShipping Weight45 lb.Package Size88 CountPerishable TypeRefrigerated Foods",
+    "88",
+    "unit",
+    "88",
+  ],
+  ["Gala apples in a 50 Count Gift Box", "50", "unit", "50"],
+  ["Includes 6 count pouches", "6", "unit", null],
+  ["Approx. 50 count box", "50", "unit", null],
+  ["Shipping Weight 45 lb. Package Size 88 Count", "45", "lb", null],
+])(
+  "validates the cited quantity independently of neighboring labels: %s",
+  (source, quantity, unit, expected) => {
+    const result = validateWebAnalysis(
+      {
+        analysis: {
+          kind: "product",
+          summary: "Package evidence",
+          warnings: [],
+          evidenceLineNumbers: [1],
+        },
+        offer: {
+          ...noOffer,
+          packageContent: { value: quantity, evidenceLineNumber: 1 },
+          packageUnit: { value: unit, evidenceLineNumber: 1 },
+        },
+      },
+      source,
+    );
+    expect(result.offer.packageContent.value).toBe(expected);
+  },
+);
+test.each([
+  ["Current price is USDNow $3.24", "USD"],
+  ["Current price $3.24", null],
+])(
+  "retains explicit compact currency but never infers it: %s",
+  (source, expected) => {
+    const result = validateWebAnalysis(
+      {
+        analysis: {
+          kind: "product",
+          summary: "Published price",
+          warnings: [],
+          evidenceLineNumbers: [1],
+        },
+        offer: {
+          ...noOffer,
+          price: { value: "3.24", evidenceLineNumber: 1 },
+          currency: { value: "USD", evidenceLineNumber: 1 },
+        },
+      },
+      source,
+    );
+    expect(result.offer.currency.value).toBe(expected);
+  },
+);
+
+test("a literal quote cannot support a fabricated price or calculated package weight", () => {
+  const result = validateWebAnalysis(
+    {
+      analysis: {
+        kind: "product",
+        summary: "Published product",
+        warnings: [],
+        evidenceLineNumbers: [1],
+      },
+      offer: {
+        ...noOffer,
+        price: { value: "8.99", evidenceLineNumber: 1 },
+        packageContent: { value: "40", evidenceLineNumber: 2 },
+        packageUnit: { value: "lb", evidenceLineNumber: 2 },
+      },
+    },
+    "Price USD 9.99\nEight 5 lb bags per case",
+  );
+  expect(result.offer.price.value).toBeNull();
+  expect(result.offer.packageContent.value).toBeNull();
 });

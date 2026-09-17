@@ -123,6 +123,7 @@ test("mocked provider search persists source and retry never repeats paid call",
     sourceIndex: 0,
   });
   expect(analyzeWebSourceWithAgent).toHaveBeenCalledTimes(1);
+  expect(vi.mocked(analyzeWebSourceWithAgent).mock.calls[0][1]).toMatchObject({region: draft.region});
   expect(
     (await t.query(api.research.list, { token: draft.token }))[0].sources[0]
       .extractionStatus,

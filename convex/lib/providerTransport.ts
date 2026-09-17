@@ -1,6 +1,6 @@
 import { env } from "../_generated/server";
 
-type RehearsalConfig = { cloudUrl: string; bridgeUrl?: string; token?: string };
+type RehearsalConfig = { cloudUrl: string; bridgeUrl?: string; token?: string; liveFirecrawl?: boolean };
 
 function loopback(value: string): URL {
   const url = new URL(value);
@@ -62,6 +62,7 @@ export function createProviderTransport(
       original.method !== "POST"
     )
       throw new Error("Unsupported provider rehearsal request.");
+    if (prefix === "firecrawl" && config.liveFirecrawl) return request(original);
     // Never forward provider credentials, cookies or other headers to the bridge.
     const headers = new Headers({
       "Content-Type": "application/json",
@@ -85,4 +86,10 @@ export const providerFetch: typeof fetch = (input, init) =>
     cloudUrl: env.CONVEX_CLOUD_URL,
     bridgeUrl: env.REHEARSAL_BRIDGE_URL,
     token: env.REHEARSAL_BRIDGE_TOKEN,
+    liveFirecrawl: env.REHEARSAL_LIVE_FIRECRAWL === "true",
   })(input, init);
+
+
+/** Live Firecrawl is allowed only inside the validated local CLI rehearsal. */
+export const webResearchSimulated = () =>
+  providerRehearsalEnabled() && env.REHEARSAL_LIVE_FIRECRAWL !== "true";
