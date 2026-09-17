@@ -276,7 +276,7 @@ function Connected({
       {own?.map((item) => (
         <div className="saved-study-row" key={item.id}>
           <span>
-            {item.subject} · {labels[item.state]}
+            {item.subject} · {item.simulated && item.state === "sent" ? "Simulated send" : labels[item.state]}
           </span>
           <button
             className="button text-button"
@@ -305,6 +305,7 @@ function Connected({
               {error}
             </p>
           )}
+          {active.simulated && <p className="field-hint">Local simulation. No external email was sent.</p>}
           <div className="mail-recipient"><span>Test recipient</span><strong>{active.recipient ?? "Not configured"}</strong></div>
           {active.state === "draft" ? !editDraft && <>
             <h3 className="mail-subject">{active.subject}</h3>
@@ -538,7 +539,7 @@ function Connected({
             )}
             {active.state !== "draft" && (
               <li>
-                {labels[active.state]} ·{" "}
+                {active.simulated && active.state === "sent" ? "Simulated send" : labels[active.state]} ·{" "}
                 {new Date(active.updatedAt).toLocaleString()}.
               </li>
             )}

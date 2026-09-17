@@ -258,6 +258,8 @@ for (const delayed of [false, true]) {
       .getByRole("button", { name: "View request", exact: true })
       .click();
     const recovered = page.getByRole("dialog");
+    await expect(recovered).toContainText("Local simulation. No external email was sent.");
+    await expect(page.locator(".saved-study-row").filter({hasText:"Synthetic rice delivery clarification"})).toContainText("Simulated send");
     await expect(
       recovered.getByRole("heading", {
         name: "Delivery confirmed",

@@ -10,6 +10,7 @@ Base reviewed: `3483f8a55b8ff0ded6e9e54d09ed913d05a16876`. Work is isolated in `
 - Mobile summary shortcut follows actual viewport visibility and focuses the summary by keyboard; reduced motion and narrow reflow remain covered.
 - Contextual freight and minimum-order questions, immutable action context, stale-action guards and exact draft-revision approval. Optional AI drafting cannot see competitors' private offers.
 - Partial supplier-term confirmation with original evidence, before/after under the same preferences, unchanged-recommendation outcomes and reload recovery. No automatic selection or purchase.
+- Simulated mail is explicitly labeled in the conversation and saved-request list; it is not described as accepted by the real provider.
 - Facts-first source review, progressive raw evidence/history, case brief and prioritized existing case library. Prioritization is based on missing terms, interrupted work and retained evidence; it is not total-basket optimization or an estimated savings ranking.
 
 ## Local verification
