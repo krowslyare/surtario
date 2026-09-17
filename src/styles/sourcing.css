@@ -334,3 +334,14 @@
   outline: var(--focus-width) solid var(--color-focus);
   outline-offset: var(--focus-offset);
 }
+
+.sourcing-coverage { margin-block: var(--space-4); border-block: 1px solid var(--color-border); padding: var(--space-3) 0; }
+.sourcing-coverage > summary { cursor: pointer; min-height: var(--control-min-height); font-weight: 650; font-size: var(--text-label); }
+.sourcing-coverage > summary:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
+.sourcing-coverage a { color: var(--color-primary); overflow-wrap: anywhere; }
+
+.case-decision-brief { margin-block: var(--space-4, 16px); }
+.case-decision-brief h4 { margin-bottom: 4px; }
+.case-decision-brief p { color: var(--color-text-muted); margin-top: 0; }
+.decision-actions { margin-block: 16px; }
+.decision-actions > div { border-top: 1px solid var(--color-border); padding-block: 12px; }

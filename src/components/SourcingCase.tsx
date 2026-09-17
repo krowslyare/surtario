@@ -1,3 +1,5 @@
+import { casePriority } from "../domain/casePriority";
+import { evaluateOffer } from "../domain/procurement";
 import { researchCoverage, RESEARCH_POLICY } from "../domain/researchCoverage";
 import { Disclosure } from "./ui/Disclosure";
 import { Component, useEffect, useState, type ReactNode } from "react";
@@ -45,6 +47,7 @@ type Props = {
 const eventTitles: Record<string, string> = {
   created: "Research question saved",
   delivery_confirmed: "Delivery confirmed from supplier reply",
+  minimum_confirmed: "Minimum confirmed from supplier reply",
   study_linked: "Market study linked",
   comparison_saved: "Reviewed comparison saved",
   started: "Research started",
@@ -274,6 +277,7 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
                 <h3>
                   <History size={18} aria-hidden="true" /> Your cases
                 </h3>
+                <p className="field-hint">Missing commercial terms first, then research needing attention and available evidence. This is a case worklist, not a basket-cost ranking.</p>
                 {cases === undefined ? (
                   <p role="status">Loading saved cases…</p>
                 ) : cases.length === 0 ? (
@@ -283,7 +287,7 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
                   </p>
                 ) : (
                   <ul>
-                    {cases.map((item) => (
+                    {[...cases].sort((a,b) => casePriority(a, comparisons?.find(c => c.id === a.comparisonId)).rank - casePriority(b, comparisons?.find(c => c.id === b.comparisonId)).rank).map((item) => (
                       <li key={item.id}>
                         <button
                           type="button"
@@ -296,6 +300,8 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
                         >
                           <strong>{item.ingredient}</strong>
                           <span>{item.objective}</span>
+                          <small>{comparisons === undefined ? "Checking next action…" : casePriority(item, comparisons.find(c => c.id === item.comparisonId)).reason}</small>
+                          <span>{comparisons === undefined ? "" : casePriority(item, comparisons.find(c => c.id === item.comparisonId)).next}</span>
                           <small>
                             {item.region} ·{" "}
                             {item.status === "idle"
@@ -595,12 +601,22 @@ function CaseDetail({
                 : "Saved case"}
         </span>
       </div>
+      <section aria-label="Case decision brief" className="case-decision-brief">
+        <h4>What we know</h4>
+        <p>{runs === undefined || comparisons === undefined ? "Loading saved evidence and comparison…" : `${coverage.total} retained sources${savedComparison ? ` and a saved comparison of ${savedComparison.offers.length} offers` : "; no saved comparison yet"}.`}</p>
+        <h4>What still needs confirmation</h4>
+        <p>{savedComparison ? (() => {
+          const pending = [...new Set(savedComparison.offers.flatMap(offer => evaluateOffer(savedComparison.request, offer).pending))];
+          return pending.length ? pending.slice(0,3).join(" ") : "Review the recommendation using your current quantity and preferences.";
+        })() : "Review source evidence, product equivalence and commercial terms before deciding."}</p>
+      </section>
       <section
         className="sourcing-next"
         aria-label="Next step for this case"
         aria-live="polite"
       >
         <div>
+          <p className="field-hint">Recommended next action</p>
           <h3>
             {!connected
               ? "You are offline"
@@ -684,7 +700,8 @@ function CaseDetail({
         )}
       </div>
       {(running || coverage.total > 0 || item.stopReason) && (
-        <section className="sourcing-next" aria-label="Research coverage">
+        <details className="sourcing-coverage" aria-label="Research coverage">
+          <summary>{coverage.total} sources · {coverage.priceDomains} domains with prices — {item.stopReason === "budget" || item.stopReason === "diminishing_returns" ? "coverage incomplete" : "research details"}</summary>
           <div>
             <h3>
               {running
@@ -737,14 +754,7 @@ function CaseDetail({
                     </li>
                   ))}
                 </ol>
-                <Button
-                  onClick={() => {
-                    setReviewOpen(true);
-                    focusSection(".sourcing-reviews");
-                  }}
-                >
-                  Review all research evidence
-                </Button>
+
               </>
             )}
             <details>
@@ -756,7 +766,7 @@ function CaseDetail({
               </ul>
             </details>
           </div>
-        </section>
+        </details>
       )}
       {runsExhausted && (
         <p className="field-hint">
@@ -1039,16 +1049,15 @@ function CaseDetail({
       </Disclosure>
       {Boolean(runs?.length) && (
         <div className="sourcing-reviews" tabIndex={-1}>
-          <Button
+          {(reviewOpen || progress.target !== "evidence") && <Button
             aria-expanded={reviewOpen}
             onClick={() => setReviewOpen(!reviewOpen)}
           >
-            {reviewOpen
-              ? "Close research evidence"
-              : "Review research evidence"}
-          </Button>
+            {reviewOpen ? "Close research evidence" : "Review research evidence"}
+          </Button>}
           {reviewOpen && (
             <ResearchWorkspace
+              autoSelectLatest
               status={researchStatus}
               runs={runs}
               request={null}

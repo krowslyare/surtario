@@ -116,6 +116,38 @@
 }
 .comparison-main .workspace-nav {
   margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.workspace-nav-start {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.workflow-steps {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.workflow-steps li {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.workflow-steps li[aria-current="step"] {
+  color: var(--color-primary);
+  background: var(--color-primary-surface);
 }
 .comparison-main .workspace-nav .text-button {
   padding-left: 0;
@@ -360,31 +392,25 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 180px 170px;
   grid-template-areas: "main value actions";
-  padding: 24px;
-  gap: 16px 24px;
-  margin-bottom: 16px;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
-  transition: transform var(--motion-control) var(--ease-settle),
-              box-shadow var(--motion-control) var(--ease-settle),
-              border-color var(--motion-control) var(--ease-settle),
-              background-color var(--motion-selection) var(--ease-settle);
+  padding: var(--space-6) var(--space-4);
+  gap: var(--space-4) var(--space-6);
+  margin: 0;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  transition: background-color var(--motion-selection) var(--ease-settle);
 }
 .has-results .market-result:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-card-hover);
-  border-color: var(--color-border);
+  transform: none;
+  box-shadow: none;
+  background: var(--color-surface-hover);
 }
 .has-results .market-result.is-selected {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 1.5px var(--color-primary), var(--shadow-card);
-  background: color-mix(
-    in srgb,
-    var(--color-success-surface) 45%,
-    var(--color-surface)
-  );
+  border-color: var(--color-border);
+  box-shadow: none;
+  background: var(--color-success-surface);
 }
 .result-main {
   grid-area: main;
@@ -515,7 +541,7 @@
   transition: transform var(--motion-control) ease, box-shadow var(--motion-control) ease;
 }
 .result-actions .button:hover {
-  transform: translateY(-1px);
+  transform: none;
 }
 .result-actions .button[aria-pressed="true"] {
   background: var(--color-primary);

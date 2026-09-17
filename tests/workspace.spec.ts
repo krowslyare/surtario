@@ -50,7 +50,7 @@ test("Enter uses enabled web research while the example remains an explicit sepa
   const entry = await (await page.request.get("/src/main.tsx")).text();
   const reactUrl = entry.match(/"([^" ]*\/react\.js[^" ]*)"/)![1];
   // Replace only the research boundary: no provider call or provider credentials.
-  await page.route("**/src/components/LiveResearch.tsx", (route) =>
+  await page.route(/\/src\/components\/LiveResearch\.tsx(?:\?.*)?$/, (route) =>
     route.fulfill({
       contentType: "application/javascript",
       body: `import React from ${JSON.stringify(reactUrl)};

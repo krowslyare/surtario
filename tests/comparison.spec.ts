@@ -6,6 +6,8 @@ test("compara, cambia cantidad y completa un dato faltante sin recetas", async (
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/?view=comparison&example=pe");
+  // fill() can target an inert input underneath the workspace arrival screen.
+  await expect(page.locator(".workspace-content")).not.toHaveAttribute("inert");
   await expect(page.getByTestId("total-0")).toHaveText("S/ 95.00");
   await expect(page.getByTestId("total-1")).toHaveText("S/ 50.00");
   await page.getByLabel("Required quantity").fill("20");

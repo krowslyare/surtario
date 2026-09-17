@@ -111,6 +111,9 @@
 
 .button {
   min-height: var(--control-min-height);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  touch-action: manipulation;
   transition:
     background-color var(--motion-control) ease,
     border-color var(--motion-control) ease,

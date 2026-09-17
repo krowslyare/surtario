@@ -87,7 +87,12 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
   await expect(page.getByLabel("Required quantity")).toHaveValue("");
   await expect(page.getByTestId("total-0")).toHaveText("Pending");
   await page.getByRole("button", { name: "View source" }).click();
-  await expect(page.getByRole("dialog")).toContainText("Catálogo de prueba");
+  const sourceDialog = page.getByRole("dialog");
+  await expect(sourceDialog.locator(".source-record pre")).not.toBeVisible();
+  await sourceDialog.getByText(/Evidence and corrections/).click();
+  await expect(
+    sourceDialog.getByText("Catálogo de prueba", { exact: true }),
+  ).toBeVisible();
   expect(errors).toEqual([]);
   expect(
     await page.evaluate(
@@ -182,6 +187,8 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
     "datetime",
     "2026-09-10T18:30:00Z",
   );
+  await expect(dialog.locator(".source-record pre")).not.toBeVisible();
+  await dialog.getByText("Full captured text", { exact: true }).click();
   await expect(dialog.getByText("Page title: Arroz extra 5 kg")).toBeVisible();
   await page.goto("/__source_quality_test?unusable=1");
   await expect(

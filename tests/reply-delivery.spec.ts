@@ -178,7 +178,7 @@ for (const delayed of [false, true]) {
       for (const deliver of pending) deliver();
       await expect(
         page.getByText(
-          "Delivery was saved to the previous comparison. Your current draft is preserved.",
+          "The confirmed term was saved to the previous comparison. Your current draft is preserved.",
         ),
       ).toBeVisible();
       await expect(page.getByLabel("Required quantity")).toHaveValue("20");

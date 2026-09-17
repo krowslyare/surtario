@@ -1,3 +1,4 @@
+import { SourceEvidence } from "./SourceEvidence";
 import { useEffect, useState, type ReactNode } from "react";
 import { FileSearch, PencilLine } from "lucide-react";
 import {
@@ -116,11 +117,7 @@ export default function ExtractionReview({
       </button>
 
       {open && (
-        <Dialog
-          title="Review quote data"
-          wide
-          onClose={() => setOpen(false)}
-        >
+        <Dialog title="Review quote data" wide onClose={() => setOpen(false)}>
           <div className="extraction-intro">
             <span className="extraction-simulation">
               {source.simulated ? "Synthetic example" : "Source for review"}
@@ -139,7 +136,7 @@ export default function ExtractionReview({
                 <p>{source.title}</p>
               </div>
               {originalPreview}
-              <pre>{source.text}</pre>
+              <SourceEvidence text={source.text} />
               {source.url && (
                 <a href={source.url} target="_blank" rel="noopener noreferrer">
                   Open source page
@@ -151,6 +148,9 @@ export default function ExtractionReview({
                   day: "numeric",
                   month: "short",
                   year: "numeric",
+                  ...(/^\d{4}-\d{2}-\d{2}$/.test(source.observedAt)
+                    ? { timeZone: "UTC" }
+                    : {}),
                 }).format(new Date(source.observedAt))}
               </time>
             </article>
@@ -208,12 +208,19 @@ export default function ExtractionReview({
                       )}
                     </label>
                     <div className="extraction-evidence">
-                      <span>
-                        Original: <strong>{original || "Pending"}</strong>
-                      </span>
-                      <span>
-                        Evidence: {proposal[field].evidence ?? "Not found"}
-                      </span>
+                      <details>
+                        <summary>Source evidence</summary>
+                        {edited && (
+                          <p>
+                            Original proposal:{" "}
+                            <strong>{original || "Pending"}</strong>
+                          </p>
+                        )}
+                        <p>
+                          {proposal[field].evidence ??
+                            "No published evidence for this field."}
+                        </p>
+                      </details>
                       {edited && (
                         <span className="extraction-edited">
                           <PencilLine size={13} /> Manually corrected

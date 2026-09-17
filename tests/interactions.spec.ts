@@ -147,9 +147,16 @@ test("selección móvil anuncia el cambio y lleva al resumen sin iniciar una com
   await expect(
     page.getByRole("status", { name: "Study selection" }),
   ).toContainText("added to study");
-  await page
-    .getByRole("button", { name: "View summary 1", exact: true })
-    .press("Enter");
+  // Filtering to one result can already place the summary in the viewport.
+  const summary = page.locator("#study-summary");
+  const shortcut = page.getByRole("button", { name: "View summary 1", exact: true });
+  await summary.scrollIntoViewIfNeeded();
+  await expect(summary).toBeInViewport({ ratio: 0.15 });
+  await expect(shortcut).toHaveCount(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expect(summary).not.toBeInViewport();
+  await expect(shortcut).toBeVisible();
+  await shortcut.press("Enter");
   await expect(
     page.getByRole("heading", { name: "Your study", exact: true }),
   ).toBeFocused();

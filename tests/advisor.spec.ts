@@ -19,7 +19,7 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
       return Boolean(
         comparison &&
         advisorPanel.compareDocumentPosition(comparison) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
+          Node.DOCUMENT_POSITION_PRECEDING,
       );
     }),
   ).toBe(true);
@@ -128,6 +128,7 @@ test("pending quantity stays blocked after the comparison is saved", async ({
 }) => {
   await page.goto("/?view=comparison&example=pe");
   const advisor = page.getByRole("region", { name: "Purchasing advisor" });
+  await expect(page.locator(".workspace-content")).not.toHaveAttribute("inert");
   await page.getByLabel("Required quantity").fill("");
   await expect(
     advisor.getByRole("button", {

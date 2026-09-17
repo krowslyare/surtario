@@ -107,7 +107,9 @@ export function ResearchWorkspace({
   selections,
   onReview,
   onOpenStudy,
+  autoSelectLatest = false,
 }: {
+  autoSelectLatest?: boolean;
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
@@ -176,6 +178,12 @@ export function ResearchWorkspace({
       current = false;
     };
   }, [request?.id]);
+
+  useEffect(() => {
+    if (!autoSelectLatest || activeId || request || !runs?.length) return;
+    const latest = runs.reduce((current, run) => run.observedAt >= current.observedAt ? run : current);
+    setActiveId(latest.id);
+  }, [autoSelectLatest, activeId, request, runs]);
 
   const active = useMemo(() => {
     const persisted = runs?.find((run) => run.id === activeId);
@@ -321,13 +329,13 @@ export function ResearchWorkspace({
             {onReview
               ? "Your selection remains in My study when you open another search."
               : "Reviewed selections remain available across saved searches."}{" "}
-            Up to 10 searches per browser; clearing site data removes access.
+            Up to 10 quick searches per browser; case rounds have separate limits. Clearing site data removes access.
           </p>
           <span>
             <History size={16} /> Saved searches
           </span>
           <div>
-            {runs.map((run) => (
+            {runs.map((run, index) => (
               <button
                 type="button"
                 className="button text-button"
@@ -345,8 +353,7 @@ export function ResearchWorkspace({
                   setError("");
                 }}
               >
-                {run.ingredient} · {run.region} ·{" "}
-                {observedLabel(run.observedAt)}
+                Search {index + 1} · {run.ingredient} · {run.region} · {run.sources.length} sources · {observedLabel(run.observedAt)}
               </button>
             ))}
           </div>

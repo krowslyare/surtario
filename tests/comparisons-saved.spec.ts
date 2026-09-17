@@ -116,7 +116,10 @@ test("una cantidad inválida no se convierte en cantidad pendiente", async ({
   page,
 }) => {
   await page.goto("/?view=comparison&example=pe");
+  // fill() can target a covered inert input before the arrival transition ends.
+  await expect(page.locator(".workspace-content")).not.toHaveAttribute("inert");
   await page.getByLabel("Required quantity").fill("texto");
+  await expect(page.getByLabel("Required quantity")).toHaveValue("texto");
   await expect(
     page.getByRole("button", { name: "Save comparison", exact: true }),
   ).toBeDisabled();
