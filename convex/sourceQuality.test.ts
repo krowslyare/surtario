@@ -472,3 +472,28 @@ test("a literal quote cannot support a fabricated price or calculated package we
   expect(result.offer.price.value).toBeNull();
   expect(result.offer.packageContent.value).toBeNull();
 });
+
+test.each([
+  ["S/ 1,79", "1.79", "price"],
+  ["2,5 kg", "2.5", "packageContent"],
+  ["USD 1,234.56", "1234.56", "price"],
+  ["S/ 1.234,56", "1234.56", "price"],
+  ["0,125 kg", "0.125", "packageContent"],
+  ["USD 1,234", "1234", "price"],
+])("retains explicitly cited localized numbers: %s", (source, value, field) => {
+  const result = validateWebAnalysis({
+    analysis: { kind: "product", summary: "Published product", warnings: [], evidenceLineNumbers: [1] },
+    offer: { ...noOffer, [field]: { value, evidenceLineNumber: 1 } },
+  }, source);
+  expect(result.offer[field as "price" | "packageContent"].value).toBe(value);
+});
+
+test.each([ ["S/ 1,79", "179"], ["S/ 1.234,56", "1.23456"], ["USD 1,23,4", "1234"] ])(
+  "rejects unsupported concatenated numeric evidence: %s", (source, value) => {
+    const result = validateWebAnalysis({
+      analysis: { kind: "product", summary: "Published product", warnings: [], evidenceLineNumbers: [1] },
+      offer: { ...noOffer, price: { value, evidenceLineNumber: 1 } },
+    }, source);
+    expect(result.offer.price.value).toBeNull();
+  },
+);

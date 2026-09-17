@@ -2,6 +2,17 @@ import { z } from "zod";
 import { validateExtraction } from "./extraction";
 import { extractionFields } from "../../src/domain/extraction";
 
+/** Accept explicit decimal separators and well-formed grouping, never concatenate decimals. */
+function citedNumber(value: string): number {
+  if (/^\d+(?:\.\d+)?$/.test(value)) return Number(value);
+  if (/^\d{1,3}(?:,\d{3})+(?:\.\d+)?$/.test(value) && !value.startsWith("0,"))
+    return Number(value.replaceAll(",", ""));
+  if (/^\d{1,3}(?:\.\d{3})+,\d+$/.test(value))
+    return Number(value.replaceAll(".", "").replace(",", "."));
+  if (/^\d+,\d+$/.test(value)) return Number(value.replace(",", "."));
+  return NaN;
+}
+
 export const sourceAnalysisSchema = z
   .object({
     kind: z.enum(["product", "catalog", "contact", "irrelevant", "uncertain"]),
@@ -133,7 +144,7 @@ export function validateWebAnalysis(
       proposed < 0 ||
       (key === "packageContent" && proposed === 0) ||
       !citedNumbers.some(
-        (number) => Number(number.replaceAll(",", "")) === proposed,
+        (number) => citedNumber(number) === proposed,
       )
     )
       clear(

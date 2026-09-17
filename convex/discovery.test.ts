@@ -580,3 +580,36 @@ it.each([
     expect(page.markdown).toHaveLength(20000);
   },
 );
+
+it.each([
+  ["Lima", "Lima, Peru", "PE", ["es-PE", "es"]],
+  ["New York, US", "New York, US", "US", ["en"]],
+] as const)("adaptive searches retain localization and exclude prior child links: %s", async (region, location, country, languages) => {
+  const searches: Record<string, unknown>[] = [];
+  const reads: string[] = [];
+  const request = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+    const body = JSON.parse(init!.body as string);
+    if (String(url).endsWith("/search")) {
+      searches.push(body);
+      return Response.json({ success: true, data: { web: [
+        { url: "https://proveedor.com/products/arroz-viejo?utm_source=repeat", title: "Arroz" },
+        { url: "https://proveedor.com/catalogo/arroz", title: "Arroz" },
+      ] } });
+    }
+    reads.push(body.url);
+    expect(body.location).toEqual({ country, languages });
+    return Response.json({ success: true, data: {
+      markdown: body.url.includes("catalogo")
+        ? "Arroz: [Arroz anterior](https://proveedor.com/products/arroz-viejo?utm_campaign=repeat)\n[Arroz nuevo](https://proveedor.com/products/arroz-nuevo)"
+        : "Arroz 5 kg S/ 20",
+      metadata: { url: body.url, title: "Arroz" },
+    } });
+  });
+  const result = await discoverSources({ ingredient: "Arroz", region, query: "Arroz precio por saco", excludeUrls: ["https://proveedor.com/products/arroz-viejo"] }, "test", request);
+  expect(searches).toHaveLength(1);
+  expect(searches[0]).toMatchObject({ query: `Arroz precio por saco ${location}`, country, location });
+  expect(searches[0]).not.toHaveProperty("scrapeOptions");
+  expect(reads).toEqual(["https://proveedor.com/catalogo/arroz", "https://proveedor.com/products/arroz-nuevo"]);
+  expect(result.sources.map(s => s.url)).toEqual(expect.arrayContaining(reads));
+  expect(result.sources.some(s => s.url.includes("viejo"))).toBe(false);
+});

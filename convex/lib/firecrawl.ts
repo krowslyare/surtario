@@ -404,10 +404,15 @@ export async function discoverSources(
   request: typeof fetch = providerFetch,
 ): Promise<DiscoveryResult> {
   const location = researchLocation(input.region);
-  if (location.language === "es") return searchSources(input, apiKey, request);
+  // Keep the initial Spanish quick search, but adaptive rounds must honor
+  // their refinement and exclude known URLs before any paid page reads.
+  if (location.language === "es" && !input.query && !input.excludeUrls?.length)
+    return searchSources(input, apiKey, request);
   const queries = input.query
     ? [`${input.query.trim()} ${location.location}`]
-    : [
+    : location.language === "es"
+      ? [`${input.ingredient.trim()} proveedores distribuidores ${location.location}`]
+      : [
         `${(input.query ?? input.ingredient).trim()} price wholesale ${location.location}`,
         `${(input.query ?? input.ingredient).trim()} wholesale supplier ${location.location}`,
         `"${input.ingredient.trim()}" bulk buy price ${location.country ?? location.location}`,
@@ -495,9 +500,10 @@ export async function discoverSources(
     }
   };
   // Reserve two reads for specific product links discovered inside catalog pages.
-  const known = new Set(
-    selected.map((source) => canonicalCandidate(source.url)),
-  );
+  const known = new Set([
+    ...excluded,
+    ...selected.map((source) => sourceKey(source.url)),
+  ]);
   for (
     let index = 0;
     index < selected.length && reads < RESEARCH_READ_BUDGET - 2;
@@ -510,11 +516,11 @@ export async function discoverSources(
     if (/\/(?:products?|p|shop)\/|\d{5,}\.html/i.test(source.url)) continue;
     const child = inspectSource(source, input.ingredient).links.find(
       (link) =>
-        !known.has(canonicalCandidate(link.url)) &&
+        !known.has(sourceKey(link.url)) &&
         /\/(?:products?|p|shop)\/|\d{5,}\.html/i.test(link.url),
     );
     if (!child) continue;
-    known.add(canonicalCandidate(child.url));
+    known.add(sourceKey(child.url));
     reads++;
     try {
       const page = await read(child.url);
