@@ -58,7 +58,7 @@ export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
   useEffect(() => setCopied(false), [report.negotiationDraft]);
   return (
     <div className="advisor-verdict">
-      <p className="advisor-recommendation">{report.recommendation}</p>
+      <h3 className="advisor-recommendation">{report.recommendation}</h3>
       {report.alternatives.some((option) => option.eligible) && (
         <p>{report.impact}</p>
       )}
