@@ -55,7 +55,7 @@ const formatMoney = (cents: number, currency: SupplierOffer["currency"]) =>
 const formatQuantity = (quantity: number) =>
   new Intl.NumberFormat("es-PE", { maximumFractionDigits: 3 }).format(quantity);
 
-function validateContext(
+export function validateContext(
   context: AdvisorContext,
   offers: SupplierOffer[],
 ): string[] {

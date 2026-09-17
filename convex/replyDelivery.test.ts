@@ -166,7 +166,7 @@ test("rejects foreign ownership, unrelated reply, stale revision, fabricated quo
       ...args,
       freightCents: 8.5,
     }),
-  ).rejects.toThrow("valid delivery");
+  ).rejects.toThrow("valid term value");
   await expect(
     t.mutation(api.quotationMail.confirmReplyDelivery, {
       ...args,

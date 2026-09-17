@@ -1,3 +1,4 @@
+import { decisionActionSnapshot } from "./decisionActionValidators";
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { deliveryConfirmationFields } from "./deliveryValidators";
@@ -113,6 +114,7 @@ export default defineSchema({
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
   quotationRequests: defineTable({
+    decisionAction: v.optional(decisionActionSnapshot),
     aiDraftStatus: v.optional(
       v.union(
         v.literal("idle"),

@@ -25,7 +25,11 @@ export default function ReplyDeliveryReview({
   context,
   onClose,
   onApplied,
+  term = "delivery",
+  targetOfferId,
 }: {
+  term?: "delivery" | "minimum";
+  targetOfferId?: string;
   token: string;
   reply: DeliveryReply;
   comparison: SavedComparison;
@@ -37,7 +41,8 @@ export default function ReplyDeliveryReview({
   const amountFieldId = useId();
   const quoteFieldId = useId();
   const confirm = useMutation(api.quotationMail.confirmReplyDelivery);
-  const [offerId, setOfferId] = useState("");
+  const [offerId, setOfferId] = useState(targetOfferId ?? "");
+  const minimum = term === "minimum";
   const [amount, setAmount] = useState("");
   const [quote, setQuote] = useState("");
   const [approved, setApproved] = useState(false);
@@ -47,12 +52,12 @@ export default function ReplyDeliveryReview({
     null,
   );
   const offer = comparison.offers.find((item) => item.id === offerId);
-  const cents = parseCents(amount);
+  const cents = minimum ? (/^\d+$/.test(amount) ? Number(amount) : null) : parseCents(amount);
   const valid = Boolean(
     offer &&
-    offer.freightCents === null &&
+    (minimum || offer.freightCents === null) &&
     cents !== null &&
-    cents >= 0 &&
+    cents >= (minimum ? 1 : 0) &&
     quote.trim() &&
     reply.text.includes(quote.trim()),
   );
@@ -65,7 +70,7 @@ export default function ReplyDeliveryReview({
     ? analyzePurchase(
         comparison.request,
         comparison.offers.map((item) =>
-          item.id === offerId ? { ...item, freightCents: cents! } : item,
+          item.id === offerId ? { ...item, ...(minimum ? { minimumPackages: cents! } : { freightCents: cents! }) } : item,
         ),
         context,
       )
@@ -75,14 +80,14 @@ export default function ReplyDeliveryReview({
   }, [offerId, amount, quote, comparison.revision, context]);
   return (
     <Dialog
-      title={done ? "Delivery saved" : "Confirm delivery from this reply"}
+      title={done ? (minimum ? "Minimum saved" : "Delivery saved") : (minimum ? "Confirm minimum from this reply" : "Confirm delivery from this reply")}
       className="mail-dialog delivery-dialog"
       onClose={onClose}
     >
       {done ? (
         <>
           <p>
-            The delivery cost and its reply evidence are saved in this
+            The confirmed term and its reply evidence are saved in this
             comparison.
           </p>
           <h3>Before</h3>
@@ -93,7 +98,7 @@ export default function ReplyDeliveryReview({
         </>
       ) : (
         <>
-          <p>Match the delivery charge to an offer, then check the updated result.</p>
+          <p>Match the quoted term to its offer, then check the updated result. Confirm only this term; review any other changes separately.</p>
           <details className="mail-details" open>
             <summary>Supplier reply</summary>
             <MessageBody text={reply.text} />
@@ -108,7 +113,7 @@ export default function ReplyDeliveryReview({
             >
               <option value="">Choose an offer</option>
               {comparison.offers
-                .filter((item) => item.freightCents === null)
+                .filter((item) => (!targetOfferId || item.id === targetOfferId) && (minimum || item.freightCents === null))
                 .map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.supplier} · {item.currency}
@@ -118,7 +123,7 @@ export default function ReplyDeliveryReview({
           </div>
           <div className="field">
             <label htmlFor={amountFieldId}>
-              Delivery per order ({offer?.currency ?? "select an offer"})
+              {minimum ? "Minimum packs" : `Delivery per order (${offer?.currency ?? "select an offer"})`}
             </label>
             <input
               id={amountFieldId}
@@ -130,7 +135,7 @@ export default function ReplyDeliveryReview({
           </div>
           <div className="field">
             <label htmlFor={quoteFieldId}>
-              Exact phrase confirming delivery
+              {minimum ? "Exact phrase confirming minimum" : "Exact phrase confirming delivery"}
             </label>
             <textarea
               id={quoteFieldId}
@@ -145,9 +150,9 @@ export default function ReplyDeliveryReview({
           )}
           {after && (
             <section className="delivery-result" aria-label="Delivery preview">
-              <h3>With this delivery cost</h3>
+              <h3>{minimum ? "With this minimum" : "With this delivery cost"}</h3>
               <dl className="delivery-totals">
-                <div><dt>Delivery per order</dt><dd>{money(cents, offer?.currency)}</dd></div>
+                <div><dt>{minimum ? "Minimum packs" : "Delivery per order"}</dt><dd>{minimum ? cents : money(cents, offer?.currency)}</dd></div>
                 <div><dt>Updated order total</dt><dd>{money(after.alternatives.find(item => item.offerId === offerId)?.totalCents ?? null, offer?.currency)}</dd></div>
               </dl>
               <details className="mail-details"><summary>Compare with before</summary><p>{before.recommendation}</p></details>
@@ -159,8 +164,7 @@ export default function ReplyDeliveryReview({
               checked={approved}
               onChange={(event) => setApproved(event.target.checked)}
             />
-            I confirm this reply gives the delivery cost per order for this
-            offer, in its currency and tax basis.
+            {minimum ? "I confirm this reply gives the minimum number of packs for this offer. Other terms remain unchanged in this confirmation." : "I confirm this reply gives the delivery cost per order for this offer, in its currency and tax basis."}
           </label>
           {error && (
             <p role="alert" className="notice error">
@@ -182,7 +186,7 @@ export default function ReplyDeliveryReview({
                   comparisonId: comparison.id,
                   expectedRevision: comparison.revision,
                   offerId,
-                  freightCents: cents!,
+                  ...(minimum ? { minimumPackages: cents! } : { freightCents: cents! }),
                   evidenceQuote: quote.trim(),
                   context,
                   confirmed: true,
@@ -203,7 +207,7 @@ export default function ReplyDeliveryReview({
               }
             }}
           >
-            Confirm delivery and save
+            {minimum ? "Confirm minimum and save" : "Confirm delivery and save"}
           </Button>
         </>
       )}

@@ -1,3 +1,4 @@
+import { decisionActionSnapshot } from "./decisionActionValidators";
 import { v } from "convex/values";
 import {
   extractedOfferValidator,
@@ -16,6 +17,7 @@ export const quotationReplyValidator = v.object({
 });
 
 export const savedQuotationValidator = v.object({
+  decisionAction: v.optional(decisionActionSnapshot),
   id: v.id("quotationRequests"),
   simulated: v.boolean(),
   comparisonId: v.optional(v.id("comparisons")),

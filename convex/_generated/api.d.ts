@@ -14,6 +14,7 @@ import type * as comparison from "../comparison.js";
 import type * as comparisonValidators from "../comparisonValidators.js";
 import type * as comparisons from "../comparisons.js";
 import type * as crons from "../crons.js";
+import type * as decisionActionValidators from "../decisionActionValidators.js";
 import type * as deliveryValidators from "../deliveryValidators.js";
 import type * as discovery from "../discovery.js";
 import type * as documentValidators from "../documentValidators.js";
@@ -63,6 +64,7 @@ declare const fullApi: ApiFromModules<{
   comparisonValidators: typeof comparisonValidators;
   comparisons: typeof comparisons;
   crons: typeof crons;
+  decisionActionValidators: typeof decisionActionValidators;
   deliveryValidators: typeof deliveryValidators;
   discovery: typeof discovery;
   documentValidators: typeof documentValidators;
