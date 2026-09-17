@@ -483,7 +483,7 @@ export const recordStep = internalMutation({
     });
     await ctx.db.patch(row._id, {
       steps: row.steps + 1,
-      researchRunIds: [...row.researchRunIds, runId].slice(-18),
+      researchRunIds: [...row.researchRunIds, runId].slice(-RESEARCH_POLICY.retainedRuns),
       summary: args.reason.slice(0, 1500),
       updatedAt: now,
     });

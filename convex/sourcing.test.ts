@@ -631,3 +631,48 @@ test("an unreadable allowed page is preserved as failed evidence without crashin
     (await t.query(api.sourcing.get, { token, caseId: id })).case.status,
   ).toBe("running");
 });
+
+test("a changed watch retains twelve research rounds and leaves the confirmed comparison untouched", async () => {
+  const t = instance();
+  const { id, watchId } = await watched(t);
+  const comparisonId = await t.run(async ctx => {
+    const { riceRequest, riceOffers } = await import("../fixtures/procurement");
+    const comparisonId = await ctx.db.insert("comparisons", { ownerHash: await ownerHash(token), clientId: "test-retention", request: riceRequest, offers: riceOffers, sources: {}, selectedOfferId: riceOffers[0].id, revision: 4, updatedAt: Date.now() });
+    await ctx.db.patch(id, { comparisonId, status: "running", revision: 2 });
+    return comparisonId;
+  });
+  for (let round = 0; round < 12; round++) {
+    await t.run(ctx => ctx.db.patch(id, { steps: round % 6 }));
+    await t.mutation(internal.sourcing.recordStep, { caseId: id, revision: 2, step: round % 6, reason: "Retained round", query: `rice ${round}`, sources: [{ ...source, url: `https://example.com/rice-${round}` }] });
+  }
+  const before = await t.run(ctx => ctx.db.get(comparisonId));
+  const ids = (await t.query(api.sourcing.get, { token, caseId: id })).case.researchRunIds;
+  await t.mutation(internal.sourcingWatch.finish, { watchId, revision: 2, source: { ...source, extraction: { ...offer, price: field("24") } } });
+  const detail = await t.query(api.sourcing.get, { token, caseId: id });
+  expect(detail.case.researchRunIds.slice(0, 12)).toEqual(ids);
+  expect(await t.query(api.sourcing.research, { token, caseId: id })).toHaveLength(13);
+  expect((await t.query(internal.sourcing.snapshot, { caseId: id, revision: 2 }))?.runs).toHaveLength(13);
+  expect(await t.run(ctx => ctx.db.get(comparisonId))).toEqual(before);
+});
+
+test("watch clock advances unchanged observations, recovers timed-out checks and expires without touching confirmed data", async () => {
+ vi.useFakeTimers();vi.setSystemTime(new Date("2026-09-17T00:00:00Z"));enable();
+ const t=instance();const {id,watchId}=await watched(t);
+ await t.mutation(internal.sourcingWatch.finish,{watchId,revision:2,source});
+ let detail=await t.query(api.sourcing.get,{token,caseId:id});
+ expect(detail.watches[0].lastOutcome).toBe("unchanged");expect(detail.case.researchRunIds).toHaveLength(0);
+ await t.run(ctx=>ctx.db.patch(watchId,{status:"checking",nextCheckAt:Date.now()+600000,revision:3}));
+ vi.setSystemTime(Date.now()+600001);await t.mutation(internal.sourcingWatch.due,{});
+ detail=await t.query(api.sourcing.get,{token,caseId:id});
+ expect(detail.watches[0]).toMatchObject({status:"active",lastOutcome:"unverified"});
+ await t.run(ctx=>ctx.db.patch(watchId,{checks:7,nextCheckAt:Date.now()}));
+ await t.mutation(internal.sourcingWatch.due,{});
+ expect((await t.query(api.sourcing.get,{token,caseId:id})).watches[0].status).toBe("expired");
+});
+
+for (const liveWeb of [false, true]) test(`watch provenance follows web transport when Luna bridge is enabled (${liveWeb})`, async () => {
+ const t=instance();const {id,watchId}=await watched(t);
+ vi.stubEnv("CONVEX_CLOUD_URL","http://127.0.0.1:3280");vi.stubEnv("REHEARSAL_BRIDGE_URL","http://127.0.0.1:8789");vi.stubEnv("REHEARSAL_BRIDGE_TOKEN","a".repeat(64));vi.stubEnv("REHEARSAL_LIVE_FIRECRAWL",String(liveWeb));
+ await t.mutation(internal.sourcingWatch.finish,{watchId,revision:2,source:{...source,extraction:{...offer,price:field("24")}}});
+ expect((await t.query(api.sourcing.research,{token,caseId:id}))[0].simulated).toBe(!liveWeb);
+});

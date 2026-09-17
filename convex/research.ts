@@ -2,6 +2,7 @@ import { MAX_RESEARCH_SOURCES } from "./lib/firecrawl";
 import { ConvexError, v } from "convex/values";
 import { action, env, internalMutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
+import type { QueryCtx, MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { ownerHash } from "./lib/demoSession";
 import {
@@ -86,14 +87,27 @@ export const list = query({
   returns: v.array(savedResearchValidator),
   handler: async (ctx, { token }) => {
     const hash = await ownerHash(token);
-    const runs = await ctx.db
-      .query("researchRuns")
-      .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
-      .order("desc")
-      .take(MAX_PER_SESSION);
+    const runs = await quickSearches(ctx, hash);
     return runs.map(publicRun);
   },
 });
+
+/** Quick searches have validated UUID client IDs; legacy case:/watch: IDs are server-only.
+ * Split the indexed UUID range around case: so adaptive page bodies never enter
+ * the quota read. This works for existing rows without a migration or new calls.
+ */
+async function quickSearches(ctx: QueryCtx | MutationCtx, hash: string) {
+  const ranges = await Promise.all([
+    ctx.db.query("researchRuns").withIndex("by_ownerHash_and_clientId", q =>
+      q.eq("ownerHash", hash).gte("clientId", "0").lt("clientId", "case:")
+    ).take(MAX_PER_SESSION),
+    ctx.db.query("researchRuns").withIndex("by_ownerHash_and_clientId", q =>
+      q.eq("ownerHash", hash).gte("clientId", "case;").lt("clientId", "g")
+    ).take(MAX_PER_SESSION),
+  ]);
+  return ranges.flat().filter(run => UUID.test(run.clientId))
+    .sort((a,b) => b.createdAt - a.createdAt).slice(0, MAX_PER_SESSION);
+}
 
 const reserveResult = v.union(
   v.object({ kind: v.literal("existing"), run: savedResearchValidator }),
@@ -127,13 +141,9 @@ export const reserveSearch = internalMutation({
         throw new ConvexError("This request already exists with different data.");
       return { kind: "existing" as const, run: publicRun(existing) };
     }
-    const own = await ctx.db
-      .query("researchRuns")
-      .withIndex("by_ownerHash", (q) => q.eq("ownerHash", hash))
-      .order("desc")
-      .take(MAX_PER_SESSION);
+    const own = await quickSearches(ctx, hash);
     if (own.length >= MAX_PER_SESSION)
-      throw new ConvexError("This session supports up to 10 live searches.");
+      throw new ConvexError("This session supports up to 10 quick searches; case research has its own limits.");
     if (own[0] && Date.now() - own[0].createdAt < COOLDOWN_MS)
       throw new ConvexError(
         "Wait 30 seconds before starting another search.",
