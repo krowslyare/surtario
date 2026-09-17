@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-17T04:06:22Z
+- **Last updated:** 2026-09-17T05:19:29Z
 
 ## Log
 
@@ -404,3 +404,9 @@ The result audit then caught default preferences replacing the saved question co
 The verified main walkthrough took **114.971 seconds**. A separately timed closing segment saved and explicitly restored the updated cash-priority scenario in **13.640 seconds**. Combined screen time is **128.611 seconds (2:09 rounded)**, with an explicit edit between segments of the same case. These are automated browser rehearsals with reading holds, not a narrated/exported video. The final result check confirmed the saved USD 50 budget, USD 45/39 totals, original evidence, one reply/confirmation for the current request, and recovered selection. The final scene shows the current saved scenario rather than stale AI advice. Desktop and mobile views were inspected. Final direct OpenAI API, hosted acceptance and narrated/exported recording remain separate.
 
 Final visual review corrected synthetic mail labels in the saved-request list and conversation: the local bridge is explicitly marked simulated instead of inheriting the real-provider acceptance label.
+
+
+### 2026-09-17 — working tree: PR #36 review corrections
+Comparison questions now originate only from their saved comparison; study distributors and web candidates explicitly open that comparison instead of attaching an incompatible origin or suggesting another supplier's action inside a distributor card. The case brief and library share invalid-input, compatibility/delivery and missing-term blockers. Reply confirmation displays the confirmed minimum/freight, order-total and budget/eligibility effect, including unchanged winners and unchanged minimums. Email styling uses a stable class. No server validation was relaxed; these corrections do not alter the workflow or enable an integration.
+
+Final review verification: 290 unit/backend tests in 44 files, frontend/backend typechecks and the 30-file hosting check passed. The final uninterrupted E2E run passed all 87 journeys in 8.5 minutes; `test:demo` passed separately in 15.8 seconds. Earlier review attempts exposed test-fixture/expectation mistakes (eligibility, cooldown and the one-comparable-offer verdict), corrected without weakening product guards. Desktop/320/390 source and confirmation captures were inspected; keyboard, reduced motion and reload paths passed. Automated providers were disabled. No new Luna/Firecrawl/OpenAI API call, real mail, merge or deployment was performed; prior Luna timing remains historical, and direct API/hosted acceptance remains separate. See `CONSOLIDACION_DECISION.md` for exact scope and observed non-failing dev-console notifications.

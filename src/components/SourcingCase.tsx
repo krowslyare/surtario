@@ -1,5 +1,5 @@
 import { casePriority } from "../domain/casePriority";
-import { evaluateOffer } from "../domain/procurement";
+import { comparisonBlockers, blockerLabels } from "../domain/comparisonBlockers";
 import { researchCoverage, RESEARCH_POLICY } from "../domain/researchCoverage";
 import { Disclosure } from "./ui/Disclosure";
 import { Component, useEffect, useState, type ReactNode } from "react";
@@ -606,10 +606,11 @@ function CaseDetail({
         <h4>What we know</h4>
         <p>{runs === undefined || comparisons === undefined ? "Loading saved evidence and comparison…" : `${coverage.total} retained sources${savedComparison ? ` and a saved comparison of ${savedComparison.offers.length} offers` : "; no saved comparison yet"}.`}</p>
         <h4>What still needs confirmation</h4>
-        <p>{savedComparison ? (() => {
-          const pending = [...new Set(savedComparison.offers.flatMap(offer => evaluateOffer(savedComparison.request, offer).pending))];
-          return pending.length ? pending.slice(0,3).join(" ") : "Review the recommendation using your current quantity and preferences.";
-        })() : "Review source evidence, product equivalence and commercial terms before deciding."}</p>
+        {savedComparison ? (() => {
+          const blockers = comparisonBlockers(savedComparison);
+          const describe = (blocker: typeof blockers[number]) => `${blockerLabels[blocker.kind]} · ${blocker.supplier}: ${blocker.message}`;
+          return blockers.length ? <><p>{describe(blockers[0])}</p>{blockers.length > 1 && <details><summary>Other conditions ({blockers.length - 1})</summary><ul>{blockers.slice(1).map((blocker, index) => <li key={index}>{describe(blocker)}</li>)}</ul></details>}</> : <p>Review the recommendation using your current quantity and preferences.</p>;
+        })() : <p>Review source evidence, product equivalence and commercial terms before deciding.</p>}
       </section>
       <section
         className="sourcing-next"

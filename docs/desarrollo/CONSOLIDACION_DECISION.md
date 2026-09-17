@@ -13,7 +13,31 @@ Base reviewed: `3483f8a55b8ff0ded6e9e54d09ed913d05a16876`. Work is isolated in `
 - Simulated mail is explicitly labeled in the conversation and saved-request list; it is not described as accepted by the real provider.
 - Facts-first source review, progressive raw evidence/history, case brief and prioritized existing case library. Prioritization is based on missing terms, interrupted work and retained evidence; it is not total-basket optimization or an estimated savings ranking.
 
+## PR #36 review corrections
+
+Review baseline: `691b72f`, the open PR branch, not the deployed application.
+
+- Comparison actions are available only when the mail panel's sole origin is that saved comparison. Study distributors and web candidates offer **Open case comparison**, preserving the distinction between the distributor and the supplier whose offer needs clarification. Server origin/revision checks remain unchanged.
+- The case brief and library share a projection of invalid inputs, comparison exclusions and missing terms. Required delivery being unconfirmed remains explicit even when every numeric field is complete. The brief shows the first blocker with supplier context and expands the remaining conditions on demand.
+- Reply confirmation keeps the server's complete before/after reports. The close shows the confirmed term, order total, budget and eligibility effect. An accepted minimum can make A affordable while B remains recommended; an unchanged minimum can leave A above budget. Neither result is described as realized savings.
+- The email panel uses a stable CSS class rather than a translated accessible name.
+
 ## Local verification
+
+### Final PR #36 review pass — September 17, 2026 (UTC)
+
+- `npm test`: **290 tests / 44 files passed**.
+- `npm run check:hosting`: frontend TypeScript, build and **30-file hosting validation passed**.
+- `npx tsc --noEmit -p convex/tsconfig.json`: passed.
+- `npm run test:e2e`: **87/87 passed in one uninterrupted final run (8.5 minutes)**, without retries. This replaces the earlier partial-suite evidence for the current code.
+- `npm run test:demo`: **1/1 passed separately (15.8 seconds)**.
+- Browser regressions cover comparison/study/candidate action entry, delivery-confirmation blockers, accepted and unchanged minimums, saved-question budget, partial and delayed replies, original evidence, session isolation and reload recovery. Screenshots were inspected at 1920, 320 and 390 px for the confirmation result and long source capture; keyboard/reduced-motion and horizontal-overflow checks passed.
+
+The first full review attempt was stopped to update a legacy freight-display assertion. The next completed attempt was 86/87 because a newly added expectation incorrectly assumed a prior recommendation of B: with only one comparable offer, the engine instead asks for another verifiable offer. The corrected regression checks that actual prior report, the independently expected S/ 48 total and the new recommendation of A; its focused rerun and the complete final suite passed. Selection eligibility and request cooldown remain enforced.
+
+Local development logged non-failing ResizeObserver notifications during a selector interaction; the keyboard/focus assertions passed. This validation is not a claim of warning-free behavior or hosted/provider acceptance. Provider switches were disabled and no email recipient was configured during automated testing. No new Luna, Firecrawl, OpenAI API or real-mail call was made for this review.
+
+### Earlier iteration evidence, before the review corrections
 
 Verified locally on September 17, 2026 (UTC):
 
@@ -26,7 +50,7 @@ Verified locally on September 17, 2026 (UTC):
 - The end-to-end result audit also caught default preferences replacing the saved action context after reopening. Reply confirmation now displays and enforces the question's saved preferences; changing current form preferences cannot silently change that report.
 - Adversarial checks also found and fixed contextual-draft retry rejection caused by serialized object-key order, stale AI-draft generation, and inappropriate exposure of competing offers to the optional inquiry writer.
 
-The isolated anonymous Convex backend uses loopback ports 3280/3281. Automated tests run before configuring the local provider bridge. Tests use synthetic records, mocked failures and controlled clocks; they do not certify provider acceptance.
+The isolated anonymous Convex backend uses loopback ports 3280/3281. Automated tests run with provider features disabled and no configured email recipient; the manual bridge configuration is restored separately after testing. Tests use synthetic records, mocked failures and controlled clocks; they do not certify provider acceptance.
 
 The manual bridge rehearsal uses Luna CLI (`gpt-5.6-luna`) with synthetic web/mail transport. Real Firecrawl evidence from the earlier flour rehearsal remains documented in `REAL_RESEARCH_QUALITY.md`; it was not relabeled as a fresh run. No new paid Firecrawl call, real email or cloud deployment is required for these changes.
 

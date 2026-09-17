@@ -4,6 +4,8 @@
 
 Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo con evidencia de su criterio de salida. El calendario del plan es orientativo; ante retrasos aplicar sus recortes, sin afirmar resultados no ejecutados.
 
+The PR #36 review corrections are described in [the current consolidation record](CONSOLIDACION_DECISION.md#pr-36-review-corrections): comparison-only action routing, complete blocker projection and visible term/viability deltas. This is branch work, separate from the published development app.
+
 ## Estado
 
 | Etapa | Resultado | Estado | Evidencia actual |

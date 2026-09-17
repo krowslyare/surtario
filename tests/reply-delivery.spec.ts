@@ -188,12 +188,12 @@ for (const delayed of [false, true]) {
         name: "Delivery saved",
         exact: true,
       });
-      await expect(
-        result.getByRole("heading", { name: "Before", exact: true }),
-      ).toBeVisible();
-      await expect(
-        result.getByRole("heading", { name: "Now", exact: true }),
-      ).toBeVisible();
+      await expect(result.getByRole("heading", {name: "Current recommendation", exact: true})).toBeVisible();
+      await expect(result.locator(".delivery-totals")).toContainText("Pending → S/ 8.00");
+      await expect(result.locator(".delivery-totals")).toContainText("Pending → S/ 48.00");
+      await result.getByText("Previous recommendation", {exact: true}).click();
+      // Before freight confirmation, only B was comparable: the engine requires a second offer.
+      await expect(result.locator("details")).toContainText("Find another verifiable offer before deciding.");
       await expect(result.getByRole("status")).toContainText("Proveedor A");
 
       await result.screenshot({

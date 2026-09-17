@@ -118,6 +118,7 @@ const proposal=${JSON.stringify(extractionExample)};
 const root={url:'https://supplier.test/catalogo',title:'Catálogo del distribuidor',description:'Listado general de abarrotes',markdown:'Catálogo de productos',contentTruncated:false,analysis:{kind:'catalog',summary:'Es un listado general, no una ficha con pack y precio confirmados.',evidence:['Catálogo de productos para restaurantes'],warnings:['Falta confirmar precio y pack.']},inspection:{state:'readable',reason:null,links:[{url:'https://supplier.test/arroz-general',label:'Arroz a granel'},{url:'https://supplier.test/arroz-5kg',label:'Arroz extra 5 kg'}]},extraction:proposal,extractionStatus:'complete',extractionError:null,observedAt:'2026-09-08T16:00:00Z',readStatus:'complete',readError:null};
 const run={id:'quality-run',simulated:false,ingredient:'Arroz',region:'Lima',observedAt:'2026-09-08T16:00:00Z',status:'complete',error:null,warning:false,discarded:0,sources:[root]};
 const child={url:'https://supplier.test/arroz-5kg',title:'Arroz extra\\n5 kg',description:'Ficha individual leída',markdown:'Arroz extra\\nBolsa de 5 kg\\nS/ 28',contentTruncated:false,analysis:{kind:'product',summary:'Ficha individual con pack y precio visibles.',evidence:['Bolsa de 5 kg','S/ 28'],warnings:[]},inspection:{state:'readable',reason:null,links:[]},parentSourceIndex:0,observedAt:'2026-09-10T18:30:00Z',readStatus:'complete',readError:null,extraction:proposal,extractionStatus:'complete',extractionError:null};
+child.markdown += ' https://supplier.test/' + 'long-path-with-no-spaces'.repeat(500);
 const unrelated={...root,url:'https://supplier.test/nosotros',title:'Historia de la empresa',description:'Página institucional',markdown:'Nuestra historia',analysis:{kind:'irrelevant',summary:'No presenta el insumo buscado.',evidence:['Nuestra historia'],warnings:[]},inspection:{state:'unrelated',reason:'No encontramos coincidencias textuales suficientes con el insumo buscado.',links:[]},extraction:null,extractionStatus:'idle'};
 const shownRun=location.search.includes('unusable')?{...run,sources:[unrelated]}:run;
 function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',sources:[]}]);return <ResearchWorkspace status={{searchEnabled:true,extractionEnabled:true}} runs={runs} request={{id:1,ingredient:'Arroz',region:'Lima'}} onStatus={()=>{}} onSearch={async()=>shownRun} onExtract={async()=>proposal} onRead={async(_runId,_sourceIndex,url)=>{window.__readUrl=url;setRuns([{...run}]);await new Promise(resolve=>setTimeout(resolve,120));setRuns([{...run,sources:[root,{...child,markdown:null,analysis:undefined,extraction:null,extractionStatus:'idle',readStatus:'running'}]}]);await new Promise(resolve=>setTimeout(resolve,80));return{...run,sources:[root,child]}}} onPrepare={()=>{}}/>};createRoot(document.getElementById('root')).render(<Harness/>);`;
@@ -190,6 +191,17 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
   await expect(dialog.locator(".source-record pre")).not.toBeVisible();
   await dialog.getByText("Full captured text", { exact: true }).click();
   await expect(dialog.getByText("Page title: Arroz extra 5 kg")).toBeVisible();
+  await page.emulateMedia({reducedMotion: "reduce"});
+  for (const width of [1920, 320, 390]) {
+    await page.setViewportSize({width, height: width === 1920 ? 1080 : 844});
+    const capture = dialog.locator(".source-record pre");
+    expect(await capture.evaluate(element => element.scrollHeight > element.clientHeight)).toBe(true);
+    expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.screenshot({path: `/tmp/surtario-long-source-${width}.png`});
+  }
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
   await page.goto("/__source_quality_test?unusable=1");
   await expect(
     page.getByText("No source is ready to analyze as an offer", {

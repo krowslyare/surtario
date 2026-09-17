@@ -180,7 +180,7 @@
   padding: 0;
   border: 0;
 }
-.comparison-main section.saved-studies[aria-label="Cotizaciones por correo"] {
+.comparison-main .quotation-mail {
   background: var(--color-surface);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-card);
@@ -188,7 +188,7 @@
   padding: 24px 28px;
   margin-top: 24px;
 }
-.comparison-main section.saved-studies[aria-label="Cotizaciones por correo"] h2 {
+.comparison-main .quotation-mail h2 {
   font-size: 17px;
   font-weight: 700;
   margin-bottom: 6px;

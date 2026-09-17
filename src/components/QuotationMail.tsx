@@ -43,6 +43,7 @@ export default function QuotationMail(props: {
   deliveryContext?: AdvisorContext;
   deliveryBlocked?: boolean;
   onDeliveryApplied?: (comparison: SavedComparison) => void;
+  onOpenComparison?: (comparison: SavedComparison) => void;
 }) {
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
@@ -81,6 +82,7 @@ function Connected({
   deliveryContext,
   deliveryBlocked = false,
   onDeliveryApplied,
+  onOpenComparison,
 }: {
   token: string;
   comparisonId: Id<"comparisons"> | null;
@@ -97,6 +99,7 @@ function Connected({
   deliveryContext?: AdvisorContext;
   deliveryBlocked?: boolean;
   onDeliveryApplied?: (comparison: SavedComparison) => void;
+  onOpenComparison?: (comparison: SavedComparison) => void;
 }) {
   const [deliveryReply, setDeliveryReply] = useState<(DeliveryReply & { term?: DecisionActionKind; offerId?: string; context?: AdvisorContext }) | null>(null);
   const confirmations = useQuery(api.quotationMail.listDeliveryConfirmations, deliveryComparison ? {token, comparisonId: deliveryComparison.id} : "skip");
@@ -178,12 +181,13 @@ function Connected({
   useEffect(() => {
     if (initialRequestId && requestedAvailable) setActiveId(initialRequestId);
   }, [initialRequestId, requestedAvailable]);
-  const proposals = deliveryComparison && !deliveryBlocked && !deliveryLoading
+  const comparisonActionContext = Boolean(comparisonId && !studyId && !prospectId && comparisonId === deliveryComparison?.id);
+  const proposals = comparisonActionContext && deliveryComparison && !deliveryBlocked && !deliveryLoading
     ? decisionActions(deliveryComparison.request, deliveryComparison.offers, effectiveDeliveryContext) : [];
   const staleAction = Boolean(active?.decisionAction && deliveryComparison && active.decisionAction.comparisonRevision !== deliveryComparison.revision);
   useEffect(() => setConfirmed(false), [staleAction]);
   async function prepare(action?: { kind: DecisionActionKind; offerId: string }) {
-    if (!targetKey || busy) return;
+    if (!targetKey || busy || (action && !comparisonActionContext)) return;
     if (creation.current.comparisonId !== targetKey)
       creation.current = {
         comparisonId: targetKey,
@@ -232,7 +236,7 @@ function Connected({
     }
   }
   return (
-    <section className="saved-studies" aria-label="Email quote requests">
+    <section className="saved-studies quotation-mail" aria-label="Email quote requests">
       <h2>Request terms by email</h2>
       <p className="field-hint">
         {prospectId
@@ -250,6 +254,10 @@ function Connected({
           not be sent.
         </p>
       )}
+      {!initialRequestId && !comparisonActionContext && deliveryComparison && onOpenComparison && <div className="decision-actions">
+        <p>Questions about an existing offer belong to the case comparison. This request is for the distributor shown here.</p>
+        <button className="button secondary" onClick={() => onOpenComparison(deliveryComparison)}>Open case comparison</button>
+      </div>}
       {!initialRequestId && proposals.length > 0 && <section aria-label="Recommended next action" className="decision-actions">
         <h3>Recommended next action</h3>
         {proposals.map(proposal => <div key={`${proposal.kind}:${proposal.offerId}`}>

@@ -681,6 +681,7 @@ export default function MarketStudy({
                     onReplyPrepare={prepareStudyReply}
                     deliveryComparison={currentStudyCase?.comparison}
                     onDeliveryApplied={openUpdatedReplyComparison}
+                    onOpenComparison={openUpdatedReplyComparison}
                   />
                 )}
                 {visible.length === 0 && !(showStudy && hasVisibleExternalSelection) ? (
@@ -890,6 +891,7 @@ export default function MarketStudy({
                   deliveryComparison={currentStudyCase?.comparison}
                   onPrepare={prepareStudyReply}
                   onDeliveryApplied={openUpdatedReplyComparison}
+                  onOpenComparison={openUpdatedReplyComparison}
                   onAddReply={currentStudyCase?.comparison ? prepareStudyReply : undefined}
                   comparisonLabel={currentStudyCase?.comparison ? "this case comparison" : undefined}
                 />
