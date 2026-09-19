@@ -1,3 +1,4 @@
+import { scrollToContent } from "./scroll";
 import { mergeReplyOffer } from "./domain/replyReview";
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
@@ -163,9 +164,8 @@ export default function MarketStudy({
           ? "disclosure-ingredients"
           : "disclosure-quotes",
       );
-      el?.scrollIntoView({ behavior: "smooth", block: "start" });
       const trigger = el?.querySelector<HTMLElement>(".disclosure-trigger");
-      trigger?.focus({ preventScroll: true });
+      scrollToContent(el, trigger ?? el);
     });
   }
   const results = search
@@ -376,16 +376,13 @@ export default function MarketStudy({
     );
   }
   useEffect(() => {
-    if (!search && !showStudy) return;
+    if ((!search && !showStudy) || (searchOpen && !showStudy)) return;
     const frame = requestAnimationFrame(() => {
       const heading = document.getElementById("results-title");
-      heading?.focus({ preventScroll: true });
-      document
-        .getElementById("market-main")
-        ?.scrollIntoView({ block: "start" });
+      scrollToContent(document.getElementById("market-main"), heading);
     });
     return () => cancelAnimationFrame(frame);
-  }, [search, showStudy]);
+  }, [search, showStudy, searchOpen]);
 
   useEffect(() => {
     const summary = document.getElementById("study-summary");
@@ -439,12 +436,10 @@ export default function MarketStudy({
               setFilter("all");
               setSearchOpen(true);
               requestAnimationFrame(() => {
-                document
-                  .getElementById("market-search")
-                  ?.scrollIntoView({ block: "start" });
-                document
-                  .querySelector<HTMLInputElement>("#market-search input")
-                  ?.focus({ preventScroll: true });
+                scrollToContent(
+                  document.getElementById("market-search"),
+                  document.querySelector<HTMLInputElement>("#market-search input"),
+                );
               });
             }}
           >
@@ -452,7 +447,7 @@ export default function MarketStudy({
           </Button>
           <Button
             variant="text"
-            aria-pressed={showStudy}
+            aria-current={showStudy ? "page" : undefined}
             onClick={() => {
               setShowStudy(true);
               setFilter("all");
@@ -517,11 +512,10 @@ export default function MarketStudy({
                     setSearchOpen(!searchOpen);
                     if (!searchOpen)
                       requestAnimationFrame(() =>
-                        document
-                          .querySelector<HTMLInputElement>(
-                            "#market-search input",
-                          )
-                          ?.focus(),
+                        scrollToContent(
+                          document.getElementById("market-search"),
+                          document.querySelector<HTMLInputElement>("#market-search input"),
+                        ),
                       );
                   }}
                 >
@@ -1053,12 +1047,10 @@ export default function MarketStudy({
             variant="primary"
             className="mobile-study-link"
             onClick={() => {
-              document
-                .getElementById("study-summary")
-                ?.scrollIntoView({ block: "start" });
-              document
-                .getElementById("study-summary-title")
-                ?.focus({ preventScroll: true });
+              scrollToContent(
+                document.getElementById("study-summary"),
+                document.getElementById("study-summary-title"),
+              );
             }}
           >
             <Bookmark size={18} />
@@ -1077,7 +1069,7 @@ export default function MarketStudy({
         </footer>
       </main>
       {entry && <SourcingEntry entry={entry} onReady={entryReady} onClose={() => setEntry(null)} />}
-      {continuityOpen && <Dialog title="Your recent work" onClose={() => setContinuityOpen(false)}>
+      {continuityOpen && <Dialog title="Your recent work" className="continuity-dialog" onClose={() => setContinuityOpen(false)}>
         <ContinueWork
           onStudy={saved => { openStudy(saved); setContinuityOpen(false); }}
           onCase={(id, saved, requestId) => { if (saved) openStudy(saved); setOpenCaseRequest({ id, sequence: Date.now(), requestId }); setContinuityOpen(false); }}

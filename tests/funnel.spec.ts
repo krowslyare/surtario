@@ -150,14 +150,37 @@ test("failed search remains an error until the user explicitly opens the demo", 
   expect(run("research:list", { token })[0].status).toBe("failed");
 });
 
-test("continuity keeps independent work in the same market separate", async ({ page, context }) => {
+test("continuity keeps independent work separate and its bounded list keyboard accessible", async ({ page, context }, testInfo) => {
   const token = createHash("sha256").update(randomUUID()).digest("hex");
-  run("sourcing:create", { token, ingredient: "Rice", region: "Portland, OR, US", objective: "Find smaller packs" });
-  run("sourcing:create", { token, ingredient: "Rice", region: "Portland, OR, US", objective: "Check delivery schedule" });
   await context.addInitScript(value => localStorage.setItem("procurement-demo-session-v1", value), token);
   await page.goto("/?view=market");
   const hub = page.getByRole("region", { name: "Continue your work", exact: true });
-  await expect(hub.getByRole("listitem")).toHaveCount(2);
-  await hub.getByRole("listitem").filter({ hasText: "Find smaller packs" }).getByRole("button", { name: "Continue research", exact: true }).click();
+  await expect(hub.getByRole("heading", { name: "No saved work yet" })).toBeVisible();
+  for (const width of [1920, 390]) {
+    await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
+    await hub.screenshot({ path: testInfo.outputPath(`continuity-empty-${width}.png`) });
+  }
+  run("sourcing:create", { token, ingredient: "Rice", region: "Portland, OR, US", objective: "Find smaller packs" });
+  run("sourcing:create", { token, ingredient: "Rice", region: "Portland, OR, US", objective: "Check delivery schedule" });
+  for (const ingredient of ["Lentils", "Limes", "Bread flour", "Chicken", "Chickpeas", "Cooking oil"]) {
+    run("sourcing:create", { token, ingredient, region: "Portland, OR, US", objective: "Review available package sizes and published prices" });
+  }
+  await expect(hub.getByRole("listitem")).toHaveCount(8);
+  await expect(hub.getByText("8 saved items", { exact: true })).toBeVisible();
+  await expect(hub.getByRole("listitem").filter({ has: page.getByText("Rice", { exact: true }) })).toHaveCount(2);
+  const scroll = hub.getByRole("group", { name: "Saved work", exact: true });
+  for (const width of [1920, 390, 320]) {
+    await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    expect(await scroll.evaluate(element => element.clientHeight <= 360 && element.scrollHeight > element.clientHeight)).toBe(true);
+    await hub.screenshot({ path: testInfo.outputPath(`continuity-many-${width}.png`) });
+  }
+  await scroll.focus();
+  await scroll.press("End");
+  await expect.poll(() => scroll.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  const resume = hub.getByRole("listitem").filter({ hasText: "Find smaller packs" }).getByRole("button", { name: "Continue research", exact: true });
+  await resume.focus();
+  await expect(resume).toBeInViewport();
+  await resume.press("Enter");
   await expect(page.getByRole("heading", { name: "Find smaller packs", exact: true })).toBeVisible();
 });

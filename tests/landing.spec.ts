@@ -17,22 +17,45 @@ test("the product entrance explains a decision and leads to the workspace", asyn
   await expect(example).toContainText("Sample reply: USD 3.00 delivery.");
   await expect(example).toContainText("Rose City totals USD 38.00 — USD 2.00 below");
   await expect(example.getByRole("button")).toBeFocused();
+  const demoImage = page.locator(".landing-demo-backdrop");
+  await demoImage.scrollIntoViewIfNeeded();
+  await expect.poll(() => demoImage.evaluate(el => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({ path: ".impeccable/review/desktop.png", fullPage: true, animations: "disabled" });
   await page.getByRole("button", { name: "Replay example" }).click();
   await expect(example).toContainText("the order total stays pending");
-  for (const width of [1440, 390, 320]) {
+  for (const width of [1920, 1440, 390, 320]) {
     await page.setViewportSize({ width, height: width > 760 ? 900 : 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    await expect(page.getByRole("link", { name: "Start sourcing" })).toBeInViewport();
+    await expect(page.getByRole("link", { name: "Start sourcing" }).first()).toBeInViewport();
     await page.screenshot({ path: `.impeccable/review/${width === 390 ? "mobile" : `user-${width}`}.png`, fullPage: true, animations: "disabled" });
+    await page.locator(".landing-start").screenshot({ path: `.impeccable/review/prototype-${width}.png`, animations: "disabled" });
+    const stageHeight = await page.locator(".landing-flow-stage").evaluate(el => el.getBoundingClientRect().height);
+    const alignment = await page.getByRole("tab").evaluateAll(tabs => tabs.map(tab => {
+      const number = tab.querySelector(".landing-step-number")!.getBoundingClientRect();
+      const title = tab.querySelector("strong")!;
+      return { x: number.x, offset: number.y + number.height / 2 - title.getBoundingClientRect().y - parseFloat(getComputedStyle(title).lineHeight) / 2 };
+    }));
+    expect(new Set(alignment.map(item => item.x)).size).toBe(1);
+    for (const item of alignment) expect(Math.abs(item.offset)).toBeLessThan(0.5);
+    for (const name of ["Keep the evidence", "Clear up the unknowns", "Decide when you’re ready"]) {
+      await page.getByRole("tab", { name: new RegExp(name) }).click();
+      await expect(page.getByRole("tabpanel")).toHaveCount(1);
+      expect(await page.locator(".landing-flow-stage").evaluate(el => el.getBoundingClientRect().height)).toBe(stageHeight);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      await page.locator(".landing-flow").screenshot({ path: `.impeccable/review/flow-${name.split(" ")[0]}-${width}.png`, animations: "disabled" });
+    }
+    await expect(page.getByRole("tabpanel")).toContainText("USD 38.00");
+    await page.getByRole("tab", { name: /Find your options/ }).click();
+    await page.evaluate(() => window.scrollTo(0, 0));
   }
-  await page.getByRole("link", { name: "Start sourcing" }).click();
+  await page.getByRole("link", { name: "Start sourcing" }).first().click();
   await expect(page).toHaveURL(/view=market/);
   await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
   await page.reload();
   await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
   await page.goBack();
-  await expect(page.getByRole("link", { name: "Start sourcing" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start sourcing" }).first()).toBeVisible();
   expect(errors).toEqual([]);
 });
 
@@ -44,13 +67,28 @@ test("landing controls support keyboard and reduced motion", async ({ page }) =>
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Open workspace" })).toBeFocused();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "Start sourcing" })).toBeFocused();
+  await expect(page.getByRole("link", { name: "Start sourcing" }).first()).toBeFocused();
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "See how Surtario works" })).toBeFocused();
   await page.keyboard.press("Tab");
   const reveal = page.getByRole("button", { name: "Reveal sample reply" });
   await expect(reveal).toBeFocused();
   await page.keyboard.press("Enter");
   await expect(page.getByRole("button", { name: "Replay example" })).toHaveAttribute("aria-pressed", "true");
   expect(await page.locator(".landing-answer").evaluate(el => getComputedStyle(el).transitionDuration)).toBe("0s");
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("tab", { name: /Find your options/ })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByRole("tab", { name: /Keep the evidence/ })).toBeFocused();
+  await expect(page.getByRole("tabpanel")).toContainText("Source, review date and your selection stay together.");
+  expect(await page.getByRole("tabpanel").evaluate(el => getComputedStyle(el).animationName)).toBe("none");
+  await page.keyboard.press("End");
+  await expect(page.getByRole("tab", { name: /Decide when you’re ready/ })).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("tabpanel")).toContainText("USD 38.00");
+  await page.keyboard.press("Home");
+  await expect(page.getByRole("tabpanel")).toContainText("Price on request");
+  await page.getByText("Can I return to my work later?", { exact: true }).click();
+  await expect(page.getByText(/clearing its site data removes access to saved work/)).toBeVisible();
 });
 
 test("branded arrival follows loading and leaves when the workspace is ready", async ({ page }) => {

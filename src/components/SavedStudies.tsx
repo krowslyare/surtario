@@ -217,7 +217,7 @@ function ConnectedStudies({
       <p className="field-hint" role="status">
         {visibleMessage}
       </p>
-      <Disclosure title="How saving works">
+      <Disclosure className="study-saving-help" title="How saving works">
         <p className="field-hint">
           Up to 10 studies are saved in this browser session. Clearing site data
           removes access.

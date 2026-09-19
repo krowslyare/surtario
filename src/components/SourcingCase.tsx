@@ -1,3 +1,4 @@
+import { scrollToContent } from "../scroll";
 import { casePriority } from "../domain/casePriority";
 import { comparisonBlockers, blockerLabels } from "../domain/comparisonBlockers";
 import { researchCoverage, RESEARCH_POLICY } from "../domain/researchCoverage";
@@ -161,12 +162,12 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
     if (!props.openRequest) return;
     setActiveId(props.openRequest.id);
     setExpanded(true);
-    requestAnimationFrame(() => { const el = document.getElementById("sourcing-title"); el?.focus(); el?.scrollIntoView({ block: "start" }); });
+    requestAnimationFrame(() => scrollToContent(document.getElementById("sourcing-title")));
   }, [props.openRequest]);
   useEffect(() => {
     if (!props.newRequest) return;
     setActiveId(null); setExpanded(true);
-    requestAnimationFrame(() => document.getElementById("sourcing-title")?.focus());
+    requestAnimationFrame(() => scrollToContent(document.getElementById("sourcing-title")));
   }, [props.newRequest]);
   const current = cases?.find((item) => item.id === activeId);
   const [online, setOnline] = useState(navigator.onLine);
@@ -580,8 +581,7 @@ function CaseDetail({
   function focusSection(selector: string) {
     requestAnimationFrame(() => {
       const section = document.querySelector<HTMLElement>(selector);
-      section?.scrollIntoView({ behavior: "auto", block: "start" });
-      section?.focus({ preventScroll: true });
+      scrollToContent(section);
     });
   }
   function nextAction() {

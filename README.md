@@ -1,6 +1,6 @@
 # Surtario
 
-**Current iteration after PR #36:** contextual inquiry/research entry, one continuity hub, explicit search mode and direct purchase calculation. See [dated local evidence and remaining acceptance](docs/desarrollo/ETAPAS.md#september-19-2026--contextual-funnel-and-recovery). The [previous decision-flow contract](docs/desarrollo/CONSOLIDACION_DECISION.md) remains in force. Older test counts below belong to their dated deliveries. No cloud publication is included in this iteration.
+**Current iteration after PR #36:** contextual inquiry/research entry, one continuity hub, explicit search mode, direct purchase calculation and an expanded product landing with accessible walkthrough and smooth navigation. See [dated local evidence and remaining acceptance](docs/desarrollo/ETAPAS.md#september-19-2026--contextual-funnel-and-recovery). The [previous decision-flow contract](docs/desarrollo/CONSOLIDACION_DECISION.md) remains in force. Older test counts below belong to their dated deliveries. No cloud publication is included in this iteration.
 
 **Sourcing for your kitchen.** Surtario is a restaurant purchasing assistant built with React, TypeScript, Vite and Convex. Start with an ingredient and location, research prices and distributors, save the evidence, and prepare a purchase only when needed. The interface is English-first, with explicit currencies and units. The optional Portland rice example uses USD/lb; the Peru examples remain available through `?example=pe`.
 

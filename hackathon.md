@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-19T06:02:05Z
+- **Last updated:** 2026-09-19T09:04:47Z
 
 ## Log
 
@@ -426,3 +426,66 @@ Unpriced supplier cards now save evidence, reuse the linked case and prepare a r
 299 unit/backend/configuration tests, frontend/backend types and the 32-file hosting check passed locally. The complete browser run passed 97/99; two obsolete expectations were corrected and passed in a focused recheck. Nineteen affected journeys passed in that recheck; a new error-path test required a region-selector correction. The final six funnel journeys then passed, including persistent inquiry/reply review, exact package arithmetic, public-source continuation and explicit failure recovery. Together the full run and focused checks cover 102 distinct journeys, rather than one uninterrupted final-tree run. Five mutation tests also passed after verifying duplicate-event prevention. An earlier unconstrained concurrent unit run timed out in three existing tests; all 299 passed with two workers and unchanged time limits. Desktop/320/390 px inspection caught and corrected a mobile navigation overlap.
 
 Review checked atomic rollback, ownership, stale revisions, repeat preparation, independent work in the same market, retained source access and PR #36 comparison/selection continuity. Only an isolated local backend and synthetic records were used. No provider call, outbound email, cloud deployment, commit, push or PR publication occurred. Real API and hosted acceptance remain separate.
+
+### 2026-09-19 — working tree: continuity empty state and bounded list
+Refined `ContinueWork.tsx` and shared workspace styles with a structured empty card, saved-item count and a bordered scrollable list capped at 360 px or 55% viewport height. Existing record links and actions remain intact; the scroll area supports keyboard focus and navigation.
+
+Frontend TypeScript and the 32-file hosting build check passed. Five funnel journeys passed initially; the extended continuity journey passed after fixing a test selector that confused “Rice” with “prices”. Eight synthetic entries stayed independent, the last could be opened by keyboard, and 1920/390/320 px layouts had no page overflow. Empty and populated captures were visually inspected. This adjustment is local and uncommitted; no provider request, outbound email, cloud deployment or push occurred.
+
+
+### 2026-09-19 — working tree: offer-review scroll
+`Review offer details` now scrolls smoothly to the comparison and moves keyboard focus without an initial jump. Reduced-motion preference uses immediate scrolling; modified link clicks retain native behavior. The existing four-offer limit and two-column desktop/single-column mobile layout are unchanged.
+
+Two focused browser tests verified intermediate scroll positions, reduced motion and keyboard continuation. A third verified four offers, the disabled add button at the limit and no page overflow at 1920/390/320 px; its initial geometry check ran during the existing hover transform, so the test now moves the pointer away and awaits active transitions before measuring. The recheck passed and screenshots were inspected. TypeScript/build and the 32-file hosting check passed. Local synthetic inputs only; no provider request, commit, push or deployment.
+
+
+### 2026-09-19 — working tree: recent-work dialog hierarchy
+The recent-work dialog uses its own title without repeating the hub heading visually. Its empty state has a smaller heading and hint, muted icon and no nested card border. The Home hub retains its existing presentation, and the dialog retains its accessible region label and saved-item count.
+
+Frontend TypeScript passed. Browser inspection at 1920/390/320 px verified the text hierarchy, no horizontal overflow, retained Home heading and accessible dialog region, plus Escape and focus return. Captures are local under `.local/pr37-hierarchy/`. No backend logic, provider request, commit, push or deployment changed.
+
+
+The related “How saving works” disclosure now uses smaller, lighter text and one 8 px content gap, removing the stacked panel padding and paragraph margin. Changes are scoped to the saving help. TypeScript and browser checks passed at 1920/390/320 px, including keyboard opening/closing, retained focus and no overflow. Captures were inspected under `.local/pr37-saving-help/`. No persistence behavior or remote state changed.
+
+
+Main navigation now uses the same current-page semantics and underline for Explore suppliers and My study, removing the pressed-button fill from My study. Continue your work remains a modal action. TypeScript passed. Browser checks and captures at 1920/390/320 px verified transparent resting backgrounds, one current view, no horizontal overflow and preserved selection/focus after closing the modal. The first mobile check expected Explore suppliers to be visible; the corrected check respects its existing compact-navigation breakpoint. No remote state changed.
+
+
+### 2026-09-19 — working tree: product landing and sourcing walkthrough
+Expanded `/` inside the existing Surtario identity. The ingredient photograph and interactive sample-cost slip now lead into a four-step walkthrough: find priced and unpriced suppliers, save source evidence, prepare a reviewed question and compare whole-order costs. Semantic HTML product illustrations and SVG icons show each step; keyboard-operable tabs expose the sequence without autoplay. Closing content explains human control, optional purchase intent, browser-session recovery and demo limits, with working workspace entry links and expandable answers.
+
+The suppliers and prices are explicitly illustrative. The existing deterministic delivery scenario supplies the displayed USD 40.00 alternative, USD 35.00 goods, USD 3.00 delivery and USD 38.00 total. No customer, savings-performance, live-provider or automatic-purchase claim was added. Existing brand imagery was reused; no new provider, dependency or image service was called.
+
+All six landing/arrival browser journeys passed, covering sample reveal/replay, flow panels, keyboard, reduced motion, responsive layouts, workspace navigation, loading failure and focus isolation. Frontend TypeScript/build and the 32-file hosting check passed. Desktop 1920/1440 and mobile 390/320 captures were inspected; the changed-target design detector returned no findings. Evidence is local under `.local/pr37-landing/`; no commit, push or deployment.
+
+Independent finish review returned `ship` with no material fixes after inspecting all 17 supplied captures and checking product truth, typography, responsive composition and interaction code. This verdict covers the landing extension, not provider or production acceptance.
+
+
+### 2026-09-19 — working tree: hackathon demo invitation and walkthrough continuity
+Reframed the landing close around the working hackathon prototype, replacing the oversized commercial invitation with an ingredient/demo composition. A newly generated transparent rice-bowl asset uses Surtario's aubergine and lime palette; WebP preserves alpha at about 203 KB, with prompt/origin recorded alongside it. The illustration is not a supplier product photograph. Sample context and prototype limitations remain explicit.
+
+Independent design diagnosis found differing number/title line heights and hover styling that resembled a second selected step. Walkthrough tabs now share fixed columns and matched first-line heights, a neutral connecting line, and distinct selected/hover states. Inactive panels retain layout space but are hidden from interaction and accessibility; the panel height stays constant across steps at each viewport. A 180 ms entry transition runs only after a step change and is disabled for reduced motion.
+
+All six landing browser journeys passed, including alignment and stable panel heights at 1920/1440/390/320 px, keyboard navigation and reduced-motion behavior. A separate browser frame probe observed seven intermediate opacity frames before settling, confirming visible motion. Desktop/mobile screenshots of the demo invitation and the selected-step/hover combination were inspected. Frontend TypeScript/build and 35-file hosting check passed; changed-target design detector returned no findings. No backend/provider setting, outbound message, commit, push or deployment changed.
+
+A fresh independent review returned `ship` with no material fixes after inspecting all 21 supplied captures, including the user-reported selected/hover combination and the prototype card at four widths. The review confirmed alpha edges, step alignment, prototype framing and mobile comparison legibility; motion execution is supported by the separate browser frame probe.
+
+User feedback rejected the closing card despite the earlier review. Corrected its hierarchy: one pale pink panel, invitation and action first, smaller rice context, no repeated checklist, and FAQ below. Four viewport captures and independent visual review found no material defects; TypeScript, two focused existing browser journeys and layout detector passed. Evidence: `.local/pr37-landing-closing-correction/`. Local only; no new asset generation, push or deployment.
+
+Removed the redundant walkthrough caption at the user’s request and vertically centered its timeline against the adjacent panel. Browser geometry verified matching vertical centers for every step at 1920/1440/800 px and no overflow through 390/320 px; desktop/mobile screenshots and TypeScript passed. Local evidence: `.local/pr37-flow-centered/`. No push or deployment.
+
+Replaced the rejected isolated rice image with a newly generated panoramic ingredient-receiving scene behind the CTA text. Removed the figure/caption and two-column gap. An aubergine overlay preserves white-copy contrast; the lime action stays prominent, with a stronger mobile overlay. The abandoned rice asset and its dedicated provenance were removed. New provenance: `public/brand/SOURCING_CTA_PROMPT.txt` and `sourcing-cta.webp.json`. TypeScript/build/hosting validation and two focused landing/keyboard browser journeys passed; four viewport captures and the design detector were checked. Evidence: `.local/pr37-cta-background/`. No push, deployment or product provider call.
+
+Updated landing CTA and FAQ to present Surtario as a product per the user’s latest direction: ingredient sourcing, comparable pack/order costs, control over sending and browser-bound recovery. Removed prototype/hackathon framing from the CTA and demo-focused FAQ, while keeping sample-price labels with the illustrative examples. No API configuration or provider capability changed. TypeScript and two focused existing browser journeys passed. Local only, no push or deployment.
+
+Unified click-driven scrolling across the landing and workspace. The walkthrough link preserves fragment history and transfers focus without an initial jump. Search, study summary, sourcing follow-ups, offer review and comparison/page-start actions now use the same reduced-motion-aware native scroll helpers. Search navigation no longer competes with the results effect. Native skip links and dialog/select focus handling are unchanged. TypeScript and 15 existing landing/funnel/offer journeys passed; six targeted scroll tests passed after correcting the new mobile test to use its actual Change search control instead of the desktop-only navigation button. Tests observe intermediate scroll positions in both motion preferences; an additional pointer probe recorded 30 positions. No push, deployment or product provider call.
+
+Applied the user-approved closing hierarchy: porcelain explanatory section with smaller heading, a more compact photographic CTA with one-sentence copy, and a porcelain button. Fixed the timeline connector to end at the final circle rather than a fixed inset from the whole list. TypeScript passed; the full explanatory section and CTA were captured together at 1920/1440/390/320 px without overflow. Timeline endpoint geometry matched the last-circle center at five widths, including 800 px. Visual inspection and changed-target detector found no outstanding issues. Evidence: `.local/pr37-cta-hierarchy/` and `.local/pr37-timeline-end/`. Local only; no push or deployment.
+
+Corrected the explanatory-section scope after user feedback: an added rice-review specimen was rejected because the request was presentation-only. Removed it and restored the original three headings and complete paragraphs verbatim. The title now spans the section above three aligned text columns on one quiet outlined surface, stacking on mobile; the adjacent photographic CTA is unchanged. A generated concept remains only as local rejected design evidence, not a product asset or accepted direction. TypeScript and two existing landing/keyboard journeys passed; five viewport captures verify responsive fit and desktop paragraph alignment. Evidence: `.local/pr37-control-redesign/restored-content-*.png`. No push or deployment.
+
+Integrated the explanatory content into the page as a section, removing the floating-card frame and excess header space. The original heading now wraps naturally beside the existing minimal Surtario symbol; all three original messages and the photographic CTA remain intact. TypeScript passed; captures at 1920/1440/800/390/320 px confirm no horizontal overflow and preserved desktop column alignment, with desktop/mobile visual inspection. Evidence: `.local/pr37-control-section/`. Local only; no push or deployment.
+
+### 2026-09-19 — working tree: consolidated review checkpoint
+
+Prepared the contextual funnel, landing, visual refinements and shared scroll behavior together for pull-request review. Fresh verification passed all 299 unit/backend/configuration tests, frontend/backend TypeScript, the production build and 35-file hosting check, plus all 21 focused browser journeys in one run. Review found no blocking issue in session ownership, stale revisions, preparation rollback, linked comparisons or confirmation boundaries. This checkpoint does not establish live-provider or hosted acceptance; no merge or deployment is included.

@@ -1,5 +1,6 @@
 import { Component, useId, useMemo, type ReactNode } from "react";
 import { useQueries, useQuery } from "convex/react";
+import { FolderClock } from "lucide-react";
 import type { FunctionReturnType } from "convex/server";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -41,15 +42,23 @@ export default function ContinueWork(props: Props) {
   const titleId = useId();
   return (
     <section className="continue-work" aria-labelledby={titleId}>
-      <h2 id={titleId}>Continue your work</h2>
-      {error ? <p>Site storage is unavailable. Saved work cannot be recovered.</p>
-        : !token ? <p role="status">Loading your work…</p>
-        : <Boundary><Connected {...props} token={token} /></Boundary>}
+      {error || !token ? <>
+        <WorkHeading titleId={titleId} />
+        {error ? <p>Site storage is unavailable. Saved work cannot be recovered.</p>
+          : <p role="status">Loading your work…</p>}
+      </> : <Boundary titleId={titleId}><Connected {...props} token={token} titleId={titleId} /></Boundary>}
     </section>
   );
 }
 
-function Connected({ token, ...props }: Props & { token: string }) {
+function WorkHeading({ titleId, count }: { titleId: string; count?: number }) {
+  return <div className="continue-heading">
+    <h2 id={titleId}>Continue your work</h2>
+    {count !== undefined && count > 0 && <span className="continue-count">{count} saved {count === 1 ? "item" : "items"}</span>}
+  </div>;
+}
+
+function Connected({ token, titleId, ...props }: Props & { token: string; titleId: string }) {
   const studies = useQuery(api.studies.list, { token });
   const cases = useQuery(api.sourcing.list, { token });
   const comparisons = useQuery(api.comparisons.list, { token });
@@ -63,7 +72,7 @@ function Connected({ token, ...props }: Props & { token: string }) {
   ), [cases, token]);
   const confirmations = useQueries(confirmationQueries);
   if (!studies || !cases || !comparisons || !runs || !requests) {
-    return <p role="status">Loading your work…</p>;
+    return <><WorkHeading titleId={titleId} /><p role="status">Loading your work…</p></>;
   }
   const linkedStudies = new Set(cases.flatMap(item => item.studyId ? [item.studyId] : []));
   const linkedComparisons = new Set(cases.flatMap(item => item.comparisonId ? [item.comparisonId] : []));
@@ -129,7 +138,10 @@ function Connected({ token, ...props }: Props & { token: string }) {
     });
   }
   entries.sort((a, b) => b.updatedAt - a.updatedAt || a.id.localeCompare(b.id));
-  return entries.length ? (
+  return <>
+    <WorkHeading titleId={titleId} count={entries.length} />
+    {entries.length ? (
+    <div className="continue-scroll" role="group" aria-label="Saved work" tabIndex={0}>
     <ul className="continue-list">
       {entries.map(entry => {
         const searches = runs.filter(run => entry.researchIds.includes(run.id));
@@ -152,15 +164,22 @@ function Connected({ token, ...props }: Props & { token: string }) {
         );
       })}
     </ul>
-  ) : <p>Your saved work will appear here. Start with an ingredient and delivery area.</p>;
+    </div>
+  ) : <div className="continue-empty-card">
+    <FolderClock size={24} aria-hidden="true" />
+    <h3>No saved work yet</h3>
+    <p>Your searches, saved studies and supplier follow-ups will appear here, ready to pick up where you left off.</p>
+    <p className="continue-empty-hint">Start with an ingredient or explore the demo catalog.</p>
+  </div>}
+  </>;
 }
 
-class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class Boundary extends Component<{ children: ReactNode; titleId: string }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
   render() {
     return this.state.failed
-      ? <p role="alert">Saved work could not be loaded. Your current selection is still available.</p>
+      ? <><WorkHeading titleId={this.props.titleId} /><p role="alert">Saved work could not be loaded. Your current selection is still available.</p></>
       : this.props.children;
   }
 }

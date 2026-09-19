@@ -1,3 +1,4 @@
+import { scrollToPageStart } from "./scroll";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import Comparison from "./Comparison";
 import MarketStudy from "./MarketStudy";
@@ -33,7 +34,7 @@ export default function Workspace({
     const url = new URL(window.location.href);
     url.searchParams.set("view", "comparison");
     window.history.replaceState(null, "", url);
-    window.scrollTo(0, 0);
+    requestAnimationFrame(scrollToPageStart);
   }
   if (view === "brand") {
     return (
@@ -75,7 +76,7 @@ export default function Workspace({
             const url = new URL(window.location.href);
             url.searchParams.set("view", "market");
             window.history.replaceState(null, "", url);
-            window.scrollTo(0, 0);
+            requestAnimationFrame(scrollToPageStart);
           }}
         />
       )}

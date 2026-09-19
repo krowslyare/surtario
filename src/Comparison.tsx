@@ -1,3 +1,4 @@
+import { scrollToContent, scrollToPageStart } from "./scroll";
 import { SourceEvidence } from "./components/SourceEvidence";
 import type { Id } from "../convex/_generated/dataModel";
 import {
@@ -472,7 +473,7 @@ export default function Comparison({
       }),
     );
     setMessage("Comparison opened. It replaced the draft in this view.");
-    window.scrollTo(0, 0);
+    requestAnimationFrame(scrollToPageStart);
   }
 
   function reset() {
@@ -537,7 +538,7 @@ export default function Comparison({
       "Delivery confirmed. The decision was recalculated. No purchase was placed.",
     );
     requestAnimationFrame(() =>
-      document.getElementById("resolved-condition")?.focus(),
+      scrollToContent(document.getElementById("resolved-condition")),
     );
   }
   function saveOffer(offer: SupplierOffer) {

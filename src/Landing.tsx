@@ -1,6 +1,8 @@
+import { scrollToAnchor } from "./scroll";
 import { useState } from "react";
-import { ArrowUpRight, Check, CircleHelp, RotateCcw } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Check, ChevronDown, CircleHelp, RotateCcw } from "lucide-react";
 import Brand from "./components/Brand";
+import LandingFlow from "./components/LandingFlow";
 import { previewFreightDecision } from "./domain/missingResolution";
 import type { SupplierOffer } from "./domain/procurement";
 import "./styles/landing.css";
@@ -41,11 +43,12 @@ export default function Landing() {
         </a>
       </header>
       <main id="landing-main" className="landing-main" tabIndex={-1}>
+        <div className="landing-hero">
         <div className="landing-intro">
           <h1>Good ingredients.<br />Better decisions.</h1>
           <p className="landing-promise">
-            Your kitchen deserves more than a price list. Find suppliers,
-            compare the full cost, and know what to ask before you buy.
+            Ingredient sourcing for your restaurant. Find suppliers, keep the
+            evidence, and know what to ask before you buy.
           </p>
           <a className="button primary landing-cta" href="/?view=market">
             Start sourcing <ArrowUpRight size={20} aria-hidden="true" />
@@ -53,7 +56,7 @@ export default function Landing() {
           <p className="landing-entry-note">Start with an ingredient. No spreadsheet required.</p>
           <div className="landing-principle">
             <img src="/brand/surtario-symbol.svg" width="32" height="32" alt="" />
-            <p>From the first question<br />to a decision you can explain.</p>
+            <a href="#how-it-works" onClick={scrollToAnchor}>See how Surtario works <ArrowDown size={17} aria-hidden="true" /></a>
           </div>
         </div>
         <div className="landing-scene">
@@ -86,6 +89,38 @@ export default function Landing() {
             <p className="landing-sample-note">Illustrative suppliers and final, tax-inclusive amounts.</p>
           </section>
         </div>
+        </div>
+        <LandingFlow preview={preview} />
+        <section className="landing-control" aria-labelledby="landing-control-title">
+          <div className="landing-control-statement">
+            <h2 id="landing-control-title">The evidence stays close. The decision stays yours.</h2>
+            <img className="landing-control-symbol" src="/brand/surtario-symbol.svg" width="48" height="48" alt="" loading="lazy" />
+          </div>
+          <div className="landing-control-details">
+            <div><h3>Useful before you’re ready to buy.</h3><p>Explore an ingredient, build a shortlist or prepare a question. You don’t need a recipe, purchase history or order quantity to begin.</p></div>
+            <div><h3>Unknown means unknown.</h3><p>Missing delivery, taxes or pack sizes remain visible. Suggested details need your review before they become confirmed terms.</p></div>
+            <div><h3>Pick up where you left off.</h3><p>Save studies and calculations, then find them alongside supplier follow-ups in “Continue your work”. Saved access stays tied to this browser.</p></div>
+          </div>
+        </section>
+        <section className="landing-start" aria-labelledby="landing-start-title">
+          <div className="landing-demo-card">
+            <img className="landing-demo-backdrop" src="/brand/sourcing-cta.webp" width="2172" height="724" alt="" loading="lazy" decoding="async" />
+            <div className="landing-start-copy">
+              <h2 id="landing-start-title">Try Surtario with<br />one ingredient.</h2>
+              <p>Find suppliers, clarify missing details and calculate what your order will cost.</p>
+              <a className="button primary landing-cta" href="/?view=market">Start sourcing <ArrowUpRight size={20} aria-hidden="true" /></a>
+              <span className="landing-entry-note">No recipes or purchase history needed.</span>
+            </div>
+          </div>
+          <div className="landing-faq" aria-label="Questions about Surtario">
+            <h3>Questions about Surtario</h3>
+            <div className="landing-faq-items">
+            <details><summary>How does Surtario compare offers?<ChevronDown size={18} aria-hidden="true" /></summary><p>Surtario puts pack sizes, minimum quantities and unit prices on the same footing. Add the quantity you need to see whole packs, excess and the order total. Unconfirmed delivery costs or taxes stay visible as pending.</p></details>
+            <details><summary>Will Surtario send messages or place orders?<ChevronDown size={18} aria-hidden="true" /></summary><p>You stay in control. Supplier inquiries begin as drafts for you to review, and sending requires your confirmation. Calculating costs or choosing an offer never places an order.</p></details>
+            <details><summary>Can I return to my work later?<ChevronDown size={18} aria-hidden="true" /></summary><p>Yes. Save your study or calculation and return through “Continue your work”, alongside your supplier follow-ups. Use the same browser to pick up where you left off; clearing its site data removes access to saved work.</p></details>
+            </div>
+          </div>
+        </section>
       </main>
       <footer className="landing-footer">
         <span>Sourcing for your kitchen.</span>
