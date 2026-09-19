@@ -33,6 +33,9 @@ export type StudyCaseLink = {
 };
 
 type Props = {
+  openRequest?: { id: Id<"sourcingCases">; sequence: number; requestId?: Id<"quotationRequests"> } | null;
+  entryVisible?: boolean;
+  newRequest?: number;
   ingredient: string;
   region: string;
   studyId: Id<"studies"> | null;
@@ -154,6 +157,17 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (!props.openRequest) return;
+    setActiveId(props.openRequest.id);
+    setExpanded(true);
+    requestAnimationFrame(() => { const el = document.getElementById("sourcing-title"); el?.focus(); el?.scrollIntoView({ block: "start" }); });
+  }, [props.openRequest]);
+  useEffect(() => {
+    if (!props.newRequest) return;
+    setActiveId(null); setExpanded(true);
+    requestAnimationFrame(() => document.getElementById("sourcing-title")?.focus());
+  }, [props.newRequest]);
   const current = cases?.find((item) => item.id === activeId);
   const [online, setOnline] = useState(navigator.onLine);
   useEffect(() => {
@@ -195,11 +209,12 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
     <section
       className={`sourcing-case${expanded ? " is-expanded" : ""}`}
       aria-labelledby="sourcing-title"
+      hidden={props.entryVisible === false && !expanded}
     >
       <div className="sourcing-heading">
         <div>
           <Compass size={20} aria-hidden="true" />
-          <h2 id="sourcing-title">Take the research further</h2>
+          <h2 id="sourcing-title" tabIndex={-1}>Take the research further</h2>
         </div>
         <Button
           variant="secondary"
@@ -458,6 +473,12 @@ function CaseDetail({
   const [equivalent, setEquivalent] = useState(false);
   const [mailId, setMailId] = useState<string | null>(null);
   const [mailVisit, setMailVisit] = useState(0);
+  useEffect(() => {
+    if (props.openRequest?.id === caseId && props.openRequest.requestId) {
+      setMailId(props.openRequest.requestId);
+      setMailVisit(n => n + 1);
+    }
+  }, [props.openRequest, caseId]);
   async function act(
     key: string,
     operation: () => Promise<unknown>,

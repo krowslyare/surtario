@@ -15,6 +15,8 @@ export function SaveWebProspect({
   title,
   url,
   onSaved,
+  onContinue,
+  simulated,
 }: {
   token: string;
   runId: Id<"researchRuns">;
@@ -22,20 +24,27 @@ export function SaveWebProspect({
   title: string;
   url: string;
   onSaved?: (prospect: StudyProspect) => void;
+  onContinue?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
+  simulated?: boolean;
 }) {
   const save = useMutation(api.prospects.save);
+  const [intent, setIntent] = useState<"inquiry" | "research" | null>(null);
   const [open, setOpen] = useState(false),
-    [supplier, setSupplier] = useState(""),
+    [supplier, setSupplier] = useState(title.slice(0, 120)),
     [contact, setContact] = useState(""),
     [confirmed, setConfirmed] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [saved, setSaved] = useState(false);
+    [saved, setSaved] = useState<StudyProspect | null>(null);
   return (
     <>
-      <button className="button text-button" onClick={() => setOpen(true)}>
+      <button className="button text-button" onClick={() => { setIntent(null); setOpen(true); }}>
         {saved ? "View saved candidate" : "Save potential distributor"}
       </button>
+      {onContinue && <>
+        <button className="button secondary" onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>
+        {simulated === false && <button className="button text-button" onClick={() => { if (saved) onContinue(saved, "research"); else { setIntent("research"); setOpen(true); } }}>Research missing details</button>}
+      </>}
       {open && (
         <Dialog
           title="Review potential distributor"
@@ -56,7 +65,7 @@ export function SaveWebProspect({
             <input
               value={supplier}
               maxLength={120}
-              disabled={busy || saved}
+              disabled={busy || Boolean(saved)}
               onChange={(e) => {
                 setSupplier(e.target.value);
                 setConfirmed(false);
@@ -68,7 +77,7 @@ export function SaveWebProspect({
             <input
               value={contact}
               maxLength={300}
-              disabled={busy || saved}
+              disabled={busy || Boolean(saved)}
               onChange={(e) => {
                 setContact(e.target.value);
                 setConfirmed(false);
@@ -83,7 +92,7 @@ export function SaveWebProspect({
             <input
               type="checkbox"
               checked={confirmed}
-              disabled={busy || saved}
+              disabled={busy || Boolean(saved)}
               onChange={(e) => setConfirmed(e.target.checked)}
             />
             I reviewed the source and want to save this candidate
@@ -91,7 +100,7 @@ export function SaveWebProspect({
           {error && <p role="alert">{error}</p>}
           {saved ? (
             <p role="status">
-              Candidate saved. Its inquiry is under “Saved web savings».
+              {onContinue ? "Candidate saved. Use Prepare inquiry to continue with its saved context." : "Candidate saved. Open it from your study to prepare an inquiry."}
             </p>
           ) : (
             <button
@@ -109,9 +118,10 @@ export function SaveWebProspect({
                     contact,
                     confirmed: true,
                   });
-                  setSaved(true);
-                  onSaved?.(result);
-                  if (onSaved) setOpen(false);
+                  setSaved(result);
+                  if (intent && onContinue) onContinue(result, intent);
+                  else onSaved?.(result);
+                  if (onSaved || onContinue) setOpen(false);
                 } catch (cause) {
                   setError(
                     cause instanceof ConvexError &&
@@ -124,7 +134,7 @@ export function SaveWebProspect({
                 }
               }}
             >
-              {busy ? "Saving…" : "Save candidate"}
+              {busy ? "Saving…" : intent === "inquiry" ? "Save and prepare inquiry" : intent === "research" ? "Save and continue research" : "Save candidate"}
             </button>
           )}
         </Dialog>
@@ -137,11 +147,13 @@ export function WebProspectLibrary({
   onPrepare,
   onSelect,
   selectedIds,
+  onContinue,
 }: {
   token: string;
   onPrepare: (seed: PurchaseSeed) => void;
   onSelect?: (prospect: StudyProspect) => void;
   selectedIds?: string[];
+  onContinue?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
 }) {
   const prospects = useQuery(api.prospects.list, { token });
   if (!prospects?.length) return null;
@@ -169,6 +181,10 @@ export function WebProspectLibrary({
             {new Date(item.observedAt).toLocaleDateString("en-US")}. Contact
             not independently verified.
           </p>
+          {onContinue && <div>
+            <button className="button secondary" onClick={() => onContinue(item, "inquiry")}>Prepare inquiry</button>
+            {item.simulated === false && <button className="button text-button" onClick={() => onContinue(item, "research")}>Research missing details</button>}
+          </div>}
           {onSelect ? (
             <button
               className="button secondary"

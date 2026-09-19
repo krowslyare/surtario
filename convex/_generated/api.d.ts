@@ -44,6 +44,7 @@ import type * as quotationValidators from "../quotationValidators.js";
 import type * as research from "../research.js";
 import type * as researchValidators from "../researchValidators.js";
 import type * as sourcing from "../sourcing.js";
+import type * as sourcingEntry from "../sourcingEntry.js";
 import type * as sourcingValidators from "../sourcingValidators.js";
 import type * as sourcingWatch from "../sourcingWatch.js";
 import type * as sourcingWorkflow from "../sourcingWorkflow.js";
@@ -94,6 +95,7 @@ declare const fullApi: ApiFromModules<{
   research: typeof research;
   researchValidators: typeof researchValidators;
   sourcing: typeof sourcing;
+  sourcingEntry: typeof sourcingEntry;
   sourcingValidators: typeof sourcingValidators;
   sourcingWatch: typeof sourcingWatch;
   sourcingWorkflow: typeof sourcingWorkflow;

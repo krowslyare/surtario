@@ -104,7 +104,7 @@ test("Enter uses enabled web research while the example remains an explicit sepa
 
   await page.getByRole("button", { name: "Change search", exact: true }).click();
   await page
-    .getByRole("button", { name: "Explore example", exact: true })
+    .getByRole("button", { name: "Explore demo catalog", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "No examples match this search" }),

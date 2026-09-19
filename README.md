@@ -1,6 +1,6 @@
 # Surtario
 
-**Current iteration after PR #35:** [implemented behavior, local verification and remaining API/release acceptance](docs/desarrollo/CONSOLIDACION_DECISION.md). Older test counts below belong to their dated deliveries, not this checkout. No cloud publication is included in this iteration.
+**Current iteration after PR #36:** contextual inquiry/research entry, one continuity hub, explicit search mode and direct purchase calculation. See [dated local evidence and remaining acceptance](docs/desarrollo/ETAPAS.md#september-19-2026--contextual-funnel-and-recovery). The [previous decision-flow contract](docs/desarrollo/CONSOLIDACION_DECISION.md) remains in force. Older test counts below belong to their dated deliveries. No cloud publication is included in this iteration.
 
 **Sourcing for your kitchen.** Surtario is a restaurant purchasing assistant built with React, TypeScript, Vite and Convex. Start with an ingredient and location, research prices and distributors, save the evidence, and prepare a purchase only when needed. The interface is English-first, with explicit currencies and units. The optional Portland rice example uses USD/lb; the Peru examples remain available through `?example=pe`.
 
@@ -10,6 +10,8 @@ Research does not require recipes, purchase history, stock or a document. Suppli
 
 - A compact product entrance at `/`, with an interactive, explicitly fictional delivery example and direct entry to `/?view=market`. [Landing behavior and design](docs/diseno/surfaces/LANDING.md).
 
+- Recover explicitly linked studies, cases, searches and calculations through **Continue your work**. Unpriced supplier cards prepare a persistent inquiry for review; reviewed public candidates can open a prefilled research question. Neither action starts a provider call or sends a message.
+- Calculate a purchase directly from a catalog or reviewed offer, retaining pending terms and any existing linked case comparison. Quantities remain user-entered and comparisons require an explicit save.
 - Research examples without a quantity, including distributors without published prices. Explicitly gated Firecrawl search and OpenAI extraction preserve sources, dates and fields requiring review.
 - Classify candidate sources before price review, retain cited summaries and warnings, and explicitly read a selected same-site product page. Catalogs, broken pages and unrelated sources cannot silently become comparable offers.
 - Keep reviewed web offers, no-price distributor candidates and selected examples in one saved market study. Counts and recovery use the same selection; adding a different ingredient/location requires a new study.

@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-19T05:04:00Z
+- **Last updated:** 2026-09-19T06:02:05Z
 
 ## Log
 
@@ -418,3 +418,11 @@ Added a reproducible configuration check and explicit live probes with redacted 
 Grouped local UI commits add English US quote samples, direct quote/list shortcuts, a saved-research empty state, clearer case and comparison layouts, and a reverse logo exit. Final review corrected broken PDF originals by displaying the matching sample PNG while retaining the PDF source link, and restored 44 px select controls/options using the shared token.
 Three regression cases failed before the corrections. The final 15-test browser run passed, covering loaded PE/US previews, retained source links, review-to-comparison, keyboard/reduced motion and 1920/1440/390/320 px layouts. Preview captures were inspected; TypeScript/build and the 32-file hosting check passed. The preceding review passed 294 unit/backend tests. Existing non-failing development ResizeObserver notifications remain; this is not a claim of a warning-free console or a new full-system E2E run.
 The expanded pre-merge check also found an ambiguous advisor test locator after the priority badge was added. The test now targets the priority combobox without weakening assertions. Fresh verification passed all 27 focused browser journeys, 294 unit/backend tests, frontend/backend types and the 32-file hosting check. This entry records pre-publication evidence; no external provider request or email send occurred. API and inbox acceptance remain separate.
+
+
+### 2026-09-19 — working tree: contextual funnel after PR #36
+Unpriced supplier cards now save evidence, reuse the linked case and prepare a recoverable quotation draft in one Convex mutation (`convex/sourcingEntry.ts`). Reviewed public candidates can instead open a prefilled research question. The Home continuity hub groups explicit links without merging independent records by name, opens pending inquiries/replies directly, and retains access to original searches. One primary search action states live versus sample mode, errors require an explicit choice to open the sample, and direct purchase calculation preserves unknown terms and existing case comparisons. No schema or provider setting changed.
+
+299 unit/backend/configuration tests, frontend/backend types and the 32-file hosting check passed locally. The complete browser run passed 97/99; two obsolete expectations were corrected and passed in a focused recheck. Nineteen affected journeys passed in that recheck; a new error-path test required a region-selector correction. The final six funnel journeys then passed, including persistent inquiry/reply review, exact package arithmetic, public-source continuation and explicit failure recovery. Together the full run and focused checks cover 102 distinct journeys, rather than one uninterrupted final-tree run. Five mutation tests also passed after verifying duplicate-event prevention. An earlier unconstrained concurrent unit run timed out in three existing tests; all 299 passed with two workers and unchanged time limits. Desktop/320/390 px inspection caught and corrected a mobile navigation overlap.
+
+Review checked atomic rollback, ownership, stale revisions, repeat preparation, independent work in the same market, retained source access and PR #36 comparison/selection continuity. Only an isolated local backend and synthetic records were used. No provider call, outbound email, cloud deployment, commit, push or PR publication occurred. Real API and hosted acceptance remain separate.

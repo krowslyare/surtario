@@ -11,9 +11,9 @@ test("sin configuración ofrece ejemplos y no simula búsqueda web", async ({
   await page.getByLabel("Ingredient or category").fill("Arroz");
   await expect(
     page.getByRole("button", { name: "Search suppliers", exact: true }),
-  ).toBeDisabled();
+  ).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Explore example", exact: true }),
+    page.getByRole("button", { name: "Explore demo catalog", exact: true }),
   ).toBeEnabled();
 });
 

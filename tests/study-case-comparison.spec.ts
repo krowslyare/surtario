@@ -8,9 +8,7 @@ test("study purchase keeps its case through save, recovery and repeated opening"
   await connectOnlyToLocalBackend(context);
   await page.goto("/?view=market");
   await page.getByRole("button", { name: "Explore rice example" }).click();
-  await page
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await page
     .getByRole("textbox", { name: "What would you like to find out?" })
     .fill("Keep the study comparison in this case");
@@ -29,6 +27,7 @@ test("study purchase keeps its case through save, recovery and repeated opening"
     "Demo examples and contacts without prices cannot be tracked",
   );
   await page.reload();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   // The case panel is closed: linking must use the saved study, not active UI selection.
@@ -56,9 +55,7 @@ test("study purchase keeps its case through save, recovery and repeated opening"
     }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Back to market study" }).click();
-  await page
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await page
     .getByRole("button", {
       name: /Rice Keep the study comparison in this case/,
@@ -82,7 +79,7 @@ test("study purchase keeps its case through save, recovery and repeated opening"
 
   await page.getByRole("button", { name: "Back to market study" }).click();
   await page
-    .getByRole("button", { name: "Open saved case comparison", exact: true })
+    .getByRole("button", { name: "Calculate purchase", exact: true })
     .click();
   await expect(
     page.getByLabel("Required quantity", { exact: true }),

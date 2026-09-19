@@ -30,6 +30,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
       .getByRole("status"),
   ).toHaveText("Unsaved changes");
   await page.reload();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page.getByRole("button", { name: "Saved (1)" }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(
@@ -45,6 +46,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
 
   const otherTab = await context.newPage();
   await otherTab.goto("/?view=market");
+  await otherTab.getByRole("button", { name: /^My study/ }).click();
   await otherTab.getByRole("button", { name: "Saved (1)" }).click();
   await otherTab
     .getByRole("button", { name: "Open study", exact: true })
@@ -60,6 +62,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
       .getByRole("region", { name: "Saved studies", exact: true })
       .getByRole("status"),
   ).toContainText("Study saved with 1 option");
+  await otherTab.getByRole("button", { name: /^My study/ }).click();
   await otherTab.getByRole("button", { name: "Saved (1)" }).click();
   await expect(otherTab.getByText(/Revision 2/)).toBeVisible();
   await otherTab.keyboard.press("Escape");
@@ -70,6 +73,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await expect(otherTab.getByRole("alert")).toContainText(
     "changed in another view",
   );
+  await otherTab.getByRole("button", { name: /^My study/ }).click();
   await otherTab.getByRole("button", { name: "Saved (1)" }).click();
   await otherTab
     .getByRole("button", { name: "Open study", exact: true })
@@ -80,6 +84,7 @@ test("guarda en Convex, recupera tras recargar y sincroniza solo el mismo navega
   await connectOnlyToLocalBackend(independent);
   const visitor = await independent.newPage();
   await visitor.goto("/?view=market");
+  await visitor.getByRole("button", { name: /^My study/ }).click();
   await visitor.getByRole("button", { name: "Saved (0)" }).click();
   await expect(
     visitor.getByText("You have no saved studies in this session."),
@@ -131,7 +136,7 @@ test("volver al ejemplo después de una búsqueda vacía conserva la selección"
     .click();
   await page.getByLabel("Ingredient or category").fill("Pescado");
   await page
-    .getByRole("button", { name: "Explore example", exact: true })
+    .getByRole("button", { name: "Explore demo catalog", exact: true })
     .click();
   await expect(
     page
@@ -179,6 +184,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
         .getByRole("status"),
     ).toContainText("Study saved with 3 options");
     await page.reload();
+    await page.getByRole("button", { name: /^My study/ }).click();
     await page.getByRole("button", { name: "Saved (1)" }).click();
     await page.getByRole("button", { name: "Open study", exact: true }).click();
     await expect(page.getByRole("article")).toHaveCount(3);
@@ -194,12 +200,11 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await directory.getByRole("button", { name: "Prepare inquiry" }).click();
-    await expect(page.getByLabel("Edit message")).toHaveValue(
-      /I have not set a purchase quantity/,
-    );
-    await expect(page.getByRole("dialog")).toContainText(
-      "Copying this text does not send an email.",
-    );
+    const inquiry = page.getByRole("dialog", { name: "Review quote request", exact: true });
+    await expect(inquiry).toContainText("Quantity is still to be determined. This is not a purchase order.");
+    await expect(inquiry.getByRole("button", { name: "Send test request" })).toBeDisabled();
+    await inquiry.getByRole("button", { name: "Edit saved message" }).click();
+    await expect(inquiry.getByLabel("Message text")).toHaveValue(/Quantity is still to be determined/);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog")).toHaveCount(0);
   });

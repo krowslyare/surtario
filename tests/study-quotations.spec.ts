@@ -22,9 +22,7 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   await expect(
     page.getByRole("heading", { name: /Ask Northwest/ }),
   ).toHaveCount(0);
-  await page
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await page
     .getByRole("textbox", { name: "What would you like to find out?" })
     .fill("Clarify delivery before comparing suppliers");
@@ -66,6 +64,7 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   );
   await page.keyboard.press("Escape");
   await page.reload();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page.getByRole("button", { name: "Saved (1)" }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await page.getByRole("button", { name: "View request" }).click();
@@ -98,6 +97,7 @@ test("saving a priced US offer does not expose an unselected distributor inquiry
     page.getByRole("button", { name: "Prepare test request" }),
   ).toHaveCount(0);
   await page.reload();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(page.getByRole("article")).toHaveCount(1);

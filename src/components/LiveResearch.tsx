@@ -110,8 +110,14 @@ export function ResearchWorkspace({
   onOpenStudy,
   onBackToOverview,
   autoSelectLatest = false,
+  resumeRequest,
+  onCalculate,
+  onExploreDemo,
 }: {
   autoSelectLatest?: boolean;
+  resumeRequest?: { id: string; sequence: number } | null;
+  onCalculate?: (seed: PurchaseSeed, context: { ingredient: string; region: string }) => void;
+  onExploreDemo?: () => void;
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
@@ -151,6 +157,10 @@ export function ResearchWorkspace({
   const [error, setError] = useState("");
 
   useEffect(() => onStatus(status), [onStatus, status]);
+  useEffect(() => {
+    if (!resumeRequest) return;
+    setActiveId(resumeRequest.id); setLocalRun(null); setError(""); setSearching(false);
+  }, [resumeRequest]);
 
   useEffect(() => {
     if (!request) return;
@@ -399,6 +409,7 @@ export function ResearchWorkspace({
       {error && (
         <p className="notice error" role="alert">
           {error}
+          {onExploreDemo && <Button variant="secondary" onClick={onExploreDemo}>Explore demo catalog</Button>}
         </p>
       )}
 
@@ -436,7 +447,10 @@ export function ResearchWorkspace({
               The search returned partial content; review the sources.
             </p>
           )}
-          {active.error && <p className="notice error">{active.error}</p>}
+          {active.error && <div className="notice error" role="alert">
+            <p>{active.error}</p>
+            {!error && onExploreDemo && <Button variant="secondary" onClick={onExploreDemo}>Explore demo catalog</Button>}
+          </div>}
           {active.discarded > 0 && (
             <p className="field-hint">
               {active.discarded}{" "}
@@ -692,7 +706,12 @@ export function ResearchWorkspace({
                       </p>
                     )}
                     {wasReviewed && (
-                      <small>Reviewed offer added to this selection.</small>
+                      <div><small>Reviewed offer added to this selection.</small>
+                        {onCalculate && <Button variant="secondary" onClick={() => {
+                          const selection = reviewed.find(r => r.sourceId === sourceId);
+                          if (selection) onCalculate(selection.seed, active);
+                        }}>Calculate purchase</Button>}
+                      </div>
                     )}
                     {!wasReviewed && reviewed.length >= 3 && proposal && (
                       <small>
@@ -764,6 +783,10 @@ export function ResearchWorkspace({
 }
 
 type LiveResearchProps = {
+  resumeRequest?: { id: string; sequence: number } | null;
+  onCalculate?: (seed: PurchaseSeed, context: { ingredient: string; region: string }) => void;
+  onExploreDemo?: () => void;
+  onContextualProspect?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
   request: WebSearchRequest | null;
   onStatus: (status: ResearchStatus | undefined) => void;
   onPrepare: (seed: PurchaseSeed) => void;
@@ -824,6 +847,8 @@ function ConnectedResearch({
         renderProspect={(run, index) => (
           <SaveWebProspect
             onSaved={props.onProspect}
+            onContinue={props.onContextualProspect}
+            simulated={run.simulated}
             token={token}
             runId={run.id as Id<"researchRuns">}
             sourceIndex={index}
@@ -862,6 +887,7 @@ function ConnectedResearch({
         token={token}
         onPrepare={props.onPrepare}
         onSelect={props.onProspect}
+        onContinue={props.onContextualProspect}
         selectedIds={props.selectedProspectIds}
       />
     </>

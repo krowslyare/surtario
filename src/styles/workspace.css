@@ -1260,3 +1260,23 @@
   .decision-transition > svg { transform: rotate(90deg); }
   .resolution-actions { flex-direction: column; align-items: stretch; }
 }
+
+/* One entry per linked piece of work; actions keep the existing brand controls. */
+.continue-work { margin-block: var(--space-6, 24px); }
+.continue-list { list-style: none; padding: 0; margin: 0; }
+.continue-list > li { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 16px; border-bottom: 1px solid var(--color-border); }
+.continue-list p { margin-block: 4px; overflow-wrap: anywhere; }
+.continue-actions { display: flex; flex: none; flex-direction: column; align-items: flex-end; gap: 8px; }
+.continue-list > li > div:first-child { min-width: 0; }
+.continue-list small { color: var(--color-text-muted); }
+.study-rail[hidden], .sourcing-library[hidden] { display: none; }
+@media (max-width: 600px) {
+  .continue-list > li { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .continue-actions { align-items: flex-start; }
+  .market-topbar { flex-wrap: wrap; }
+  .market-topbar .brand { flex: 0 0 auto; }
+  .market-topbar .brand-nav { flex-wrap: wrap; }
+}
+.sourcing-case[hidden] { display: none; }
+/* Hidden workspaces retain drafts but must leave layout and keyboard order. */
+.market-main [hidden] { display: none !important; }

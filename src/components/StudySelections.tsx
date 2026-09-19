@@ -92,6 +92,7 @@ export default function StudySelections({
               Minimum order, tax, and delivery need confirmation. Selecting this
               offer does not record a purchase.
             </p>
+            <button className="button secondary" onClick={() => onPrepare(seed)}>{deliveryComparison ? "Open case comparison" : "Calculate purchase"}</button>
             {source?.url && (
               <a href={source.url} target="_blank" rel="noreferrer">
                 <ExternalLink size={14} /> {source.title}

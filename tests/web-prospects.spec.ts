@@ -37,7 +37,8 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     token,
   );
   await page.goto("/?example=pe");
-  await page.getByRole("button", { name: "Saved research", exact: true }).click();
+  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
+  await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Review sources", exact: true }).first().click();
   await page.getByRole("button", { name: /Arroz · Arequipa/ }).click();
   await page
     .getByRole("button", { name: "Save potential distributor" })
@@ -65,9 +66,9 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: /Ask Distribuidor C/ })).toHaveCount(0);
   await page.reload();
-  await page.getByRole("button", { name: "Saved research", exact: true }).click();
-  const library = page.getByRole("region", {
-    name: "Saved web distributors",
+  await page.getByRole("region", { name: "Continue your work", exact: true }).getByRole("button", { name: "Resume study", exact: true }).click();
+  const library = page.getByRole("article", {
+    name: "Distributor in study: Distribuidor candidato E2E",
   });
   await expect(library).toContainText("Distribuidor candidato E2E");
   await expect(library).toContainText("contacto@example.test");
@@ -82,6 +83,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     ),
   ).toBe(true);
   await page.screenshot({ path: "/tmp/web-prospect-mobile.png" });
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page
     .getByRole("button", { name: "Saved (1)", exact: true })
     .click();
@@ -102,7 +104,8 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   ).toBeDisabled();
   await page.keyboard.press("Escape");
   await page.reload();
-  await page.getByRole("button", { name: "Saved research", exact: true }).click();
+  await page.getByRole("region", { name: "Continue your work", exact: true }).getByRole("button", { name: "Resume study", exact: true }).click();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page
     .getByRole("button", { name: "Saved (1)", exact: true })
     .click();

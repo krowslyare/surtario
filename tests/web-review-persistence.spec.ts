@@ -49,7 +49,8 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     token,
   );
   await page.goto("/?example=pe");
-  await page.getByRole("button", { name: "Saved research", exact: true }).click();
+  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
+  await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Review sources", exact: true }).first().click();
   await page.getByRole("button", { name: /Arroz · Lima/ }).click();
   await page.getByRole("button", { name: "Review extraction" }).click();
   const dialog = page.getByRole("dialog");
@@ -79,6 +80,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     page.getByText("Study saved with 1 option", { exact: false }),
   ).toBeVisible();
   await page.reload();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page
     .getByRole("button", { name: "Saved (1)", exact: true })
     .click();
@@ -88,7 +90,7 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
       name: "Offer in study: Distribuidora de ejemplo",
     }),
   ).toContainText("S/ 85.00");
-  await page.getByRole("button", { name: "Compare reviewed offers" }).click();
+  await page.getByRole("button", { name: "Calculate purchase" }).click();
   await page.getByLabel("Required quantity").fill("10");
   await page
     .getByRole("button", { name: "Edit Distribuidora de ejemplo" })

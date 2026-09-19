@@ -18,6 +18,7 @@ test("US example keeps USD and pounds through study recovery and purchase planni
   await page.getByRole("button",{name:"Save study",exact:true}).click();
   await expect(page.getByRole("region",{name:"Saved studies"}).getByRole("status")).toHaveText("Study saved with 2 options.");
   await page.reload();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page.getByRole("button",{name:/Saved \(1\)/}).click();
   await page.getByRole("dialog").getByRole("button",{name:"Open study"}).click();
   await page.getByRole("button",{name:"Plan purchase",exact:true}).click();
