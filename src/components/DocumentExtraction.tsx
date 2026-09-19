@@ -282,7 +282,8 @@ export function DocumentReview({
             sourceTextLabel="Proposed transcript · check against file"
             originalPreview={
               <img
-                src={fileUrl(run.kind)}
+                // Bundled PDFs have matching PNG previews; keep the PDF source link above.
+                src={fileUrl(run.kind === "pdf" ? "image" : run.kind === "pdf_us" ? "image_us" : run.kind)}
                 alt={altText(run.kind)}
                 style={{
                   width: "100%",

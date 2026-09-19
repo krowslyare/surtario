@@ -27,7 +27,8 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
     }),
   ).toBe(true);
   await advisor.getByText("Budget and preferences").click();
-  await advisor.getByLabel("Priority").selectOption("cash");
+  const priority = advisor.getByRole("combobox", { name: /^Priority/ });
+  await priority.selectOption("cash");
   await advisor.getByLabel("Available budget").fill("60");
   await expect(advisor.getByLabel("Confirmed current stock")).toHaveValue("");
   await expect(
@@ -35,7 +36,7 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
       name: initialSaveAction,
     }),
   ).toBeEnabled();
-  await expect(advisor.getByLabel("Priority")).toHaveValue("cash");
+  await expect(priority).toHaveValue("cash");
   await expect(advisor.getByLabel("Available budget")).toHaveValue("60");
   await advisor
     .getByRole("button", { name: initialSaveAction })

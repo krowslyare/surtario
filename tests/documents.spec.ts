@@ -64,9 +64,10 @@ test("US English document sample is available by default and inspectable", async
   expect((await file.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
 
-test("a simulated reading keeps the original visible, requires review and opens a pending comparison", async ({
+for (const kind of ["pdf", "pdf_us"] as const) {
+test(`a simulated ${kind} reading keeps the original visible, requires review and opens a pending comparison`, async ({
   page,
-}) => {
+}, testInfo) => {
   await page.route("**/__document_test", (route) =>
     route.fulfill({
       contentType: "text/html",
@@ -80,7 +81,7 @@ test("a simulated reading keeps the original visible, requires review and opens 
     const field = (value: string, evidence = value) => ({ value, evidence });
     const run = {
       id: "synthetic-test",
-      kind: "pdf",
+      kind,
       createdAt: Date.now(),
       status: "complete",
       error: null,
@@ -114,6 +115,17 @@ test("a simulated reading keeps the original visible, requires review and opens 
   await page.getByRole("button", { name: "Review extracted data" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByRole("img")).toBeVisible();
+  await expect(dialog.getByRole("img")).toHaveAttribute(
+    "src",
+    kind === "pdf" ? "/examples/cotizacion-demo.png" : "/examples/quote-demo-us.png",
+  );
+  await expect.poll(() => dialog.getByRole("img").evaluate(
+    (image: HTMLImageElement) => image.complete && image.naturalWidth > 0,
+  )).toBe(true);
+  await expect(dialog.getByRole("link", { name: "Open source page" })).toHaveAttribute(
+    "href", kind === "pdf" ? "/examples/cotizacion-demo.pdf" : "/examples/quote-demo-us.pdf",
+  );
+  await dialog.getByRole("img").screenshot({ path: testInfo.outputPath("original-preview.png") });
   await expect(dialog).toContainText("Proposed transcript");
   await expect(
     dialog.getByRole("button", { name: "Continue to comparison" }),
@@ -135,3 +147,4 @@ test("a simulated reading keeps the original visible, requires review and opens 
     page.getByText("S/ 85.00", { exact: false }).first(),
   ).toBeVisible();
 });
+}

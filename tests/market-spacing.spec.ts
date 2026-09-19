@@ -23,6 +23,14 @@ for (const width of [1920, 1440, 390, 320]) {
     expect(field).not.toBeNull();
     expect(actions).not.toBeNull();
     expect(actions!.y - field!.y - field!.height).toBeGreaterThanOrEqual(12);
+    const select = section.getByLabel("Sample file");
+    expect(await select.evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    await select.click();
+    for (const option of await page.getByRole("option").all()) {
+      // Measure after the popup's scale-in transition reaches its resting size.
+      await expect.poll(() => option.evaluate((el) => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+    }
+    await page.keyboard.press("Escape");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   });
 }

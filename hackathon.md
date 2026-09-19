@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-17T09:31:12Z
+- **Last updated:** 2026-09-19T05:04:00Z
 
 ## Log
 
@@ -413,3 +413,8 @@ Final review verification: 290 unit/backend tests in 44 files, frontend/backend 
 
 ### 2026-09-17 — working tree: live provider readiness
 Added a reproducible configuration check and explicit live probes with redacted reports. A real deployed Firecrawl probe returned 13 sources, 11 with text, in 128.459 seconds with a partial-coverage warning. AgentMail inbox inspection returned a confirmed missing read permission; send permission and delivery were not tested. OpenAI credentials/models and AI feature gates are absent on the development target, so integrated API acceptance remains blocked. Three focused runner tests and TypeScript passed. No project creation, deployment, credential changes or mail sends occurred. See `docs/desarrollo/LIVE_PROVIDER_CHECKS.md`.
+
+### 2026-09-19 — 77a1dfe + working tree: UI refinement and review corrections
+Grouped local UI commits add English US quote samples, direct quote/list shortcuts, a saved-research empty state, clearer case and comparison layouts, and a reverse logo exit. Final review corrected broken PDF originals by displaying the matching sample PNG while retaining the PDF source link, and restored 44 px select controls/options using the shared token.
+Three regression cases failed before the corrections. The final 15-test browser run passed, covering loaded PE/US previews, retained source links, review-to-comparison, keyboard/reduced motion and 1920/1440/390/320 px layouts. Preview captures were inspected; TypeScript/build and the 32-file hosting check passed. The preceding review passed 294 unit/backend tests. Existing non-failing development ResizeObserver notifications remain; this is not a claim of a warning-free console or a new full-system E2E run.
+The expanded pre-merge check also found an ambiguous advisor test locator after the priority badge was added. The test now targets the priority combobox without weakening assertions. Fresh verification passed all 27 focused browser journeys, 294 unit/backend tests, frontend/backend types and the 32-file hosting check. This entry records pre-publication evidence; no external provider request or email send occurred. API and inbox acceptance remain separate.

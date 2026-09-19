@@ -5,7 +5,7 @@
 
 .surtario-select-trigger {
   width: 100%;
-  min-height: 40px;
+  min-height: var(--control-min-height);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -79,7 +79,7 @@
 
 .surtario-select-item {
   position: relative;
-  min-height: 38px;
+  min-height: var(--control-min-height);
   display: flex;
   align-items: center;
   padding: 8px 34px 8px 12px;
