@@ -13,7 +13,7 @@ export default function WorkspaceArrival({ ready, onFinished }: { ready: boolean
   useEffect(() => {
     if (!leaving) return;
     const timer = window.setTimeout(() => { setFinished(true); onFinished(); },
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 220);
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 140 : 560);
     return () => window.clearTimeout(timer);
   }, [leaving, onFinished]);
   if (finished) return null;
