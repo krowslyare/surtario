@@ -21,7 +21,7 @@ self.onmessage = async (event: MessageEvent<File>) => {
       });
     } else
       throw new Error(
-        "This document requires manual transcription or OpenAI extraction.",
+        "This document requires manual entry or AI extraction.",
       );
   } catch (error) {
     self.postMessage({

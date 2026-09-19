@@ -10,8 +10,32 @@ import Select from "./ui/Select";
 import { Disclosure } from "./ui/Disclosure";
 
 type Run = Infer<typeof documentRun>;
-const fileUrl = (kind: Run["kind"]) =>
-  `/examples/cotizacion-demo.${kind === "pdf" ? "pdf" : "png"}`;
+
+const isSamplePeru = () =>
+  typeof window !== "undefined" &&
+  new URLSearchParams(window.location.search).get("example") === "pe";
+
+const fileUrl = (kind: Run["kind"]) => {
+  switch (kind) {
+    case "pdf":
+      return "/examples/cotizacion-demo.pdf";
+    case "image":
+      return "/examples/cotizacion-demo.png";
+    case "pdf_us":
+      return "/examples/quote-demo-us.pdf";
+    case "image_us":
+    default:
+      return "/examples/quote-demo-us.png";
+  }
+};
+
+const altText = (kind: Run["kind"]) => {
+  if (kind === "image_us" || kind === "pdf_us") {
+    return "Synthetic quote: Cascade Pantry Supply, long-grain white rice, 25 lb bag, USD 20.00";
+  }
+  return "Synthetic quote: extra white rice, 18 kg bag, PEN 80";
+};
+
 export default function DocumentExtraction({
   onPrepare,
 }: {
@@ -50,7 +74,8 @@ function Connected({
   const enabled = useQuery(api.documents.status, {});
   const runs = useQuery(api.documents.list, { token });
   const extract = useAction(api.documents.extract);
-  const [kind, setKind] = useState<Run["kind"]>("image");
+  const peru = isSamplePeru();
+  const [kind, setKind] = useState<Run["kind"]>(peru ? "image" : "image_us");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [local, setLocal] = useState<Run | null>(null);
@@ -83,12 +108,14 @@ function Connected({
       visible[index] = local;
   }
   return (
-    <section className="ingredient-intake" aria-label="Photo and PDF extraction">
-      <h2>Read a quote from a photo or PDF</h2>
-      <p>
-        Use synthetic documents. Check the extracted data against the original
-        file before comparing them.
-      </p>
+    <section className="ingredient-intake document-extraction" aria-label="Photo and PDF extraction">
+      <header className="document-extraction-header">
+        <h3>Read a quote from a photo or PDF</h3>
+        <p>
+          Use synthetic documents. Check the extracted data against the original
+          file before comparing them.
+        </p>
+      </header>
       <label className="field">
         Sample file
         <Select
@@ -96,42 +123,51 @@ function Connected({
           value={kind}
           disabled={busy}
           onValueChange={(value) => setKind(value as Run["kind"])}
-          options={[
-            { value: "image", label: "Quote image · PNG" },
-            { value: "pdf", label: "Quote PDF · 1 page" },
-          ]}
+          options={
+            peru
+              ? [
+                  { value: "image", label: "Quote image · PNG" },
+                  { value: "pdf", label: "Quote PDF · 1 page" },
+                  { value: "image_us", label: "Quote image (US · English) · PNG" },
+                  { value: "pdf_us", label: "Quote PDF (US · English) · 1 page" },
+                ]
+              : [
+                  { value: "image_us", label: "Quote image (US · Portland) · PNG" },
+                  { value: "pdf_us", label: "Quote PDF (US · Portland) · 1 page" },
+                  { value: "image", label: "Quote image (PE · Lima) · PNG" },
+                  { value: "pdf", label: "Quote PDF (PE · Lima) · 1 page" },
+                ]
+          }
         />
       </label>
       <div className="intake-actions">
+        <button
+          className="button primary"
+          disabled={!enabled || busy}
+          onClick={read}
+        >
+          {busy ? "Reading quote…" : "Read quote with AI"}
+        </button>
         <button className="button secondary" onClick={() => setPreview(kind)}>
           View sample file
         </button>
         <a className="button text-button" href={fileUrl(kind)} download>
           Download sample
         </a>
-        <button
-          className="button primary"
-          disabled={!enabled || busy}
-          onClick={read}
-        >
-          {busy ? "Reading document…" : "Read with OpenAI"}
-        </button>
       </div>
       {enabled === false && (
         <p className="notice info">
-          Automatic reading is not configured. You can review the sample and use
-          manual transcription from “Add list or file.”
+          AI reading is not configured in this demo. You can view the sample file or use “Enter quote manually” above.
         </p>
       )}
       <p className="field-hint">
-        Your own files remain in this tab. The demo sends only these samples to
-        the model. Extraction does not record a purchase.
+        Public demo: files stay in this tab and only synthetic samples are processed. Extraction never records a purchase.
       </p>
       {error && <p role="alert">{error}</p>}
       {visible.map((run) => (
         <div className="intake-batch" key={run.id}>
           <h3>
-            {run.kind === "pdf" ? "PDF" : "Image"} ·{" "}
+            {run.kind === "pdf" || run.kind === "pdf_us" ? "PDF" : "Image"} ·{" "}
             {new Date(run.createdAt).toLocaleString("en-US")}
           </h3>
           <button
@@ -156,18 +192,26 @@ function Connected({
           wide
           onClose={() => setPreview(null)}
         >
-          {preview === "image" ? (
+          {preview === "image" || preview === "image_us" ? (
             <img
               src={fileUrl(preview)}
-              alt="Synthetic quote: extra white rice, 18 kg bag, PEN 80"
-              style={{ width: "100%" }}
+              alt={altText(preview)}
+              style={{
+                width: "100%",
+                borderRadius: "var(--radius-card)",
+                boxShadow: "var(--shadow-card)",
+              }}
             />
           ) : (
             <object
               data={fileUrl(preview)}
               type="application/pdf"
               width="100%"
-              height="460"
+              height="520"
+              style={{
+                borderRadius: "var(--radius-card)",
+                border: "1px solid var(--color-border)",
+              }}
             >
               <a href={fileUrl(preview)} target="_blank" rel="noreferrer">
                 Open sample PDF
@@ -238,9 +282,13 @@ export function DocumentReview({
             sourceTextLabel="Proposed transcript · check against file"
             originalPreview={
               <img
-                src="/examples/cotizacion-demo.png"
-                alt="Synthetic original: 18 kg bag of rice, PEN 80"
-                style={{ width: "100%" }}
+                src={fileUrl(run.kind)}
+                alt={altText(run.kind)}
+                style={{
+                  width: "100%",
+                  borderRadius: "var(--radius-card)",
+                  boxShadow: "var(--shadow-card)",
+                }}
               />
             }
             proposal={run.result.offer}

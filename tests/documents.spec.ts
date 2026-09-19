@@ -10,9 +10,9 @@ test("document examples are inspectable but no extraction runs without configura
   await page.getByText("Quotes and documents", { exact: true }).click();
   const section = page.getByRole("region", { name: "Photo and PDF extraction" });
   await expect(
-    section.getByRole("button", { name: "Read with OpenAI" }),
+    section.getByRole("button", { name: "Read quote with AI" }),
   ).toBeDisabled();
-  await expect(section).toContainText("Automatic reading is not configured");
+  await expect(section).toContainText("AI reading is not configured");
   await section.getByRole("button", { name: "View sample file" }).click();
   await expect(page.getByRole("dialog").getByRole("img")).toBeVisible();
   await page.keyboard.press("Escape");
@@ -29,6 +29,39 @@ test("document examples are inspectable but no extraction runs without configura
     true,
   );
   await page.screenshot({ path: "/tmp/document-intake-mobile.png" });
+});
+
+test("US English document sample is available by default and inspectable", async ({
+  page,
+  context,
+}) => {
+  await connectOnlyToLocalBackend(context);
+  await page.goto("/?view=market");
+  await page.getByRole("button", { name: "Read a quote" }).click();
+  const section = page.getByRole("region", { name: "Photo and PDF extraction" });
+  await expect(section.getByLabel("Sample file")).toContainText(
+    "Quote image (US · Portland) · PNG",
+  );
+  await section.getByRole("button", { name: "View sample file" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("img")).toBeVisible();
+  await expect(dialog.getByRole("img")).toHaveAttribute(
+    "src",
+    "/examples/quote-demo-us.png",
+  );
+  await page.keyboard.press("Escape");
+  await section.getByLabel("Sample file").click();
+  await page
+    .getByRole("option", {
+      name: "Quote PDF (US · Portland) · 1 page",
+      exact: true,
+    })
+    .click();
+  await expect(
+    section.getByRole("link", { name: "Download sample" }),
+  ).toHaveAttribute("href", "/examples/quote-demo-us.pdf");
+  const file = await page.request.get("/examples/quote-demo-us.pdf");
+  expect((await file.body()).subarray(0, 5).toString()).toBe("%PDF-");
 });
 
 test("a simulated reading keeps the original visible, requires review and opens a pending comparison", async ({

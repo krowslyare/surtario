@@ -117,7 +117,14 @@ async function reconstructDocumentReview(
         text: run.result.transcript,
         observedAt: new Date(run.createdAt).toISOString().slice(0, 10),
         simulated: true,
-        url: `/examples/cotizacion-demo.${run.kind === "pdf" ? "pdf" : "png"}`,
+        url:
+          run.kind === "pdf"
+            ? "/examples/cotizacion-demo.pdf"
+            : run.kind === "image"
+              ? "/examples/cotizacion-demo.png"
+              : run.kind === "pdf_us"
+                ? "/examples/quote-demo-us.pdf"
+                : "/examples/quote-demo-us.png",
       },
       run.result.offer,
       review.values,

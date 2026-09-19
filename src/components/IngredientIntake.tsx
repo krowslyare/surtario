@@ -378,7 +378,7 @@ function IntakeDialog({
                 {document && (
                   <>
                     <p className="notice info">
-                      Automatic extraction requires OpenAI. You can transcribe
+                      AI extraction is not configured in this demo. You can transcribe
                       the ingredients and keep this file as the source.
                     </p>
                     <LocalSource file={file!} />

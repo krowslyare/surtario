@@ -3,7 +3,12 @@ import {
   extractedOfferValidator,
   researchStatusValidator,
 } from "./researchValidators";
-export const documentKind = v.union(v.literal("image"), v.literal("pdf"));
+export const documentKind = v.union(
+  v.literal("image"),
+  v.literal("pdf"),
+  v.literal("image_us"),
+  v.literal("pdf_us"),
+);
 export const documentResult = v.object({
   documentType: v.union(
     v.literal("quotation"),
