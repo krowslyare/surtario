@@ -178,7 +178,7 @@ for (const delayed of [false, true]) {
       for (const deliver of pending) deliver();
       await expect(
         page.getByText(
-          "Delivery was saved to the previous comparison. Your current draft is preserved.",
+          "The confirmed term was saved to the previous comparison. Your current draft is preserved.",
         ),
       ).toBeVisible();
       await expect(page.getByLabel("Required quantity")).toHaveValue("20");
@@ -188,12 +188,12 @@ for (const delayed of [false, true]) {
         name: "Delivery saved",
         exact: true,
       });
-      await expect(
-        result.getByRole("heading", { name: "Before", exact: true }),
-      ).toBeVisible();
-      await expect(
-        result.getByRole("heading", { name: "Now", exact: true }),
-      ).toBeVisible();
+      await expect(result.getByRole("heading", {name: "Current recommendation", exact: true})).toBeVisible();
+      await expect(result.locator(".delivery-totals")).toContainText("Pending → S/ 8.00");
+      await expect(result.locator(".delivery-totals")).toContainText("Pending → S/ 48.00");
+      await result.getByText("Previous recommendation", {exact: true}).click();
+      // Before freight confirmation, only B was comparable: the engine requires a second offer.
+      await expect(result.locator("details")).toContainText("Find another verifiable offer before deciding.");
       await expect(result.getByRole("status")).toContainText("Proveedor A");
 
       await result.screenshot({
@@ -258,6 +258,8 @@ for (const delayed of [false, true]) {
       .getByRole("button", { name: "View request", exact: true })
       .click();
     const recovered = page.getByRole("dialog");
+    await expect(recovered).toContainText("Local simulation. No external email was sent.");
+    await expect(page.locator(".saved-study-row").filter({hasText:"Synthetic rice delivery clarification"})).toContainText("Simulated send");
     await expect(
       recovered.getByRole("heading", {
         name: "Delivery confirmed",

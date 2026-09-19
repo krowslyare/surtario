@@ -1,8 +1,14 @@
 # Etapas de desarrollo
 
+**Current iteration after PR #35:** [implemented behavior, local verification and remaining API/release acceptance](CONSOLIDACION_DECISION.md). Older test counts below belong to their dated deliveries, not this checkout. No cloud publication is included in this iteration.
+
 Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo con evidencia de su criterio de salida. El calendario del plan es orientativo; ante retrasos aplicar sus recortes, sin afirmar resultados no ejecutados.
 
+The PR #36 review corrections are described in [the current consolidation record](CONSOLIDACION_DECISION.md#pr-36-review-corrections): comparison-only action routing, complete blocker projection and visible term/viability deltas. This is branch work, separate from the published development app.
+
 ## Estado
+
+September 17 live follow-up: [current provider checks](LIVE_PROVIDER_CHECKS.md) found real Firecrawl partial coverage (13 sources / 11 with text; 128.459 s), a missing AgentMail `inbox_read` permission, and absent OpenAI credentials/models. Added a reproducible redacted preflight/probe command. Full integrated API acceptance remains blocked; CI does not certify it.
 
 | Etapa | Resultado | Estado | Evidencia actual |
 | --- | --- | --- | --- |

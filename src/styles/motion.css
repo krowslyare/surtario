@@ -34,7 +34,6 @@
   text-align: left;
   transition:
     color var(--motion-control) ease,
-    border-color var(--motion-control) ease,
     transform var(--motion-control) ease;
 }
 
@@ -128,6 +127,38 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .workspace-enter {
+    animation: none;
+  }
+}
+
+/* Sourcing case expansion motion */
+.sourcing-case {
+  transition:
+    box-shadow var(--motion-dialog) var(--ease-settle),
+    border-color var(--motion-dialog) var(--ease-settle);
+}
+.sourcing-case.is-expanded {
+  box-shadow: var(--shadow-card);
+  border-color: var(--color-border);
+}
+#sourcing-body {
+  animation: sourcing-body-enter var(--motion-dialog) var(--ease-settle) forwards;
+}
+@keyframes sourcing-body-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sourcing-case {
+    transition: none;
+  }
+  #sourcing-body {
     animation: none;
   }
 }

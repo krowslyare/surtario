@@ -10,14 +10,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-control-border);
+  padding: 8px 14px;
+  border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
   background: var(--color-surface);
   color: var(--color-text);
-  font: inherit;
-  font-size: 16px;
-  line-height: 1.5;
+  font-family: var(--font-sans);
+  font-size: var(--text-label);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
   text-align: left;
   transition:
     border-color var(--motion-control) ease,
@@ -26,8 +28,8 @@
 }
 
 .surtario-select-trigger:hover:not(:disabled) {
-  border-color: var(--color-primary);
-  background: var(--color-canvas);
+  border-color: var(--color-control-border);
+  background: var(--color-surface-hover);
 }
 
 .surtario-select-trigger[data-state="open"] {
@@ -47,7 +49,7 @@
 .surtario-select-icon {
   display: inline-flex;
   align-items: center;
-  color: var(--color-primary);
+  color: var(--color-text-muted);
   transition: transform var(--motion-control) ease;
 }
 
@@ -62,9 +64,9 @@
   max-height: min(19rem, var(--radix-select-content-available-height));
   overflow: hidden;
   padding: 6px;
-  border: 1px solid var(--color-control-border);
-  border-radius: 12px;
-  background: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
   color: var(--color-text);
   box-shadow: var(--shadow-overlay);
   transform-origin: var(--radix-select-content-transform-origin);
@@ -80,11 +82,13 @@
   min-height: var(--control-min-height);
   display: flex;
   align-items: center;
-  padding: 9px 34px 9px 11px;
-  border-radius: 8px;
+  padding: 8px 34px 8px 12px;
+  border-radius: var(--radius-control);
   outline: 0;
   color: var(--color-text);
-  font-size: 15px;
+  font-family: var(--font-sans);
+  font-size: var(--text-label);
+  letter-spacing: -0.01em;
   line-height: 1.35;
   cursor: pointer;
   user-select: none;

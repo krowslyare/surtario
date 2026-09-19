@@ -1,5 +1,6 @@
 export const RESEARCH_POLICY = {
   maxRounds: 6,
+  retainedRuns: 18,
   analysesPerRound: 6,
   shortlistSize: 5,
   minimumPriceDomains: 3,

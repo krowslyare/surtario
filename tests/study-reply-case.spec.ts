@@ -26,8 +26,8 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
   });
   const comparison = run("comparisons:save", {
     token, sourcingCaseId: caseId, clientId: randomUUID(), id: null,
-    expectedRevision: 0, request: riceRequest, offers: riceOffers,
-    selectedOfferId: riceOffers[1].id,
+    expectedRevision: 0, request: riceRequest, offers: riceOffers.map((offer,index) => index === 1 ? {...offer,freightCents:null} : offer),
+    selectedOfferId: riceOffers[0].id,
   });
   const messageId = randomUUID();
   const directory = mkdtempSync(join(tmpdir(), "study-reply-case-"));
@@ -46,7 +46,8 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
       text: "Synthetic inquiry for rice package terms.", state: "sent",
       simulated: true, revision: 3, idempotencyKey: randomUUID(),
       receipt: { messageId: randomUUID(), threadId }, failure: null,
-      createdAt: Date.now(), updatedAt: Date.now(),
+      // Existing conversation predates the new question and its 30-second cooldown.
+      createdAt: Date.now() - 60_000, updatedAt: Date.now() - 60_000,
     });
     requestId = run("quotationMail:list", { token })[0].id;
     seed("quotationReplies", {
@@ -66,6 +67,19 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
   await expect(page.getByRole("button", { name: "Open saved case comparison", exact: true })).toBeVisible();
   await expect(page.getByText("1 selected option in this study", {exact: true})).toBeVisible();
   await expect(page.getByRole("button", {name: "Open saved case comparison", exact: true})).toBeEnabled();
+  // The distributor/candidate must not offer actions for another supplier.
+  const mail = page.getByRole("region", {name: "Email quote requests"});
+  await expect(mail.getByRole("button", {name: "Prepare delivery question"})).toHaveCount(0);
+  await expect(mail.getByRole("button", {name: "Prepare minimum proposal"})).toHaveCount(0);
+  await mail.getByRole("button", {name: "Open case comparison", exact: true}).click();
+  await expect(page.getByRole("button", {name: "Prepare delivery question"})).toBeVisible();
+  await page.getByRole("button", {name: "Prepare delivery question"}).click();
+  await expect(page.getByRole("dialog")).toContainText("Proveedor B");
+  await page.keyboard.press("Escape");
+  expect(run("quotationMail:list", {token}).find((request: {comparisonId?: string}) => request.comparisonId === comparison.id)?.decisionAction.kind).toBe("delivery");
+  await page.goto("/?view=market&example=pe");
+  await page.getByRole("button", {name: "Saved (1)", exact: true}).click();
+  await page.getByRole("button", {name: "Open study", exact: true}).click();
   // Keep the case panel closed: this is the independent study mail entry point.
   await expect(page.getByRole("button", { name: "Open research case", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "View request", exact: true }).click();
@@ -108,7 +122,7 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
     await delivery.getByRole("button", {name: "Confirm delivery and save", exact: true}).click();
     await expect(page.getByLabel("Required quantity", {exact: true})).toHaveValue("10");
     await expect(page.getByRole("button", {name: "Save comparison changes", exact: true})).toBeVisible();
-    expect(run("quotationMail:list", {token})).toHaveLength(1);
+    expect(run("quotationMail:list", {token})).toHaveLength(2);
     const updated = run("comparisons:list", {token});
     expect(updated).toHaveLength(1);
     expect(updated[0].id).toBe(comparison.id);

@@ -162,3 +162,16 @@
     width: 100%;
   }
 }
+
+.extraction-evidence summary {
+  cursor: pointer;
+  padding: var(--space-2) 0;
+  min-height: var(--control-min-height);
+}
+.extraction-evidence summary:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+.extraction-evidence details p {
+  margin: var(--space-1) 0;
+}

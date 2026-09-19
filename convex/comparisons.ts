@@ -20,7 +20,7 @@ import {
 } from "./validators";
 import { ownerHash } from "./lib/demoSession";
 import { reconstructWebReview, type WebReview } from "./lib/webReviews";
-import { riceOffers, riceRequest } from "../fixtures/procurement";
+import { resolveComparisonExample } from "../fixtures/procurement";
 import {
   findMarketExampleContextByIds,
   marketExamples,
@@ -117,7 +117,14 @@ async function reconstructDocumentReview(
         text: run.result.transcript,
         observedAt: new Date(run.createdAt).toISOString().slice(0, 10),
         simulated: true,
-        url: `/examples/cotizacion-demo.${run.kind === "pdf" ? "pdf" : "png"}`,
+        url:
+          run.kind === "pdf"
+            ? "/examples/cotizacion-demo.pdf"
+            : run.kind === "image"
+              ? "/examples/cotizacion-demo.png"
+              : run.kind === "pdf_us"
+                ? "/examples/quote-demo-us.pdf"
+                : "/examples/quote-demo-us.png",
       },
       run.result.offer,
       review.values,
@@ -229,11 +236,12 @@ function validateScenario(
   const catalog = exampleContext
     ? preparePurchaseFromCatalog(exampleContext.results, true)
     : preparePurchaseFromCatalog(marketExamples, true);
-  const rice: PurchaseSeed = {
-    request: riceRequest,
-    offers: riceOffers,
+  const example = resolveComparisonExample(offers.map((offer) => offer.id));
+  const comparisonExample: PurchaseSeed | undefined = example && {
+    request: example.request,
+    offers: example.offers,
     sources: Object.fromEntries(
-      riceOffers.map((o) => [
+      example.offers.map((o) => [
         o.id,
         {
           label: "Sample quote",
@@ -254,9 +262,7 @@ function validateScenario(
       }
     : createdBaseline
       ? createdBaseline
-      : offers.every((o) => riceOffers.some((b) => b.id === o.id))
-        ? rice
-        : catalog;
+      : comparisonExample ?? catalog;
   if (
     request.ingredient !== baseline.request.ingredient ||
     request.specification !== baseline.request.specification ||

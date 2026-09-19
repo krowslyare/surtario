@@ -12,7 +12,9 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
   );
   await expect(dialog).toContainText("The source content is synthetic");
   await expect(dialog).toContainText("Saco: S/ 80.00");
-  await expect(dialog.getByText("Original: Pending")).toHaveCount(2);
+  await expect(dialog.getByLabel("Package size")).toHaveValue("");
+  await expect(dialog.getByLabel("Package unit")).toContainText("Pending");
+  await expect(dialog.locator(".source-record pre")).not.toBeVisible();
   await expect(
     dialog.getByRole("button", { name: "Continue to comparison" }),
   ).toBeDisabled();
@@ -67,7 +69,5 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   await trigger.click();
-  await expect(dialog.getByLabel("Package size")).toHaveValue(
-    "18",
-  );
+  await expect(dialog.getByLabel("Package size")).toHaveValue("18");
 });

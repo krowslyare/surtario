@@ -17,3 +17,14 @@ Thirteen focused browser journeys cover the existing advisor and saved-compariso
 Independent Luna max review identified one P2: the recap offered saving even when blocked site storage prevented session initialization. Saving now follows the existing session/query/connection readiness, with an explanation when unavailable. A browser regression verifies that a confirmed answer still recalculates locally while the save button remains disabled. The parent reviewed and tested this correction. Follow-up review also corrected the unavailable message for intentionally persistence-disabled examples.
 
 No schema, authentication, provider configuration or external mail operation is added. The existing bundle-size warning remains. Private accounts/documents, complete hosted-provider acceptance and video recording retain their separate release gates.
+
+
+## Contextual actions after PR #35
+
+The saved comparison offers a deterministic delivery question or a minimum-order proposal. A minimum proposal requires a confirmed minimum that blocks the user's stated budget or maximum coverage; the proposed pack count comes from the required quantity. It is labeled hypothetical. Freight questions preserve the arithmetic threshold against complete offers; eligibility and recommendation after confirmation use the same current preferences. Neither proposal is an agreed supplier term.
+
+Each quotation action stores its offer, comparison revision, preferences and evidence offer IDs. Drafts disclose only the target offer to the optional writer, not other suppliers' private quotations. Changing the comparison blocks sending and confirmation from that old action. Editing the message invalidates the approved revision. Existing uncertain-send and event idempotency rules remain in force.
+
+The reply review can confirm freight OR the minimum, explicitly chosen by a human and supported by a literal reply excerpt. Other terms and original evidence stay unchanged. For contextual actions, the reply review explicitly uses the question's saved preferences; the server rejects a different context. Legacy generic requests use the operator's reviewed current context. Before/after reports preserve that context, clear an earlier selection and do not register a purchase. A confirmed minimum can make an offer viable while another remains recommended; unchanged or worse terms are also recorded without a success claim.
+
+The existing case library prioritizes missing commercial terms, interrupted work and evidence awaiting a comparison. Reasons appear on each case. This is a lightweight multi-ingredient worklist, not shared-freight or whole-basket optimization. Replies still lead the next-action card inside each case.

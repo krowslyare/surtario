@@ -55,9 +55,9 @@
   textarea,
   select
 ):focus-visible {
-  outline: var(--focus-width) solid var(--color-focus);
-  outline-offset: var(--focus-offset);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 16%, transparent);
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
 }
 
 :where(
@@ -84,8 +84,9 @@
     textarea,
     select
   )[aria-invalid="true"]:focus-visible {
-  outline-color: var(--color-danger);
-  box-shadow: 0 0 0 4px rgb(180 35 24 / 16%);
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-danger);
 }
 
 :where(input[type="checkbox"], input[type="radio"]) {
@@ -100,9 +101,9 @@
 }
 
 :where(input[type="checkbox"], input[type="radio"]):focus-visible {
-  outline: var(--focus-width) solid var(--color-focus);
-  outline-offset: var(--focus-offset);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 16%, transparent);
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
 }
 
 :where(input[type="checkbox"], input[type="radio"]):disabled {
@@ -111,6 +112,10 @@
 
 .button {
   min-height: var(--control-min-height);
+  border-radius: var(--radius-control);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  touch-action: manipulation;
   transition:
     background-color var(--motion-control) ease,
     border-color var(--motion-control) ease,
@@ -122,9 +127,9 @@
 .button:focus-visible,
 .icon-button:focus-visible,
 .disclosure-trigger:focus-visible {
-  outline: var(--focus-width) solid var(--color-focus);
-  outline-offset: var(--focus-offset);
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-focus) 16%, transparent);
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 4px var(--color-focus);
 }
 
 .button:not(:disabled):active,

@@ -12,6 +12,7 @@
     "preview": "vite preview --host 127.0.0.1",
     "test:e2e": "playwright test",
     "test:backend": "node scripts/verify-backend.mjs",
+    "check:providers": "node scripts/verify-live-providers.mjs",
     "test:demo": "playwright test tests/studies.spec.ts --grep \"ensayo de demo\"",
     "check:hosting": "npm run build && node scripts/verify-hosting-build.mjs",
     "deploy:hosting": "npx @convex-dev/static-hosting deploy",

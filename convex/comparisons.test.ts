@@ -3,7 +3,7 @@ import { convexTest } from "convex-test";
 import { expect, test } from "vitest";
 import schema from "./schema";
 import { api } from "./_generated/api";
-import { riceOffers, riceRequest } from "../fixtures/procurement";
+import { riceOffers, riceRequest, usRiceOffers, usRiceRequest } from "../fixtures/procurement";
 import { marketExamples } from "../fixtures/market";
 import { preparePurchaseFromCatalog } from "../src/domain/market";
 const modules = import.meta.glob("./**/*.ts");
@@ -231,4 +231,28 @@ test("case linking is owned, atomic, immutable across comparisons and retry safe
   expect(
     (await t.query(api.comparisons.list, { token: draft.token }))[0].revision,
   ).toBe(1);
+});
+
+
+test("US sample saves immutable USD/lb evidence and rejects mixed or forged identities", async () => {
+  const t = convexTest(schema, modules);
+  const usDraft = { ...draft, request: usRiceRequest, offers: usRiceOffers, selectedOfferId: null };
+  const saved = await t.mutation(api.comparisons.save, usDraft);
+  const selected = await t.mutation(api.comparisons.save, {
+    ...usDraft, id: saved.id, expectedRevision: saved.revision,
+    selectedOfferId: "us-rice-supplier-b",
+  });
+  expect((await t.query(api.comparisons.list, { token: draft.token }))[0]).toEqual(selected);
+  expect(selected.request.unit).toBe("lb");
+  expect(selected.sources["us-rice-supplier-b"].original).toEqual(usRiceOffers[1]);
+  for (const offers of [
+    [usRiceOffers[0], riceOffers[1]],
+    [{ ...usRiceOffers[0], id: "invented" }],
+    [{ ...usRiceOffers[0], supplier: "invented" }],
+  ]) {
+    await expect(t.mutation(api.comparisons.save, { ...usDraft, offers })).rejects.toThrow();
+  }
+  await expect(t.mutation(api.comparisons.save, {
+    ...usDraft, request: { ...usRiceRequest, unit: "kg" },
+  })).rejects.toThrow(/identity/);
 });

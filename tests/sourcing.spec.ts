@@ -227,7 +227,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
     .getByRole("button", { name: /Arroz Review the latest price/ })
     .click();
   await page
-    .getByRole("button", { name: "Review research evidence", exact: true })
+    .getByRole("button", { name: "Review findings", exact: true })
     .click();
   await page
     .locator(".sourcing-reviews")

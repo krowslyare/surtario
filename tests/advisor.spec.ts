@@ -1,6 +1,9 @@
 import { expect, test } from "@playwright/test";
 import { connectOnlyToLocalBackend } from "./e2e-local";
 
+const initialSaveAction =
+  /^(?:Save comparison and request AI analysis|Save buying options)$/;
+
 // Writes synthetic scenarios only. Provider calls remain disabled.
 test.beforeEach(async ({ context }) => {
   await connectOnlyToLocalBackend(context);
@@ -19,23 +22,24 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
       return Boolean(
         comparison &&
         advisorPanel.compareDocumentPosition(comparison) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
+          Node.DOCUMENT_POSITION_PRECEDING,
       );
     }),
   ).toBe(true);
   await advisor.getByText("Budget and preferences").click();
-  await advisor.getByLabel("Priority").selectOption("cash");
+  const priority = advisor.getByRole("combobox", { name: /^Priority/ });
+  await priority.selectOption("cash");
   await advisor.getByLabel("Available budget").fill("60");
   await expect(advisor.getByLabel("Confirmed current stock")).toHaveValue("");
   await expect(
     advisor.getByRole("button", {
-      name: "Save buying options",
+      name: initialSaveAction,
     }),
   ).toBeEnabled();
-  await expect(advisor.getByLabel("Priority")).toHaveValue("cash");
+  await expect(priority).toHaveValue("cash");
   await expect(advisor.getByLabel("Available budget")).toHaveValue("60");
   await advisor
-    .getByRole("button", { name: "Save buying options" })
+    .getByRole("button", { name: initialSaveAction })
     .click();
   await expect(
     page.getByRole("button", { name: "Saved comparisons (1)" }),
@@ -63,7 +67,7 @@ test("one action saves the comparison and scenario, then stale inputs stay visib
   await expect(advisor.getByRole("alert")).toContainText("Review the context values");
   await expect(
     advisor.getByRole("button", {
-      name: "Save buying options",
+      name: initialSaveAction,
     }),
   ).toBeDisabled();
   expect(errors).toEqual([]);
@@ -75,7 +79,7 @@ test("a matching saved scenario is restored without preparing another run", asyn
   await page.goto("/?view=comparison&example=pe");
   const advisor = page.getByRole("region", { name: "Purchasing advisor" });
   await advisor
-    .getByRole("button", { name: "Save buying options" })
+    .getByRole("button", { name: initialSaveAction })
     .click();
   await expect(
     advisor.getByText("Saved", { exact: true }),
@@ -110,7 +114,7 @@ test("removing an offer before the first save keeps the new scenario current", a
     .click();
 
   await advisor
-    .getByRole("button", { name: "Save buying options" })
+    .getByRole("button", { name: initialSaveAction })
     .click();
   await expect(
     advisor.getByText("Saved", { exact: true }),
@@ -128,10 +132,11 @@ test("pending quantity stays blocked after the comparison is saved", async ({
 }) => {
   await page.goto("/?view=comparison&example=pe");
   const advisor = page.getByRole("region", { name: "Purchasing advisor" });
+  await expect(page.locator(".workspace-content")).not.toHaveAttribute("inert");
   await page.getByLabel("Required quantity").fill("");
   await expect(
     advisor.getByRole("button", {
-      name: "Save buying options",
+      name: initialSaveAction,
     }),
   ).toBeDisabled();
   await page

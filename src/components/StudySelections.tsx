@@ -17,6 +17,7 @@ export default function StudySelections({
   onReplyPrepare,
   deliveryComparison,
   onDeliveryApplied,
+  onOpenComparison,
   filter,
 }: {
   selections: WebSelection[];
@@ -27,6 +28,7 @@ export default function StudySelections({
   onReplyPrepare: (seed: PurchaseSeed) => void;
   deliveryComparison?: SavedComparison;
   onDeliveryApplied?: (comparison: SavedComparison) => void;
+  onOpenComparison?: (comparison: SavedComparison) => void;
   filter: "all" | "catalog" | "distributor" | "reference";
 }) {
   const [confirmedFingerprint, setConfirmedFingerprint] = useState<
@@ -201,6 +203,7 @@ export default function StudySelections({
               onPrepare={onReplyPrepare}
               deliveryComparison={deliveryComparison}
               onDeliveryApplied={onDeliveryApplied}
+              onOpenComparison={onOpenComparison}
             />
           </article>
         ))}

@@ -59,7 +59,7 @@ test("el estudio continúa opcionalmente a compra sin inventar condiciones", asy
   await expect(page.getByTestId("total-0")).toHaveText("Pending");
   await expect(page.getByTestId("total-1")).toHaveText("Pending");
   await page.getByRole("button", { name: "View source" }).first().click();
-  await expect(page.getByRole("dialog")).toContainText("Catalog example");
+  await expect(page.getByRole("dialog")).toContainText("Sample data for exploring this comparison");
   await page.keyboard.press("Escape");
   await page.getByRole("button", { name: "Restore selection" }).click();
   await page

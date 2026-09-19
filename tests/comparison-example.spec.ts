@@ -28,3 +28,23 @@ for (const peru of [false, true]) {
     await page.screenshot({path: testInfo.outputPath("menu-mobile.png")});
   });
 }
+
+for (const peru of [false, true]) {
+  test(`sample ${peru ? "PEN/kg" : "USD/lb"} saves, selects and recovers after reload`, async ({ page, context }) => {
+    await connectOnlyToLocalBackend(context);
+    await page.goto(`/?view=comparison${peru ? "&example=pe" : ""}`);
+    await page.getByRole("button", { name: "Save comparison", exact: true }).click();
+    await expect(page.getByText("Comparison saved. Save again after making changes.", { exact: false })).toBeVisible();
+    const supplier = peru ? "Proveedor B" : "Supplier B";
+    await page.getByRole("article", { name: `Offer from ${supplier}` }).getByRole("button", { name: "Choose offer" }).click();
+    await page.getByRole("button", { name: "Save comparison changes", exact: true }).click();
+    await expect(page.getByText("Comparison saved with a selected offer", { exact: false })).toBeVisible();
+    await page.reload();
+    await page.getByRole("button", { name: "Saved comparisons (1)", exact: true }).click();
+    await page.getByRole("button", { name: "Open comparison", exact: true }).click();
+    await expect(page.getByLabel("Required quantity")).toHaveValue(peru ? "10" : "40");
+    await expect(page.getByRole("combobox", { name: "Unit", exact: true })).toHaveText(peru ? "kg" : "lb");
+    await expect(page.getByTestId("total-1")).toHaveText(peru ? "S/ 50.00" : "USD 35.00");
+    await expect(page.getByRole("article", { name: `Offer from ${supplier}` }).getByRole("button", { name: "Selected offer" })).toHaveAttribute("aria-pressed", "true");
+  });
+}

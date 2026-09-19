@@ -20,6 +20,7 @@ import {
 } from "../domain/extraction";
 import type { WebSelection, StudyProspect } from "../domain/study";
 import type { PurchaseSeed } from "../domain/market";
+import { Button } from "./ui/Button";
 import ExtractionReview from "./ExtractionReview";
 import {
   ProductLinkReader,
@@ -107,10 +108,14 @@ export function ResearchWorkspace({
   selections,
   onReview,
   onOpenStudy,
+  onBackToOverview,
+  autoSelectLatest = false,
 }: {
+  autoSelectLatest?: boolean;
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
+  onBackToOverview?: () => void;
   renderProspect?: (run: SavedResearch, sourceIndex: number) => ReactNode;
   status: ResearchStatus | undefined;
   runs: SavedResearch[] | undefined;
@@ -176,6 +181,12 @@ export function ResearchWorkspace({
       current = false;
     };
   }, [request?.id]);
+
+  useEffect(() => {
+    if (!autoSelectLatest || activeId || request || !runs?.length) return;
+    const latest = runs.reduce((current, run) => run.observedAt >= current.observedAt ? run : current);
+    setActiveId(latest.id);
+  }, [autoSelectLatest, activeId, request, runs]);
 
   const active = useMemo(() => {
     const persisted = runs?.find((run) => run.id === activeId);
@@ -293,8 +304,41 @@ export function ResearchWorkspace({
 
   if (!status) return <p className="notice info">Checking web search…</p>;
 
-  // Keep the status subscription mounted without an empty duplicate search panel.
-  if (!searching && !active && !error && !runs?.length) return null;
+  // When there are no searches yet and no active search in flight:
+  if (!searching && !active && !error && !runs?.length) {
+    return (
+      <section className="live-research" aria-labelledby="live-research-title">
+        <div className="live-research-heading">
+          <div>
+            <h2 id="live-research-title">Web research</h2>
+            <p>
+              Found pages are candidate sources. Review the content before
+              treating them as supplier offers.
+            </p>
+          </div>
+        </div>
+
+        {!status.searchEnabled && (
+          <p className="notice info">
+            Web search is not configured. You can keep exploring the samples.
+          </p>
+        )}
+
+        <div className="empty-state">
+          <History size={32} />
+          <h3>No saved searches yet</h3>
+          <p>
+            Searches you run for ingredients and suppliers will appear here.
+          </p>
+          {onBackToOverview && (
+            <Button variant="secondary" onClick={onBackToOverview}>
+              Back to overview
+            </Button>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="live-research" aria-labelledby="live-research-title">
@@ -321,13 +365,13 @@ export function ResearchWorkspace({
             {onReview
               ? "Your selection remains in My study when you open another search."
               : "Reviewed selections remain available across saved searches."}{" "}
-            Up to 10 searches per browser; clearing site data removes access.
+            Up to 10 quick searches per browser; case rounds have separate limits. Clearing site data removes access.
           </p>
           <span>
             <History size={16} /> Saved searches
           </span>
           <div>
-            {runs.map((run) => (
+            {runs.map((run, index) => (
               <button
                 type="button"
                 className="button text-button"
@@ -345,8 +389,7 @@ export function ResearchWorkspace({
                   setError("");
                 }}
               >
-                {run.ingredient} · {run.region} ·{" "}
-                {observedLabel(run.observedAt)}
+                Search {index + 1} · {run.ingredient} · {run.region} · {run.sources.length} sources · {observedLabel(run.observedAt)}
               </button>
             ))}
           </div>
@@ -727,6 +770,7 @@ type LiveResearchProps = {
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
+  onBackToOverview?: () => void;
   selectedProspectIds?: string[];
   onProspect?: (prospect: StudyProspect) => void;
 };

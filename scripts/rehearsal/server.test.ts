@@ -46,6 +46,13 @@ describe("rehearsal provider fixtures", () => {
     );
   });
 
+  test("explicit delivery rehearsal returns only a freight confirmation", () => {
+    const reply = syntheticReplyTextForMail({ subject: "[rehearsal:delivery] Rice freight confirmation" });
+    expect(reply).toContain("Freight is USD 4 per order.");
+    expect(reply).toContain("SYNTHETIC");
+    expect(reply).not.toMatch(/bag|lb|price per/);
+  });
+
   test("matches the synthetic reply language and units to the inquiry", () => {
     const us = syntheticReplyTextForMail({
       subject: "Rice quote for Portland",

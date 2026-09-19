@@ -378,7 +378,7 @@ function IntakeDialog({
                 {document && (
                   <>
                     <p className="notice info">
-                      Automatic extraction requires OpenAI. You can transcribe
+                      AI extraction is not configured in this demo. You can transcribe
                       the ingredients and keep this file as the source.
                     </p>
                     <LocalSource file={file!} />
@@ -395,7 +395,7 @@ function IntakeDialog({
                     maxLength={12500}
                     rows={5}
                     onChange={(event) => setText(event.target.value)}
-                    placeholder={"Arroz\nAceite vegetal\nCebolla roja"}
+                    placeholder={"Rice\nVegetable oil\nRed onion"}
                   />
                 </label>
               </>

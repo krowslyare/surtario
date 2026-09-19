@@ -1,3 +1,4 @@
+import { decisionActions, type DecisionActionKind } from "../domain/decisionActions";
 import { MessageBody } from "./MessageBody";
 import "../styles/mail.css";
 import ReplyDeliveryReview, { type DeliveryReply } from "./ReplyDeliveryReview";
@@ -42,6 +43,7 @@ export default function QuotationMail(props: {
   deliveryContext?: AdvisorContext;
   deliveryBlocked?: boolean;
   onDeliveryApplied?: (comparison: SavedComparison) => void;
+  onOpenComparison?: (comparison: SavedComparison) => void;
 }) {
   const [token, setToken] = useState<string | null>(null);
   useEffect(() => {
@@ -80,6 +82,7 @@ function Connected({
   deliveryContext,
   deliveryBlocked = false,
   onDeliveryApplied,
+  onOpenComparison,
 }: {
   token: string;
   comparisonId: Id<"comparisons"> | null;
@@ -96,8 +99,9 @@ function Connected({
   deliveryContext?: AdvisorContext;
   deliveryBlocked?: boolean;
   onDeliveryApplied?: (comparison: SavedComparison) => void;
+  onOpenComparison?: (comparison: SavedComparison) => void;
 }) {
-  const [deliveryReply, setDeliveryReply] = useState<DeliveryReply | null>(null);
+  const [deliveryReply, setDeliveryReply] = useState<(DeliveryReply & { term?: DecisionActionKind; offerId?: string; context?: AdvisorContext }) | null>(null);
   const confirmations = useQuery(api.quotationMail.listDeliveryConfirmations, deliveryComparison ? {token, comparisonId: deliveryComparison.id} : "skip");
   const deliveryAnalyses = useQuery(api.advisor.list, deliveryComparison && !deliveryContext ? {token, comparisonId: deliveryComparison.id} : "skip");
   const effectiveDeliveryContext = deliveryContext ?? deliveryAnalyses?.[0]?.context ?? defaultAdvisorContext;
@@ -177,8 +181,13 @@ function Connected({
   useEffect(() => {
     if (initialRequestId && requestedAvailable) setActiveId(initialRequestId);
   }, [initialRequestId, requestedAvailable]);
-  async function prepare() {
-    if (!targetKey || busy) return;
+  const comparisonActionContext = Boolean(comparisonId && !studyId && !prospectId && comparisonId === deliveryComparison?.id);
+  const proposals = comparisonActionContext && deliveryComparison && !deliveryBlocked && !deliveryLoading
+    ? decisionActions(deliveryComparison.request, deliveryComparison.offers, effectiveDeliveryContext) : [];
+  const staleAction = Boolean(active?.decisionAction && deliveryComparison && active.decisionAction.comparisonRevision !== deliveryComparison.revision);
+  useEffect(() => setConfirmed(false), [staleAction]);
+  async function prepare(action?: { kind: DecisionActionKind; offerId: string }) {
+    if (!targetKey || busy || (action && !comparisonActionContext)) return;
     if (creation.current.comparisonId !== targetKey)
       creation.current = {
         comparisonId: targetKey,
@@ -195,6 +204,7 @@ function Connected({
             ? { studyId, resultId }
             : { comparisonId: comparisonId! }),
         clientId: creation.current.clientId,
+        ...(action && deliveryComparison ? { decisionAction: { ...action, expectedRevision: deliveryComparison.revision, context: effectiveDeliveryContext } } : {}),
       });
       setLocal(draft);
       setActiveId(draft.id);
@@ -207,7 +217,7 @@ function Connected({
     }
   }
   async function sendReviewed() {
-    if (!active || !confirmed || busy) return;
+    if (!active || !confirmed || busy || staleAction) return;
     setBusy(true);
     setError("");
     try {
@@ -226,7 +236,7 @@ function Connected({
     }
   }
   return (
-    <section className="saved-studies" aria-label="Email quote requests">
+    <section className="saved-studies quotation-mail" aria-label="Email quote requests">
       <h2>Request terms by email</h2>
       <p className="field-hint">
         {prospectId
@@ -239,16 +249,28 @@ function Connected({
         <p className="field-hint">Checking email availability…</p>
       )}
       {status && !status.enabled && (
-        <p className="notice info">
-          Test email is unavailable. You can prepare and copy the message; will
-          not be sent.
+        <p className="notice info email-availability">
+          Test email is unavailable. You can still prepare and copy the message;
+          it will not be sent.
         </p>
       )}
+      {!initialRequestId && !comparisonActionContext && deliveryComparison && onOpenComparison && <div className="decision-actions">
+        <p>Questions about an existing offer belong to the case comparison. This request is for the distributor shown here.</p>
+        <button className="button secondary" onClick={() => onOpenComparison(deliveryComparison)}>Open case comparison</button>
+      </div>}
+      {!initialRequestId && proposals.length > 0 && <section aria-label="Recommended next action" className="decision-actions">
+        <h3>Recommended next action</h3>
+        {proposals.map(proposal => <div key={`${proposal.kind}:${proposal.offerId}`}>
+          <h4>{proposal.title}</h4><p>{proposal.reason}</p>
+          <p className="field-hint">Proposed question based on the saved comparison. Review the recipient and message before sending.</p>
+          <button className="button secondary" disabled={busy || deliveryBlocked} onClick={() => prepare({kind: proposal.kind, offerId: proposal.offerId})}>Prepare {proposal.kind === "delivery" ? "delivery question" : "minimum proposal"}</button>
+        </div>)}
+      </section>}
       {!initialRequestId && (
         <button
           className="button secondary"
           disabled={!targetKey || busy}
-          onClick={prepare}
+          onClick={() => prepare()}
         >
           Prepare test request
         </button>
@@ -262,7 +284,7 @@ function Connected({
       {own?.map((item) => (
         <div className="saved-study-row" key={item.id}>
           <span>
-            {item.subject} · {labels[item.state]}
+            {item.subject} · {item.simulated && item.state === "sent" ? "Simulated send" : labels[item.state]}
           </span>
           <button
             className="button text-button"
@@ -291,13 +313,18 @@ function Connected({
               {error}
             </p>
           )}
+          {active.simulated && <p className="field-hint">Local simulation. No external email was sent.</p>}
           <div className="mail-recipient"><span>Test recipient</span><strong>{active.recipient ?? "Not configured"}</strong></div>
           {active.state === "draft" ? !editDraft && <>
             <h3 className="mail-subject">{active.subject}</h3>
+            {active.decisionAction && <p className="field-hint">{active.decisionAction.reason} Based on comparison revision {active.decisionAction.comparisonRevision}.</p>}
+            {staleAction && <p role="status" className="notice info">The comparison changed. This action is historical; prepare a new question from the current comparison before sending or confirming terms.</p>}
             <p className="mail-message-text">{active.text}</p>
           </> : <details className="mail-details">
             <summary>Sent request</summary>
             <h3 className="mail-subject">{active.subject}</h3>
+            {active.decisionAction && <p className="field-hint">{active.decisionAction.reason} Based on comparison revision {active.decisionAction.comparisonRevision}.</p>}
+            {staleAction && <p role="status" className="notice info">The comparison changed. This action is historical; prepare a new question from the current comparison before sending or confirming terms.</p>}
             <p className="mail-message-text">{active.text}</p>
           </details>}
           {active.state === "draft" && (
@@ -466,7 +493,7 @@ function Connected({
               <input
                 type="checkbox"
                 disabled={
-                  Boolean(editDraft) ||
+                  staleAction || Boolean(editDraft) ||
                   active.aiDraftStatus === "running" ||
                   busy
                 }
@@ -496,7 +523,7 @@ function Connected({
                 !status?.enabled ||
                 !active.recipient ||
                 active.state !== "draft" ||
-                !confirmed ||
+                !confirmed || staleAction ||
                 Boolean(editDraft) ||
                 active.aiDraftStatus === "running" ||
                 busy
@@ -510,18 +537,18 @@ function Connected({
           <details className="mail-details">
           <summary>Request history</summary>
           <ul>
-            <li>Prepared {new Date(active.createdAt).toLocaleString()}.</li>
+            <li>Prepared {new Date(active.createdAt).toLocaleString("en-US")}.</li>
             {active.approvedAt !== null && (
               <li>
                 Approved revision {active.approvedRevision} for the recipient
                 and message above on{" "}
-                {new Date(active.approvedAt).toLocaleString()}.
+                {new Date(active.approvedAt).toLocaleString("en-US")}.
               </li>
             )}
             {active.state !== "draft" && (
               <li>
-                {labels[active.state]} ·{" "}
-                {new Date(active.updatedAt).toLocaleString()}.
+                {active.simulated && active.state === "sent" ? "Simulated send" : labels[active.state]} ·{" "}
+                {new Date(active.updatedAt).toLocaleString("en-US")}.
               </li>
             )}
           </ul>
@@ -529,7 +556,8 @@ function Connected({
           {active.state !== "draft" && <h3>Supplier replies</h3>}
           {active.replies.length === 0 ? (
             <p>
-              Replies will appear here. You can close this window and return later.
+              No replies are linked yet. They will appear here when available.
+              You can close this window and return later.
             </p>
           ) : (
             active.replies.map((reply, index) => (
@@ -560,15 +588,18 @@ function Connected({
                     Review as new offer
                   </button>
                 )}
-                {deliveryComparison && deliveryComparison.offers.some((offer) => offer.freightCents === null) && <>
-                  <button className="button secondary" disabled={deliveryBlocked || deliveryLoading} onClick={() => {
-                    setDeliveryReply({ requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt });
+                {deliveryComparison && active.decisionAction?.kind !== "minimum" && deliveryComparison.offers.some((offer) => offer.freightCents === null) && <>
+                  <button className="button secondary" disabled={deliveryBlocked || deliveryLoading || staleAction} onClick={() => {
+                    setDeliveryReply({ requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, offerId: active.decisionAction?.offerId, context: active.decisionAction?.context });
                     setActiveId(null);
                   }}>Use reply to confirm delivery</button>
                   {deliveryBlocked && <p className="field-hint">Save your comparison changes and check your preferences before confirming delivery.</p>}
                 </>}
+                {deliveryComparison && active.decisionAction?.kind === "minimum" && <button className="button secondary" disabled={deliveryBlocked || deliveryLoading || staleAction} onClick={() => {
+                  setDeliveryReply({requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, term: "minimum", offerId: active.decisionAction!.offerId, context: active.decisionAction!.context}); setActiveId(null);
+                }}>Use reply to confirm minimum</button>}
                 {confirmations?.filter((item) => item.requestId === active.id && item.messageId === reply.messageId).map((item) => <div key={item.id}>
-                  <h4>Delivery confirmed</h4><blockquote>{item.evidenceQuote}</blockquote>
+                  <h4>{item.minimumPackages !== undefined ? "Minimum confirmed" : "Delivery confirmed"}</h4><blockquote>{item.evidenceQuote}</blockquote>
                   <p className="field-hint">Confirmed {new Date(item.createdAt).toLocaleString()} · comparison revision {item.comparisonRevision}</p>
                   <p>Before confirmation: {item.before.recommendation}</p><p>After confirmation: {item.after.recommendation}</p>
                 </div>)}
@@ -590,7 +621,7 @@ function Connected({
           )}
         </Dialog>
       )}
-      {deliveryReply && deliveryComparison && <ReplyDeliveryReview token={token} reply={deliveryReply} comparison={deliveryComparison} context={effectiveDeliveryContext} onApplied={onDeliveryApplied} onClose={() => setDeliveryReply(null)} />}
+      {deliveryReply && deliveryComparison && <ReplyDeliveryReview token={token} reply={deliveryReply} term={deliveryReply.term} targetOfferId={deliveryReply.offerId} comparison={deliveryComparison} context={deliveryReply.context ?? effectiveDeliveryContext} onApplied={onDeliveryApplied} onClose={() => setDeliveryReply(null)} />}
       {reviewReply && onPrepare && (
         <ReplyOfferReview
           reply={{

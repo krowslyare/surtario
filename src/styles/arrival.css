@@ -11,7 +11,17 @@
   opacity: 1;
   transition: opacity 220ms ease;
 }
-.workspace-arrival[data-ready="true"] { opacity: 0; pointer-events: none; }
+.workspace-arrival[data-ready="true"] {
+  opacity: 0;
+  transition-delay: 340ms;
+  pointer-events: none;
+}
+.workspace-arrival[data-ready="true"] .brand {
+  animation: arrival-logo-return 420ms both;
+}
+.workspace-arrival[data-ready="true"] p {
+  animation: arrival-copy-out 180ms ease-in both;
+}
 .workspace-arrival-content { text-align: center; }
 .workspace-arrival .brand {
   justify-content: center;
@@ -35,7 +45,21 @@
   from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
+/* Retrace the entrance: settle, lift, then disappear above the resting point. */
+@keyframes arrival-logo-return {
+  0% { opacity: 1; transform: translateY(0); animation-timing-function: ease-in-out; }
+  22% { opacity: 1; transform: translateY(-3px); animation-timing-function: cubic-bezier(.7, 0, .84, 0); }
+  45% { opacity: 1; transform: translateY(5px); animation-timing-function: cubic-bezier(.33, 0, .68, 1); }
+  100% { opacity: 0; transform: translateY(-64px); }
+}
+@keyframes arrival-copy-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(4px); }
+}
 @media (prefers-reduced-motion: reduce) {
-  .workspace-arrival { transition: none; }
-  .workspace-arrival .brand, .workspace-arrival p { animation: none; }
+  .workspace-arrival,
+  .workspace-arrival[data-ready="true"] { transition: opacity 140ms ease; }
+  .workspace-arrival .brand, .workspace-arrival p,
+  .workspace-arrival[data-ready="true"] .brand,
+  .workspace-arrival[data-ready="true"] p { animation: none; }
 }

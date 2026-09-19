@@ -62,3 +62,16 @@ export const usRiceOffers: SupplierOffer[] = [
     minimumPackages: 1, freightCents: 0, taxStatus: "included", deliveryConfirmed: true,
   },
 ];
+
+// Both browser defaults and server validation resolve only these trusted examples.
+export const comparisonExamples = {
+  pe: { request: riceRequest, offers: riceOffers },
+  us: { request: usRiceRequest, offers: usRiceOffers },
+};
+
+export function resolveComparisonExample(ids: string[]) {
+  if (!ids.length) return undefined;
+  return Object.values(comparisonExamples).find((example) =>
+    ids.every((id) => example.offers.some((offer) => offer.id === id)),
+  );
+}

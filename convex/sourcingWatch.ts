@@ -1,3 +1,4 @@
+import { RESEARCH_POLICY } from "../src/domain/researchCoverage";
 import { ConvexError, v } from "convex/values";
 import {
   internalMutation,
@@ -11,7 +12,7 @@ import { watchSources, compareObservation } from "./lib/watchEvidence";
 import { readProductPage } from "./lib/firecrawl";
 import {
   providerFetch,
-  providerRehearsalEnabled,
+  webResearchSimulated,
 } from "./lib/providerTransport";
 import { analyzeWebSourceWithAgent } from "./lib/agentExtraction";
 import { candidate } from "./sourcingValidators";
@@ -268,7 +269,7 @@ export const finish = internalMutation({
       researchRunId = await ctx.db.insert("researchRuns", {
         ownerHash: row.ownerHash,
         clientId: `watch:${watch._id}:${args.revision}`,
-        simulated: providerRehearsalEnabled(),
+        simulated: webResearchSimulated(),
         ingredient: row.ingredient,
         region: row.region,
         observedAt: new Date(now).toISOString().slice(0, 10),
@@ -280,7 +281,7 @@ export const finish = internalMutation({
         warning: false,
       });
       await ctx.db.patch(row._id, {
-        researchRunIds: [...row.researchRunIds, researchRunId].slice(-9),
+        researchRunIds: [...row.researchRunIds, researchRunId].slice(-RESEARCH_POLICY.retainedRuns),
         updatedAt: now,
       });
     }

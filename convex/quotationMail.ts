@@ -1,3 +1,5 @@
+import { decisionActions } from "../src/domain/decisionActions";
+import { decisionActionInput } from "./decisionActionValidators";
 import { advisorContext } from "./advisorValidators";
 import { savedComparisonValidator } from "./comparisonValidators";
 import { savedDeliveryConfirmation } from "./deliveryValidators";
@@ -125,6 +127,7 @@ async function publicRequest(
     .take(MAX_REPLIES);
   return {
     id: doc._id,
+    ...(doc.decisionAction ? { decisionAction: doc.decisionAction } : {}),
     simulated: doc.simulated ?? false,
     ...(doc.comparisonId ? { comparisonId: doc.comparisonId } : {}),
     ...(doc.studyId ? { studyId: doc.studyId, resultId: doc.resultId } : {}),
@@ -198,13 +201,17 @@ export const reserveInquiry = internalMutation({
     const study = doc.studyId ? await ctx.db.get(doc.studyId) : null;
     const prospect = doc.prospectId ? await ctx.db.get(doc.prospectId) : null;
     for (const source of [comparison, study, prospect]) if (source && source.ownerHash !== hash) throw new ConvexError("Source unavailable in this session.");
+    if (doc.decisionAction && comparison?.revision !== doc.decisionAction.comparisonRevision)
+      throw new ConvexError("The comparison changed. Prepare a new action before requesting a suggestion.");
     await ctx.db.patch(doc._id, { aiDraftStatus: "running", aiDraftAttempts: 1 });
     await ctx.scheduler.runAfter(90_000, internal.quotationMail.expireInquiry, { id: doc._id });
     await traceMail(ctx, doc, "mail_draft_started", "AI is preparing a supplier question. Nothing is sent.", "ai-draft-started");
     return { fresh: true as const, context: JSON.stringify({
       originalInquiry: doc.text,
       request: comparison?.request,
-      offers: comparison?.offers,
+      // A supplier inquiry must not disclose other suppliers' private quotes.
+      offers: doc.decisionAction ? comparison?.offers.filter(offer => offer.id === doc.decisionAction!.offerId) : undefined,
+      proposedAction: doc.decisionAction ? { kind: doc.decisionAction.kind, proposedMinimumPackages: doc.decisionAction.proposedMinimumPackages } : undefined,
       source: study?.results.find(result => result.id === doc.resultId) ?? (prospect ? { ingredient: prospect.ingredient, supplier: prospect.supplier, region: prospect.region } : undefined),
     }).slice(0, 16000) };
   },
@@ -435,6 +442,7 @@ export const extractReply = action({
 export const create = mutation({
   args: {
     token: v.string(),
+    decisionAction: v.optional(decisionActionInput),
     comparisonId: v.optional(v.id("comparisons")),
     studyId: v.optional(v.id("studies")),
     prospectId: v.optional(v.id("webProspects")),
@@ -475,6 +483,17 @@ export const create = mutation({
       throw new ConvexError(
         "The distributor must be selected in the saved study.",
       );
+    if (args.decisionAction && (!comparison || comparison.revision !== args.decisionAction.expectedRevision))
+      throw new ConvexError("Save and reopen the current comparison before preparing this action.");
+    const proposal = args.decisionAction && comparison
+      ? decisionActions(comparison.request, comparison.offers, args.decisionAction.context).find(item => item.kind === args.decisionAction!.kind && item.offerId === args.decisionAction!.offerId)
+      : null;
+    if (args.decisionAction && !proposal) throw new ConvexError("This action no longer applies to the current comparison.");
+    const actionSnapshot = proposal && args.decisionAction ? {
+      kind: proposal.kind, offerId: proposal.offerId, comparisonRevision: args.decisionAction.expectedRevision,
+      context: args.decisionAction.context, reason: proposal.reason, evidenceOfferIds: proposal.evidenceOfferIds,
+      ...(proposal.proposedMinimumPackages !== undefined ? { proposedMinimumPackages: proposal.proposedMinimumPackages } : {}),
+    } : undefined;
     const existing = await ctx.db
       .query("quotationRequests")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -486,7 +505,14 @@ export const create = mutation({
         existing.comparisonId !== args.comparisonId ||
         existing.studyId !== args.studyId ||
         existing.resultId !== args.resultId ||
-        existing.prospectId !== args.prospectId
+        existing.prospectId !== args.prospectId ||
+        Boolean(existing.decisionAction) !== Boolean(actionSnapshot) ||
+        (existing.decisionAction && actionSnapshot && (
+          existing.decisionAction.kind !== actionSnapshot.kind ||
+          existing.decisionAction.offerId !== actionSnapshot.offerId ||
+          existing.decisionAction.comparisonRevision !== actionSnapshot.comparisonRevision ||
+          Object.keys(actionSnapshot.context).some(key => existing.decisionAction!.context[key as keyof typeof actionSnapshot.context] !== actionSnapshot.context[key as keyof typeof actionSnapshot.context])
+        ))
       )
         throw new ConvexError("This request already exists with different data.");
       return await publicRequest(ctx, existing);
@@ -521,8 +547,8 @@ export const create = mutation({
       comparison?.request.ingredient ??
       prospect?.ingredient ??
       distributor!.ingredient;
-    const subject = `Quote request: ${ingredient}`;
-    const text = prospect
+    const subject = proposal ? `${proposal.kind === "delivery" ? "Delivery confirmation" : "Minimum order proposal"}: ${ingredient}` : `Quote request: ${ingredient}`;
+    const text = proposal ? `Hello,\n\n${proposal.question}\n\nPlease confirm any change in other terms separately. This is not a purchase order.\nThank you.` : prospect
       ? [
           "Hello,",
           "",
@@ -554,6 +580,7 @@ export const create = mutation({
     const id = await ctx.db.insert("quotationRequests", {
       ownerHash: hash,
       clientId: args.clientId,
+      ...(actionSnapshot ? { decisionAction: actionSnapshot } : {}),
       ...(args.comparisonId
         ? { comparisonId: args.comparisonId }
         : args.prospectId
@@ -617,6 +644,11 @@ export const reserveSend = internalMutation({
         "This request was already processed. Operator review is required before another send.",
       );
     if (doc.aiDraftStatus === "running") throw new ConvexError("Wait for the AI draft result before approving this message.");
+    if (doc.decisionAction && doc.comparisonId) {
+      const current = await ctx.db.get(doc.comparisonId);
+      if (!current || current.revision !== doc.decisionAction.comparisonRevision)
+        throw new ConvexError("The comparison changed. Prepare and approve a new action before sending.");
+    }
     const cfg = configured();
     if (!cfg.enabled || !doc.recipient || !doc.inboxId)
       throw new ConvexError(
@@ -1137,17 +1169,19 @@ export const listDeliveryConfirmations = query({
   },
 });
 
-// A human explicitly assigns a quoted reply to one unresolved delivery charge.
+// A human explicitly assigns a quoted reply to one commercial term.
 // The reply is evidence, never authorization or an instruction to select/buy.
 export const confirmReplyDelivery = mutation({
   args: {
     token: v.string(), requestId: v.id("quotationRequests"), messageId: v.string(),
     comparisonId: v.id("comparisons"), expectedRevision: v.number(),
-    offerId: v.string(), freightCents: v.number(), evidenceQuote: v.string(),
+    offerId: v.string(), freightCents: v.optional(v.number()), minimumPackages: v.optional(v.number()), evidenceQuote: v.string(),
     context: advisorContext, confirmed: v.literal(true),
   },
   returns: v.object({ comparison: savedComparisonValidator, confirmation: savedDeliveryConfirmation, alreadyApplied: v.boolean() }),
   handler: async (ctx, args) => {
+    const minimum = args.minimumPackages !== undefined;
+    const term = minimum ? "minimum" : "delivery";
     const owner = await ownerHash(args.token);
     const comparison = await ctx.db.get(args.comparisonId);
     const request = await ctx.db.get(args.requestId);
@@ -1173,10 +1207,11 @@ export const confirmReplyDelivery = mutation({
     if (!reply || reply.requestId !== request._id)
       throw new ConvexError("Reply not linked to this request.");
     if (!args.evidenceQuote.trim() || args.evidenceQuote.length > 2000 || !reply.text.includes(args.evidenceQuote))
-      throw new ConvexError("Quote the delivery information exactly as it appears in the reply.");
-    if (!Number.isSafeInteger(args.freightCents) || args.freightCents < 0 || args.freightCents > 100_000_000 ||
+      throw new ConvexError("Quote the commercial term exactly as it appears in the reply.");
+    if ((minimum ? (args.freightCents !== undefined || !Number.isSafeInteger(args.minimumPackages) || args.minimumPackages! < 1 || args.minimumPackages! > 1_000_000)
+        : (!Number.isSafeInteger(args.freightCents) || args.freightCents! < 0 || args.freightCents! > 100_000_000)) ||
         !Number.isSafeInteger(args.expectedRevision) || args.expectedRevision < 1)
-      throw new ConvexError("Enter a valid delivery amount and comparison revision.");
+      throw new ConvexError("Enter a valid term value and comparison revision.");
     const c = args.context;
     if ([c.budgetCents, c.dailyUsage, c.stockQuantity, c.maxCoverageDays].some(x => x !== null && (!Number.isFinite(x) || x < 0 || x > 1_000_000_000)) ||
         (c.budgetCents !== null && !Number.isSafeInteger(c.budgetCents)) || c.dailyUsage === 0 || c.maxCoverageDays === 0 ||
@@ -1189,17 +1224,23 @@ export const confirmReplyDelivery = mutation({
     const existing = await ctx.db.query("deliveryConfirmations")
       .withIndex("by_comparisonId_and_messageId_and_offerId", q => q.eq("comparisonId", comparison._id).eq("messageId", args.messageId).eq("offerId", args.offerId)).unique();
     if (existing) {
-      if (existing.requestId !== request._id || existing.freightCents !== args.freightCents || existing.evidenceQuote !== args.evidenceQuote ||
+      if (existing.requestId !== request._id || (minimum ? existing.minimumPackages !== args.minimumPackages : existing.minimumPackages !== undefined || existing.freightCents !== args.freightCents) || existing.evidenceQuote !== args.evidenceQuote ||
           Object.keys(c).some(key => c[key as keyof typeof c] !== existing.context[key as keyof typeof c]))
         throw new ConvexError("This reply was already confirmed with different data.");
       return { comparison: publicComparison(), confirmation: deliveryView(existing), alreadyApplied: true };
     }
+    if (request.decisionAction && (request.decisionAction.offerId !== args.offerId || request.decisionAction.kind !== term || request.decisionAction.comparisonRevision !== comparison.revision))
+      throw new ConvexError("This action belongs to an earlier comparison or another term. Prepare a current action.");
+    if (request.decisionAction && Object.keys(c).some(key => c[key as keyof typeof c] !== request.decisionAction!.context[key as keyof typeof c]))
+      throw new ConvexError("Use the decision preferences saved with this question when confirming its reply.");
+    if (minimum && !request.decisionAction)
+      throw new ConvexError("Prepare a linked minimum-order action before confirming this term.");
     if (comparison.revision !== args.expectedRevision)
       throw new ConvexError("The comparison changed in another view. Open it again before confirming delivery.");
     const offer = comparison.offers.find(o => o.id === args.offerId);
     if (!offer || !comparison.sources[args.offerId]) throw new ConvexError("Choose an offer in this comparison.");
-    if (offer.freightCents !== null) throw new ConvexError("Delivery is already confirmed for this offer.");
-    const offers = comparison.offers.map(o => o.id === offer.id ? { ...o, freightCents: args.freightCents } : o);
+    if (!minimum && offer.freightCents !== null) throw new ConvexError("Delivery is already confirmed for this offer.");
+    const offers = comparison.offers.map(o => o.id === offer.id ? { ...o, ...(minimum ? { minimumPackages: args.minimumPackages! } : { freightCents: args.freightCents! }) } : o);
     const before = analyzePurchase(comparison.request, comparison.offers, c);
     const after = analyzePurchase(comparison.request, offers, c);
     const createdAt = Date.now();
@@ -1210,13 +1251,13 @@ export const confirmReplyDelivery = mutation({
     });
     const id = await ctx.db.insert("deliveryConfirmations", {
       requestId: request._id, messageId: reply.messageId, comparisonId: comparison._id,
-      offerId: offer.id, freightCents: args.freightCents, evidenceQuote: args.evidenceQuote,
+      offerId: offer.id, freightCents: minimum ? offer.freightCents : args.freightCents!, ...(minimum ? { minimumPackages: args.minimumPackages! } : {}), evidenceQuote: args.evidenceQuote,
       receivedAt: reply.receivedAt, context: c, before, after, comparisonRevision: revision, createdAt,
     });
     await appendCaseEvent(ctx, {
-      comparisonId: comparison._id, kind: "delivery_confirmed",
+      comparisonId: comparison._id, kind: minimum ? "minimum_confirmed" : "delivery_confirmed",
       eventKey: `delivery:${id}`, sourceId: `reply:${request._id}:${reply.messageId}`,
-      summary: `Delivery confirmed for ${offer.supplier}: ${offer.currency} ${(args.freightCents / 100).toFixed(2)}. ${before.recommendedOfferId !== after.recommendedOfferId || before.action !== after.action ? "Recommendation changed." : "Recommendation unchanged."} ${after.recommendation}`,
+      summary: `${minimum ? "Minimum confirmed" : "Delivery confirmed"} for ${offer.supplier}: ${minimum ? `${args.minimumPackages} packs` : `${offer.currency} ${(args.freightCents! / 100).toFixed(2)}`}. ${before.recommendedOfferId !== after.recommendedOfferId || before.action !== after.action ? "Recommendation changed." : "Recommendation unchanged."} ${after.recommendation}`,
     });
     const updated = (await ctx.db.get(comparison._id))!;
     return { comparison: { ...publicComparison(), offers: updated.offers, sources: updated.sources, selectedOfferId: updated.selectedOfferId, revision, updatedAt: createdAt }, confirmation: deliveryView((await ctx.db.get(id))!), alreadyApplied: false };

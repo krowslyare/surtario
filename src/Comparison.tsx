@@ -1,3 +1,4 @@
+import { SourceEvidence } from "./components/SourceEvidence";
 import type { Id } from "../convex/_generated/dataModel";
 import {
   previewFreightDecision,
@@ -7,6 +8,7 @@ import MissingConditionInsight, {
   ResolvedCondition,
 } from "./components/MissingConditionInsight";
 import Brand from "./components/Brand";
+import { Button } from "./components/ui/Button";
 import { Select } from "./components/ui/Select";
 import PurchasingAdvisor, {
   comparisonStateFingerprint,
@@ -23,6 +25,7 @@ import SavedComparisons, {
   type SavedComparisonsHandle,
 } from "./components/SavedComparisons";
 import {
+  ArrowLeft,
   ArrowRight,
   Check,
   CircleHelp,
@@ -36,7 +39,7 @@ import {
   Trash2,
   Truck,
 } from "lucide-react";
-import { riceOffers, riceRequest, usRiceOffers, usRiceRequest } from "../fixtures/procurement";
+import { comparisonExamples } from "../fixtures/procurement";
 import {
   compareProcurement,
   type SupplierOffer,
@@ -291,8 +294,8 @@ export default function Comparison({
   persistenceEnabled: boolean;
 }) {
   const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
-  const exampleRequest = samplePeru ? riceRequest : usRiceRequest;
-  const exampleOffers = samplePeru ? riceOffers : usRiceOffers;
+  const { request: exampleRequest, offers: exampleOffers } =
+    comparisonExamples[samplePeru ? "pe" : "us"];
   const [request, setRequest] = useState<ProcurementRequest>({
     ...(seed?.request ?? exampleRequest),
   });
@@ -321,7 +324,9 @@ export default function Comparison({
     seed?.resumeComparison?.revision ?? 0,
   );
   const [sourcingCaseId, setSourcingCaseId] = useState(seed?.sourcingCaseId);
-  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(null);
+  const [savedFingerprint, setSavedFingerprint] = useState<string | null>(() =>
+    seed?.resumeComparison?.unchanged ? comparisonStateFingerprint({ request: seed.request, offers: seed.offers, sources: seed.sources, selectedOfferId: seed.resumeComparison.selectedOfferId ?? null }) : null,
+  );
   const savedComparisons = useRef<SavedComparisonsHandle>(null);
   const [savingAvailable, setSavingAvailable] = useState(false);
   const [clientId, setClientId] = useState(() => crypto.randomUUID());
@@ -583,41 +588,46 @@ export default function Comparison({
 
   return (
     <>
-      <a href="#comparison" className="skip-link">
+      <a href="#comparison-main" className="skip-link">
         Skip to comparison
       </a>
       <header className="topbar">
         <Brand />
-        <button
-          className="button text-button"
-          aria-label="How to compare"
-          onClick={() => setModal("help")}
-        >
+        <Button variant="text" aria-label="How to compare" onClick={() => setModal("help")}>
           <CircleHelp size={18} />
           <span>How to compare</span>
-        </button>
+        </Button>
       </header>
-      <main>
-        {onBack && (
-          <button className="button text-button" onClick={onBack}>
-            Back to market study
-          </button>
-        )}
+      <main id="comparison-main" className="comparison-main" tabIndex={-1}>
         <div className="workspace-nav">
-          <span>
-            <Scale size={16} /> Ingredient comparison
-          </span>
-          <span className="demo-badge">
-            {hasReviewedSources
-              ? "Reviewed sources"
-              : seed
-                ? "From your sample study"
-                : "Synthetic example"}
-          </span>
+          <div className="workspace-nav-start">
+            {onBack && (
+              <Button variant="text" onClick={onBack}>
+                <ArrowLeft size={16} />
+                Back to market study
+              </Button>
+            )}
+            <span className="demo-badge">
+              {hasReviewedSources
+                ? "Reviewed sources"
+                : seed
+                  ? "From your sample study"
+                  : "Synthetic example"}
+            </span>
+          </div>
+          <ol className="workflow-steps" aria-label="Progress">
+            <li aria-current={validQuantity ? undefined : "step"}>
+              1. Quantity
+            </li>
+            <li aria-current={!validQuantity || activeSelection ? undefined : "step"}>
+              2. Terms
+            </li>
+            <li aria-current={activeSelection ? "step" : undefined}>3. Choice</li>
+          </ol>
         </div>
         <div className="page-title">
           <div>
-            <h1>Compare before you buy</h1>
+            <h1 tabIndex={-1}>Compare before you buy</h1>
             <p>
               Enter a quantity and confirm the terms to calculate the order.
             </p>
@@ -736,51 +746,6 @@ export default function Comparison({
             </button>
           </aside>
         </div>
-        <MissingConditionInsight
-          key={`${currentFingerprint}:${stableValue(decisionState)}`}
-          request={effectiveRequest}
-          offers={offers}
-          decisionState={decisionState}
-          onConfirm={confirmFreightAnswer}
-          onEdit={setEditing}
-        />
-        {resolved && resolved.clientId === clientId && resolved.fingerprint === fingerprint && resolved.contextKey === stableValue(decisionState) && (
-          <ResolvedCondition
-            key={resolved.fingerprint}
-            preview={resolved.preview}
-            saved={comparisonCurrent}
-            canSave={
-              persistenceEnabled && savingAvailable && persistable && validQuantity
-            }
-            saveUnavailableReason={
-              !persistenceEnabled
-                ? "Saving is unavailable. You can use this example during your visit."
-                : !savingAvailable
-                  ? "Saving is unavailable. Allow site storage and check your connection; keep this view open."
-                  : blockedReason
-            }
-            onSave={saveComparisonForAdvisor}
-          />
-        )}
-        {persistenceEnabled && (
-          <PurchasingAdvisor
-            key={clientId}
-            onDecisionContext={setDecisionState}
-            comparisonId={savedId}
-            revision={savedRevision}
-            request={effectiveRequest}
-            offers={offers}
-            comparisonFingerprint={currentFingerprint}
-            comparisonCurrent={comparisonCurrent}
-            canSaveComparison={persistable && validQuantity}
-            saveBlockedReason={
-              !validQuantity
-                ? "Enter a valid quantity to analyze this purchase."
-                : blockedReason
-            }
-            onSaveComparison={saveComparisonForAdvisor}
-          />
-        )}
         <section
           id="comparison"
           tabIndex={-1}
@@ -841,7 +806,7 @@ export default function Comparison({
                           <h3>
                             {difference === 0
                               ? "These offers have the same order total"
-                              : `${lowest.map((offer) => offer.supplier).join(" y ")} requires ${money(difference, currency)} less${count > 2 ? " than the highest order total" : ""}`}
+                              : `${lowest.map((offer) => offer.supplier).join(" and ")} requires ${money(difference, currency)} less${count > 2 ? " than the highest order total" : ""}`}
                           </h3>
                           <p>
                             For {numberLabel(effectiveRequest.quantity)} {unit}
@@ -897,7 +862,7 @@ export default function Comparison({
                   const sourceInfo = sources[offer.id];
                   return (
                     <article
-                      className="offer"
+                      className={`offer${activeSelection === offer.id ? " is-chosen" : ""}`}
                       key={offer.id}
                       aria-label={`Offer from ${offer.supplier}`}
                     >
@@ -1034,11 +999,10 @@ export default function Comparison({
                             <Info size={16} />
                             Review this offer
                           </strong>
-                          <ul>
-                            {issues.map((issue, i) => (
-                              <li key={i}>{issue}</li>
-                            ))}
-                          </ul>
+                          <details>
+                            <summary>{issues.length} conditions to review</summary>
+                            <ul>{issues.map((issue, i) => <li key={i}>{issue}</li>)}</ul>
+                          </details>
                           <button
                             className="button text-button"
                             onClick={() => setEditing(offer.id)}
@@ -1085,9 +1049,55 @@ export default function Comparison({
             </>
           )}
         </section>
+        <MissingConditionInsight
+          key={`${currentFingerprint}:${stableValue(decisionState)}`}
+          request={effectiveRequest}
+          offers={offers}
+          decisionState={decisionState}
+          onConfirm={confirmFreightAnswer}
+          onEdit={setEditing}
+        />
+        {resolved && resolved.clientId === clientId && resolved.fingerprint === fingerprint && resolved.contextKey === stableValue(decisionState) && (
+          <ResolvedCondition
+            key={resolved.fingerprint}
+            preview={resolved.preview}
+            saved={comparisonCurrent}
+            canSave={
+              persistenceEnabled && savingAvailable && persistable && validQuantity
+            }
+            saveUnavailableReason={
+              !persistenceEnabled
+                ? "Saving is unavailable. You can use this example during your visit."
+                : !savingAvailable
+                  ? "Saving is unavailable. Allow site storage and check your connection; keep this view open."
+                  : blockedReason
+            }
+            onSave={saveComparisonForAdvisor}
+          />
+        )}
+        {persistenceEnabled && (
+          <PurchasingAdvisor
+            key={clientId}
+            onDecisionContext={setDecisionState}
+            comparisonId={savedId}
+            revision={savedRevision}
+            request={effectiveRequest}
+            offers={offers}
+            comparisonFingerprint={currentFingerprint}
+            comparisonCurrent={comparisonCurrent}
+            canSaveComparison={persistable && validQuantity}
+            saveBlockedReason={
+              !validQuantity
+                ? "Enter a valid quantity to analyze this purchase."
+                : blockedReason
+            }
+            onSaveComparison={saveComparisonForAdvisor}
+          />
+        )}
+
         <section className="try-panel" aria-label="Explore missing details">
           <div>
-            <h3>What if a detail is missing?</h3>
+            <h2>What if a detail is missing?</h2>
             <p>
               See how the comparison changes when an offer is incomplete.
             </p>
@@ -1119,7 +1129,7 @@ export default function Comparison({
             deliveryBlocked={!comparisonCurrent || decisionState.invalid}
             onDeliveryApplied={(comparison) => {
               if (currentClientId.current !== clientId || currentFingerprintRef.current !== currentFingerprint) {
-                setMessage("Delivery was saved to the previous comparison. Your current draft is preserved.");
+                setMessage("The confirmed term was saved to the previous comparison. Your current draft is preserved.");
                 return;
               }
               openSaved(comparison);
@@ -1220,18 +1230,10 @@ export default function Comparison({
           <div className="source-document">
             <div className="source-document-head">
               <FileText size={28} />
-              <span>{source.label}</span>
+              <span>{source.marketSource ? source.original.ingredient : source.label}</span>
             </div>
             <h3>{source.original.supplier}</h3>
             <p>{displayDate(source.date)}</p>
-            {source.marketSource && (
-              <blockquote>{source.marketSource.evidence}</blockquote>
-            )}
-            {source.extraction && (
-              <p>
-                The original document and extraction are preserved with your corrections. These are the values you confirmed when creating the comparison.
-              </p>
-            )}
             <dl className="offer-details">
               <div>
                 <dt>Ingredient</dt>
@@ -1276,6 +1278,8 @@ export default function Comparison({
                 </dd>
               </div>
             </dl>
+            <p className="field-hint">{source.marketSource?.simulated ? (source.extraction ? "Reviewed synthetic document" : "Synthetic example") : (source.extraction ? "Reviewed source" : "Source record")}</p>
+            <SourceEvidence title={source.marketSource?.title ?? source.label} text={source.marketSource?.evidence} extraction={source.extraction} />
           </div>
           {source.marketSource?.url && (
             <a

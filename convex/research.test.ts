@@ -220,7 +220,7 @@ test("session and global reservations enforce lifetime spend ceilings", async ()
       await ctx.db.insert("researchRuns", {
         ...fields,
         createdAt: 0,
-        clientId: String(i),
+        clientId: `${String(i).padStart(8, "0")}-1111-4111-8111-111111111111`,
         ownerHash: i < 10 ? fields.ownerHash : "other",
       });
   });
@@ -229,7 +229,7 @@ test("session and global reservations enforce lifetime spend ceilings", async ()
       ...draft,
       clientId: "22222222-2222-4222-8222-222222222222",
     }),
-  ).rejects.toThrow(/10 live searches/);
+  ).rejects.toThrow(/10 quick searches/);
   await expect(
     t.mutation(internal.research.reserveSearch, {
       ...draft,
@@ -266,4 +266,25 @@ test("uncertain persistence after model response cannot issue another paid extra
     /already running/,
   );
   expect(analyzeWebSourceWithAgent).toHaveBeenCalledTimes(1);
+});
+
+test("twelve adaptive rounds and a watch do not consume quick-search quota or hide quick history", async () => {
+  const t = convexTest(schema, modules);
+  const { ownerHash } = await import("./lib/demoSession");
+  const hash = await ownerHash(draft.token);
+  await t.run(async ctx => {
+    for (let i = 0; i < 13; i++) await ctx.db.insert("researchRuns", {
+      ownerHash: hash, clientId: i === 12 ? "watch:legacy:1" : `case:legacy:${Math.floor(i / 6)}:${i % 6}`,
+      ingredient: "Rice", region: "Portland, US", observedAt: "2026-09-17", createdAt: Date.now(), status: "complete", error: null, sources: [], discarded: 0, warning: false,
+    });
+  });
+  for (let i = 0; i < 10; i++) {
+    const id = i < 5 ? `a000000${i}-1111-4111-8111-111111111111` : `f000000${i}-1111-4111-8111-111111111111`;
+    const result = await t.mutation(internal.research.reserveSearch, { ...draft, clientId: id });
+    expect(result.kind).toBe("reserved");
+    await t.run(ctx => ctx.db.patch(result.run.id, { createdAt: Date.now() - 31000 }));
+  }
+  expect(await t.query(api.research.list, { token: draft.token })).toHaveLength(10);
+  await expect(t.mutation(internal.research.reserveSearch, draft)).rejects.toThrow(/10 quick searches/);
+  expect(await t.query(api.research.list, { token: "b".repeat(64) })).toEqual([]);
 });

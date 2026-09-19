@@ -4,9 +4,12 @@ import {
   ArrowRight,
   Bookmark,
   Check,
-  Info,
-  Search,
+  FileText,
   FolderOpen,
+  Info,
+  ListPlus,
+  PenLine,
+  Search,
 } from "lucide-react";
 import {
   marketExamples,
@@ -130,7 +133,7 @@ export default function MarketStudy({
 
   function openUpdatedReplyComparison(comparison: SavedComparison) {
     onPrepare({ ...comparison, sourcingCaseId: currentStudyCase?.caseId,
-      resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId } });
+      resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true } });
   }
 
   const [confirmed, setConfirmed] = useState(false);
@@ -138,6 +141,26 @@ export default function MarketStudy({
   const [showStudy, setShowStudy] = useState(false);
   const [resultsView, setResultsView] = useState<"example" | "web">("example");
   const [nextIngredient, setNextIngredient] = useState<string | null>(null);
+  const [extrasIngredientOpen, setExtrasIngredientOpen] = useState(false);
+  const [extrasQuotesOpen, setExtrasQuotesOpen] = useState(false);
+
+  function openExtras(target: "ingredients" | "quotes") {
+    if (target === "ingredients") {
+      setExtrasIngredientOpen(true);
+    } else {
+      setExtrasQuotesOpen(true);
+    }
+    requestAnimationFrame(() => {
+      const el = document.getElementById(
+        target === "ingredients"
+          ? "disclosure-ingredients"
+          : "disclosure-quotes",
+      );
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const trigger = el?.querySelector<HTMLElement>(".disclosure-trigger");
+      trigger?.focus({ preventScroll: true });
+    });
+  }
   const results = search
     ? filterMarketExamples(catalog, search.term, search.region)
     : [];
@@ -409,7 +432,7 @@ export default function MarketStudy({
       </header>
       <main
         id="market-main"
-        className={`market-main ${search || showStudy ? "has-results" : "is-intro"} ${showStudy ? "is-study" : ""}`}
+        className={`market-main ${search || showStudy ? "has-results" : "is-intro"} ${showStudy ? "is-study" : ""} ${resultsView === "web" ? "is-live-research" : ""}`}
       >
         <div className="workspace-nav">
           <span>
@@ -532,30 +555,36 @@ export default function MarketStudy({
                 >
                   Search suppliers
                 </Button>
-                {persistenceEnabled && (
-                  <Button
-                    variant="text"
-                    type="button"
-                    onClick={() => {
-                      setResultsView("web");
-                      setShowStudy(false);
-                      requestAnimationFrame(() =>
-                        document.getElementById("market-results")?.focus(),
-                      );
-                    }}
-                  >
-                    Saved research
-                  </Button>
-                )}
-                <p className="market-search-note">
-                  <Info size={16} />
-                  Sample data is separate from live search.{" "}
-                  {webStatus?.searchEnabled
-                    ? "Live search checks public supplier sources."
-                    : persistenceEnabled && !webStatus
-                      ? "Checking live search availability…"
-                      : "Live search is unavailable. You can still explore a sample study."}
-                </p>
+                <div className="market-search-support">
+                  {persistenceEnabled && (
+                    <Button
+                      variant="text"
+                      type="button"
+                      onClick={() => {
+                        if (resultsView === "web" && !search) {
+                          setResultsView("example");
+                        } else {
+                          setResultsView("web");
+                          setShowStudy(false);
+                          requestAnimationFrame(() =>
+                            document.getElementById("market-results")?.focus(),
+                          );
+                        }
+                      }}
+                    >
+                      Saved research
+                    </Button>
+                  )}
+                  <p className="market-search-note">
+                    <Info size={16} />
+                    Sample data is separate from live search.{" "}
+                    {webStatus?.searchEnabled
+                      ? "Live search checks public supplier sources."
+                      : persistenceEnabled && !webStatus
+                        ? "Checking live search availability…"
+                        : "Live search is unavailable. You can still explore a sample study."}
+                  </p>
+                </div>
               </form>
             </div>
             {!search && !showStudy && (
@@ -567,6 +596,24 @@ export default function MarketStudy({
                 <Button variant="text" onClick={startExample}>
                   Explore rice example <ArrowRight size={17} />
                 </Button>
+                <span className="market-start-divider" aria-hidden="true">·</span>
+                <Button
+                  variant="text"
+                  type="button"
+                  onClick={() => openExtras("quotes")}
+                >
+                  <FileText size={16} />
+                  Read a quote
+                </Button>
+                <span className="market-start-divider" aria-hidden="true">·</span>
+                <Button
+                  variant="text"
+                  type="button"
+                  onClick={() => openExtras("ingredients")}
+                >
+                  <ListPlus size={16} />
+                  Import ingredient list
+                </Button>
               </section>
             )}
           </div>
@@ -577,27 +624,28 @@ export default function MarketStudy({
             {error}
           </p>
         )}
-        {persistenceEnabled && (
-          <SourcingCase
-            ingredient={term}
-            region={region}
-            studyId={
-              study.savedContext?.term.trim().toLowerCase() ===
-                term.trim().toLowerCase() &&
-              study.savedContext?.region.trim().toLowerCase() ===
-                region.trim().toLowerCase()
-                ? study.id
-                : null
-            }
-            onPrepare={onPrepare}
-            onStudyCase={setStudyCase}
-            comparisonStudyId={study.id}
-            onReview={addReview}
-            onProspect={toggleProspect}
-            selections={webSelections}
-          />
-        )}
-        <div className="market-workspace">
+        <div className="market-support">
+          {persistenceEnabled && (
+            <SourcingCase
+              ingredient={term}
+              region={region}
+              studyId={
+                study.savedContext?.term.trim().toLowerCase() ===
+                  term.trim().toLowerCase() &&
+                study.savedContext?.region.trim().toLowerCase() ===
+                  region.trim().toLowerCase()
+                  ? study.id
+                  : null
+              }
+              onPrepare={onPrepare}
+              onStudyCase={setStudyCase}
+              comparisonStudyId={study.id}
+              onReview={addReview}
+              onProspect={toggleProspect}
+              selections={webSelections}
+            />
+          )}
+          <div className="market-workspace">
           <div className="market-content">
             {persistenceEnabled && (
               <div
@@ -613,6 +661,10 @@ export default function MarketStudy({
                   onOpenStudy={() => {
                     setShowStudy(true);
                     setFilter("all");
+                  }}
+                  onBackToOverview={() => {
+                    setResultsView("example");
+                    setShowStudy(false);
                   }}
                   selectedProspectIds={prospects.map((item) => item.id)}
                   onProspect={toggleProspect}
@@ -681,6 +733,7 @@ export default function MarketStudy({
                     onReplyPrepare={prepareStudyReply}
                     deliveryComparison={currentStudyCase?.comparison}
                     onDeliveryApplied={openUpdatedReplyComparison}
+                    onOpenComparison={openUpdatedReplyComparison}
                   />
                 )}
                 {visible.length === 0 && !(showStudy && hasVisibleExternalSelection) ? (
@@ -841,6 +894,7 @@ export default function MarketStudy({
                             id: comparison.id,
                             revision: comparison.revision,
                             selectedOfferId: comparison.selectedOfferId,
+                            unchanged: true,
                           },
                         });
                         return;
@@ -868,6 +922,7 @@ export default function MarketStudy({
               </section>
             )}
           </aside>
+          </div>
         </div>
         {persistenceEnabled &&
           study.id &&
@@ -889,6 +944,7 @@ export default function MarketStudy({
                   deliveryComparison={currentStudyCase?.comparison}
                   onPrepare={prepareStudyReply}
                   onDeliveryApplied={openUpdatedReplyComparison}
+                  onOpenComparison={openUpdatedReplyComparison}
                   onAddReply={currentStudyCase?.comparison ? prepareStudyReply : undefined}
                   comparisonLabel={currentStudyCase?.comparison ? "this case comparison" : undefined}
                 />
@@ -909,8 +965,11 @@ export default function MarketStudy({
           </div>
           <div className="extras-grid">
             <Disclosure
+              id="disclosure-ingredients"
               title="Ingredient list"
               description="Research the ingredients on your list, one at a time."
+              open={extrasIngredientOpen}
+              onOpenChange={setExtrasIngredientOpen}
             >
               <IngredientIntake
                 persistenceEnabled={persistenceEnabled}
@@ -924,22 +983,31 @@ export default function MarketStudy({
               />
             </Disclosure>
             <Disclosure
+              id="disclosure-quotes"
               title="Quotes and documents"
               description="Review a quote or enter its details."
+              open={extrasQuotesOpen}
+              onOpenChange={setExtrasQuotesOpen}
             >
+              <div className="quotes-quickstart">
+                <div className="intake-actions">
+                  <div className="quotes-actions">
+                    <ExtractionReview onPrepare={onPrepare} />
+                    <button
+                      className="button secondary"
+                      type="button"
+                      onClick={onManualExample}
+                    >
+                      <PenLine size={17} />
+                      Enter quote manually
+                    </button>
+                  </div>
+                  <span>Synthetic sample quote or manual price entry</span>
+                </div>
+              </div>
               {persistenceEnabled && (
                 <DocumentExtraction onPrepare={onPrepare} />
               )}
-              <ExtractionReview onPrepare={onPrepare} />
-              <aside className="market-context">
-                <h3>Already have a quote?</h3>
-                <p>
-                  Enter the prices and terms from your quote. You can also review a sample document before comparing.
-                </p>
-                <Button variant="text" onClick={onManualExample}>
-                  Enter a quote manually <ArrowRight size={16} />
-                </Button>
-              </aside>
             </Disclosure>
           </div>
         </section>

@@ -1,0 +1,54 @@
+.source-record {
+  margin-top: var(--space-4);
+  min-width: 0;
+}
+.source-record > details {
+  border-top: 1px solid var(--color-border);
+}
+.source-record summary {
+  cursor: pointer;
+  padding: var(--space-3) 0;
+  min-height: var(--control-min-height);
+  font-weight: 650;
+  font-size: var(--text-label);
+}
+.source-record summary:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+.source-record pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 22rem;
+  overflow-y: auto;
+  font: inherit;
+  font-size: var(--text-meta);
+  padding: var(--space-3);
+  background: var(--color-canvas);
+}
+.source-record-fields {
+  margin: 0;
+}
+.source-record-fields > div {
+  padding: var(--space-3) 0;
+  border-top: 1px solid var(--color-border-subtle);
+}
+.source-record-fields dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+}
+.source-record-fields dd {
+  margin: var(--space-1) 0 0;
+  overflow-wrap: anywhere;
+}
+.source-record-fields blockquote {
+  margin: var(--space-2) 0;
+  padding-left: var(--space-3);
+  border-left: 2px solid var(--color-border);
+  font-size: var(--text-label);
+}
+.source-record-fields p {
+  margin: var(--space-1) 0;
+  font-size: var(--text-meta);
+  color: var(--color-text-muted);
+}

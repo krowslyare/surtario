@@ -56,7 +56,7 @@ test("landing controls support keyboard and reduced motion", async ({ page }) =>
 test("branded arrival follows loading and leaves when the workspace is ready", async ({ page }) => {
   let release!: () => void;
   const gate = new Promise<void>(resolve => { release = resolve; });
-  await page.route("**/src/Workspace.tsx", async route => { await gate; await route.continue(); });
+  await page.route(/\/src\/Workspace\.tsx(?:\?.*)?$/, async route => { await gate; await route.continue(); });
   await page.goto("/?view=market", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("status")).toContainText("Loading your workspace");
   await expect(page.locator(".workspace-arrival")).toContainText("Good ingredients. Better decisions.");
@@ -66,7 +66,7 @@ test("branded arrival follows loading and leaves when the workspace is ready", a
 });
 
 test("failed workspace download offers a retry instead of indefinite loading", async ({ page }) => {
-  await page.route("**/src/Workspace.tsx", route => route.abort());
+  await page.route(/\/src\/Workspace\.tsx(?:\?.*)?$/, route => route.abort());
   await page.goto("/?view=market", { waitUntil: "domcontentloaded" });
   await expect(page.getByRole("link", { name: "Try again" })).toBeVisible();
   await expect(page.getByText("Loading your workspace.")).toHaveCount(0);

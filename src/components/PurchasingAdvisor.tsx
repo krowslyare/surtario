@@ -11,7 +11,7 @@ import {
   type AdvisorReport,
 } from "../domain/advisor";
 import type { ProcurementRequest, SupplierOffer } from "../domain/procurement";
-import { parseCents, parseDecimal } from "../numbers";
+import { money, numberLabel, parseCents, parseDecimal } from "../numbers";
 export const defaultAdvisorContext: AdvisorContext = {
   priority: "balanced",
   budgetCents: null,
@@ -53,70 +53,105 @@ function errorText(error: unknown) {
     ? error.data
     : "The operation was not confirmed. Keep the context and check your connection.";
 }
-export function AdvisorVerdict({ report }: { report: AdvisorReport }) {
+export function AdvisorVerdict({
+  report,
+  offers,
+  priority,
+}: {
+  report: AdvisorReport;
+  offers?: SupplierOffer[];
+  priority?: string;
+}) {
   const [copied, setCopied] = useState(false);
   useEffect(() => setCopied(false), [report.negotiationDraft]);
   return (
     <div className="advisor-verdict">
-      <p className="advisor-recommendation">{report.recommendation}</p>
-      {report.alternatives.some((option) => option.eligible) && (
-        <p>{report.impact}</p>
-      )}
-      {!report.alternatives.some((option) => option.eligible) &&
-        report.alternatives.length > 0 && (
-          <a className="button secondary" href="#comparison">
-            Review offer details
-          </a>
+      <div className="advisor-hero-card">
+        <div className="advisor-hero-badge-row">
+          <span className="advisor-verdict-badge">
+            Purchase recommendation
+            {priority
+              ? ` · ${
+                  priority === "cash"
+                    ? "Cash priority"
+                    : priority === "unit_price"
+                      ? "Lowest unit price"
+                      : "Balanced priority"
+                }`
+              : ""}
+          </span>
+        </div>
+        <h3 className="advisor-recommendation">{report.recommendation}</h3>
+        {report.alternatives.some((option) => option.eligible) && (
+          <p className="advisor-hero-impact">{report.impact}</p>
         )}
-      {report.missing.length > 0 && (
-        <Disclosure title="Details to confirm">
-          <p className="field-hint">
-            Usage and stock are optional; add them only to estimate how long a
-            purchase will last.
-          </p>
-          <ul>
-            {report.missing.map((item, index) => (
-              <li key={index}>{item}</li>
-            ))}
-          </ul>
-        </Disclosure>
-      )}
-      <Disclosure title="How this recommendation was calculated">
-        <p>{report.warning}</p>
-        {!report.alternatives.some((option) => option.eligible) && (
-          <p>{report.impact}</p>
+        {!report.alternatives.some((option) => option.eligible) &&
+          report.alternatives.length > 0 && (
+            <div className="advisor-hero-action">
+              <a className="button secondary" href="#comparison">
+                Review offer details
+              </a>
+            </div>
+          )}
+      </div>
+
+      <div className="advisor-evidence-group">
+        {offers && offers.length > 0 && (
+          <ScenarioDetails report={report} offers={offers} />
         )}
-      </Disclosure>
-      {report.negotiationDraft && (
+        {report.missing.length > 0 && (
+          <Disclosure className="advisor-disclosure" title="Details to confirm">
+            <p className="field-hint">
+              Usage and stock are optional; add them only to estimate how long a
+              purchase will last.
+            </p>
+            <ul className="advisor-missing-list">
+              {report.missing.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </Disclosure>
+        )}
         <Disclosure
-          className="advisor-negotiation"
-          title={<>Prepare supplier conversation</>}
+          className="advisor-disclosure"
+          title="How this recommendation was calculated"
         >
-          <pre className="quotation-text">{report.negotiationDraft}</pre>
-          <button
-            className="button secondary"
-            onClick={async () => {
-              try {
-                await navigator.clipboard.writeText(report.negotiationDraft!);
-                setCopied(true);
-              } catch {
-                setCopied(false);
-              }
-            }}
-          >
-            Copy proposal
-          </button>
-          <p role="status">
-            {copied
-              ? "Text copied. No message was sent."
-              : "Review the text before sending it through your usual channel."}
-          </p>
+          <p className="advisor-calculation-text">{report.warning}</p>
+          {!report.alternatives.some((option) => option.eligible) && (
+            <p className="advisor-calculation-impact">{report.impact}</p>
+          )}
         </Disclosure>
-      )}
+        {report.negotiationDraft && (
+          <Disclosure
+            className="advisor-negotiation advisor-disclosure"
+            title={<>Prepare supplier conversation</>}
+          >
+            <pre className="quotation-text">{report.negotiationDraft}</pre>
+            <button
+              className="button secondary"
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText(report.negotiationDraft!);
+                  setCopied(true);
+                } catch {
+                  setCopied(false);
+                }
+              }}
+            >
+              Copy proposal
+            </button>
+            <p role="status">
+              {copied
+                ? "Text copied. No message was sent."
+                : "Review the text before sending it through your usual channel."}
+            </p>
+          </Disclosure>
+        )}
+      </div>
     </div>
   );
 }
-function ScenarioDetails({
+export function ScenarioDetails({
   report,
   offers,
 }: {
@@ -125,32 +160,37 @@ function ScenarioDetails({
 }) {
   return (
     <Disclosure
-      className="advisor-alternatives"
+      className="advisor-alternatives advisor-disclosure"
       title={<>Compare supplier totals</>}
     >
-      <ul>
+      <ul className="advisor-supplier-comparison-list">
         {report.alternatives.map((alternative) => {
           const currency = offers.find(
             (offer) => offer.id === alternative.offerId,
           )?.currency;
           const total =
             alternative.totalCents !== null && currency
-              ? new Intl.NumberFormat("es-PE", {
-                  style: "currency",
-                  currency,
-                }).format(alternative.totalCents / 100)
+              ? money(alternative.totalCents, currency)
               : "Pending";
           return (
-            <li key={alternative.offerId}>
-              <strong>{alternative.supplier}</strong>
-              <p>
-                Cash outlay: {total}. Coverage:{" "}
-                {alternative.coverageDays === null
-                  ? "pending"
-                  : `${new Intl.NumberFormat("es-PE", { maximumFractionDigits: 1 }).format(alternative.coverageDays)} days`}
+            <li
+              key={alternative.offerId}
+              className="advisor-supplier-comparison-item"
+            >
+              <div className="advisor-supplier-header">
+                <strong>{alternative.supplier}</strong>
+                <span className="advisor-supplier-total">{total}</span>
+              </div>
+              <p className="advisor-supplier-meta">
+                Cash outlay: <strong>{total}</strong> · Coverage:{" "}
+                <strong>
+                  {alternative.coverageDays === null
+                    ? "pending"
+                    : `${numberLabel(alternative.coverageDays)} days`}
+                </strong>
                 .
               </p>
-              <p>
+              <p className="advisor-supplier-budget">
                 {alternative.affordable === null
                   ? "Budget not evaluated."
                   : alternative.affordable
@@ -158,7 +198,7 @@ function ScenarioDetails({
                     : "Exceeds the stated budget."}
               </p>
               {alternative.warnings.length > 0 && (
-                <ul>
+                <ul className="advisor-supplier-warnings">
                   {alternative.warnings.map((warning, index) => (
                     <li key={index}>{warning}</li>
                   ))}
@@ -432,7 +472,21 @@ function Connected({
       </div>
       <Disclosure
         className="advisor-context"
-        title={<>Budget and preferences</>}
+        title={
+          <span className="advisor-context-title-wrap">
+            <span>Budget and preferences</span>
+            <span className="advisor-context-tag">
+              {context.priority === "cash"
+                ? "Cash priority"
+                : context.priority === "unit_price"
+                  ? "Lowest unit price"
+                  : "Balanced priority"}
+              {context.budgetCents !== null
+                ? ` · Budget: ${money(context.budgetCents, offers[0]?.currency ?? "USD")}`
+                : ""}
+            </span>
+          </span>
+        }
       >
         <div className="advisor-fields">
           <label className="field">
@@ -476,7 +530,7 @@ function Connected({
             [
               [
                 "budgetCents",
-                `Available budget (${offers[0]?.currency ?? "PEN"})`,
+                `Available budget (${offers[0]?.currency ?? "USD"})`,
               ],
               ["dailyUsage", `Confirmed daily usage (${request.unit})`],
               ["stockQuantity", `Confirmed current stock (${request.unit})`],
@@ -523,10 +577,10 @@ function Connected({
                 : "Saved"
               : ""}
           </p>
-          <AdvisorVerdict report={displayedReport} />
-          <ScenarioDetails
+          <AdvisorVerdict
             report={displayedReport}
             offers={selected && !stale ? selected.snapshot.offers : offers}
+            priority={context.priority}
           />
         </>
       )}
@@ -540,40 +594,40 @@ function Connected({
             className="advisor-stale-evidence"
             title={<>View the previous saved analysis</>}
           >
-            <AdvisorVerdict report={selected.report} />
-            <ScenarioDetails
+            <AdvisorVerdict
               report={selected.report}
               offers={selected.snapshot.offers}
+              priority={selected.context.priority}
             />
           </Disclosure>
         </>
       )}
       {actionAvailable && (
-        <div className="advisor-actions">
-          <button
-            className="button primary"
-            disabled={
-              busy ||
-              invalid ||
-              !validRequestQuantity ||
-              enabled === undefined ||
-              (!comparisonCurrent && !canSaveComparison) ||
-              (comparisonCurrent && comparisonId !== null && runs === undefined)
-            }
-            onClick={progress}
-          >
-            {actionLabel}
-          </button>
+        <div className="advisor-footer">
+          <div className="advisor-actions">
+            <button
+              className="button secondary"
+              disabled={
+                busy ||
+                invalid ||
+                !validRequestQuantity ||
+                enabled === undefined ||
+                (!comparisonCurrent && !canSaveComparison) ||
+                (comparisonCurrent && comparisonId !== null && runs === undefined)
+              }
+              onClick={progress}
+            >
+              {actionLabel}
+            </button>
+          </div>
+          <p className="field-hint advisor-action-hint">
+            {saveBlockedReason
+              ? saveBlockedReason
+              : enabled === false
+                ? "Your comparison and preferences will be saved."
+                : "Save your comparison to get an AI explanation. No order is placed."}
+          </p>
         </div>
-      )}
-      {actionAvailable && (
-        <p className="field-hint advisor-action-hint">
-          {saveBlockedReason
-            ? saveBlockedReason
-            : enabled === false
-              ? "Your comparison and preferences will be saved."
-              : "Save your comparison to get an AI explanation. No order is placed."}
-        </p>
       )}
       {error && (
         <p role="alert" className="notice error">

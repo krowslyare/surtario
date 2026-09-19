@@ -1,3 +1,5 @@
+import { casePriority } from "../domain/casePriority";
+import { comparisonBlockers, blockerLabels } from "../domain/comparisonBlockers";
 import { researchCoverage, RESEARCH_POLICY } from "../domain/researchCoverage";
 import { Disclosure } from "./ui/Disclosure";
 import { Component, useEffect, useState, type ReactNode } from "react";
@@ -45,6 +47,7 @@ type Props = {
 const eventTitles: Record<string, string> = {
   created: "Research question saved",
   delivery_confirmed: "Delivery confirmed from supplier reply",
+  minimum_confirmed: "Minimum confirmed from supplier reply",
   study_linked: "Market study linked",
   comparison_saved: "Reviewed comparison saved",
   started: "Research started",
@@ -189,14 +192,17 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
   }
 
   return (
-    <section className="sourcing-case" aria-labelledby="sourcing-title">
+    <section
+      className={`sourcing-case${expanded ? " is-expanded" : ""}`}
+      aria-labelledby="sourcing-title"
+    >
       <div className="sourcing-heading">
         <div>
-          <Compass size={23} aria-hidden="true" />
+          <Compass size={20} aria-hidden="true" />
           <h2 id="sourcing-title">Take the research further</h2>
         </div>
         <Button
-          variant="text"
+          variant="secondary"
           aria-expanded={expanded}
           aria-controls="sourcing-body"
           onClick={() => setExpanded(!expanded)}
@@ -204,7 +210,7 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
           {expanded ? "Close research case" : "Open research case"}
         </Button>
       </div>
-      <p>
+      <p className="sourcing-subtitle">
         Investigate beyond the first search. Follow evidence gaps and build a
         shortlist across research rounds.
       </p>
@@ -216,106 +222,178 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
               available when connected.
             </p>
           )}
-          <Disclosure
-            className="sourcing-switcher"
-            key={`switcher:${current?.id ?? "new"}`}
-            defaultOpen={!current}
-            title={
-              <>
-                {current
-                  ? "Switch case or save another question"
-                  : "Your research questions"}
-              </>
-            }
-          >
-            <div className="sourcing-intake">
-              <form
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void openCase();
-                }}
-              >
-                <h3>
-                  {props.ingredient.trim()
-                    ? `${props.ingredient} in ${props.region}`
-                    : "Start with an ingredient and location"}
-                </h3>
-                <label className="field">
-                  <span>What would you like to find out?</span>
-                  <textarea
-                    value={objective}
-                    onChange={(event) => setObjective(event.target.value)}
-                    maxLength={500}
-                    rows={2}
-                    placeholder="Find comparable pack sizes and identify which delivery terms still need a quote."
-                  />
-                </label>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  busy={busy}
-                  busyLabel="Saving case…"
-                  disabled={
-                    !connected ||
-                    !props.ingredient.trim() ||
-                    !props.region.trim() ||
-                    !objective.trim() ||
-                    cases === undefined
-                  }
+          {(() => {
+            const intakeContent = (
+              <div className="sourcing-intake">
+                <form
+                  className="sourcing-form"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void openCase();
+                  }}
                 >
-                  Save research question
-                </Button>
-                <p className="field-hint">
-                  No document, quantity or purchase history required. Saving
-                  does not make provider calls.
-                </p>
-              </form>
-              <div className="sourcing-library">
-                <h3>
-                  <History size={18} aria-hidden="true" /> Your cases
-                </h3>
-                {cases === undefined ? (
-                  <p role="status">Loading saved cases…</p>
-                ) : cases.length === 0 ? (
-                  <p>
-                    No cases yet. Save a question to keep its research and
-                    updates together.
-                  </p>
-                ) : (
-                  <ul>
-                    {cases.map((item) => (
-                      <li key={item.id}>
-                        <button
-                          type="button"
-                          className="sourcing-case-link"
-                          aria-pressed={item.id === activeId}
-                          onClick={() => {
-                            setActiveId(item.id);
-                            setError("");
-                          }}
-                        >
-                          <strong>{item.ingredient}</strong>
-                          <span>{item.objective}</span>
-                          <small>
-                            {item.region} ·{" "}
-                            {item.status === "idle"
-                              ? "Saved"
-                              : item.status === "running"
-                                ? "Researching"
-                                : item.status === "complete"
-                                  ? "Research finished"
-                                  : item.status === "failed"
-                                    ? "Needs attention"
-                                    : "Research stopped"}
-                          </small>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                  <div className="sourcing-form-header">
+                    <h3>New research question</h3>
+                    {props.ingredient.trim() ? (
+                      <span className="sourcing-tag">
+                        {props.ingredient} · {props.region}
+                      </span>
+                    ) : (
+                      <span className="sourcing-tag sourcing-tag-muted">
+                        Search an ingredient to begin
+                      </span>
+                    )}
+                  </div>
+                  <label className="field">
+                    <span>What would you like to find out?</span>
+                    <textarea
+                      value={objective}
+                      onChange={(event) => setObjective(event.target.value)}
+                      maxLength={500}
+                      rows={2}
+                      placeholder="Find comparable pack sizes and identify which delivery terms still need a quote."
+                    />
+                  </label>
+                  <div className="sourcing-prompt-chips">
+                    <button
+                      type="button"
+                      className="sourcing-chip"
+                      onClick={() => setObjective("Compare 25 lb vs 50 lb bag pricing and bulk delivery terms")}
+                    >
+                      Pack sizes & bulk rates
+                    </button>
+                    <button
+                      type="button"
+                      className="sourcing-chip"
+                      onClick={() => setObjective("Clarify weekly delivery schedule and order minimums")}
+                    >
+                      Delivery & minimums
+                    </button>
+                    <button
+                      type="button"
+                      className="sourcing-chip"
+                      onClick={() => setObjective("Check if supplier provides tax-included pricing and FOB freight")}
+                    >
+                      Taxes & freight
+                    </button>
+                  </div>
+                  <div className="sourcing-form-actions">
+                    <Button
+                      type="submit"
+                      variant="primary"
+                      busy={busy}
+                      busyLabel="Saving case…"
+                      disabled={
+                        !connected ||
+                        !props.ingredient.trim() ||
+                        !props.region.trim() ||
+                        !objective.trim() ||
+                        cases === undefined
+                      }
+                    >
+                      Save research question
+                    </Button>
+                    <span className="field-hint">
+                      No document, quantity or purchase history required. Saving does not make provider calls.
+                    </span>
+                  </div>
+                </form>
+                <div className="sourcing-library">
+                  <div className="sourcing-library-header">
+                    <h3>
+                      <History size={17} aria-hidden="true" /> Your cases
+                      {cases && cases.length > 0 ? ` (${cases.length})` : ""}
+                    </h3>
+                    {cases && cases.length > 0 && (
+                      <span className="field-hint">Priority order by pending terms</span>
+                    )}
+                  </div>
+                  {cases === undefined ? (
+                    <p role="status">Loading saved cases…</p>
+                  ) : cases.length === 0 ? (
+                    <div className="sourcing-workflow-guide">
+                      <div className="sourcing-guide-header">
+                        <h4>How sourcing inquiries work</h4>
+                      </div>
+                      <ol className="sourcing-guide-steps">
+                        <li>
+                          <span className="step-num">1</span>
+                          <div>
+                            <strong>Define objective</strong>
+                            <p>Specify unlisted pack sizes, delivery days, or volume targets.</p>
+                          </div>
+                        </li>
+                        <li>
+                          <span className="step-num">2</span>
+                          <div>
+                            <strong>Track evidence gaps</strong>
+                            <p>Scans catalogs and identifies which terms still need formal quotes.</p>
+                          </div>
+                        </li>
+                        <li>
+                          <span className="step-num">3</span>
+                          <div>
+                            <strong>Direct outreach & quotes</strong>
+                            <p>Draft email or WhatsApp requests; replies link directly to your study.</p>
+                          </div>
+                        </li>
+                      </ol>
+                      <div className="sourcing-guide-footer">
+                        <History size={14} aria-hidden="true" />
+                        <span>No cases yet. Active cases will track responses and next actions here.</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <ul>
+                      {[...cases].sort((a,b) => casePriority(a, comparisons?.find(c => c.id === a.comparisonId)).rank - casePriority(b, comparisons?.find(c => c.id === b.comparisonId)).rank).map((item) => (
+                        <li key={item.id}>
+                          <button
+                            type="button"
+                            className="sourcing-case-link"
+                            aria-pressed={item.id === activeId}
+                            onClick={() => {
+                              setActiveId(item.id);
+                              setError("");
+                            }}
+                          >
+                            <strong>{item.ingredient}</strong>
+                            <span>{item.objective}</span>
+                            <small>{comparisons === undefined ? "Checking next action…" : casePriority(item, comparisons.find(c => c.id === item.comparisonId)).reason}</small>
+                            <span>{comparisons === undefined ? "" : casePriority(item, comparisons.find(c => c.id === item.comparisonId)).next}</span>
+                            <small>
+                              {item.region} ·{" "}
+                              {item.status === "idle"
+                                ? "Saved"
+                                : item.status === "running"
+                                  ? "Researching"
+                                  : item.status === "complete"
+                                    ? "Research finished"
+                                    : item.status === "failed"
+                                      ? "Needs attention"
+                                      : "Research stopped"}
+                            </small>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               </div>
-            </div>
-          </Disclosure>
+            );
+
+            return current ? (
+              <Disclosure
+                className="sourcing-switcher"
+                key={`switcher:${current.id}`}
+                defaultOpen={false}
+                title="Switch case or save another question"
+              >
+                {intakeContent}
+              </Disclosure>
+            ) : (
+              intakeContent
+            );
+          })()}
           {error && (
             <p className="notice error" role="alert">
               {error}
@@ -473,6 +551,7 @@ function CaseDetail({
           id: savedComparison.id,
           revision: savedComparison.revision,
           selectedOfferId: savedComparison.selectedOfferId,
+          unchanged: true,
         },
         sourcingCaseId: caseId,
       });
@@ -595,12 +674,23 @@ function CaseDetail({
                 : "Saved case"}
         </span>
       </div>
+      <section aria-label="Case decision brief" className="case-decision-brief">
+        <h4>What we know</h4>
+        <p>{runs === undefined || comparisons === undefined ? "Loading saved evidence and comparison…" : `${coverage.total} retained sources${savedComparison ? ` and a saved comparison of ${savedComparison.offers.length} offers` : "; no saved comparison yet"}.`}</p>
+        <h4>What still needs confirmation</h4>
+        {savedComparison ? (() => {
+          const blockers = comparisonBlockers(savedComparison);
+          const describe = (blocker: typeof blockers[number]) => `${blockerLabels[blocker.kind]} · ${blocker.supplier}: ${blocker.message}`;
+          return blockers.length ? <><p>{describe(blockers[0])}</p>{blockers.length > 1 && <details><summary>Other conditions ({blockers.length - 1})</summary><ul>{blockers.slice(1).map((blocker, index) => <li key={index}>{describe(blocker)}</li>)}</ul></details>}</> : <p>Review the recommendation using your current quantity and preferences.</p>;
+        })() : <p>Review source evidence, product equivalence and commercial terms before deciding.</p>}
+      </section>
       <section
         className="sourcing-next"
         aria-label="Next step for this case"
         aria-live="polite"
       >
         <div>
+          <p className="field-hint">Recommended next action</p>
           <h3>
             {!connected
               ? "You are offline"
@@ -684,7 +774,8 @@ function CaseDetail({
         )}
       </div>
       {(running || coverage.total > 0 || item.stopReason) && (
-        <section className="sourcing-next" aria-label="Research coverage">
+        <details className="sourcing-coverage" aria-label="Research coverage">
+          <summary>{coverage.total} sources · {coverage.priceDomains} domains with prices — {item.stopReason === "budget" || item.stopReason === "diminishing_returns" ? "coverage incomplete" : "research details"}</summary>
           <div>
             <h3>
               {running
@@ -737,14 +828,7 @@ function CaseDetail({
                     </li>
                   ))}
                 </ol>
-                <Button
-                  onClick={() => {
-                    setReviewOpen(true);
-                    focusSection(".sourcing-reviews");
-                  }}
-                >
-                  Review all research evidence
-                </Button>
+
               </>
             )}
             <details>
@@ -756,7 +840,7 @@ function CaseDetail({
               </ul>
             </details>
           </div>
-        </section>
+        </details>
       )}
       {runsExhausted && (
         <p className="field-hint">
@@ -1039,16 +1123,15 @@ function CaseDetail({
       </Disclosure>
       {Boolean(runs?.length) && (
         <div className="sourcing-reviews" tabIndex={-1}>
-          <Button
+          {(reviewOpen || progress.target !== "evidence") && <Button
             aria-expanded={reviewOpen}
             onClick={() => setReviewOpen(!reviewOpen)}
           >
-            {reviewOpen
-              ? "Close research evidence"
-              : "Review research evidence"}
-          </Button>
+            {reviewOpen ? "Close research evidence" : "Review research evidence"}
+          </Button>}
           {reviewOpen && (
             <ResearchWorkspace
+              autoSelectLatest
               status={researchStatus}
               runs={runs}
               request={null}
