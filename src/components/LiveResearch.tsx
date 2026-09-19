@@ -20,6 +20,7 @@ import {
 } from "../domain/extraction";
 import type { WebSelection, StudyProspect } from "../domain/study";
 import type { PurchaseSeed } from "../domain/market";
+import { Button } from "./ui/Button";
 import ExtractionReview from "./ExtractionReview";
 import {
   ProductLinkReader,
@@ -107,12 +108,14 @@ export function ResearchWorkspace({
   selections,
   onReview,
   onOpenStudy,
+  onBackToOverview,
   autoSelectLatest = false,
 }: {
   autoSelectLatest?: boolean;
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
+  onBackToOverview?: () => void;
   renderProspect?: (run: SavedResearch, sourceIndex: number) => ReactNode;
   status: ResearchStatus | undefined;
   runs: SavedResearch[] | undefined;
@@ -301,8 +304,41 @@ export function ResearchWorkspace({
 
   if (!status) return <p className="notice info">Checking web search…</p>;
 
-  // Keep the status subscription mounted without an empty duplicate search panel.
-  if (!searching && !active && !error && !runs?.length) return null;
+  // When there are no searches yet and no active search in flight:
+  if (!searching && !active && !error && !runs?.length) {
+    return (
+      <section className="live-research" aria-labelledby="live-research-title">
+        <div className="live-research-heading">
+          <div>
+            <h2 id="live-research-title">Web research</h2>
+            <p>
+              Found pages are candidate sources. Review the content before
+              treating them as supplier offers.
+            </p>
+          </div>
+        </div>
+
+        {!status.searchEnabled && (
+          <p className="notice info">
+            Web search is not configured. You can keep exploring the samples.
+          </p>
+        )}
+
+        <div className="empty-state">
+          <History size={32} />
+          <h3>No saved searches yet</h3>
+          <p>
+            Searches you run for ingredients and suppliers will appear here.
+          </p>
+          {onBackToOverview && (
+            <Button variant="secondary" onClick={onBackToOverview}>
+              Back to overview
+            </Button>
+          )}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="live-research" aria-labelledby="live-research-title">
@@ -734,6 +770,7 @@ type LiveResearchProps = {
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
+  onBackToOverview?: () => void;
   selectedProspectIds?: string[];
   onProspect?: (prospect: StudyProspect) => void;
 };
