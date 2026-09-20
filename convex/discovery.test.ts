@@ -1,7 +1,24 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { discoverSources, parseDiscovery } from "./lib/firecrawl";
+import { discoverSources, parseDiscovery, selectAutoReviewSources } from "./lib/firecrawl";
 
 afterEach(() => vi.useRealTimers());
+it("spends automatic reviews on three distinct readable priced sources, preferring explicit currency", () => {
+  const page = (host: string, markdown: string, slug = "rice") => ({
+    url: `https://${host}/products/${slug}`, title: "Long grain white rice", description: "Rice supplier",
+    markdown, contentTruncated: false,
+  });
+  const sources = [
+    page("ambiguous.com", "Long grain white rice 1 lb. Price $8.63."),
+    page("trade.com", "Long grain white rice 50 lb. USD 37.49 per bag."),
+    page("trade.com", "Long grain white rice 20 lb. USD 20 per bag.", "rice-small"),
+    page("no-price.com", "Long grain white rice 50 lb. Contact us for pricing."),
+    page("metadata.com", "Published product currency (page metadata): USD\nLong grain white rice 28 oz. $ 8."),
+    page("last.com", "Long grain white rice 5 lb. USD 12 per bag."),
+    ...Array.from({ length: 24 }, (_, i) => page(`extra${i}.com`, "Long grain white rice 50 lb. USD 30 per bag.")),
+  ];
+  expect(selectAutoReviewSources(sources, "long grain white rice").map(s => s.index)).toEqual([1, 4, 5]);
+  expect(sources[0].markdown).toContain("$8.63");
+});
 describe("prueba interna Firecrawl", () => {
   it("sin clave o entrada inválida no hace llamadas", async () => {
     const request = vi.fn();
@@ -421,18 +438,18 @@ it("recovers a rate-limited page within a bounded budget rather than treating it
   }
 });
 
-it("retains sixteen generic candidates while bounding reads independently to twelve", async () => {
+it("retains thirty diverse candidates and reads them within a thirty-page budget", async () => {
   let searches = 0,
     reads = 0;
   const request = vi.fn(
     async (url: string | URL | Request, init?: RequestInit) => {
       if (String(url).endsWith("/search")) {
-        const offset = searches++ * 10;
-        expect(JSON.parse(init!.body as string).limit).toBe(10);
+        const offset = searches++ * 20;
+        expect(JSON.parse(init!.body as string).limit).toBe(20);
         return Response.json({
           success: true,
           data: {
-            web: Array.from({ length: 10 }, (_, i) => ({
+            web: Array.from({ length: 20 }, (_, i) => ({
               url: `https://supplier${offset + i}.com/product/olive-oil`,
               title: "Olive oil wholesale",
             })),
@@ -456,11 +473,11 @@ it("retains sixteen generic candidates while bounding reads independently to twe
     request,
   );
   expect(searches).toBe(3);
-  expect(reads).toBe(12);
-  expect(result.sources).toHaveLength(16);
-  expect(result.sources.filter((source) => source.markdown)).toHaveLength(12);
-  expect(result.warning).toBe(true);
-  expect(result.discarded).toBe(14);
+  expect(reads).toBe(30);
+  expect(result.sources).toHaveLength(30);
+  expect(result.sources.filter((source) => source.markdown)).toHaveLength(30);
+  expect(result.warning).toBe(false);
+  expect(result.discarded).toBe(30);
 });
 
 it("supplier diversity does not permanently discard relevant variants on the same host", async () => {
@@ -612,4 +629,65 @@ it.each([
   expect(reads).toEqual(["https://proveedor.com/catalogo/arroz", "https://proveedor.com/products/arroz-nuevo"]);
   expect(result.sources.map(s => s.url)).toEqual(expect.arrayContaining(reads));
   expect(result.sources.some(s => s.url.includes("viejo"))).toBe(false);
+});
+
+it("reports provider checkpoints without extra requests; failed reads still count as checked", async () => {
+  const checkpoints: import("./researchValidators").ResearchProgress[] = [];
+  const request = vi.fn(async (url: string | URL | Request) => String(url).endsWith("/search")
+    ? Response.json({ success: true, data: { web: [{ url: "https://supplier.com/products/rice", title: "White rice supplier" }] } })
+    : new Response("Unavailable", { status: 503 }));
+  const result = await discoverSources({ ingredient: "rice", region: "Portland, OR, US" }, "synthetic-test", request as typeof fetch, async progress => { checkpoints.push(progress); });
+  expect(request).toHaveBeenCalledTimes(4); // Three searches and one unique page; no progress API calls.
+  expect(checkpoints[0]).toMatchObject({ stage: "searching", searchesCompleted: 0, searchesTotal: 3, pagesChecked: 0 });
+  expect(checkpoints).toContainEqual({ stage: "reading", searchesCompleted: 3, searchesTotal: 3, candidates: 1, pagesChecked: 0, currentHost: "supplier.com" });
+  expect(checkpoints.at(-1)).toMatchObject({ pagesChecked: 1, currentHost: null });
+  expect(result.warning).toBe(true);
+  expect(result.sources[0].markdown).toBeNull();
+});
+
+it("follows a thumbnail-wrapped alphanumeric product SKU from a trade catalog within the read budget", async () => {
+  const calls: string[] = [];
+  const product = "https://supplier.com/long-grain-white-rice/112LGWHT50.html";
+  const request = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
+    if (String(url).endsWith("/search")) return Response.json({ success: true, data: { web: [{ url: "https://supplier.com/catalog/rice", title: "Wholesale rice", description: "Long grain white rice" }] } });
+    const target = JSON.parse(init!.body as string).url; calls.push(target);
+    return Response.json({ success: true, data: { markdown: target === product ? "Long grain white rice 50 lb USD 30" : `[![](https://supplier.com/rice.jpg)Long grain white rice 50 lb](${product})`, metadata: { title: target === product ? "Long grain white rice 50 lb" : "Wholesale rice" } } });
+  });
+  const result = await discoverSources({ ingredient: "long grain white rice", region: "Portland, US" }, "test", request as typeof fetch);
+  expect(calls).toEqual(["https://supplier.com/catalog/rice", product]);
+  expect(result.sources.some(source => source.url === product && source.markdown?.includes("50 lb USD 30"))).toBe(true);
+});
+
+it("trade suppliers without a public price precede retail product pages", async () => {
+  const { rankResearchSources } = await import("./lib/firecrawl");
+  const pages = rankResearchSources([
+    { url: "https://retail.com/product/rice", title: "Long grain white rice 28 oz", description: "For your home pantry", markdown: "USD 8", contentTruncated: false },
+    { url: "https://supplier.com/rice", title: "Long grain white rice wholesale supplier", description: "Foodservice distributor. Request pricing.", markdown: "50/100 lb bags. Minimum one pallet.", contentTruncated: false },
+  ], "long grain white rice");
+  expect(pages.map(page => new URL(page.url).hostname)).toEqual(["supplier.com", "retail.com"]);
+});
+
+it("prioritizes trade packages and local evidence without declaring shipping eligibility", async () => {
+  const { rankResearchSources } = await import("./lib/firecrawl");
+  const page = (title: string, description: string, host: string) => ({ url: `https://${host}/products/rice`, title, description, markdown: null, contentTruncated: false });
+  const retail = page("Rice 28 oz", "Buy premium rice", "retail.com");
+  const trade = page("Rice 50 lb", "Wholesale rice bags", "trade.com");
+  const local = page("Rice 50 lb", "Wholesale rice bags in Portland", "local.com");
+  expect(rankResearchSources([retail, trade, local], "rice", "Portland, OR, US").map(s => s.url)).toEqual([local.url, trade.url, retail.url]);
+});
+
+it("publishes a read source before discovery completes without spending extra calls", async () => {
+  const arrived: string[] = [];
+  let finished = false;
+  const request = vi.fn(async (url: string) => url.endsWith("search")
+    ? Response.json({ success: true, data: { web: [{ url: "https://supplier.com/products/rice", title: "Rice", description: "Wholesale rice" }] } })
+    : Response.json({ success: true, data: { markdown: "Rice 50 lb bag. Published price USD 25.00. Delivery pending.", metadata: { title: "Rice" } } }));
+  await discoverSources({ ingredient: "rice", region: "Portland, OR, US" }, "test", request as typeof fetch, undefined, async source => {
+    expect(finished).toBe(false);
+    expect(source.markdown).toContain("USD 25.00");
+    arrived.push(source.url);
+  });
+  finished = true;
+  expect(arrived).toEqual(["https://supplier.com/products/rice"]);
+  expect(request).toHaveBeenCalledTimes(4);
 });

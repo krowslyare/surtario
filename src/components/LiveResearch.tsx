@@ -1,3 +1,5 @@
+import ResearchProgress from "./ResearchProgress";
+import type { ResearchProgress as Progress } from "../../convex/researchValidators";
 import { reviewedWebEvidence } from "../domain/webEvidence";
 import { SaveWebProspect, WebProspectLibrary } from "./WebProspects";
 import {
@@ -18,7 +20,7 @@ import {
   type ExtractedOffer,
   type ExtractionSource,
 } from "../domain/extraction";
-import type { WebSelection, StudyProspect } from "../domain/study";
+import { sameStudyContext, type WebSelection, type StudyProspect } from "../domain/study";
 import type { PurchaseSeed } from "../domain/market";
 import { Button } from "./ui/Button";
 import ExtractionReview from "./ExtractionReview";
@@ -32,6 +34,7 @@ import {
 const SESSION_KEY = "procurement-demo-session-v1";
 
 export type ResearchStatus = {
+  autoReviewEnabled?: boolean;
   searchEnabled: boolean;
   extractionEnabled: boolean;
 };
@@ -54,6 +57,8 @@ export type ResearchSource = {
 };
 
 export type SavedResearch = {
+  clientId?: string;
+  progress?: Progress;
   id: string;
   simulated: boolean;
   ingredient: string;
@@ -68,6 +73,7 @@ export type SavedResearch = {
 
 export type WebSearchRequest = {
   id: number;
+  clientId?: string;
   ingredient: string;
   region: string;
 };
@@ -109,14 +115,24 @@ export function ResearchWorkspace({
   onReview,
   onOpenStudy,
   onBackToOverview,
+  pendingRun,
   autoSelectLatest = false,
+  resumeRequest,
+  onCalculate,
+  caseComparisonContext,
+  onExploreDemo,
 }: {
+  pendingRun?: SavedResearch;
   autoSelectLatest?: boolean;
+  resumeRequest?: { id: string; sequence: number } | null;
+  onCalculate?: (seed: PurchaseSeed, context: { ingredient: string; region: string }) => void;
+  caseComparisonContext?: { ingredient: string; region: string };
+  onExploreDemo?: () => void;
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
   onBackToOverview?: () => void;
-  renderProspect?: (run: SavedResearch, sourceIndex: number) => ReactNode;
+  renderProspect?: (run: SavedResearch, sourceIndex: number, primaryInquiry: boolean) => ReactNode;
   status: ResearchStatus | undefined;
   runs: SavedResearch[] | undefined;
   request: WebSearchRequest | null;
@@ -130,6 +146,7 @@ export function ResearchWorkspace({
   ) => Promise<SavedResearch>;
   onPrepare: (seed: PurchaseSeed) => void;
 }) {
+  const [showAllSources, setShowAllSources] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [localRun, setLocalRun] = useState<SavedResearch | null>(null);
   const [searching, setSearching] = useState(false);
@@ -147,10 +164,15 @@ export function ResearchWorkspace({
     { sourceId: string; seed: PurchaseSeed }[]
   >([]);
   const reviewed = selections ?? localReviewed;
+  useEffect(() => setShowAllSources(false), [request?.id, request?.clientId, activeId]);
   const [equivalent, setEquivalent] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => onStatus(status), [onStatus, status]);
+  useEffect(() => {
+    if (!resumeRequest) return;
+    setActiveId(resumeRequest.id); setLocalRun(null); setError(""); setSearching(false);
+  }, [resumeRequest]);
 
   useEffect(() => {
     if (!request) return;
@@ -180,7 +202,7 @@ export function ResearchWorkspace({
     return () => {
       current = false;
     };
-  }, [request?.id]);
+  }, [request?.id, request?.clientId]);
 
   useEffect(() => {
     if (!autoSelectLatest || activeId || request || !runs?.length) return;
@@ -189,6 +211,7 @@ export function ResearchWorkspace({
   }, [autoSelectLatest, activeId, request, runs]);
 
   const active = useMemo(() => {
+    if (searching) return pendingRun ?? null;
     const persisted = runs?.find((run) => run.id === activeId);
     const localReadResolved = localRun?.sources.some((source, index) => {
       const persistedSource = persisted?.sources[index];
@@ -200,13 +223,13 @@ export function ResearchWorkspace({
     });
     if (
       localRun?.id === activeId &&
-      (persisted?.status === "running" ||
+      ((persisted?.status === "running" && localRun.status !== "running") ||
         localRun.sources.length > (persisted?.sources.length ?? 0) ||
         localReadResolved)
     )
       return localRun;
     return persisted ?? (localRun?.id === activeId ? localRun : null);
-  }, [activeId, localRun, runs]);
+  }, [activeId, localRun, runs, searching, pendingRun]);
 
   async function extract(run: SavedResearch, sourceIndex: number) {
     const sourceId = `${run.id}:${sourceIndex}`;
@@ -350,7 +373,7 @@ export function ResearchWorkspace({
             treating them as supplier offers.
           </p>
         </div>
-        {searching && <span role="status">Searching sources…</span>}
+
       </div>
 
       {!status.searchEnabled && (
@@ -359,7 +382,13 @@ export function ResearchWorkspace({
         </p>
       )}
 
-      {runs && runs.length > 0 && (
+      {(searching || active?.status === "running") && (
+        <ResearchProgress sources={active?.sources} progress={active?.progress}
+          ingredient={active?.ingredient ?? request?.ingredient ?? "Your ingredient"}
+          region={active?.region ?? request?.region ?? "Your delivery area"} />
+      )}
+
+      {!searching && active?.status !== "running" && runs && runs.length > 0 && (
         <div className="research-history" aria-label="Saved searches">
           <p className="field-hint">
             {onReview
@@ -399,22 +428,18 @@ export function ResearchWorkspace({
       {error && (
         <p className="notice error" role="alert">
           {error}
+          {onExploreDemo && <Button variant="secondary" onClick={onExploreDemo}>Explore demo catalog</Button>}
         </p>
       )}
 
-      {active && (
+      {active && active.status !== "running" && (
         <div className="research-run">
           <div className="research-run-meta">
             <strong>
               {active.ingredient} in {active.region}
             </strong>
             <span>Observed on {observedLabel(active.observedAt)}</span>
-            {active.status === "running" && (
-              <span role="status">
-                Search in progress. If interrupted, it will not retry
-                automatically.
-              </span>
-            )}
+
           </div>
           {readNotice && (
             <p className="field-hint" role="status" aria-live="polite">
@@ -428,15 +453,21 @@ export function ResearchWorkspace({
               recovered text ·{" "}
               {active.sources.filter((source) => !source.markdown).length}{" "}
               without readable text. Coverage is limited; these counts do not
-              establish supplier availability or comparable prices.
+              confirm delivery to {active.region} or comparable prices.
             </p>
+          )}
+          {active.status === "complete" && status.autoReviewEnabled && active.sources.length > 3 && (
+            <p className="field-hint">AI analyzes up to 3 product pages automatically. More sources are available below; review their details before adding them to your study.</p>
           )}
           {active.warning && (
             <p className="notice info">
               The search returned partial content; review the sources.
             </p>
           )}
-          {active.error && <p className="notice error">{active.error}</p>}
+          {active.error && <div className="notice error" role="alert">
+            <p>{active.error}</p>
+            {!error && onExploreDemo && <Button variant="secondary" onClick={onExploreDemo}>Explore demo catalog</Button>}
+          </div>}
           {active.discarded > 0 && (
             <p className="field-hint">
               {active.discarded}{" "}
@@ -465,8 +496,15 @@ export function ResearchWorkspace({
               <p>This does not confirm that no suppliers serve the area.</p>
             </div>
           )}
+          {active.sources.length > 12 && <button className="button text-button research-show-sources" aria-expanded={showAllSources} onClick={() => setShowAllSources(value => !value)}>
+            {showAllSources ? "Show first 12 sources" : `Show all ${active.sources.length} sources`}
+          </button>}
           <div className="research-sources">
-            {active.sources.map((source, index) => {
+            {active.sources.map((source, index) => ({ source, index }))
+              .sort((a, b) => {
+                const rank = (s: ResearchSource) => s.analysis?.kind === "product" && s.extraction?.price.value ? s.extraction.currency.value && s.extraction.packageContent.value ? 4 : 3 : s.inspection?.state === "readable" ? 2 : s.inspection?.state === "unreadable" ? 1 : 0;
+                return rank(b.source) - rank(a.source);
+              }).slice(0, showAllSources ? undefined : 12).map(({ source, index }) => {
               const sourceId = `${active.id}:${index}`;
               const url = safeUrl(source.url);
               const localProposal = localExtractions[sourceId];
@@ -524,9 +562,9 @@ export function ResearchWorkspace({
                         : "Candidate web source"}
                     </span>
                     <h3>{source.title}</h3>
-                    <p>{source.description}</p>
+                    {!source.analysis && <p>{source.description}</p>}
                     {source.analysis && (
-                      <SourceQualitySummary analysis={source.analysis} />
+                      <SourceQualitySummary analysis={source.analysis} compact />
                     )}
                     {analysisIsProduct && proposal?.price.value && (
                       <p className="field-hint">
@@ -553,51 +591,6 @@ export function ResearchWorkspace({
                     )}
                   </div>
                   <div className="research-source-action">
-                    {url && prospectAllowed && renderProspect?.(active, index)}
-                    {!isChild &&
-                    !hasChild &&
-                    onRead &&
-                    source.inspection?.state !== "blocked" &&
-                    source.inspection?.state !== "unrelated" &&
-                    source.analysis?.kind !== "irrelevant" &&
-                    source.inspection?.links.length ? (
-                      <details
-                        className="source-reader-options"
-                        open={
-                          source.analysis?.kind === "catalog" ||
-                          source.analysis?.kind === "contact" ||
-                          isReading ||
-                          Boolean(readFailure)
-                        }
-                      >
-                        <summary>Read a product page from this site</summary>
-                        <ProductLinkReader
-                          links={source.inspection.links}
-                          selectedUrl={
-                            selectedLinks[sourceId] ??
-                            source.inspection.links[0]?.url ??
-                            ""
-                          }
-                          reading={isReading}
-                          failed={readFailure}
-                          onSelect={(selectedUrl) =>
-                            setSelectedLinks((current) => ({
-                              ...current,
-                              [sourceId]: selectedUrl,
-                            }))
-                          }
-                          onRead={() =>
-                            void readProduct(
-                              active,
-                              index,
-                              selectedLinks[sourceId] ??
-                                source.inspection?.links[0]?.url ??
-                                "",
-                            )
-                          }
-                        />
-                      </details>
-                    ) : null}
                     {source.readStatus === "running" && (
                       <p
                         className="field-hint"
@@ -646,8 +639,9 @@ export function ResearchWorkspace({
                         source={extractionSource}
                         proposal={proposal}
                         triggerLabel={
-                          wasReviewed ? "Edit review" : "Review extraction"
+                          wasReviewed ? "Edit review" : "Review offer"
                         }
+                        triggerVariant="primary"
                         confirmLabel="Add to study"
                         confirmationNote="Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."
                         onPrepare={(seed) => {
@@ -681,6 +675,51 @@ export function ResearchWorkspace({
                         )}
                       </>
                     )}
+                    {url && prospectAllowed && renderProspect?.(active, index, !source.markdown || !analysisIsProduct || Boolean(inspectionBlocksAnalysis))}
+                    {!isChild &&
+                    !hasChild &&
+                    onRead &&
+                    source.inspection?.state !== "blocked" &&
+                    source.inspection?.state !== "unrelated" &&
+                    source.analysis?.kind !== "irrelevant" &&
+                    source.inspection?.links.length ? (
+                      <details
+                        className="source-reader-options"
+                        open={
+                          source.analysis?.kind === "catalog" ||
+                          source.analysis?.kind === "contact" ||
+                          isReading ||
+                          Boolean(readFailure)
+                        }
+                      >
+                        <summary>Read a product page from this site</summary>
+                        <ProductLinkReader
+                          links={source.inspection.links}
+                          selectedUrl={
+                            selectedLinks[sourceId] ??
+                            source.inspection.links[0]?.url ??
+                            ""
+                          }
+                          reading={isReading}
+                          failed={readFailure}
+                          onSelect={(selectedUrl) =>
+                            setSelectedLinks((current) => ({
+                              ...current,
+                              [sourceId]: selectedUrl,
+                            }))
+                          }
+                          onRead={() =>
+                            void readProduct(
+                              active,
+                              index,
+                              selectedLinks[sourceId] ??
+                                source.inspection?.links[0]?.url ??
+                                "",
+                            )
+                          }
+                        />
+                      </details>
+                    ) : null}
                     {source.extractionStatus === "failed" &&
                       source.extractionError && (
                         <p className="notice error">{source.extractionError}</p>
@@ -692,7 +731,12 @@ export function ResearchWorkspace({
                       </p>
                     )}
                     {wasReviewed && (
-                      <small>Reviewed offer added to this selection.</small>
+                      <div><small>Reviewed offer added to this selection.</small>
+                        {onCalculate && <Button variant="secondary" onClick={() => {
+                          const selection = reviewed.find(r => r.sourceId === sourceId);
+                          if (selection) onCalculate(selection.seed, active);
+                        }}>{caseComparisonContext && sameStudyContext(caseComparisonContext, active) ? "Open case comparison" : "Calculate purchase"}</Button>}
+                      </div>
                     )}
                     {!wasReviewed && reviewed.length >= 3 && proposal && (
                       <small>
@@ -764,6 +808,11 @@ export function ResearchWorkspace({
 }
 
 type LiveResearchProps = {
+  caseComparisonContext?: { ingredient: string; region: string };
+  resumeRequest?: { id: string; sequence: number } | null;
+  onCalculate?: (seed: PurchaseSeed, context: { ingredient: string; region: string }) => void;
+  onExploreDemo?: () => void;
+  onContextualProspect?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
   request: WebSearchRequest | null;
   onStatus: (status: ResearchStatus | undefined) => void;
   onPrepare: (seed: PurchaseSeed) => void;
@@ -814,16 +863,21 @@ function ConnectedResearch({
   const status = useQuery(api.research.status, {});
   const runs = useQuery(api.research.list, { token });
   const search = useAction(api.research.search);
-  const attempts = useRef(new Map<number, Promise<SavedResearch>>());
+  const attempts = useRef(new Map<string, Promise<SavedResearch>>());
+  const fallbackClientId = useMemo(() => crypto.randomUUID(), [props.request?.id]);
+  const searchClientId = props.request?.clientId ?? fallbackClientId;
   const extract = useAction(api.research.extract);
   const readProduct = useAction(api.research.readProduct);
   return (
     <>
       <ResearchWorkspace
         {...props}
-        renderProspect={(run, index) => (
+        renderProspect={(run, index, primaryInquiry) => (
           <SaveWebProspect
+            primaryInquiry={primaryInquiry}
             onSaved={props.onProspect}
+            onContinue={props.onContextualProspect}
+            simulated={run.simulated}
             token={token}
             runId={run.id as Id<"researchRuns">}
             sourceIndex={index}
@@ -833,17 +887,17 @@ function ConnectedResearch({
         )}
         status={status}
         runs={runs}
+        pendingRun={runs?.find(run => run.clientId === searchClientId)}
         onSearch={(ingredient, region) => {
-          const requestId = props.request?.id ?? 0;
-          const existing = attempts.current.get(requestId);
+          const existing = attempts.current.get(searchClientId);
           if (existing) return existing;
           const pending = search({
             token,
-            clientId: crypto.randomUUID(),
+            clientId: searchClientId,
             ingredient,
             region,
           });
-          attempts.current.set(requestId, pending);
+          attempts.current.set(searchClientId, pending);
           return pending;
         }}
         onExtract={(runId, sourceIndex) =>
@@ -862,6 +916,7 @@ function ConnectedResearch({
         token={token}
         onPrepare={props.onPrepare}
         onSelect={props.onProspect}
+        onContinue={props.onContextualProspect}
         selectedIds={props.selectedProspectIds}
       />
     </>

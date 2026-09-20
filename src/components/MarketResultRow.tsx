@@ -6,7 +6,7 @@ import {
   Mail,
   MapPin,
 } from "lucide-react";
-import { publishedUnitPrice, type MarketResult } from "../domain/market";
+import { publishedUnitPrice, type CatalogResult, type MarketResult } from "../domain/market";
 import { money, numberLabel } from "../numbers";
 import { Button } from "./ui/Button";
 
@@ -31,12 +31,16 @@ export function MarketResultRow({
   onToggle,
   onSource,
   onQuote,
+  onCalculate,
+  calculateBlocked,
 }: {
   result: MarketResult;
   selected: boolean;
   onToggle: (result: MarketResult) => void;
   onSource: (result: MarketResult) => void;
   onQuote: (result: MarketResult) => void;
+  onCalculate: (result: CatalogResult) => void;
+  calculateBlocked?: boolean;
 }) {
   return (
     <article
@@ -119,6 +123,7 @@ export function MarketResultRow({
           )}
           {selected ? "In my study" : "Add to study"}
         </Button>
+        {result.kind === "catalog" && <Button variant="secondary" disabled={calculateBlocked} onClick={() => onCalculate(result)}>Calculate purchase</Button>}
         {result.kind !== "reference" && (
           <Button variant="text" onClick={() => onQuote(result)}>
             Prepare inquiry <ArrowRight size={15} aria-hidden="true" />

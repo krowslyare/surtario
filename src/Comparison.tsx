@@ -1,3 +1,4 @@
+import { scrollToContent, scrollToPageStart } from "./scroll";
 import { SourceEvidence } from "./components/SourceEvidence";
 import type { Id } from "../convex/_generated/dataModel";
 import {
@@ -19,7 +20,7 @@ import PurchasingAdvisor, {
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import SavedComparisons, {
   type SavedComparison,
   type SavedComparisonsHandle,
@@ -320,6 +321,12 @@ export default function Comparison({
   const [savedId, setSavedId] = useState<SavedComparison["id"] | null>(
     (seed?.resumeComparison?.id as SavedComparison["id"]) ?? null,
   );
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (savedId) url.searchParams.set("comparison", savedId);
+    else url.searchParams.delete("comparison");
+    window.history.replaceState(null, "", url);
+  }, [savedId]);
   const [savedRevision, setSavedRevision] = useState(
     seed?.resumeComparison?.revision ?? 0,
   );
@@ -472,7 +479,7 @@ export default function Comparison({
       }),
     );
     setMessage("Comparison opened. It replaced the draft in this view.");
-    window.scrollTo(0, 0);
+    requestAnimationFrame(scrollToPageStart);
   }
 
   function reset() {
@@ -537,7 +544,7 @@ export default function Comparison({
       "Delivery confirmed. The decision was recalculated. No purchase was placed.",
     );
     requestAnimationFrame(() =>
-      document.getElementById("resolved-condition")?.focus(),
+      scrollToContent(document.getElementById("resolved-condition")),
     );
   }
   function saveOffer(offer: SupplierOffer) {
@@ -1000,7 +1007,7 @@ export default function Comparison({
                             Review this offer
                           </strong>
                           <details>
-                            <summary>{issues.length} conditions to review</summary>
+                            <summary>{issues.length} {issues.length === 1 ? "condition" : "conditions"} to review</summary>
                             <ul>{issues.map((issue, i) => <li key={i}>{issue}</li>)}</ul>
                           </details>
                           <button

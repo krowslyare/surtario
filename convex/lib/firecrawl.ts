@@ -1,3 +1,4 @@
+import type { ResearchProgress } from "../researchValidators";
 import { sourceKey } from "../../src/domain/researchCoverage";
 import { researchLocation } from "../../src/domain/researchMarket";
 import { providerFetch } from "./providerTransport";
@@ -8,9 +9,9 @@ import {
   inspectSource,
 } from "./sourceQuality";
 
-export const MAX_RESEARCH_SOURCES = 16;
-export const RESEARCH_SEARCH_LIMIT = 10;
-export const RESEARCH_READ_BUDGET = 12;
+export const MAX_RESEARCH_SOURCES = 30;
+export const RESEARCH_SEARCH_LIMIT = 20;
+export const RESEARCH_READ_BUDGET = 30;
 const SEARCH_CONTENT_MAX_AGE_MS = 60 * 60 * 1000;
 
 /** Server-only discovery adapter. Returned page text is untrusted evidence, never an offer. */
@@ -26,6 +27,23 @@ export type DiscoveryResult = {
   discarded: number;
   warning: boolean;
 };
+
+/** Choose review work, never confirmed offers. Prefer explicit currency evidence. */
+export function selectAutoReviewSources(sources: DiscoveredSource[], ingredient: string) {
+  const hosts = new Set<string>();
+  return sources.map((source, index) => ({ source, index }))
+    .filter(({ source }) => source.markdown && /(?:USD|US\$|\$|S\/)\s*\d/.test(source.markdown) && isProductUrl(source.url) && inspectSource(source, ingredient).state === "readable")
+    .sort((a, b) => {
+      const explicitCurrency = (text: string) => /\b(?:USD|PEN)\b|US\$|S\//.test(text) ? 1 : 0;
+      return explicitCurrency(b.source.markdown!) - explicitCurrency(a.source.markdown!) || a.index - b.index;
+    })
+    .filter(({ source }) => {
+      const host = new URL(source.url).hostname.replace(/^www\./, "");
+      if (hosts.has(host)) return false;
+      hosts.add(host);
+      return true;
+    }).slice(0, 3);
+}
 function record(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -332,12 +350,19 @@ function canonicalCandidate(url: string) {
   return parsed.href;
 }
 
+/** Product routes and alphanumeric catalog SKUs, excluding category rice.html paths. */
+export function isProductUrl(url: string) {
+  return /\/(?:products?|p|shop)\/|\/[a-z0-9_-]*\d[a-z0-9_-]*\.html(?:[?#]|$)/i.test(url);
+}
+
 /** Retrieval relevance only: never turns snippets or currency symbols into offers. */
 export function rankResearchSources(
   sources: DiscoveredSource[],
   ingredient: string,
+  region?: string,
 ) {
   const terms = ingredientTerms(ingredient);
+  const city = region?.split(",")[0]?.trim().toLowerCase();
   const unique = new Map<string, DiscoveredSource>();
   for (const source of sources) {
     const key = canonicalCandidate(source.url);
@@ -362,7 +387,7 @@ export function rankResearchSources(
       )
         return { source, score: -1 };
       const titleMatch = terms.every((term) => contains(title, term));
-      const product = /\/(?:products?|p|shop)\/|\d{5,}\.html/i.test(source.url);
+      const product = isProductUrl(source.url);
       if (
         (product || /\/price-history\//.test(source.url)) &&
         !titleMatch &&
@@ -379,10 +404,17 @@ export function rankResearchSources(
       )
         return { source, score: -1 };
       const prices = /(?:\$|USD|£|€)\s*\d/.test(source.markdown ?? "");
+      const outsideMarket = region && researchLocation(region).country === "US" && /\.(?:ca|co\.uk|com\.au|co\.nz|in|com\.mx)$/.test(new URL(source.url).hostname);
+
       return {
         source,
         score:
+          (outsideMarket ? -20 : 0) +
           (titleMatch ? 8 : 0) +
+          (city && text.includes(city) ? 6 : 0) +
+          (/\b(?:bulk|[2-9]\d\s*(?:lb|pound|kg)|foodservice)\b/i.test(`${source.title} ${source.description}`) ? 5 : 0) +
+          // Restaurant sourcing should surface trade suppliers even without a price.
+          (/wholesale|foodservice|food service|distributor|restaurant suppl/i.test(`${source.title} ${source.description}`) ? 8 : 0) +
           (product ? 4 : 0) +
           (prices ? 2 : 0) +
           (source.markdown ? 1 : 0),
@@ -402,12 +434,26 @@ export async function discoverSources(
   },
   apiKey: string | undefined,
   request: typeof fetch = providerFetch,
+  onProgress?: (progress: ResearchProgress) => Promise<void>,
+  onSource?: (source: DiscoveredSource) => Promise<void>,
 ): Promise<DiscoveryResult> {
   const location = researchLocation(input.region);
+  const progress: ResearchProgress = {
+    stage: "searching", searchesCompleted: 0, searchesTotal: 1,
+    candidates: 0, pagesChecked: 0, currentHost: null,
+  };
+  const report = async () => { await onProgress?.({ ...progress }); };
   // Keep the initial Spanish quick search, but adaptive rounds must honor
   // their refinement and exclude known URLs before any paid page reads.
-  if (location.language === "es" && !input.query && !input.excludeUrls?.length)
-    return searchSources(input, apiKey, request);
+  if (location.language === "es" && !input.query && !input.excludeUrls?.length) {
+    await report();
+    const result = await searchSources(input, apiKey, request);
+    for (const source of result.sources) await onSource?.(source);
+    progress.searchesCompleted = 1;
+    progress.candidates = result.sources.length;
+    await report();
+    return result;
+  }
   const queries = input.query
     ? [`${input.query.trim()} ${location.location}`]
     : location.language === "es"
@@ -417,6 +463,8 @@ export async function discoverSources(
         `${(input.query ?? input.ingredient).trim()} wholesale supplier ${location.location}`,
         `"${input.ingredient.trim()}" bulk buy price ${location.country ?? location.location}`,
       ];
+  progress.searchesTotal = queries.length;
+  await report();
   const gathered: DiscoveredSource[] = [];
   let discarded = 0,
     warning = false,
@@ -439,10 +487,13 @@ export async function discoverSources(
       failure = error;
       warning = true;
     }
+    progress.searchesCompleted++;
+    progress.candidates = new Set(gathered.map(source => sourceKey(source.url))).size;
+    await report();
   }
   if (!completed) throw failure;
   const excluded = new Set((input.excludeUrls ?? []).map(sourceKey));
-  const ranked = rankResearchSources(gathered, input.ingredient).filter(
+  const ranked = rankResearchSources(gathered, input.ingredient, input.region).filter(
     (source) => !excluded.has(sourceKey(source.url)),
   );
   // Round-robin by host: diversity is a priority, not a hard exclusion rule.
@@ -460,11 +511,14 @@ export async function discoverSources(
       if (source) diverse.push(source);
     }
   const selected = diverse.slice(0, MAX_RESEARCH_SOURCES);
+  progress.stage = "reading";
+  progress.candidates = selected.length;
+  await report();
   let reads = 0;
   // A 429 is a rate limit, not evidence that the product has no price. Respect
   // Retry-After and allow two bounded re-attempts per study, never retry other failures.
   let rateRetries = 0;
-  const read = async (url: string): Promise<DiscoveredSource> => {
+  const readWithRetry = async (url: string): Promise<DiscoveredSource> => {
     try {
       return await readProductPage(
         canonicalCandidate(url),
@@ -477,12 +531,26 @@ export async function discoverSources(
       if (!(error instanceof PageRateLimit) || rateRetries >= 2) throw error;
       rateRetries++;
       await new Promise((resolve) => setTimeout(resolve, error.retryMs));
-      return read(url);
+      return readWithRetry(url);
     }
+  };
+  const read = async (url: string): Promise<DiscoveredSource> => {
+    progress.currentHost = new URL(url).hostname.replace(/^www\./, "");
+    await report();
+    try { return await readWithRetry(url); }
+    finally {
+      progress.pagesChecked++;
+      progress.currentHost = null;
+      await report();
+    }
+  };
+  const publish = async (source: DiscoveredSource) => {
+    if (source.markdown && inspectSource(source, input.ingredient).state === "readable" && rankResearchSources([source], input.ingredient, input.region).length) await onSource?.(source);
+    return source;
   };
   const attempted = new Set<string>();
   const recover = async (source: DiscoveredSource) => {
-    if (source.markdown) return source;
+    if (source.markdown) return publish(source);
     if (reads >= RESEARCH_READ_BUDGET) {
       warning = true;
       return source;
@@ -491,9 +559,9 @@ export async function discoverSources(
     attempted.add(canonicalCandidate(source.url));
     try {
       const page = await read(source.url);
-      return page.title === "Untitled source"
+      return await publish(page.title === "Untitled source"
         ? { ...page, title: source.title }
-        : page;
+        : page);
     } catch {
       warning = true;
       return source;
@@ -504,20 +572,22 @@ export async function discoverSources(
     ...excluded,
     ...selected.map((source) => sourceKey(source.url)),
   ]);
-  for (
-    let index = 0;
-    index < selected.length && reads < RESEARCH_READ_BUDGET - 2;
-    index++
-  )
-    selected[index] = await recover(selected[index]);
+  // Two page reads at a time keeps the first useful results visible sooner.
+  // Keep the shared read budget and reserve two reads for catalog children.
+  for (let index = 0; index < selected.length && reads < RESEARCH_READ_BUDGET - 2;) {
+    const end = Math.min(selected.length, index + 2, index + RESEARCH_READ_BUDGET - 2 - reads);
+    const indices = Array.from({ length: end - index }, (_, offset) => index + offset);
+    await Promise.all(indices.map(async i => { selected[i] = await recover(selected[i]); }));
+    index = end;
+  }
   for (const source of [...selected]) {
     if (reads >= RESEARCH_READ_BUDGET) break;
     // A product page should not send the research sideways into related products.
-    if (/\/(?:products?|p|shop)\/|\d{5,}\.html/i.test(source.url)) continue;
+    if (isProductUrl(source.url)) continue;
     const child = inspectSource(source, input.ingredient).links.find(
       (link) =>
         !known.has(sourceKey(link.url)) &&
-        /\/(?:products?|p|shop)\/|\d{5,}\.html/i.test(link.url),
+        isProductUrl(link.url),
     );
     if (!child) continue;
     known.add(sourceKey(child.url));
@@ -525,6 +595,7 @@ export async function discoverSources(
     try {
       const page = await read(child.url);
       if (!rankResearchSources([page], input.ingredient).length) continue;
+      await publish(page);
       if (selected.length < MAX_RESEARCH_SOURCES) selected.push(page);
       else {
         let unread = selected.length - 1;
@@ -547,7 +618,7 @@ export async function discoverSources(
     )
       selected[index] = await recover(selected[index]);
   warning ||= selected.some((source) => !source.markdown);
-  const sources = rankResearchSources(selected, input.ingredient).slice(
+  const sources = rankResearchSources(selected, input.ingredient, input.region).slice(
     0,
     MAX_RESEARCH_SOURCES,
   );

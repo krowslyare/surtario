@@ -1,3 +1,4 @@
+import { QuotationEmailPreview } from "./QuotationEmailPreview";
 import { decisionActions, type DecisionActionKind } from "../domain/decisionActions";
 import { MessageBody } from "./MessageBody";
 import "../styles/mail.css";
@@ -220,6 +221,7 @@ function Connected({
     if (!active || !confirmed || busy || staleAction) return;
     setBusy(true);
     setError("");
+    setNotice("");
     try {
       const updated = await send({
         token,
@@ -316,16 +318,20 @@ function Connected({
           {active.simulated && <p className="field-hint">Local simulation. No external email was sent.</p>}
           <div className="mail-recipient"><span>Test recipient</span><strong>{active.recipient ?? "Not configured"}</strong></div>
           {active.state === "draft" ? !editDraft && <>
-            <h3 className="mail-subject">{active.subject}</h3>
+            {!active.presentationVersion && <h3 className="mail-subject">{active.subject}</h3>}
             {active.decisionAction && <p className="field-hint">{active.decisionAction.reason} Based on comparison revision {active.decisionAction.comparisonRevision}.</p>}
             {staleAction && <p role="status" className="notice info">The comparison changed. This action is historical; prepare a new question from the current comparison before sending or confirming terms.</p>}
-            <p className="mail-message-text">{active.text}</p>
+            {active.presentationVersion === "surtario-v1"
+              ? <QuotationEmailPreview subject={active.subject} text={active.text} />
+              : <p className="mail-message-text">{active.text}</p>}
           </> : <details className="mail-details">
             <summary>Sent request</summary>
-            <h3 className="mail-subject">{active.subject}</h3>
+            {!active.presentationVersion && <h3 className="mail-subject">{active.subject}</h3>}
             {active.decisionAction && <p className="field-hint">{active.decisionAction.reason} Based on comparison revision {active.decisionAction.comparisonRevision}.</p>}
             {staleAction && <p role="status" className="notice info">The comparison changed. This action is historical; prepare a new question from the current comparison before sending or confirming terms.</p>}
-            <p className="mail-message-text">{active.text}</p>
+            {active.presentationVersion === "surtario-v1"
+              ? <QuotationEmailPreview subject={active.subject} text={active.text} />
+              : <p className="mail-message-text">{active.text}</p>}
           </details>}
           {active.state === "draft" && (
             <div className="inquiry-drafting">
@@ -483,7 +489,8 @@ function Connected({
             {active.replies.length > 0 ? `${active.replies.length} ${active.replies.length === 1 ? "reply received" : "replies received"}` : active.state === "sent" ? "Sent. Waiting for a reply." : labels[active.state]}
           </p>
           {active.failure && <p className="notice error">{active.failure}</p>}
-          {(active.state === "sending" || active.state === "uncertain") && (
+          {active.state === "sending" && <p>Waiting for email provider confirmation…</p>}
+          {active.state === "uncertain" && (
             <p>
               Sending is unconfirmed. Check the inbox before trying again.
             </p>

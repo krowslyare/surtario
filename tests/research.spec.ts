@@ -11,9 +11,9 @@ test("sin configuración ofrece ejemplos y no simula búsqueda web", async ({
   await page.getByLabel("Ingredient or category").fill("Arroz");
   await expect(
     page.getByRole("button", { name: "Search suppliers", exact: true }),
-  ).toBeDisabled();
+  ).toHaveCount(0);
   await expect(
-    page.getByRole("button", { name: "Explore example", exact: true }),
+    page.getByRole("button", { name: "Explore demo catalog", exact: true }),
   ).toBeEnabled();
 });
 
@@ -64,7 +64,7 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
     path: "/tmp/research-positive-mobile.png",
     fullPage: true,
   });
-  await page.getByRole("button", { name: "Review extraction" }).click();
+  await page.getByRole("button", { name: "Review offer" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("Review quote data");
   await dialog.getByLabel("Package unit").click();
@@ -142,6 +142,7 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/__source_quality_test");
+  await page.getByText("General catalog · Evidence and 1 detail to review", { exact: true }).click();
   await expect(
     page.getByText("General catalog", { exact: true }),
   ).toBeVisible();
@@ -152,7 +153,7 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
   await page.getByText("View evidence (1)", { exact: true }).click();
   await expect(evidence).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Review extraction" }),
+    page.getByRole("button", { name: "Review offer" }),
   ).toHaveCount(0);
 
   const picker = page.getByLabel("Page to read");
@@ -182,7 +183,7 @@ function Harness(){const[runs,setRuns]=useState([{...shownRun,status:'running',s
     fullPage: true,
   });
 
-  await page.getByRole("button", { name: "Review extraction" }).click();
+  await page.getByRole("button", { name: "Review offer" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog.locator("time")).toHaveAttribute(
     "datetime",

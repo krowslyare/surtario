@@ -85,7 +85,7 @@ test("foto sin OCR permite transcripción y cancelar reemplazo conserva lista", 
       "base64",
     ),
   });
-  await expect(dialog).toContainText("Automatic extraction requires OpenAI");
+  await expect(dialog).toContainText("AI extraction is not configured in this demo.");
   await dialog.getByLabel("Transcribe ingredients").fill("Arroz\nCebolla");
   await dialog.getByRole("button", { name: "Review ingredients" }).click();
   await dialog

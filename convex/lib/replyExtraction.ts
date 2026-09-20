@@ -1,3 +1,4 @@
+import { logLocalModelUsage } from "./modelUsage";
 import { Agent } from "@convex-dev/agent";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
@@ -73,6 +74,7 @@ export async function extractReplyOfferWithAgent(
     name: "Procurement reply extraction",
     languageModel: createOpenAI({ apiKey, fetch: providerFetch })(model),
     instructions,
+    usageHandler: logLocalModelUsage,
     storageOptions: { saveMessages: "none" },
     contextOptions: { recentMessages: 0, searchOtherThreads: false },
   });
@@ -87,6 +89,7 @@ export async function extractReplyOfferWithAgent(
         })),
       }),
       schema: replyExtractionSchema,
+      providerOptions: { openai: { reasoningEffort: "low" } },
       maxRetries: 0,
       maxOutputTokens: 1800,
       abortSignal: AbortSignal.timeout(30000),

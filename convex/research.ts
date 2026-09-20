@@ -2,12 +2,13 @@ import { MAX_RESEARCH_SOURCES } from "./lib/firecrawl";
 import { ConvexError, v } from "convex/values";
 import { action, env, internalMutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
-import type { QueryCtx, MutationCtx } from "./_generated/server";
-import type { Doc } from "./_generated/dataModel";
+import type { QueryCtx, MutationCtx, ActionCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
 import { ownerHash } from "./lib/demoSession";
 import {
   discoverSources,
   readProductPage,
+  selectAutoReviewSources,
   type DiscoveryResult,
 } from "./lib/firecrawl";
 import { analyzeWebSourceWithAgent } from "./lib/agentExtraction";
@@ -17,6 +18,7 @@ import { webResearchSimulated } from "./lib/providerTransport";
 import {
   extractedOfferValidator,
   savedResearchValidator,
+  researchProgressValidator,
   sourceAnalysisValidator,
   type ExtractedOffer,
   type SavedResearch,
@@ -49,6 +51,8 @@ function cleanInput(ingredient: string, region: string) {
 export function publicRun(run: Doc<"researchRuns">): SavedResearch {
   return {
     id: run._id,
+    clientId: run.clientId,
+    ...(run.progress ? { progress: run.progress } : {}),
     simulated: run.simulated ?? false,
     ingredient: run.ingredient,
     region: run.region,
@@ -69,10 +73,12 @@ export function publicRun(run: Doc<"researchRuns">): SavedResearch {
 export const status = query({
   args: {},
   returns: v.object({
+    autoReviewEnabled: v.boolean(),
     searchEnabled: v.boolean(),
     extractionEnabled: v.boolean(),
   }),
   handler: async () => ({
+    autoReviewEnabled: enabled(env.SEARCH_AUTO_REVIEW_ENABLED) && enabled(env.LIVE_RESEARCH_ENABLED) && !!env.OPENAI_API_KEY?.trim() && !!env.OPENAI_EXTRACTION_MODEL?.trim(),
     searchEnabled:
       enabled(env.LIVE_RESEARCH_ENABLED) && !!env.FIRECRAWL_API_KEY?.trim(),
     extractionEnabled:
@@ -158,6 +164,7 @@ export const reserveSearch = internalMutation({
       );
     const now = Date.now();
     const id = await ctx.db.insert("researchRuns", {
+      simulated: webResearchSimulated(),
       ownerHash: hash,
       clientId: args.clientId,
       ...input,
@@ -176,9 +183,52 @@ export const reserveSearch = internalMutation({
   },
 });
 
+// Internal only: progress belongs to the reserved run, never to a client-supplied owner.
+export const updateProgress = internalMutation({
+  args: { id: v.id("researchRuns"), progress: researchProgressValidator },
+  returns: v.null(),
+  handler: async (ctx, { id, progress }) => {
+    const run = await ctx.db.get(id);
+    if (run?.status === "running") await ctx.db.patch(id, { progress });
+    return null;
+  },
+});
+
+const discoverySourceValidator = v.object({
+  url: v.string(), title: v.string(), description: v.string(),
+  markdown: v.union(v.string(), v.null()), contentTruncated: v.boolean(),
+});
+
+export const publishSource = internalMutation({
+  args: { id: v.id("researchRuns"), source: discoverySourceValidator },
+  returns: v.null(),
+  handler: async (ctx, { id, source }) => {
+    const run = await ctx.db.get(id);
+    if (!run || run.status !== "running" || run.progress?.stage === "reviewing") return null;
+    if (source.url.length > 2000 || source.title.length > 300 || source.description.length > 2000 || (source.markdown?.length ?? 0) > 20000)
+      throw new Error("Discovery exceeds source limits.");
+    if (run.sources.some(item => item.url === source.url) || run.sources.length >= MAX_RESEARCH_SOURCES) return null;
+    await ctx.db.patch(id, { sources: [...run.sources, { ...source, extraction: null, extractionStatus: "idle", extractionError: null, extractionAttempts: 0 }] });
+    return null;
+  },
+});
+
+export const completeSearchReview = internalMutation({
+  args: { id: v.id("researchRuns") },
+  returns: savedResearchValidator,
+  handler: async (ctx, { id }) => {
+    const run = await ctx.db.get(id);
+    if (!run) throw new Error("Missing reserved research run.");
+    if (run.status === "running" && run.progress?.stage === "reviewing")
+      await ctx.db.patch(id, { status: "complete" });
+    return publicRun((await ctx.db.get(id))!);
+  },
+});
+
 export const finishSearch = internalMutation({
   args: {
     id: v.id("researchRuns"),
+    reviewCount: v.optional(v.number()),
     sources: v.array(
       v.object({
         url: v.string(),
@@ -209,7 +259,13 @@ export const finishSearch = internalMutation({
     if (!run) throw new Error("Missing reserved research run.");
     if (run.status === "running")
       await ctx.db.patch(run._id, {
-        status: "complete",
+        status: args.reviewCount ? "running" : "complete",
+        ...(args.reviewCount ? { progress: {
+          stage: "reviewing" as const, searchesCompleted: run.progress?.searchesCompleted ?? 1,
+          searchesTotal: run.progress?.searchesTotal ?? 1, candidates: args.sources.length,
+          pagesChecked: run.progress?.pagesChecked ?? args.sources.length, currentHost: null,
+          reviewsCompleted: 0, reviewsTotal: args.reviewCount,
+        } } : {}),
         sources: args.sources.map((source) => ({
           ...source,
           extraction: null,
@@ -259,12 +315,29 @@ export const search = action({
           region: reservation.run.region,
         },
         env.FIRECRAWL_API_KEY,
+        undefined,
+        async (progress) => {
+          await ctx.runMutation(internal.research.updateProgress, { id: reservation.run.id, progress });
+        },
+        async (source) => { await ctx.runMutation(internal.research.publishSource, { id: reservation.run.id, source }); },
       );
-      return await ctx.runMutation(internal.research.finishSearch, {
+      // Prepare at most three distinct product sources. Every proposal still needs human review.
+      const candidates = enabled(env.SEARCH_AUTO_REVIEW_ENABLED) && env.OPENAI_API_KEY && env.OPENAI_EXTRACTION_MODEL
+        ? selectAutoReviewSources(result.sources, args.ingredient) : [];
+      const prepared: SavedResearch = await ctx.runMutation(internal.research.finishSearch, {
         id: reservation.run.id,
         ...result,
         simulated: webResearchSimulated(),
+        reviewCount: candidates.length,
       });
+      if (!candidates.length) return prepared;
+      for (let i = 0; i < candidates.length; i++) {
+        try { await executeExtraction(ctx, { token: args.token, runId: prepared.id, sourceIndex: candidates[i].index }); }
+        catch { /* Preserve sources and visible per-source errors; never retry automatically. */ }
+        await ctx.runMutation(internal.research.updateProgress, { id: prepared.id,
+          progress: { ...prepared.progress!, reviewsCompleted: i + 1 } });
+      }
+      return await ctx.runMutation(internal.research.completeSearchReview, { id: prepared.id });
     } catch {
       return await ctx.runMutation(internal.research.failSearch, {
         id: reservation.run.id,
@@ -301,7 +374,7 @@ export const reserveExtraction = internalMutation({
     const run = await ctx.db.get(args.runId);
     if (!run || run.ownerHash !== hash)
       throw new ConvexError("Search unavailable in this session.");
-    if (run.status !== "complete")
+    if (run.status !== "complete" && !(run.status === "running" && run.progress?.stage === "reviewing"))
       throw new ConvexError("The search is not complete yet.");
     const source = run.sources[args.sourceIndex];
     if (!source) throw new ConvexError("Invalid source.");
@@ -390,7 +463,10 @@ export const extract = action({
     sourceIndex: v.number(),
   },
   returns: extractedOfferValidator,
-  handler: async (ctx, args): Promise<ExtractedOffer> => {
+  handler: executeExtraction,
+});
+
+async function executeExtraction(ctx: ActionCtx, args: { token: string; runId: Id<"researchRuns">; sourceIndex: number }): Promise<ExtractedOffer> {
     if (
       !enabled(env.LIVE_RESEARCH_ENABLED) ||
       !env.OPENAI_API_KEY?.trim() ||
@@ -447,8 +523,8 @@ export const extract = action({
         "Extraction returned, but saving could not be confirmed. Do not repeat the call; operator review is required.",
       );
     }
-  },
-});
+}
+
 
 const readArgs = {
   token: v.string(),

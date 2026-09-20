@@ -105,8 +105,11 @@ test("reserves once, sends the frozen payload with idempotency, and prevents dup
     expect(JSON.parse(init.body as string)).toEqual({
       to: ["buyer@example.test"],
       subject: draft.subject,
-      text: draft.text,
+      text: `${draft.text}\n\n—\nPrepared with Surtario · Sourcing for your kitchen`,
+      html: expect.stringContaining("<!doctype html>"),
     });
+    expect(JSON.parse(init.body as string).html).toContain("Quote request: Arroz");
+    expect(JSON.parse(init.body as string).html).toContain("10 kg of Arroz");
     return new Response(
       JSON.stringify({ message_id: "msg-out", thread_id: "thread-1" }),
       { status: 200 },
@@ -542,4 +545,24 @@ test("traces immutable approval, uncertain recovery and duplicate replies withou
   expect(recovered.recipient).toBe(draft.recipient);
   expect(recovered.approvedAt).toBe(uncertain.approvedAt);
   expect(recovered.replies).toHaveLength(1);
+});
+
+
+test("keeps historical plain-text requests unchanged when sending", async () => {
+  enableMail();
+  const t = convexTest(schema, modules);
+  const saved = await comparison(t);
+  const draft = await t.mutation(api.quotationMail.create, {
+    token, comparisonId: saved.id, clientId: "77777777-7777-4777-8777-777777777777",
+  });
+  await t.run(async (ctx) => { await ctx.db.patch(draft.id, { presentationVersion: undefined }); });
+  const fetch = vi.fn(async (_url: string, init: RequestInit) => {
+    expect(JSON.parse(init.body as string)).toEqual({ to: ["buyer@example.test"], subject: draft.subject, text: draft.text });
+    return new Response(JSON.stringify({ message_id: "legacy-out", thread_id: "legacy-thread" }), { status: 200 });
+  });
+  vi.stubGlobal("fetch", fetch);
+  const sent = await t.action(api.quotationMail.send, { token, id: draft.id, expectedRevision: 1, confirmed: true });
+  expect(sent.presentationVersion).toBeUndefined();
+  expect(sent.state).toBe("sent");
+  expect(fetch).toHaveBeenCalledTimes(1);
 });

@@ -15,6 +15,9 @@ export function SaveWebProspect({
   title,
   url,
   onSaved,
+  onContinue,
+  simulated,
+  primaryInquiry = false,
 }: {
   token: string;
   runId: Id<"researchRuns">;
@@ -22,20 +25,41 @@ export function SaveWebProspect({
   title: string;
   url: string;
   onSaved?: (prospect: StudyProspect) => void;
+  onContinue?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
+  simulated?: boolean;
+  primaryInquiry?: boolean;
 }) {
   const save = useMutation(api.prospects.save);
+  const prospects = useQuery(api.prospects.list, { token });
+  const [intent, setIntent] = useState<"inquiry" | "research" | null>(null);
   const [open, setOpen] = useState(false),
-    [supplier, setSupplier] = useState(""),
+    [supplier, setSupplier] = useState(title.slice(0, 120)),
     [contact, setContact] = useState(""),
     [confirmed, setConfirmed] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [saved, setSaved] = useState(false);
+    [lastSaved, setSaved] = useState<StudyProspect | null>(null);
+  const saved = prospects?.find(item => item.runId === runId && item.sourceIndex === sourceIndex)
+    ?? (lastSaved?.runId === runId && lastSaved.sourceIndex === sourceIndex ? lastSaved : null);
+  const loading = prospects === undefined;
   return (
     <>
-      <button className="button text-button" onClick={() => setOpen(true)}>
+      {onContinue && primaryInquiry && <button className="button primary" disabled={loading} onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
+      {!onContinue && <button className="button secondary" disabled={loading} onClick={() => { setIntent(null); setOpen(true); }}>
         {saved ? "View saved candidate" : "Save potential distributor"}
-      </button>
+      </button>}
+      {onContinue && <details className="source-more-options">
+        <summary>More options</summary>
+        <div className="source-more-actions">
+          <button className="button text-button" disabled={loading} onClick={() => { setIntent(null); setOpen(true); }}>
+            {saved ? "View saved candidate" : "Save potential distributor"}
+          </button>
+          {onContinue && <>
+            {!primaryInquiry && <button className="button text-button" disabled={loading} onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
+            {simulated === false && <button className="button text-button" disabled={loading} onClick={() => { if (saved) onContinue(saved, "research"); else { setIntent("research"); setOpen(true); } }}>Research missing details</button>}
+          </>}
+        </div>
+      </details>}
       {open && (
         <Dialog
           title="Review potential distributor"
@@ -54,9 +78,9 @@ export function SaveWebProspect({
           <label className="field">
             Potential distributor name
             <input
-              value={supplier}
+              value={saved?.supplier ?? supplier}
               maxLength={120}
-              disabled={busy || saved}
+              disabled={busy || Boolean(saved)}
               onChange={(e) => {
                 setSupplier(e.target.value);
                 setConfirmed(false);
@@ -66,9 +90,9 @@ export function SaveWebProspect({
           <label className="field">
             Contact found (optional)
             <input
-              value={contact}
+              value={saved ? saved.contact ?? "" : contact}
               maxLength={300}
-              disabled={busy || saved}
+              disabled={busy || Boolean(saved)}
               onChange={(e) => {
                 setContact(e.target.value);
                 setConfirmed(false);
@@ -82,8 +106,8 @@ export function SaveWebProspect({
           <label className="checkbox">
             <input
               type="checkbox"
-              checked={confirmed}
-              disabled={busy || saved}
+              checked={Boolean(saved) || confirmed}
+              disabled={busy || Boolean(saved)}
               onChange={(e) => setConfirmed(e.target.checked)}
             />
             I reviewed the source and want to save this candidate
@@ -91,7 +115,7 @@ export function SaveWebProspect({
           {error && <p role="alert">{error}</p>}
           {saved ? (
             <p role="status">
-              Candidate saved. Its inquiry is under “Saved web savings».
+              {onContinue ? "Candidate saved. Use Prepare inquiry to continue with its saved context." : "Candidate saved. Open it from your study to prepare an inquiry."}
             </p>
           ) : (
             <button
@@ -109,9 +133,10 @@ export function SaveWebProspect({
                     contact,
                     confirmed: true,
                   });
-                  setSaved(true);
-                  onSaved?.(result);
-                  if (onSaved) setOpen(false);
+                  setSaved(result);
+                  if (intent && onContinue) onContinue(result, intent);
+                  else onSaved?.(result);
+                  if (onSaved || onContinue) setOpen(false);
                 } catch (cause) {
                   setError(
                     cause instanceof ConvexError &&
@@ -124,7 +149,7 @@ export function SaveWebProspect({
                 }
               }}
             >
-              {busy ? "Saving…" : "Save candidate"}
+              {busy ? "Saving…" : intent === "inquiry" ? "Save and prepare inquiry" : intent === "research" ? "Save and continue research" : "Save candidate"}
             </button>
           )}
         </Dialog>
@@ -137,11 +162,13 @@ export function WebProspectLibrary({
   onPrepare,
   onSelect,
   selectedIds,
+  onContinue,
 }: {
   token: string;
   onPrepare: (seed: PurchaseSeed) => void;
   onSelect?: (prospect: StudyProspect) => void;
   selectedIds?: string[];
+  onContinue?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
 }) {
   const prospects = useQuery(api.prospects.list, { token });
   if (!prospects?.length) return null;
@@ -169,6 +196,10 @@ export function WebProspectLibrary({
             {new Date(item.observedAt).toLocaleDateString("en-US")}. Contact
             not independently verified.
           </p>
+          {onContinue && <div>
+            <button className="button secondary" onClick={() => onContinue(item, "inquiry")}>Prepare inquiry</button>
+            {item.simulated === false && <button className="button text-button" onClick={() => onContinue(item, "research")}>Research missing details</button>}
+          </div>}
           {onSelect ? (
             <button
               className="button secondary"

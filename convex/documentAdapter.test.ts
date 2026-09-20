@@ -28,6 +28,7 @@ test("adapter sends binary image/PDF parts, bounds generation and validates the 
     ).toEqual(result);
     const options = mocks.generateObject.mock.lastCall![2];
     expect(options.maxRetries).toBe(0);
+    expect(options.providerOptions.openai.reasoningEffort).toBe("low");
     expect(options.maxOutputTokens).toBe(5000);
     const part = options.messages[0].content[1];
     expect(part.type).toBe(

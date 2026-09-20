@@ -57,8 +57,11 @@ afterEach(() => {
 // Keep the real Agent and AI SDK in these tests. Mocking the agent hid its required context scope.
 test("stateless extraction and document reading reach the provider and validate its output", async () => {
   enable();
+  vi.stubEnv("OPENAI_EXTRACTION_MODEL", "gpt-5.6-luna");
   const fetch = vi.fn(async (_url: unknown, init?: RequestInit) => {
     const body = JSON.parse(String(init?.body));
+    expect(body.model).toBe("gpt-5.6-luna");
+    expect(body.reasoning.effort).toBe("low");
     expect(body.text.format.type).toBe("json_schema");
     const visual = JSON.stringify(body.input).includes("input_image");
     return message(

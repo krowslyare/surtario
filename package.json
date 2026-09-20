@@ -16,7 +16,8 @@
     "test:demo": "playwright test tests/studies.spec.ts --grep \"ensayo de demo\"",
     "check:hosting": "npm run build && node scripts/verify-hosting-build.mjs",
     "deploy:hosting": "npx @convex-dev/static-hosting deploy",
-    "deploy:hosting:dev": "npx @convex-dev/static-hosting upload --dev --build-command \"npm run check:hosting\""
+    "deploy:hosting:dev": "npx @convex-dev/static-hosting upload --dev --build-command \"npm run check:hosting\"",
+    "dev:mail": "node scripts/local-agentmail.mjs"
   },
   "engines": {
     "node": ">=22.12.0"
@@ -51,6 +52,7 @@
     "convex-test": "^0.0.56",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "ws": "8.21.3"
   }
 }

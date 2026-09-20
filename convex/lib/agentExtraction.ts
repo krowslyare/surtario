@@ -1,3 +1,4 @@
+import { logLocalModelUsage } from "./modelUsage";
 import { Agent } from "@convex-dev/agent";
 import { createOpenAI } from "@ai-sdk/openai";
 import { providerFetch } from "./providerTransport";
@@ -35,6 +36,7 @@ export async function analyzeWebSourceWithAgent(
     name: "Procurement source analysis",
     languageModel: createOpenAI({ apiKey, fetch: providerFetch })(model),
     instructions: webAnalysisInstructions,
+    usageHandler: logLocalModelUsage,
     storageOptions: { saveMessages: "none" },
     contextOptions: { recentMessages: 0, searchOtherThreads: false },
   });
@@ -50,6 +52,7 @@ export async function analyzeWebSourceWithAgent(
         })),
       }),
       schema: boundedWebAnalysisSchema(sourceEvidenceLines(source).length),
+      providerOptions: { openai: { reasoningEffort: "low" } },
       maxRetries: 0,
       maxOutputTokens: 2600,
       abortSignal: AbortSignal.timeout(30000),
@@ -68,6 +71,7 @@ export async function extractOfferWithAgent(
     name: "Procurement document extraction",
     languageModel: createOpenAI({ apiKey, fetch: providerFetch })(model),
     instructions: extractionInstructions,
+    usageHandler: logLocalModelUsage,
     storageOptions: { saveMessages: "none" },
     contextOptions: { recentMessages: 0, searchOtherThreads: false },
   });
@@ -78,6 +82,7 @@ export async function extractOfferWithAgent(
     {
       prompt: `Saved web source to extract:\n${JSON.stringify(sourceText)}`,
       schema: extractedOfferSchema,
+      providerOptions: { openai: { reasoningEffort: "low" } },
       maxRetries: 0,
       maxOutputTokens: 2000,
       abortSignal: AbortSignal.timeout(30000),

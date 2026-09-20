@@ -1,3 +1,4 @@
+import { scrollToContent } from "../scroll";
 import { Disclosure } from "./ui/Disclosure";
 import { useEffect, useRef, useState } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
@@ -88,7 +89,17 @@ export function AdvisorVerdict({
         {!report.alternatives.some((option) => option.eligible) &&
           report.alternatives.length > 0 && (
             <div className="advisor-hero-action">
-              <a className="button secondary" href="#comparison">
+              <a
+                className="button secondary"
+                href="#comparison"
+                onClick={(event) => {
+                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                  const comparison = document.getElementById("comparison");
+                  if (!comparison) return;
+                  event.preventDefault();
+                  scrollToContent(comparison);
+                }}
+              >
                 Review offer details
               </a>
             </div>

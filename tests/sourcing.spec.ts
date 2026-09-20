@@ -9,9 +9,7 @@ test("research case works without selected offers, persists on reload and isolat
   await page
     .getByRole("textbox", { name: "Ingredient or category" })
     .fill("Rice");
-  await page
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await page
     .getByRole("textbox", { name: "What would you like to find out?" })
     .fill("Compare pack sizes before requesting delivery terms");
@@ -34,9 +32,7 @@ test("research case works without selected offers, persists on reload and isolat
   await page.getByRole("dialog", { name: "Case history", exact: true }).press("Escape");
   await expect(page.getByRole("button", { name: "View case history", exact: true })).toBeFocused();
   await page.reload();
-  await page
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await page.getByRole("button", { name: /Rice Compare pack sizes/ }).click();
   await page.getByRole("button", { name: "View case history", exact: true }).click();
   await page.getByRole("dialog", { name: "Case history", exact: true }).getByText("View details", { exact: true }).first().click();
@@ -50,9 +46,7 @@ test("research case works without selected offers, persists on reload and isolat
   await connectOnlyToLocalBackend(other);
   const isolated = await other.newPage();
   await isolated.goto("/?view=market");
-  await isolated
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (isolated.getByRole("button", { name: "Research a question", exact: true }).or(isolated.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await expect(
     isolated.getByText("No cases yet.", { exact: false }),
   ).toBeVisible();
@@ -67,9 +61,7 @@ test("case layout remains readable and actions stop while offline", async ({
   await page
     .getByRole("textbox", { name: "Ingredient or category" })
     .fill("Rice");
-  await page
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await page
     .getByRole("textbox", { name: "What would you like to find out?" })
     .fill("Find a clear pack price and keep delivery pending");
@@ -220,9 +212,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
     token,
   );
   await page.goto("/?view=market");
-  await page
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await page
     .getByRole("button", { name: /Arroz Review the latest price/ })
     .click();
@@ -349,9 +339,7 @@ test("a waiting case reacts to a later supplier reply and opens that conversatio
       token,
     );
     await page.goto("/?view=market");
-    await page
-      .getByRole("button", { name: "Open research case", exact: true })
-      .click();
+    await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
     await page
       .getByRole("button", { name: /Arroz Wait for delivery terms/ })
       .click();

@@ -34,10 +34,15 @@ function safeUrl(value: string) {
 }
 
 export function SourceQualitySummary({
-  analysis,
+  analysis, compact = false,
 }: {
   analysis: SourceAnalysis;
+  compact?: boolean;
 }) {
+  if (compact) return <details className={`source-quality source-quality-${analysis.kind}`}>
+    <summary>{kindCopy[analysis.kind]} · Evidence{analysis.warnings.length ? ` and ${analysis.warnings.length} ${analysis.warnings.length === 1 ? "detail" : "details"} to review` : ""}</summary>
+    <SourceQualitySummary analysis={analysis} />
+  </details>;
   return (
     <section
       className={`source-quality source-quality-${analysis.kind}`}

@@ -62,6 +62,7 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
     (value) => localStorage.setItem("procurement-demo-session-v1", value), token,
   );
   await page.goto("/?view=market&example=pe");
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(page.getByRole("button", { name: "Open saved case comparison", exact: true })).toBeVisible();
@@ -78,6 +79,7 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
   await page.keyboard.press("Escape");
   expect(run("quotationMail:list", {token}).find((request: {comparisonId?: string}) => request.comparisonId === comparison.id)?.decisionAction.kind).toBe("delivery");
   await page.goto("/?view=market&example=pe");
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page.getByRole("button", {name: "Saved (1)", exact: true}).click();
   await page.getByRole("button", {name: "Open study", exact: true}).click();
   // Keep the case panel closed: this is the independent study mail entry point.
@@ -110,7 +112,8 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
   expect(saved[0].selectedOfferId).toBeNull();
   if (webCandidate) {
     await page.goto("/?view=market&example=pe");
-    await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
+    await page.getByRole("button", { name: /^My study/ }).click();
+  await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
     await page.getByRole("button", { name: "Open study", exact: true }).click();
     await page.getByRole("button", { name: "View request", exact: true }).click();
     await page.getByRole("button", {name: "Use reply to confirm delivery", exact: true}).click();

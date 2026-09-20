@@ -79,12 +79,12 @@ test("búsqueda vacía y falta de cobertura del ejemplo se explican", async ({
 }) => {
   await page.goto("/?example=pe");
   await page
-    .getByRole("button", { name: "Explore example", exact: true })
+    .getByRole("button", { name: "Explore demo catalog", exact: true })
     .click();
   await expect(page.getByRole("alert")).toContainText("Enter an ingredient");
   await page.getByLabel("Ingredient or category").fill("Pescado");
   await page
-    .getByRole("button", { name: "Explore example", exact: true })
+    .getByRole("button", { name: "Explore demo catalog", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "No examples match this search" }),
@@ -100,7 +100,7 @@ test("búsqueda vacía y falta de cobertura del ejemplo se explican", async ({
     .click();
   await page.getByLabel("Delivery area").fill("Cusco");
   await page
-    .getByRole("button", { name: "Explore example", exact: true })
+    .getByRole("button", { name: "Explore demo catalog", exact: true })
     .click();
   await expect(page.getByRole("article")).toHaveCount(0);
 });

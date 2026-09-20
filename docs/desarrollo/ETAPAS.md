@@ -1,10 +1,10 @@
 # Etapas de desarrollo
 
-**Current iteration after PR #35:** [implemented behavior, local verification and remaining API/release acceptance](CONSOLIDACION_DECISION.md). Older test counts below belong to their dated deliveries, not this checkout. No cloud publication is included in this iteration.
+**Current iteration after merged PR #36:** [contextual funnel and recovery](#september-19-2026--contextual-funnel-and-recovery), product landing and navigation refinements. Older test counts below belong to their dated deliveries. The current branch is being prepared for review; cloud publication and live-provider acceptance are separate.
 
 Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo con evidencia de su criterio de salida. El calendario del plan es orientativo; ante retrasos aplicar sus recortes, sin afirmar resultados no ejecutados.
 
-The PR #36 review corrections are described in [the current consolidation record](CONSOLIDACION_DECISION.md#pr-36-review-corrections): comparison-only action routing, complete blocker projection and visible term/viability deltas. This is branch work, separate from the published development app.
+The PR #36 review corrections are described in [the current consolidation record](CONSOLIDACION_DECISION.md#pr-36-review-corrections): comparison-only action routing, complete blocker projection and visible term/viability deltas. That record describes the preceding PR; its validation is distinct from the current funnel and landing work.
 
 ## Estado
 
@@ -375,3 +375,169 @@ Separated research from the pending UI refinement and saved-example work. The ch
 Fresh validation of this research-only tree: 263 tests across 42 files, frontend TypeScript/build and hosting asset checks passed; two focused research browser journeys passed with simulated transport. They exercise source review, corrections, cross-round selection, original evidence, pending totals and page-read classification. UI redesign and source-dialog disclosures are intentionally excluded. Codex PR review and CI follow publication. Merging main triggers the existing development deployment workflow; check active sourcing workflows before that publication.
 
 Codex Review of PR #35 identified three issues: Spanish adaptive rounds ignored refinements/exclusions, decimal-comma citations could lose supported values, and catalog children could repeat a previously read URL. Corrected all three. Eleven additional cases cover Spanish/English localized refinement, exclusion of prior catalog links, decimal/grouping formats and rejection of concatenated fabricated numbers. Eight regression cases failed on the reviewed commit; all 274 tests pass after the fixes. Frontend/backend types and hosting build checks passed. Remote CI of the final commit remains the merge gate.
+
+
+## September 19, 2026 — contextual funnel and recovery
+
+The PR #37 working tree starts from merged PR #36 on `codex/funnel-sourcing-connect`. Unpriced distributor actions atomically save the selected evidence, reuse its sourcing case and prepare/reopen a quotation draft. Reviewed public candidates can instead open a prefilled research question. Neither entry runs research or sends email; existing human approval, recipient restrictions, session ownership and stale-revision guards remain in effect. No tables or provider settings changed.
+
+Home now presents one `Continue your work` hub. Rows group only explicit record links, identify the next required action and retain access to their original source searches. Independent work with identical ingredient/area remains separate. Search has one primary action whose label states live versus demo mode; failed live search exposes an explicit sample alternative. Catalog and reviewed-offer cards enter purchase calculation directly; quantities, uncertain terms and existing case selections are preserved.
+
+Local verification passed 299 unit/backend/configuration tests across 46 files (two workers), frontend/backend TypeScript and the 32-file hosting build check. The 99-journey browser run passed 97; its two failures were obsolete expectations for the replaced transient inquiry and the import warning already changed on main. Both passed after updating those expectations. A subsequent focused pass verified 19 affected journeys; its new failed-search test used an incorrect region locator, then passed in the final six-journey funnel run. Together these runs cover all 102 browser journeys; this is not a claim of one uninterrupted 102-test run on the final tree. Desktop/320/390 px screens were inspected and the mobile header overlap was corrected. The new mutation's five focused tests also passed after checking that retries create only one mail event.
+
+Review covered session ownership, stale revisions, atomic rollback if quotation creation fails, duplicate preparation, preservation of linked comparisons/selections, independent same-market records and recovery of unselected source evidence. Tests used synthetic records and an isolated local backend; no real provider call, email send, cloud deployment, commit, push or PR publication was performed. API/hosted acceptance remains separate.
+
+### September 19, 2026 — continuity presentation refinement
+
+The empty hub now has a structured card with an icon, title, explanation and starting hint. Saved work appears in a bordered list capped at 360 px (or 55% of the viewport height), with a separate saved-item count, row hover/focus feedback and keyboard scrolling. Loading and error states retain the region heading; grouping and recovery behavior are unchanged.
+
+Frontend TypeScript and the 32-file hosting build check passed. Five existing funnel journeys passed; the extended continuity test passed after correcting a substring selector that also matched “prices” when checking “Rice”. It verifies eight independent entries, exact same-ingredient separation, bounded scrolling, keyboard opening and no page overflow at 1920/390/320 px. Empty and populated screenshots were inspected and saved locally under `.local/pr37-continuity/`. Synthetic local records only; no remote publication or provider request.
+
+
+### September 19, 2026 — offer-review navigation
+
+`Review offer details` now scrolls smoothly to the comparison with keyboard focus transferred without a jump; reduced-motion preference keeps immediate navigation. The existing maximum remains four offers, arranged in two columns on desktop and one on mobile.
+
+Three focused browser journeys passed across the initial run and one geometry-test correction: normal/reduced scrolling and focus, plus four-offer layout and capacity at 1920/390/320 px. The geometry test now waits for the existing hover transition before measuring. Screenshots were inspected and retained locally in `.local/pr37-offers/`. Frontend TypeScript and the 32-file hosting build check passed. No backend behavior, external provider call or remote publication changed.
+
+
+### September 19, 2026 — recent-work dialog hierarchy
+
+Scoped the continuity dialog presentation: one visible primary title, a subordinate empty-state heading, smaller hint and no nested card frame. Home styling and record behavior remain unchanged. Frontend TypeScript passed; actual browser captures at 1920/390/320 px were inspected, with no horizontal overflow and verified region naming, Escape and focus return. Local captures: `.local/pr37-hierarchy/`. No remote publication or backend change.
+
+
+The saving-help disclosure received the same hierarchy refinement: secondary 14 px/500 text and an 8 px content gap instead of accumulated spacing. Scoped styles preserve other disclosures. TypeScript, desktop/mobile inspection and keyboard expansion/collapse passed; captures are under `.local/pr37-saving-help/`. No persistence or remote behavior changed.
+
+
+Main navigation now marks Explore suppliers and My study consistently with `aria-current` and the shared underline; My study no longer inherits the pressed-button fill. The modal action and existing compact navigation stay unchanged. TypeScript and desktop/mobile browser checks passed, including modal focus return and no overflow. Inspected captures: `.local/pr37-navigation/`. Local only; no push or deployment.
+
+
+## September 19, 2026 — product landing flow explanation
+
+The root landing now explains the sourcing flow with four interactive, keyboard-accessible steps and readable product illustrations: discovery, saved evidence, reviewed supplier questions and optional whole-order comparison. It preserves the branded hero and sample-reply calculation, adds a clear workspace invitation, and explains pending terms, explicit sending confirmation, browser-session recovery and fictional demo pricing. The application workflow and provider gates are unchanged.
+
+Six landing/arrival E2E journeys and frontend TypeScript/build/32-file hosting checks passed locally. Desktop 1920/1440 and mobile 390/320 views, including every walkthrough step, were captured; primary views were visually inspected. The design detector reported no findings on the changed targets. Captures: `.local/pr37-landing/`. No external provider request, commit, push or deployment occurred.
+
+Independent finish review: `ship`, no material fixes. All 17 supplied desktop/mobile and selected-step captures were checked against the established design and product constraints. Scope: this landing extension only.
+
+
+### September 19, 2026 — prototype framing and walkthrough refinement
+
+The root landing's final invitation is now explicitly a hackathon prototype demo, with a generated, transparent ingredient asset, sample market context and smaller title. The existing hero and product flow remain intact. Number/title alignment, hover/selected distinction and a neutral step connector clarify the walkthrough. Overlaid grid panels reserve stable height, while inactive panels remain inert and hidden from assistive technology. Step changes use a brief reduced-motion-aware transition.
+
+Six landing E2Es passed with exact alignment and stable-height checks across 1920/1440/390/320 px. A browser frame probe confirmed the transition renders intermediate states; reduced motion disables it. TypeScript/build and 35-file hosting checks passed, as did the changed-target design scan. Captures are under `.local/pr37-landing-refinement/`; new imagery provenance is in `public/brand/RICE_DEMO_PROMPT.txt`. This is local UI work only; no commit, push, deployment or product provider call.
+
+Fresh independent finish review: `ship`, no material fixes, across 21 supplied captures. The previous screenshot findings are visually resolved; motion timing is supported by the browser frame probe.
+
+Follow-up correction after user rejection of the closing composition: reduced ingredient prominence, removed the lime split and repeated checklist, moved FAQ below the invitation. TypeScript and two focused landing/keyboard journeys passed; all four viewport captures received an independent visual check without material defects. Evidence: `.local/pr37-landing-closing-correction/`. No push or deployment; prior review was not user acceptance.
+
+Removed the redundant walkthrough caption at the user’s request and vertically centered its timeline against the adjacent panel. Browser geometry verified matching vertical centers for every step at 1920/1440/800 px and no overflow through 390/320 px; desktop/mobile screenshots and TypeScript passed. Local evidence: `.local/pr37-flow-centered/`. No push or deployment.
+
+Replaced the rejected isolated rice image with a newly generated panoramic ingredient-receiving scene behind the CTA text. Removed the figure/caption and two-column gap. An aubergine overlay preserves white-copy contrast; the lime action stays prominent, with a stronger mobile overlay. The abandoned rice asset and its dedicated provenance were removed. New provenance: `public/brand/SOURCING_CTA_PROMPT.txt` and `sourcing-cta.webp.json`. TypeScript/build/hosting validation and two focused landing/keyboard browser journeys passed; four viewport captures and the design detector were checked. Evidence: `.local/pr37-cta-background/`. No push, deployment or product provider call.
+
+Updated landing CTA and FAQ to present Surtario as a product per the user’s latest direction: ingredient sourcing, comparable pack/order costs, control over sending and browser-bound recovery. Removed prototype/hackathon framing from the CTA and demo-focused FAQ, while keeping sample-price labels with the illustrative examples. No API configuration or provider capability changed. TypeScript and two focused existing browser journeys passed. Local only, no push or deployment.
+
+Unified click-driven scrolling across the landing and workspace. The walkthrough link preserves fragment history and transfers focus without an initial jump. Search, study summary, sourcing follow-ups, offer review and comparison/page-start actions now use the same reduced-motion-aware native scroll helpers. Search navigation no longer competes with the results effect. Native skip links and dialog/select focus handling are unchanged. TypeScript and 15 existing landing/funnel/offer journeys passed; six targeted scroll tests passed after correcting the new mobile test to use its actual Change search control instead of the desktop-only navigation button. Tests observe intermediate scroll positions in both motion preferences; an additional pointer probe recorded 30 positions. No push, deployment or product provider call.
+
+Applied the user-approved closing hierarchy: porcelain explanatory section with smaller heading, a more compact photographic CTA with one-sentence copy, and a porcelain button. Fixed the timeline connector to end at the final circle rather than a fixed inset from the whole list. TypeScript passed; the full explanatory section and CTA were captured together at 1920/1440/390/320 px without overflow. Timeline endpoint geometry matched the last-circle center at five widths, including 800 px. Visual inspection and changed-target detector found no outstanding issues. Evidence: `.local/pr37-cta-hierarchy/` and `.local/pr37-timeline-end/`. Local only; no push or deployment.
+
+Corrected the explanatory-section scope after user feedback: an added rice-review specimen was rejected because the request was presentation-only. Removed it and restored the original three headings and complete paragraphs verbatim. The title now spans the section above three aligned text columns on one quiet outlined surface, stacking on mobile; the adjacent photographic CTA is unchanged. A generated concept remains only as local rejected design evidence, not a product asset or accepted direction. TypeScript and two existing landing/keyboard journeys passed; five viewport captures verify responsive fit and desktop paragraph alignment. Evidence: `.local/pr37-control-redesign/restored-content-*.png`. No push or deployment.
+
+Integrated the explanatory content into the page as a section, removing the floating-card frame and excess header space. The original heading now wraps naturally beside the existing minimal Surtario symbol; all three original messages and the photographic CTA remain intact. TypeScript passed; captures at 1920/1440/800/390/320 px confirm no horizontal overflow and preserved desktop column alignment, with desktop/mobile visual inspection. Evidence: `.local/pr37-control-section/`. Local only; no push or deployment.
+
+### September 19, 2026 — consolidated review checkpoint
+
+Prepared the contextual funnel, landing, visual refinements and shared scroll behavior together for pull-request review. Fresh verification passed all 299 unit/backend/configuration tests, frontend/backend TypeScript, the production build and 35-file hosting check, plus all 21 focused browser journeys in one run. Review found no blocking issue in session ownership, stale revisions, preparation rollback, linked comparisons or confirmation boundaries. This checkpoint does not establish live-provider or hosted acceptance; no merge or deployment is included.
+
+
+## September 19, 2026 — bounded direct API acceptance
+
+Configured the existing anonymous local backend for direct OpenAI and Firecrawl calls, with no rehearsal bridge, cloud environment mutation, hosting publication or mail send. Both OpenAI model selectors use `gpt-5.6-luna`; application calls now explicitly request low reasoning, retain their output caps and zero SDK retries. A local-only usage callback records model/token counts without prompts, credentials, source text or session identifiers.
+
+Four paid model calls passed: clear text retained 18 kg / PEN 80; ambiguous text left weight/unit null; the bundled synthetic US quotation image retained 25 lb / USD 20; one actual Firecrawl page retained USD 8 / 28 oz with source citations. This verifies image understanding through Responses, without Images generation or Files permissions. Document idempotency, saved recovery and session isolation passed without additional model calls.
+
+A real browser search for long-grain white rice in Portland took 125.88 seconds, retaining 14 candidate sources, 10 with recovered text, with partial-coverage warning. Reviewed the Della Rice product, saved a study, opened Calculate purchase with a hypothetical required quantity of 10 lb, preserved unknown minimum/delivery/tax, and saved the comparison and a templated delivery inquiry without sending. Reload and explicit reopen recovered the offer and its original unsent question. This is a test of product operation, not supplier availability, wholesale suitability or a confirmed order total.
+
+Recorded usage for these four calls: 6,896 input and 1,228 output tokens; USD 0.0028528 estimated at standard uncached Luna rates, excluding prior connectivity probes and Firecrawl credits. This is a token-based estimate, not an account invoice or balance check. Redacted local evidence: `.local/openai-acceptance/`.
+
+Remaining acceptance: AgentMail's configured development inbox GET returned 403 `missing_permission`; no send/webhook round trip was attempted and mail stays disabled locally. Multi-round autonomous research, direct-API advisor and reply extraction were intentionally not exercised in this bounded batch. Before recording, improve the static searching state with actual progress, avoid resetting the active comparison to the synthetic example on reload, and review source relevance (the search includes retail/nonlocal and suspicious candidates). No repeated searches were used to curate a favorable result.
+
+All 300 unit/backend/configuration tests and frontend/backend TypeScript checks passed. Local functions were pushed and queried successfully. No Git commit/push or cloud deployment. Existing SDK warnings about deprecated image parts and mocked non-reasoning test model names do not represent failed real Luna calls.
+
+
+### 2026-09-20 UTC — search progress and comparison recovery (local)
+
+Quick search now publishes bounded provider checkpoints through the existing owner-scoped Convex query: search attempts checked, candidate count, pages checked and the current public hostname. The UI uses Surtario typography, symbol and tokens with a small stage transition and reduced-motion support; it does not invent percentages, ETAs, supplier availability or comparable prices. A running search can be reopened from Continue your work. Progress writes add no provider requests and ignore terminal runs.
+
+Saving/opening a comparison retains its ID in the URL. Reload resolves it through the existing owner-scoped list before rendering offers; missing or foreign records show a recovery state instead of synthetic offers. Only saved state is restored; unsaved edits are not autosaved. Manually verified that the previous real Della Rice comparison reopens with its 10 lb requirement, source and unsent inquiry intact. Source counts now explicitly do not confirm delivery to the requested area; relevance/geographic suitability still require review, with no new ranking or verification claims.
+
+Verification: 35 focused discovery/research backend tests, 10 browser journeys covering reactive local Convex checkpoints, reload, foreign-session denial, progress completion/error, reduced motion and source-review-to-comparison; frontend/backend TypeScript and production build passed. Computer-use inspection covered the production progress component in an isolated response harness and the actual saved comparison at 1440px and 390px. Corrected a mobile step-marker width defect; no horizontal overflow or browser errors in the checked app view. The design detector reported only an unchanged advisor-card border outside this scope.
+
+Applied functions only to the existing anonymous localhost backend. Browser integration tests inserted isolated synthetic records and checkpoints; no snapshot replacement, additional paid provider calls, outgoing emails, Git commit/push or cloud deploy. The prior AgentMail inbox permission blocker remains; an end-to-end live email round trip and a paid search with these new visual checkpoints have not been rerun.
+
+
+### 2026-09-20 UTC — useful sourcing results and reviewed-offer presentation (local)
+
+Corrected catalog product-link traversal (embedded thumbnails, multiline titles, alphanumeric HTML SKUs), tightened child-link ingredient relevance and prioritized trade-supplier metadata within the unchanged read budget. A restored web study now opens its original search; the persistence journey covers this regression.
+
+The existing real study now recovers three reviewed selections after reload: Della 28 oz / USD 8, WebstaurantStore 50 lb / USD 37.49 and F. Garcia as an unpriced distributor. One Firecrawl page read and two Luna low extractions were used; Food To Live remained a multi-variant catalog rather than an invented single offer. These are candidate options, not confirmed equivalent specifications or Portland fulfillment.
+
+Redesigned offer hierarchy and compact source/action footer; checked desktop and 390/320 px mobile, fixing price wrapping and contact overflow. 56 focused discovery/source-quality tests, seven funnel/persistence E2Es, frontend/backend TypeScript and build passed. Local functions updated; no new full paid search, outbound messages, Git push or cloud deployment. AgentMail acceptance remains blocked by the previously observed inbox permission failure.
+
+
+### September 19, 2026 — AgentMail configuration diagnosis and localhost receiver
+
+Corrected the readiness probe: an inbox-scoped Message Read/Send key returns 403 for administrative inbox metadata but succeeds on message listing. Real message listing returned HTTP 200 and an authenticated WebSocket subscription was accepted for the configured inbox. This supersedes the earlier claim that the observed metadata permission failure blocked AgentMail itself.
+
+Configured the existing inbox/test recipient on the anonymous local backend, enabled mail and explicit AI draft/reply actions, and added `npm run dev:mail`. Local reception uses AgentMail's outbound WebSocket and the existing internal reply mutation; hosted signed webhook settings remain unchanged. The UI shows the configured recipient in a newly prepared, unsent draft and still requires send approval. Verification: 22 focused provider/receiver/quotation tests and frontend TypeScript passed. No new outbound email, OpenAI request, Git push or cloud deployment in this setup check. Subscription acceptance is not a complete send/reply acceptance; the local receiver must stay running and has no offline replay.
+
+
+### September 20, 2026 — local acceptance: progressive discovery through received reply
+
+Implemented source arrivals and actual search/read/review checkpoints through owner-scoped Convex subscriptions, two concurrent page reads within the existing budget, and optional preparation of up to three distinct product pages. Prioritized trade/local evidence and explicit currency for automatic review; proposals remain unconfirmed. Completed results start with six sources and expandable evidence. Fixed the search identity at the user click so hot reload cannot create a new paid request, cleared stale email-save notices on send, and distinguished sending from uncertain delivery.
+
+Ran three fresh direct Firecrawl searches with Luna low. One extra search exposed the hot-reload identity bug and was counted rather than hidden. The final search returned 15 candidates, 11 with recovered text. Reviewed and saved two real published offers (50 lb at USD 37.49 and 28 oz at USD 8.00) plus an unpriced trade distributor. A contradictory white/brown-rice page remained unconfirmed. The final explicit-currency prioritization was checked with deterministic fixtures without another paid search.
+
+Completed one authorized AgentMail send and reply between the configured test inboxes. The local WebSocket receiver correlated the reply and the open UI updated without reload. Luna extracted the response; human review created a separate test-supplier offer. The mail terms were explicitly synthetic, not confirmation by a real supplier. A 60 lb need produced two 50 lb bags, 100 lb received, 40 lb excess, USD 74.98 goods and USD 82.98 including the test freight. Delivery timing stayed pending because the reply did not confirm it. Study, conversation, original source and calculation survived reload; the existing case comparison was preserved.
+
+Verification: 317 unit/backend tests, frontend/backend TypeScript and production build passed; 16 distinct browser journeys passed across the configured-provider run and the missing-configuration rerun (the three initial failures assumed disabled providers). Restored all live local settings after that negative-path check. Inspected desktop and 390/320 px mobile UI without horizontal overflow. Local usage logs recorded 11 Luna calls, 72,259 input and 3,717 output tokens; no Astra, no stress test, no dollar-cost claim. No commit/push or cloud deployment. The local mail receiver must remain running and does not backfill disconnected events. Multi-round autonomous research and unrestricted supplier outreach were not part of this acceptance.
+
+
+### 2026-09-20 — pulido de correo y lectura de resultados (local)
+
+- Correo HTML con marca Surtario, alternativa de texto y vista previa común, escapada y ligada a la revisión aprobada. Versionado opcional conserva correos históricos sin alterar su formato. Nuevas consultas separan contexto, preguntas comerciales y límite de no-compra.
+- Un envío real autorizado entre buzones de prueba: recibido y renderizado en AgentMail; conversación recuperada tras recargar. UI revisada en escritorio y 390/320 px sin desbordamiento. No llamadas OpenAI/Firecrawl en esta pasada.
+- La búsqueda persistida permite mostrar sus 15 fuentes (11 legibles); tres análisis automáticos no son el total encontrado. Copy aclarado, títulos de fuente jerarquizados y aviso de contenido separado del enlace.
+- 320 pruebas/49 archivos, TypeScript frontend/backend y build correctos. Pendiente de refinamiento visual: competencia entre acciones de cada fuente. HTML verificado en AgentMail, sin afirmar compatibilidad visual probada en todos los clientes. Sin commit/push ni despliegue cloud.
+
+
+### 2026-09-20 — cobertura inicial ampliada a 30 fuentes (local)
+
+- Recorrido en inglés: hasta 30 fuentes, tres consultas de hasta 20 hits y presupuesto de 30 lecturas. Se conservan diversidad por dominio, deduplicación, filtros, concurrencia de dos lecturas y reintentos acotados de rate limit. IA automática permanece en tres fuentes; no se implementó pricing.
+- UI: doce fuentes iniciales, expansión y contracción sin otra llamada. Una búsqueda real nueva devolvió 21 fuentes de 21 dominios, 16 legibles; no equivalen a 21 proveedores verificados. Avances y fuentes visibles durante aproximadamente 137 segundos hasta el último análisis.
+- Consumo medido: tres llamadas Luna low, 14.834 tokens de entrada y 897 de salida. Sin inferir costo monetario ni cargos de créditos Firecrawl. No correos nuevos en esta pasada.
+- 42 pruebas focalizadas, TypeScript frontend/backend, build y tres E2E pasaron. Caso sintético de 30 tarjetas y revisión manual de las 21 fuentes reales en escritorio/móvil 390 px; sin overflow ni errores de navegador. Backend anónimo local actualizado; sin push ni despliegue cloud.
+
+
+### September 20, 2026 — pre-push acceptance and review fixes
+
+- Source cards now prioritize review/extraction or inquiry, with secondary supplier actions under **More options**. Existing case-only distributor controls remain directly available. Desktop and 390/320 px browser checks passed without overflow or console errors.
+- Fixed the two findings from the earlier Codex review of PR #37: close the continuity dialog before opening a comparison; reset incompatible working selections when resuming a different ingredient/area without deleting saved studies. Both have browser regression coverage.
+- One fresh real Firecrawl search returned 21 candidate sources, 16 with recovered text. Three automatic Luna low analyses remained proposals; reviewed and saved one current source against its captured text. One authorized branded AgentMail request and reply between test inboxes appeared reactively without reloading. One Luna reply extraction was checked against the actual message, then added to the existing compatible comparison.
+- Synthetic commercial terms only: for 60 lb, three 25 lb bags produce 75 lb received, 15 lb excess, USD 60 goods plus USD 6 freight = USD 66. Tax was explicitly included; delivery timing stayed pending. Existing comparison, saved study, source and email thread survived reload. No supplier outreach or purchase.
+- Verification: 320 unit/backend/configuration tests, frontend/backend TypeScript, production build and 20 focused browser journeys passed. The source-quality browser test now explicitly opens the collapsed evidence control before asserting its content. Git publication/review is the next step; no cloud deployment or merge in this acceptance.
+
+
+### September 20, 2026 — Codex review follow-up
+
+Published the accumulated local acceptance in PR #37 at `a5cb3f5`; GitHub test/build passed. Codex identified one additional P2: reopening a source forgot the saved distributor's corrected name/contact and could reject continuation as conflicting data. The card now resolves the owner-scoped saved candidate by run/source before enabling actions, displays the persisted fields and reuses its identity. Extended both inquiry/research browser journeys through reload and continuation; both and the production build passed. No provider calls, cloud deployment or merge in this follow-up.
+
+
+### September 20, 2026 — search identity review follow-up
+
+Codex review of `4301edd` found that opening a saved study resets the numeric search counter while the mounted component retains cached promises. Search attempts now use the unique client request ID, preserving same-request deduplication without reusing a previous ingredient's result. A browser regression runs rice search, saved-study recovery and lentil search in the real app, intercepting provider actions; both it and the reactive-progress/reload test passed without provider spending. Production build passed; 21 distinct focused browser journeys have now passed across this acceptance. No cloud deployment or merge.
+
+
+### 2026-09-20 — e9702d1 and progressive price context
+
+Codex review identified a priced source without complete package size/unit appearing as a bare price during analysis. Progress cards now explicitly show "Package size pending" unless both values are available. Extended the existing desktop/mobile progress checks with missing-size, missing-unit and complete-package cases; both browser tests and production build passed. No new provider calls, cloud deployment or merge.

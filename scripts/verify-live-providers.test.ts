@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { spawnSync } from "node:child_process";
-import { readiness } from "./verify-live-providers.mjs";
+import { checkAgentMail, readiness } from "./verify-live-providers.mjs";
 
 describe("live provider readiness", () => {
   it("rejects a deployment key before making any external call and never prints it", () => {
@@ -38,5 +38,22 @@ describe("live provider readiness", () => {
       "OPENAI_API_KEY",
       "ADVISOR_ENABLED",
     ]);
+  });
+});
+
+
+describe("AgentMail message-scoped readiness", () => {
+  it("accepts an empty inbox without requesting administrative inbox access", async () => {
+    const result = await checkAgentMail({ AGENTMAIL_API_KEY: "test", AGENTMAIL_INBOX_ID: "test@example.test" }, async (url: string) => {
+      expect(url).toBe("https://api.agentmail.to/v0/inboxes/test%40example.test/messages?limit=1");
+      return new Response(JSON.stringify({ messages: [] }), { status: 200 });
+    });
+    expect(result.status).toBe("passed");
+    expect(result.proves).toContain("no send");
+  });
+  it("reports denied message access without exposing provider output", async () => {
+    const result = await checkAgentMail({ AGENTMAIL_API_KEY: "test", AGENTMAIL_INBOX_ID: "test@example.test" }, async () => new Response("private provider error", { status: 403 }));
+    expect(result.status).toBe("blocked");
+    expect(JSON.stringify(result)).not.toContain("private provider error");
   });
 });

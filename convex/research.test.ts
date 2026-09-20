@@ -49,6 +49,7 @@ test("disabled public search cannot spend or write; status contains no credentia
   const fetch = vi.fn();
   vi.stubGlobal("fetch", fetch);
   expect(await t.query(api.research.status, {})).toEqual({
+    autoReviewEnabled: false,
     searchEnabled: false,
     extractionEnabled: false,
   });
@@ -287,4 +288,71 @@ test("twelve adaptive rounds and a watch do not consume quick-search quota or hi
   expect(await t.query(api.research.list, { token: draft.token })).toHaveLength(10);
   await expect(t.mutation(internal.research.reserveSearch, draft)).rejects.toThrow(/10 quick searches/);
   expect(await t.query(api.research.list, { token: "b".repeat(64) })).toEqual([]);
+});
+
+test("live checkpoints are owner-scoped and terminal runs reject late updates", async () => {
+  const t = convexTest(schema, modules);
+  const { run } = await t.mutation(internal.research.reserveSearch, draft);
+  const progress = { stage: "reading" as const, searchesCompleted: 3, searchesTotal: 3, candidates: 4, pagesChecked: 2, currentHost: "supplier.test" };
+  await t.mutation(internal.research.updateProgress, { id: run.id, progress });
+  expect((await t.query(api.research.list, { token: draft.token }))[0]).toMatchObject({ clientId: draft.clientId, progress });
+  expect(await t.query(api.research.list, { token: "b".repeat(64) })).toEqual([]);
+  await t.mutation(internal.research.failSearch, { id: run.id });
+  await t.mutation(internal.research.updateProgress, { id: run.id, progress: { ...progress, pagesChecked: 3 } });
+  expect((await t.query(api.research.list, { token: draft.token }))[0]).toMatchObject({ status: "failed", progress });
+});
+
+test("search publishes progress before the provider finishes and completes without new paid calls", async () => {
+  enable();
+  const t = convexTest(schema, modules);
+  let finishPage!: (value: Response) => void;
+  let pageStarted!: () => void;
+  const waitingForPage = new Promise<void>(resolve => { pageStarted = resolve; });
+  const response = new Promise<Response>(resolve => { finishPage = resolve; });
+  const fetch = vi.fn(async (url: string) => {
+    if (url.endsWith("/search")) return Response.json({ success: true, data: { web: [{ url: "https://supplier.com/products/rice", title: "Rice supplier" }] } });
+    pageStarted();
+    return response;
+  });
+  vi.stubGlobal("fetch", fetch);
+  const result = t.action(api.research.search, { ...draft, ingredient: "rice", region: "Portland, OR, US" });
+  await waitingForPage;
+  const running = (await t.query(api.research.list, { token: draft.token }))[0];
+  expect(running).toMatchObject({ status: "running", clientId: draft.clientId, sources: [], progress: { stage: "reading", searchesCompleted: 3, candidates: 1, pagesChecked: 0, currentHost: "supplier.com" } });
+  finishPage(Response.json({ success: true, data: { markdown: "Rice 25 lb bag. Contact supplier for price.", metadata: { title: "Rice supplier", statusCode: 200 } } }));
+  expect(await result).toMatchObject({ status: "complete", progress: { pagesChecked: 1 } });
+  expect(fetch).toHaveBeenCalledTimes(4);
+});
+
+test("partial sources are owner-scoped, survive failure and cannot be extracted before stable review indices", async () => {
+  const t = convexTest(schema, modules);
+  const { run } = await t.mutation(internal.research.reserveSearch, draft);
+  await t.mutation(internal.research.publishSource, { id: run.id, source });
+  await t.mutation(internal.research.publishSource, { id: run.id, source });
+  const visible = (await t.query(api.research.list, { token: draft.token }))[0];
+  expect(visible.status).toBe("running");
+  expect(visible.sources).toHaveLength(1);
+  expect(await t.query(api.research.list, { token: "b".repeat(64) })).toEqual([]);
+  await expect(t.mutation(internal.research.reserveExtraction, { token: draft.token, runId: run.id, sourceIndex: 0 })).rejects.toThrow(/not complete/);
+  await t.mutation(internal.research.failSearch, { id: run.id });
+  await t.mutation(internal.research.publishSource, { id: run.id, source: { ...source, url: "https://other.test/rice" } });
+  expect((await t.query(api.research.list, { token: draft.token }))[0].sources).toHaveLength(1);
+});
+
+test("automatic preparation is capped at three sources, persists proposals and never confirms an offer", async () => {
+  enable();
+  vi.stubEnv("SEARCH_AUTO_REVIEW_ENABLED", "true");
+  const t = convexTest(schema, modules);
+  // Spanish quick discovery has a three-source API budget; all are explicit product pages.
+  vi.stubGlobal("fetch", vi.fn(async () => Response.json({ success: true, data: { web: Array.from({ length: 3 }, (_, i) => ({ ...source, url: `https://supplier${i}.com/products/arroz`, markdown: "Arroz extra. Saco de 10 kg: S/ 80.00. Consultar entrega y mínimo con el proveedor." })) } })));
+  const result = await t.action(api.research.search, draft);
+  const { analyzeWebSourceWithAgent } = await import("./lib/agentExtraction");
+  expect(analyzeWebSourceWithAgent).toHaveBeenCalledTimes(3);
+  expect(result.status).toBe("complete");
+  expect(result.progress).toMatchObject({ stage: "reviewing", reviewsCompleted: 3, reviewsTotal: 3 });
+  expect(result.sources.every(s => s.extractionStatus === "complete")).toBe(true);
+  expect(await t.run(ctx => ctx.db.query("studies").take(1))).toEqual([]);
+  // A repeated client request uses persisted results, without another paid analysis.
+  await t.action(api.research.search, draft);
+  expect(analyzeWebSourceWithAgent).toHaveBeenCalledTimes(3);
 });

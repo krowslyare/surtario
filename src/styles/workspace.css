@@ -868,6 +868,15 @@
   color: var(--color-text-muted);
   margin-top: var(--space-2);
 }
+.study-saving-help > .disclosure-trigger {
+  font-size: var(--text-label);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  border-bottom-color: var(--color-border-subtle);
+}
+.study-saving-help > .disclosure-trigger:hover { color: var(--color-text); }
+.study-saving-help .disclosure-panel-inner { padding-top: var(--space-2); }
+.study-saving-help .field-hint { margin: 0; line-height: 1.5; }
 .study-picks {
   list-style: none;
   padding: 0;
@@ -1260,3 +1269,45 @@
   .decision-transition > svg { transform: rotate(90deg); }
   .resolution-actions { flex-direction: column; align-items: stretch; }
 }
+
+/* One entry per linked piece of work; actions keep the existing brand controls. */
+.continue-work { margin-block: var(--space-6); }
+.continue-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-4); }
+.continue-heading h2 { margin: 0; }
+.continue-count { flex: none; padding: var(--space-1) var(--space-3); border-radius: var(--radius-badge); background: var(--color-surface-hover); color: var(--color-text-muted); font-size: var(--text-label); }
+.continue-empty-card { display: flex; flex-direction: column; align-items: center; gap: var(--space-3); padding: var(--space-8) var(--space-6); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface-subtle); text-align: center; }
+.continue-empty-card > svg { color: var(--color-primary); margin-bottom: var(--space-1); }
+.continue-empty-card h3 { margin: 0; font-family: var(--font-display); font-size: var(--text-section); }
+.continue-empty-card p { max-width: 65ch; margin: 0; color: var(--color-text-muted); }
+.continue-empty-card .continue-empty-hint { font-size: var(--text-label); }
+/* The dialog title already introduces this hub; retain its accessible region label. */
+.continuity-dialog .continue-work { margin: 0; }
+.continuity-dialog .continue-heading { margin: 0; justify-content: flex-start; }
+.continuity-dialog .continue-heading h2 { display: none; }
+.continuity-dialog .continue-count { margin-bottom: var(--space-4); }
+.continuity-dialog .continue-empty-card { border: 0; background: transparent; padding: var(--space-6) var(--space-2) var(--space-4); gap: var(--space-2); }
+.continuity-dialog .continue-empty-card > svg { color: var(--color-text-muted); margin-bottom: var(--space-2); }
+.continuity-dialog .continue-empty-card h3 { font-size: var(--text-body); }
+.continuity-dialog .continue-empty-card p { max-width: 44ch; font-size: var(--text-body); line-height: 1.5; }
+.continuity-dialog .continue-empty-card .continue-empty-hint { margin-top: var(--space-2); font-size: var(--text-label); }
+.continue-scroll { max-height: min(360px, 55dvh); overflow-y: auto; scrollbar-gutter: stable; scrollbar-color: var(--color-control-border) var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); }
+.continue-scroll:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
+.continue-list { list-style: none; padding: 0; margin: 0; }
+.continue-list > li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); padding: var(--space-4) var(--space-6); border-bottom: 1px solid var(--color-border-subtle); }
+.continue-list > li:last-child { border-bottom: 0; }
+.continue-list > li:hover, .continue-list > li:focus-within { background: var(--color-surface-hover); }
+.continue-list p { margin-block: 4px; overflow-wrap: anywhere; }
+.continue-actions { display: flex; flex: none; flex-direction: column; align-items: flex-end; gap: 8px; }
+.continue-list > li > div:first-child { min-width: 0; }
+.continue-list small { color: var(--color-text-muted); }
+.study-rail[hidden], .sourcing-library[hidden] { display: none; }
+@media (max-width: 600px) {
+  .continue-list > li { align-items: flex-start; flex-direction: column; gap: var(--space-3); padding-inline: var(--space-4); }
+  .continue-actions { align-items: flex-start; }
+  .market-topbar { flex-wrap: wrap; }
+  .market-topbar .brand { flex: 0 0 auto; }
+  .market-topbar .brand-nav { flex-wrap: wrap; }
+}
+.sourcing-case[hidden] { display: none; }
+/* Hidden workspaces retain drafts but must leave layout and keyboard order. */
+.market-main [hidden] { display: none !important; }

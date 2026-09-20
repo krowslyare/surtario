@@ -38,9 +38,7 @@ for (const accepted of [true, false])
       token,
     );
     await page.goto("/?view=market");
-    await page
-      .getByRole("button", { name: "Open research case", exact: true })
-      .click();
+    await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
     await page
       .locator(".sourcing-case-link")
       .filter({ hasText: "Rice" })
@@ -204,9 +202,7 @@ test("case brief and library expose unconfirmed delivery with complete numeric t
     token,
   );
   await page.goto("/?view=market");
-  await page
-    .getByRole("button", { name: "Open research case", exact: true })
-    .click();
+  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
   await expect(page.locator(".sourcing-case-link")).toContainText(
     "Required delivery is not confirmed.",
   );
