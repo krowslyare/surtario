@@ -1,4 +1,5 @@
 import { scrollToAnchor } from "./scroll";
+import { markWorkspaceEntry } from "./workspaceCheckpoint";
 import { useState } from "react";
 import { ArrowDown, ArrowUpRight, Check, ChevronDown, CircleHelp, RotateCcw } from "lucide-react";
 import Brand from "./components/Brand";
@@ -38,7 +39,7 @@ export default function Landing() {
       <a className="skip-link" href="#landing-main">Skip to content</a>
       <header className="landing-header">
         <Brand compact />
-        <a className="landing-enter" href="/?view=market">
+        <a className="landing-enter" href="/?view=market" onClick={markWorkspaceEntry}>
           Open workspace <ArrowUpRight size={18} aria-hidden="true" />
         </a>
       </header>
@@ -50,7 +51,7 @@ export default function Landing() {
             Ingredient sourcing for your restaurant. Find suppliers, keep the
             evidence, and know what to ask before you buy.
           </p>
-          <a className="button primary landing-cta" href="/?view=market">
+          <a className="button primary landing-cta" href="/?view=market" onClick={markWorkspaceEntry}>
             Start sourcing <ArrowUpRight size={20} aria-hidden="true" />
           </a>
           <p className="landing-entry-note">Start with an ingredient. No spreadsheet required.</p>
@@ -108,7 +109,7 @@ export default function Landing() {
             <div className="landing-start-copy">
               <h2 id="landing-start-title">Try Surtario with<br />one ingredient.</h2>
               <p>Find suppliers, clarify missing details and calculate what your order will cost.</p>
-              <a className="button primary landing-cta" href="/?view=market">Start sourcing <ArrowUpRight size={20} aria-hidden="true" /></a>
+              <a className="button primary landing-cta" href="/?view=market" onClick={markWorkspaceEntry}>Start sourcing <ArrowUpRight size={20} aria-hidden="true" /></a>
               <span className="landing-entry-note">No recipes or purchase history needed.</span>
             </div>
           </div>

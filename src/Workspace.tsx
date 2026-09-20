@@ -3,6 +3,7 @@ import Comparison, { readComparisonDraft } from "./Comparison";
 import ResumeComparison from "./components/ResumeComparison";
 import MarketStudy from "./MarketStudy";
 import type { PurchaseSeed } from "./domain/market";
+import { useWorkspaceScrollRecovery } from "./workspaceCheckpoint";
 
 const BrandGuide = lazy(() => import("./BrandGuide"));
 
@@ -11,6 +12,7 @@ export default function Workspace({
 }: {
   persistenceEnabled: boolean;
 }) {
+  useWorkspaceScrollRecovery();
   type Route = { view: "market" | "comparison" | "brand" | "followup" | "messages"; caseId: string | null; requestId?: string; comparisonId: string | null; fromCase: string | null; fromMessage?: string };
   function readRoute(): Route {
     const params = new URLSearchParams(window.location.search);
@@ -65,7 +67,10 @@ export default function Workspace({
     if (next.comparisonId) url.searchParams.set("comparison", next.comparisonId);
     if (next.fromCase) url.searchParams.set("fromCase", next.fromCase);
     if (next.fromMessage) url.searchParams.set("fromMessage", next.fromMessage);
-    window.history[replace ? "replaceState" : "pushState"]({ surtario: true, previous: route }, "", url);
+    window.history[replace ? "replaceState" : "pushState"]({ surtario: true, previous: route,
+      workspaceSession: window.history.state?.workspaceSession,
+      workspaceCheckpoint: window.history.state?.workspaceCheckpoint,
+    }, "", url);
     setRoute(next);
     setVisit(value => value + 1);
   }

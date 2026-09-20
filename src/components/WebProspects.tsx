@@ -3,6 +3,7 @@ import type { PurchaseSeed } from "../domain/market";
 import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { ConvexError } from "convex/values";
+import { Bookmark, Check, ExternalLink } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { Dialog } from "./Dialog";
@@ -178,55 +179,66 @@ export function WebProspectLibrary({
   const prospects = useQuery(api.prospects.list, { token });
   if (!prospects?.length) return null;
   return (
-    <section className="saved-studies" aria-label="Saved web distributors">
-      <h2>Saved web distributors</h2>
-      <p>
-        Price, availability and delivery area still need confirmation.
-      </p>
+    <section className="web-prospect-library" aria-label="Saved web distributors">
+      <header className="web-prospect-library-heading">
+        <h2>Saved web distributors</h2>
+        <p>Price, availability and delivery area still need confirmation.</p>
+      </header>
       {prospects.map((item) => (
-        <article key={item.id}>
-          <h3>{item.supplier}</h3>
-          <p>
-            {item.ingredient} · {item.region}
-          </p>
-          <p>
-            Contact:{" "}
-            {item.contact ?? "Pending; review the source page"}
-          </p>
-          <a href={item.sourceUrl} target="_blank" rel="noreferrer">
-            {item.sourceTitle}
-          </a>
-          <p className="field-hint">
-            Source observed on{" "}
-            {new Date(item.observedAt).toLocaleDateString("en-US")}. Contact
-            not independently verified.
-          </p>
-          {onContinue && <div>
-            <button className="button secondary" onClick={() => onContinue(item, "inquiry")}>Prepare inquiry</button>
-            {item.simulated === false && <button className="button text-button" onClick={() => onContinue(item, "research")}>Research missing details</button>}
-          </div>}
-          {onSelect ? (
-            <button
-              className="button secondary"
-              aria-pressed={selectedIds?.includes(item.id)}
-              disabled={
-                selectedIds?.includes(item.id) ||
-                (selectedIds?.length ?? 0) >= 3
-              }
-              onClick={() => onSelect(item)}
-            >
-              {selectedIds?.includes(item.id)
-                ? "In my study"
-                : "Add to my study"}
-            </button>
-          ) : (
-            <QuotationMail
-              comparisonId={null}
-              prospectId={item.id}
-              offers={[]}
-              onEditOffer={() => {}}
-              onPrepare={onPrepare}
-            />
+        <article className="web-prospect-card" key={item.id} aria-label={`Saved distributor: ${item.supplier}`}>
+          <div className="web-prospect-copy">
+            <h3>{item.supplier}</h3>
+            <p className="web-prospect-context">{item.ingredient} · {item.region}</p>
+            <div className="web-prospect-contact">
+              <span>Contact</span>
+              <p>{item.contact ?? "Pending confirmation"}</p>
+              <small>{item.contact ? "Not independently verified." : "Review the source page for contact details."}</small>
+            </div>
+          </div>
+          {(onContinue || onSelect) && (
+            <div className="web-prospect-actions">
+              {onContinue && (
+                <button className="button primary" onClick={() => onContinue(item, "inquiry")}>
+                  Prepare inquiry
+                </button>
+              )}
+              {onSelect && (
+                <button
+                  className="button secondary"
+                  aria-pressed={selectedIds?.includes(item.id) ?? false}
+                  disabled={selectedIds?.includes(item.id) || (selectedIds?.length ?? 0) >= 3}
+                  onClick={() => onSelect(item)}
+                >
+                  {selectedIds?.includes(item.id) ? <Check size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}
+                  {selectedIds?.includes(item.id) ? "In my study" : "Add to my study"}
+                </button>
+              )}
+              {onContinue && item.simulated === false && (
+                <button className="button text-button" onClick={() => onContinue(item, "research")}>
+                  Research missing details
+                </button>
+              )}
+            </div>
+          )}
+          <footer className="web-prospect-source">
+            <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+              <ExternalLink size={15} aria-hidden="true" />
+              <span>{item.sourceTitle}</span>
+            </a>
+            <span className="web-prospect-observed">
+              Observed {new Date(item.observedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+            </span>
+          </footer>
+          {!onSelect && (
+            <div className="web-prospect-mail">
+              <QuotationMail
+                comparisonId={null}
+                prospectId={item.id}
+                offers={[]}
+                onEditOffer={() => {}}
+                onPrepare={onPrepare}
+              />
+            </div>
           )}
         </article>
       ))}

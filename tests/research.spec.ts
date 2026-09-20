@@ -76,6 +76,7 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
     )
     .check();
   await dialog.getByRole("button", { name: "Add to study" }).click();
+  await page.getByRole("button", { name: /Saved searches/ }).click();
   await expect(
     page.getByRole("button", { name: /Other saved search/ }),
   ).toContainText("Sep 16, 2026");

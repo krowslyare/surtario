@@ -5,6 +5,7 @@ import { SegmentedControl } from "./ui/SegmentedControl";
 import SourcingEntry, { type SourcingEntryRequest } from "./SourcingEntry";
 import type { SavedStudy } from "./SavedStudies";
 import { Component, useEffect, useState, type ReactNode } from "react";
+import { readWorkspaceCheckpoint, writeWorkspaceCheckpoint } from "../workspaceCheckpoint";
 import {
   useAction,
   useConvexConnectionState,
@@ -298,7 +299,9 @@ function CaseDetail({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [reviewOpen, setReviewOpen] = useState(true);
-  const [section, setSection] = useState<"overview" | "sources" | "messages" | "activity">("overview");
+  type CaseSection = "overview" | "sources" | "messages" | "activity";
+  const [section, setSection] = useState<CaseSection>(() => readWorkspaceCheckpoint<CaseSection>(`followup:${caseId}`) ?? "overview");
+  useEffect(() => writeWorkspaceCheckpoint(`followup:${caseId}`, section), [caseId, section]);
   const studies = useQuery(api.studies.list, { token });
   const saveStudy = useMutation(api.studies.save);
   const [evidenceDraft, setEvidenceDraft] = useState<{ selections: WebSelection[]; prospects: StudyProspect[]; baseStudy: SavedStudy | undefined } | null>(null);
@@ -1054,6 +1057,7 @@ function CaseDetail({
           </div>}
           {reviewOpen && (
             <ResearchWorkspace
+              connected={connected}
               reviewDestination="followup"
               autoSelectLatest
               status={researchStatus}

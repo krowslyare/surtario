@@ -1,6 +1,7 @@
 import { scrollToContent } from "./scroll";
 import { mergeReplyOffer } from "./domain/replyReview";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { readWorkspaceCheckpoint, writeWorkspaceCheckpoint } from "./workspaceCheckpoint";
 import {
   ArrowLeft,
   ArrowRight,
@@ -43,6 +44,7 @@ import { SegmentedControl } from "./components/ui/SegmentedControl";
 import { Dialog } from "./components/Dialog";
 import LiveResearch, {
   type ResearchStatus,
+  type ResearchResumeRequest,
   type WebSearchRequest,
 } from "./components/LiveResearch";
 import ExtractionReview from "./components/ExtractionReview";
@@ -59,6 +61,18 @@ import {
   type StudyProspect,
   type WebSelection,
 } from "./domain/study";
+
+type MarketCheckpoint = {
+  study: { id: Id<"studies"> | null; revision: number; savedSelectedIds: string[];
+    savedContext?: { term: string; region: string }; clientId: string };
+  catalog: MarketResult[];
+  term: string; region: string; search: { term: string; region: string } | null;
+  selectedIds: string[]; webSelections: WebSelection[]; prospects: StudyProspect[];
+  filter: "all" | "catalog" | "distributor" | "reference";
+  showStudy: boolean; resultsView: "example" | "web"; searchOpen: boolean;
+  continuityOpen: boolean; extrasIngredientOpen: boolean; extrasQuotesOpen: boolean;
+  researchCursor: Omit<ResearchResumeRequest, "sequence"> | null;
+};
 
 export default function MarketStudy({
   onPrepare,
@@ -87,13 +101,15 @@ export default function MarketStudy({
   onPrepare: (seed: PurchaseSeed) => void;
   onManualExample: () => void;
 }) {
+  const [restored] = useState(() => readWorkspaceCheckpoint<MarketCheckpoint>("market"));
+  const [researchCursor, setResearchCursor] = useState(restored?.researchCursor ?? null);
   const [study, setStudy] = useState<{
     id: Id<"studies"> | null;
     revision: number;
     savedSelectedIds: string[];
     savedContext?: { term: string; region: string };
     clientId: string;
-  }>(() => ({
+  }>(() => restored?.study ?? ({
     id: null,
     revision: 0,
     savedSelectedIds: [],
@@ -111,24 +127,24 @@ export default function MarketStudy({
     (!currentStudyCase || !currentStudyCase.ready),
   );
   const [entry, setEntry] = useState<SourcingEntryRequest | null>(null);
-  const [resumeResearch, setResumeResearch] = useState<{ id: string; sequence: number } | null>(null);
-  const [continuityOpen, setContinuityOpen] = useState(false);
+  const [resumeResearch, setResumeResearch] = useState<ResearchResumeRequest | null>(() => restored?.researchCursor ? { ...restored.researchCursor, sequence: 0 } : null);
+  const [continuityOpen, setContinuityOpen] = useState(restored?.continuityOpen ?? false);
   const [questionOpen, setQuestionOpen] = useState(false);
   const [questionContext, setQuestionContext] = useState<{ ingredient: string; region: string } | null>(null);
   const [webStatus, setWebStatus] = useState<ResearchStatus | undefined>();
   const [webRequest, setWebRequest] = useState<WebSearchRequest | null>(null);
   const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
-  const [catalog, setCatalog] = useState<MarketResult[]>(allMarketExamples);
-  const [term, setTerm] = useState("");
+  const [catalog, setCatalog] = useState<MarketResult[]>(restored?.catalog ?? allMarketExamples);
+  const [term, setTerm] = useState(restored?.term ?? "");
   const [region, setRegion] = useState(
-    samplePeru ? "Lima" : "Portland, OR, US",
+    restored?.region ?? (samplePeru ? "Lima" : "Portland, OR, US"),
   );
   const [search, setSearch] = useState<{ term: string; region: string } | null>(
-    null,
+    restored?.search ?? null,
   );
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [webSelections, setWebSelections] = useState<WebSelection[]>([]);
-  const [prospects, setProspects] = useState<StudyProspect[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(restored?.selectedIds ?? []);
+  const [webSelections, setWebSelections] = useState<WebSelection[]>(restored?.webSelections ?? []);
+  const [prospects, setProspects] = useState<StudyProspect[]>(restored?.prospects ?? []);
   const optionCount = studyOptionCount({
     selectedIds,
     webSelections,
@@ -136,14 +152,14 @@ export default function MarketStudy({
   });
   const [filter, setFilter] = useState<
     "all" | "catalog" | "distributor" | "reference"
-  >("all");
+  >(restored?.filter ?? "all");
   const [source, setSource] = useState<MarketResult | null>(null);
   const [quote, setQuote] = useState<MarketResult | null>(null);
   const [quoteText, setQuoteText] = useState("");
   const [copyState, setCopyState] = useState("");
   const [selectionMessage, setSelectionMessage] = useState("");
   const [summaryVisible, setSummaryVisible] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(restored?.searchOpen ?? false);
   const [prepareOpen, setPrepareOpen] = useState(false);
   const [caseReply, setCaseReply] = useState<PurchaseSeed | null>(null);
   const [replyEquivalent, setReplyEquivalent] = useState(false);
@@ -165,11 +181,22 @@ export default function MarketStudy({
 
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
-  const [showStudy, setShowStudy] = useState(false);
-  const [resultsView, setResultsView] = useState<"example" | "web">("example");
+  const [searchError, setSearchError] = useState("");
+  const [showStudy, setShowStudy] = useState(restored?.showStudy ?? false);
+  const [resultsView, setResultsView] = useState<"example" | "web">(restored?.resultsView ?? "example");
   const [nextIngredient, setNextIngredient] = useState<string | null>(null);
-  const [extrasIngredientOpen, setExtrasIngredientOpen] = useState(false);
-  const [extrasQuotesOpen, setExtrasQuotesOpen] = useState(false);
+  const [extrasIngredientOpen, setExtrasIngredientOpen] = useState(restored?.extrasIngredientOpen ?? false);
+  const [extrasQuotesOpen, setExtrasQuotesOpen] = useState(restored?.extrasQuotesOpen ?? false);
+
+  useEffect(() => {
+    writeWorkspaceCheckpoint<MarketCheckpoint>("market", {
+      study, catalog, term, region, search, selectedIds, webSelections, prospects,
+      filter, showStudy, resultsView, searchOpen, continuityOpen,
+      extrasIngredientOpen, extrasQuotesOpen, researchCursor,
+    });
+  }, [study, catalog, term, region, search, selectedIds, webSelections, prospects,
+    filter, showStudy, resultsView, searchOpen, continuityOpen,
+    extrasIngredientOpen, extrasQuotesOpen, researchCursor]);
 
   function openExtras(target: "ingredients" | "quotes") {
     if (target === "ingredients") {
@@ -322,6 +349,7 @@ export default function MarketStudy({
     }
     setWebRequest(null);
     setResumeResearch({ id, sequence: Date.now() });
+    setResearchCursor({ id });
     setTerm(ingredient);
     setRegion(area);
     setSearch({ term: ingredient, region: area });
@@ -333,16 +361,28 @@ export default function MarketStudy({
     if (followup || messages) onExitFollowup();
   }
 
+  function validateSearchIngredient() {
+    if (term.trim()) {
+      setSearchError("");
+      return true;
+    }
+    setSearchError("Enter an ingredient or category to explore.");
+    document.querySelector<HTMLInputElement>("#market-search input")?.focus();
+    return false;
+  }
+
   function searchWeb() {
-    if (!term.trim() || !region.trim()) return;
+    if (!validateSearchIngredient() || !region.trim()) return;
     setSearch({ term: term.trim(), region: region.trim() });
     setError("");
     setResultsView("web");
     setSearchOpen(false);
     setShowStudy(false);
     setFilter("all");
+    const clientId = crypto.randomUUID();
+    setResearchCursor({ clientId });
     setWebRequest((current) => ({
-      clientId: crypto.randomUUID(),
+      clientId,
       id: (current?.id ?? 0) + 1,
       ingredient: term.trim(),
       region,
@@ -351,10 +391,7 @@ export default function MarketStudy({
 
   function explore(event?: FormEvent) {
     event?.preventDefault();
-    if (!term.trim()) {
-      setError("Enter an ingredient or category to explore.");
-      return;
-    }
+    if (!validateSearchIngredient()) return;
     setError("");
     setSearch({ term: term.trim(), region: region.trim() });
     setResultsView("example");
@@ -397,6 +434,7 @@ export default function MarketStudy({
       ?? saved.prospects?.[0]?.runId;
     setWebRequest(null);
     setResumeResearch(sourceRunId ? { id: sourceRunId, sequence: Date.now() } : null);
+    setResearchCursor(sourceRunId ? { id: sourceRunId } : null);
     setResultsView(sourceRunId ? "web" : "example");
     setStudy({
       id: saved.id,
@@ -464,6 +502,14 @@ export default function MarketStudy({
     );
   }
   useEffect(() => {
+    setSearchError("");
+  }, [search, showStudy, followup, messages]);
+
+  const previousMarketPosition = useRef({ search, showStudy, searchOpen });
+  useEffect(() => {
+    const previous = previousMarketPosition.current;
+    previousMarketPosition.current = { search, showStudy, searchOpen };
+    if (previous.search === search && previous.showStudy === showStudy && previous.searchOpen === searchOpen) return;
     if (!active || (!search && !showStudy) || (searchOpen && !showStudy)) return;
     const frame = requestAnimationFrame(() => {
       const heading = document.getElementById("results-title");
@@ -604,12 +650,15 @@ export default function MarketStudy({
                     <input
                       aria-label="Ingredient or category"
                       value={term}
-                      onChange={(e) => setTerm(e.target.value)}
+                      onChange={(e) => {
+                        setTerm(e.target.value);
+                        setSearchError("");
+                      }}
                       placeholder="e.g. long-grain white rice"
                       maxLength={120}
-                      aria-invalid={!!error && !term.trim()}
+                      aria-invalid={!!searchError}
                       aria-describedby={
-                        error && !term.trim()
+                        searchError
                           ? "market-search-error"
                           : undefined
                       }
@@ -644,6 +693,11 @@ export default function MarketStudy({
                   <Search size={18} />
                   {persistenceEnabled && !webStatus ? "Checking search…" : webStatus?.searchEnabled ? "Search suppliers" : "Explore demo catalog"}
                 </Button>
+                {searchError && (
+                  <p id="market-search-error" className="field-error market-search-error" role="alert">
+                    {searchError}
+                  </p>
+                )}
                 <div className="market-search-support">
                   {webStatus?.searchEnabled && <Button variant="text" type="button" onClick={() => explore()}>Explore demo catalog</Button>}
                   <p className="market-search-note">
@@ -692,7 +746,7 @@ export default function MarketStudy({
           {!search && !showStudy && resultsView !== "web" && <MarketHero />}
         </div>
         {error && !prepareOpen && (
-          <p id="market-search-error" className="notice error" role="alert">
+          <p className="notice error" role="alert">
             {error}
           </p>
         )}
@@ -716,6 +770,7 @@ export default function MarketStudy({
                 <LiveResearch
                   renderHeaderActions={renderResultActions}
                   resumeRequest={resumeResearch}
+                  onActiveRun={setResearchCursor}
                   onContextualProspect={contextualProspect}
                   onCalculate={calculate}
                   caseComparisonContext={currentStudyCase?.comparison && study.savedContext ? { ingredient: study.savedContext.term, region: study.savedContext.region } : undefined}

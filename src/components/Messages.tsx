@@ -1,4 +1,5 @@
-import { Component, useMemo, useState, type ReactNode } from "react";
+import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
+import { readWorkspaceCheckpoint, writeWorkspaceCheckpoint } from "../workspaceCheckpoint";
 import { useConvexConnectionState, useQueries, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { ArrowLeft, ChevronRight, Inbox, Mail } from "lucide-react";
@@ -105,7 +106,9 @@ export default function Messages(props: Props) {
 function ConnectedMessages({ token, ...props }: Props & { token: string }) {
   const entries = useMailbox(token);
   const { isWebSocketConnected } = useConvexConnectionState();
-  const [filter, setFilter] = useState<"all" | "replies" | "waiting" | "drafts">("all");
+  type MessageFilter = "all" | "replies" | "waiting" | "drafts";
+  const [filter, setFilter] = useState<MessageFilter>(() => readWorkspaceCheckpoint<MessageFilter>("messagesFilter") ?? "all");
+  useEffect(() => writeWorkspaceCheckpoint("messagesFilter", filter), [filter]);
   const [incoming, setIncoming] = useState<{ seed: PurchaseSeed; comparison: SavedComparison; caseId?: string } | null>(null);
   const [equivalent, setEquivalent] = useState(false);
   const [error, setError] = useState("");

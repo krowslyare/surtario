@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-20T08:06:26Z
+- **Last updated:** 2026-09-20T09:50:44Z
 
 ## Log
 
@@ -616,3 +616,38 @@ Initial regressions exposed an environment-specific assertion that AI was unavai
 Conversation polish: grouped recipient and reply status, kept the newest reply open, and moved WhatsApp copying alongside the sent message. Reply, full-email, sent-request, suggestion and history disclosures now reuse the animated control with keyboard and reduced-motion support. The modal stays anchored with a fixed header and a scrolling body; secondary navigation scrolls with the content on mobile. Nested chevrons now follow their own disclosure state. Requests without a confirmed send are labeled “Request message”.
 
 Verification: production build and two focused browser journeys passed (reactive reply → review → save/reload; draft edit → save → recovery). The reply test checks intermediate collapse heights, stable modal position, keyboard reopening, hidden controls and reduced-motion/mobile operation. Its first run sampled the still-running dialog entrance; it now waits for that animation before measuring disclosure motion. Manual Chrome inspection covered 1920 × 1080 and 390 × 844, expanded content and fixed close control, plus a 320 px overflow check; no runtime errors. Seven disposable requests and two replies created by these runs were backed up locally and removed from the anonymous local backend, restoring its previous count of 89 requests. The temporary cleanup function was removed; no backend source changes, provider calls, sends or remote publication.
+
+### 2026-09-20 — working tree · research results hierarchy
+
+Collapsed saved-search history into an animated, bounded list with selected state, date/time when available and keyboard focus recovery. Selecting a saved search closes the list before scrolling its results into view; existing selections and source expansion stay available without another provider call. Search coverage, automatic-analysis limits and discarded counts remain in Search details; partial-content warnings and errors remain visible. Source evidence uses a uniform border. Saved distributor cards now group identity/contact, actions and source/date using existing Surtario tokens.
+
+Validation: production build including TypeScript, four focused browser journeys (progress success/failure, thirty-source expansion/history switching, and source review through comparison), desktop/390 px visual inspection and a clean diff check passed. Manual mobile verification confirmed the collapsed history clears the fixed header. No provider calls, mail sends, backend changes, commit, push or deployment for this refinement.
+
+
+Search-validation refinement: the empty-ingredient message now belongs to the search form instead of the global workspace error. It focuses the ingredient field, clears while typing or changing views, and applies consistently to catalog and live-search submission. Other workspace errors retain their own state and now have spacing below them. The existing empty-search browser journey passed with assertions for focus, field semantics, navigation and correction; production build and manual desktop/390 px inspection passed. Empty submissions did not start provider searches. Local changes only, with no sends, push or deployment.
+
+
+### 2026-09-20 — working tree · search waiting and completion feedback
+
+Added a restrained leaf motion to the existing Surtario symbol, checkpoint age and a contextual message after 30 seconds without an update. Motion pauses when disconnected, hidden or offscreen, and respects reduced motion. Real counters stay unchanged between checkpoints. A terminal search checkpoint ends loading even before the action promise resolves; completion draws a check beside the actual source count, preserving partial-content and empty-result explanations. Failed searches never show completion, and opening another saved search clears the confirmation. Both market search and follow-up research receive connection state.
+
+Validation: production build including TypeScript and five focused browser journeys passed, covering long waits without retries, disconnect/reconnect, completed/empty/failed searches, reduced motion, thirty-source expansion/history and source review through comparison. Manual inspection used the actual components with a disposable frontend-only harness at 1920/390 px, plus a 320 px overflow check. The first normal-motion test advanced the animation clock along with the wait; it now changes wall-clock time only. No new provider calls, messages, backend mutations, commits, push or deployment.
+
+
+Research hierarchy refinement: the active query, location, observation date, source count and partial-content warning now share a flat tinted context band. The workspace heading and candidate titles use distinct type scales; a list header separates the candidate sources and expansion control. Existing source content, review actions, history and search details remain available.
+
+Validation: TypeScript/production build and two focused browser journeys passed (thirty-source expansion/history and source review through comparison). Manual Chrome inspection covered actual saved results at 1920, 390 and 320 px, including expanded search details with no horizontal overflow. Layout scan and diff checks were clean. No new searches, provider calls, backend changes, commit, push or deployment.
+
+
+Visual follow-up: replaced the square rose search band with a white surface, uniform outline and the existing rounded panel token. The product-page disclosure now reads “Product pages on this site”, uses the same 14 px secondary scale as More options and retains a 44 px target and visible keyboard focus. Verified actual saved results on desktop and 390 px mobile, including the open picker without overflow. Production build and the existing catalog → selected product-page → review browser test passed. No provider calls or remote changes.
+
+
+Study-rail spacing: the desktop sticky offset now leaves 24 px below the 100 px navigation header. Browser measurements confirmed the gap after scrolling at 1920 and 1024 px; the 390 px rail remains in normal document flow without horizontal overflow. Production build passed. The existing Messages inbox was inspected read-only: it exposes replies, awaiting replies and drafts; no messages were sent or data changed. Local CSS change only, no push or deployment.
+
+### 2026-09-20 — working tree · workspace reload continuity
+
+The branded entrance now runs only after entering from the landing. Reload and direct workspace links use normal loading feedback. Tab-scoped history checkpoints restore market context, selections, filters, the active research run and expanded source list; Messages retains its filter and follow-ups retain their section. Reload also recovers scroll after the content becomes available. This recovery is separate from explicitly saving a study and does not restart research actions or resend messages.
+
+Validation: production build/TypeScript and 11 focused browser checks passed, including landing entrance/accessibility, delayed workspace loading, study selection/filter/scroll recovery, cleared-session isolation, running/completed research recovery without provider calls, and existing offer navigation/responsive behavior. Four existing progress journeys also passed. Manual Chrome checks recovered a real saved search at scroll 896 px on desktop and 844 px at 390 px mobile, plus the Waiting message filter and Activity follow-up section. Initial checks exposed a pagehide/history timing issue in scroll recovery, fixed with tab session storage. No new provider calls, emails, backend changes, commit, push or deployment.
+
+Consolidation check for PR #38: all 320 domain/Convex tests across 49 files passed with simulated providers. The pending files remain frontend, browser regressions and documentation; the diff and credential-pattern scan were clean. No new backend or deployment work is included.

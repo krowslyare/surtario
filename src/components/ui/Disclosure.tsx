@@ -9,6 +9,7 @@ type DisclosureProps = Omit<HTMLAttributes<HTMLDivElement>, "title"> & {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  onAfterClose?: () => void;
 };
 
 /** A compact, state-preserving disclosure for secondary workspace details. */
@@ -19,6 +20,7 @@ export function Disclosure({
   open: controlledOpen,
   defaultOpen = false,
   onOpenChange,
+  onAfterClose,
   className,
   ...props
 }: DisclosureProps) {
@@ -73,6 +75,7 @@ export function Disclosure({
         inert={!isOpen ? true : undefined}
         initial={false}
         animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+        onAnimationComplete={() => { if (!isOpen) onAfterClose?.(); }}
         transition={{
           duration: shouldReduceMotion ? 0 : 0.2,
           ease: [0.2, 0.7, 0.2, 1],

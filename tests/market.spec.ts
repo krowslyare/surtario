@@ -1,5 +1,34 @@
 import { test, expect } from "@playwright/test";
 
+test("reload keeps the current study, filter, search and scroll without an entrance animation", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 720 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/?example=pe");
+  await page.getByRole("button", { name: "Explore rice example" }).click();
+  await page.getByRole("button", { name: "No price", exact: true }).click();
+  await page.getByRole("article").getByRole("button", { name: "Add to study" }).click();
+  await page.getByRole("button", { name: "My study", exact: false }).first().click();
+  await expect(page.getByRole("heading", { name: "My market study" })).toBeVisible();
+  await page.getByRole("button", { name: "No price", exact: true }).click();
+  await page.evaluate(() => window.scrollTo({ top: 180, behavior: "instant" }));
+  const position = await page.evaluate(() => window.scrollY);
+  expect(position).toBeGreaterThan(100);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "My market study" })).toBeVisible();
+  await expect(page.getByRole("article")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "No price", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("article").getByRole("button", { name: "In my study" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(position);
+  await expect(page.locator(".workspace-arrival")).toHaveCount(0);
+  await page.getByRole("button", { name: "Back to results" }).click();
+  await expect(page.getByRole("heading", { name: "Arroz in Lima" })).toBeVisible();
+  // A cleared tab session must not resurrect the draft from browser history.
+  await page.evaluate(() => sessionStorage.clear());
+  await page.reload();
+  await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
+  await expect(page.getByRole("article")).toHaveCount(0);
+});
+
 test("investiga sin documentos ni cantidad y conserva un contacto sin precio", async ({
   page,
 }) => {
@@ -82,7 +111,19 @@ test("búsqueda vacía y falta de cobertura del ejemplo se explican", async ({
     .getByRole("button", { name: "Explore demo catalog", exact: true })
     .click();
   await expect(page.getByRole("alert")).toContainText("Enter an ingredient");
+  const ingredient = page.getByLabel("Ingredient or category");
+  await expect(ingredient).toBeFocused();
+  await expect(ingredient).toHaveAttribute("aria-invalid", "true");
+  await expect(page.locator("#market-search").getByRole("alert")).toBeVisible();
+  await page.getByRole("button", { name: "My study", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "My market study" })).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await page.getByRole("button", { name: "Explore suppliers", exact: true }).click();
+  await expect(ingredient).toHaveAttribute("aria-invalid", "false");
+  await page.getByRole("button", { name: "Explore demo catalog", exact: true }).click();
+  await expect(page.getByRole("alert")).toBeVisible();
   await page.getByLabel("Ingredient or category").fill("Pescado");
+  await expect(page.getByRole("alert")).toHaveCount(0);
   await page
     .getByRole("button", { name: "Explore demo catalog", exact: true })
     .click();
