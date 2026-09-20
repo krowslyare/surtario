@@ -120,10 +120,12 @@ for (const intent of ["inquiry", "research"] as const) {
     await source.getByRole("button", { name: intent === "inquiry" ? "Prepare inquiry" : "Research missing details", exact: true }).click();
     const review = page.getByRole("dialog", { name: "Review potential distributor", exact: true });
     await expect(review.getByLabel("Potential distributor name")).toHaveValue("Test rice supplier");
+    await review.getByLabel("Potential distributor name").fill("Reviewed rice distributor");
+    await review.getByLabel("Contact found (optional)").fill("sales@supplier.test");
     await review.getByRole("checkbox").check();
     await review.getByRole("button", { name: intent === "inquiry" ? "Save and prepare inquiry" : "Save and continue research", exact: true }).click();
     if (intent === "inquiry") {
-      await expect(page.getByRole("dialog", { name: "Review quote request", exact: true })).toContainText("Test rice supplier");
+      await expect(page.getByRole("dialog", { name: "Review quote request", exact: true })).toContainText("Reviewed rice distributor");
     } else {
       await expect(page.getByRole("heading", { name: /Find public product specifications/ })).toBeVisible();
     }
@@ -136,6 +138,15 @@ for (const intent of ["inquiry", "research"] as const) {
     await hub.getByRole("button", { name: "Review source search", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Unselected source", exact: true })).toBeVisible();
     expect(run("research:list", { token })).toHaveLength(1);
+    // A reopened source must reuse the saved candidate, including corrected fields.
+    await source.getByText("More options", { exact: true }).click();
+    await source.getByRole("button", { name: "View saved candidate", exact: true }).click();
+    await expect(review.getByLabel("Potential distributor name")).toHaveValue("Reviewed rice distributor");
+    await expect(review.getByLabel("Contact found (optional)")).toHaveValue("sales@supplier.test");
+    await review.getByRole("button", { name: "Close", exact: true }).click();
+    await source.getByRole("button", { name: "Prepare inquiry", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "Review quote request", exact: true })).toContainText("Reviewed rice distributor");
+    expect(run("prospects:list", { token })).toHaveLength(1);
   });
 }
 

@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-20T03:08:00Z
+- **Last updated:** 2026-09-20T03:18:00Z
 
 ## Log
 
@@ -554,3 +554,8 @@ Prioritized the next action on each source card and grouped secondary actions un
 One fresh real Firecrawl search returned 21 candidates, 16 readable; up to three Luna low analyses remained subject to review. A reviewed offer was saved, and one branded AgentMail test request/reply appeared reactively in the app. One Luna reply extraction plus human confirmation updated the existing compatible comparison. Explicitly synthetic terms produced three 25 lb bags for a 60 lb need, 15 lb excess and USD 66 including freight; delivery timing stayed pending. Study, source, conversation and calculation survived reload.
 
 320 unit/backend/configuration tests, frontend/backend TypeScript, build and 20 focused browser journeys passed. Desktop and 390/320 px source-action checks showed no overflow or browser errors. Prepared the accumulated changes for PR #37 and another Codex review; no cloud deployment or merge. No actual supplier was contacted and no order was placed.
+
+
+### 2026-09-20 — a5cb3f5 and working tree review follow-up
+
+Pushed the integrated sourcing and mail progress to PR #37; GitHub test/build passed. Codex found a recovery bug for saved distributor names/contacts. Source actions now recover the existing owner-scoped candidate before continuing; two browser regressions verify corrected fields and reuse after reload. Build passed. No new provider calls, cloud deployment or merge.

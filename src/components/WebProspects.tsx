@@ -30,6 +30,7 @@ export function SaveWebProspect({
   primaryInquiry?: boolean;
 }) {
   const save = useMutation(api.prospects.save);
+  const prospects = useQuery(api.prospects.list, { token });
   const [intent, setIntent] = useState<"inquiry" | "research" | null>(null);
   const [open, setOpen] = useState(false),
     [supplier, setSupplier] = useState(title.slice(0, 120)),
@@ -37,22 +38,25 @@ export function SaveWebProspect({
     [confirmed, setConfirmed] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
-    [saved, setSaved] = useState<StudyProspect | null>(null);
+    [lastSaved, setSaved] = useState<StudyProspect | null>(null);
+  const saved = prospects?.find(item => item.runId === runId && item.sourceIndex === sourceIndex)
+    ?? (lastSaved?.runId === runId && lastSaved.sourceIndex === sourceIndex ? lastSaved : null);
+  const loading = prospects === undefined;
   return (
     <>
-      {onContinue && primaryInquiry && <button className="button primary" onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
-      {!onContinue && <button className="button secondary" onClick={() => { setIntent(null); setOpen(true); }}>
+      {onContinue && primaryInquiry && <button className="button primary" disabled={loading} onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
+      {!onContinue && <button className="button secondary" disabled={loading} onClick={() => { setIntent(null); setOpen(true); }}>
         {saved ? "View saved candidate" : "Save potential distributor"}
       </button>}
       {onContinue && <details className="source-more-options">
         <summary>More options</summary>
         <div className="source-more-actions">
-          <button className="button text-button" onClick={() => { setIntent(null); setOpen(true); }}>
+          <button className="button text-button" disabled={loading} onClick={() => { setIntent(null); setOpen(true); }}>
             {saved ? "View saved candidate" : "Save potential distributor"}
           </button>
           {onContinue && <>
-            {!primaryInquiry && <button className="button text-button" onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
-            {simulated === false && <button className="button text-button" onClick={() => { if (saved) onContinue(saved, "research"); else { setIntent("research"); setOpen(true); } }}>Research missing details</button>}
+            {!primaryInquiry && <button className="button text-button" disabled={loading} onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
+            {simulated === false && <button className="button text-button" disabled={loading} onClick={() => { if (saved) onContinue(saved, "research"); else { setIntent("research"); setOpen(true); } }}>Research missing details</button>}
           </>}
         </div>
       </details>}
@@ -74,7 +78,7 @@ export function SaveWebProspect({
           <label className="field">
             Potential distributor name
             <input
-              value={supplier}
+              value={saved?.supplier ?? supplier}
               maxLength={120}
               disabled={busy || Boolean(saved)}
               onChange={(e) => {
@@ -86,7 +90,7 @@ export function SaveWebProspect({
           <label className="field">
             Contact found (optional)
             <input
-              value={contact}
+              value={saved ? saved.contact ?? "" : contact}
               maxLength={300}
               disabled={busy || Boolean(saved)}
               onChange={(e) => {
@@ -102,7 +106,7 @@ export function SaveWebProspect({
           <label className="checkbox">
             <input
               type="checkbox"
-              checked={confirmed}
+              checked={Boolean(saved) || confirmed}
               disabled={busy || Boolean(saved)}
               onChange={(e) => setConfirmed(e.target.checked)}
             />
