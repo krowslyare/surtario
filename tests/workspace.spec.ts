@@ -27,14 +27,14 @@ test("mobile document tools remain reachable by keyboard and preserve the review
     name: "Review sample quote",
   });
   await trigger.click();
-  await page.getByLabel("Package size").fill("18");
+  await page.getByLabel("Package size", { exact: true }).fill("18");
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   await disclosure.click();
   await expect(trigger).not.toBeVisible();
   await disclosure.click();
   await trigger.click();
-  await expect(page.getByLabel("Package size")).toHaveValue("18");
+  await expect(page.getByLabel("Package size", { exact: true })).toHaveValue("18");
   expect(
     await page
       .getByRole("dialog")
@@ -55,9 +55,9 @@ test("Enter uses enabled web research while the example remains an explicit sepa
       contentType: "application/javascript",
       body: `import React from ${JSON.stringify(reactUrl)};
       export function ResearchWorkspace() { return null; }
-      export default function Research({onStatus,request}) {
+      export default function Research({onStatus,request,renderHeaderActions}) {
         React.useEffect(() => onStatus({searchEnabled:true,extractionEnabled:false}), [onStatus]);
-        return React.createElement('output', {'aria-label':'Test web request'}, JSON.stringify(request));
+        return React.createElement(React.Fragment, null, renderHeaderActions?.(request), React.createElement('output', {'aria-label':'Test web request'}, JSON.stringify(request)));
       }`,
     }),
   );
@@ -76,9 +76,9 @@ test("Enter uses enabled web research while the example remains an explicit sepa
   });
   await expect(search).toBeEnabled();
   await page.getByLabel("Ingredient or category").press("Enter");
-  await expect(page.getByLabel("Test web request")).toHaveText(
-    JSON.stringify({ id: 1, ingredient: "Pescado", region: "Lima" }),
-  );
+  await expect.poll(async () => JSON.parse(await page.getByLabel("Test web request").textContent() ?? "null")).toEqual({
+    clientId: expect.stringMatching(/^[a-f0-9-]{36}$/), id: 1, ingredient: "Pescado", region: "Lima",
+  });
   await expect(
     page.getByRole("heading", { name: "Arroz in Lima" }),
   ).toHaveCount(0);
@@ -109,13 +109,13 @@ test("Enter uses enabled web research while the example remains an explicit sepa
   await expect(
     page.getByRole("heading", { name: "No examples match this search" }),
   ).toBeVisible();
-  await expect(page.getByLabel("Test web request")).toHaveText(
-    JSON.stringify({ id: 1, ingredient: "Pescado", region: "Lima" }),
-  );
+  await expect.poll(async () => JSON.parse(await page.getByLabel("Test web request").textContent() ?? "null")).toEqual({
+    clientId: expect.stringMatching(/^[a-f0-9-]{36}$/), id: 1, ingredient: "Pescado", region: "Lima",
+  });
   await page.getByRole("button", { name: "Change search", exact: true }).click();
   await page.getByLabel("Ingredient or category").fill("Arroz");
   await search.click();
-  await expect(page.getByLabel("Test web request")).toHaveText(
-    JSON.stringify({ id: 2, ingredient: "Arroz", region: "Lima" }),
-  );
+  await expect.poll(async () => JSON.parse(await page.getByLabel("Test web request").textContent() ?? "null")).toEqual({
+    clientId: expect.stringMatching(/^[a-f0-9-]{36}$/), id: 2, ingredient: "Arroz", region: "Lima",
+  });
 });

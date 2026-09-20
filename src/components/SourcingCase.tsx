@@ -1,9 +1,11 @@
-import { scrollToContent } from "../scroll";
-import { casePriority } from "../domain/casePriority";
 import { comparisonBlockers, blockerLabels } from "../domain/comparisonBlockers";
 import { researchCoverage, RESEARCH_POLICY } from "../domain/researchCoverage";
 import { Disclosure } from "./ui/Disclosure";
+import { SegmentedControl } from "./ui/SegmentedControl";
+import SourcingEntry, { type SourcingEntryRequest } from "./SourcingEntry";
+import type { SavedStudy } from "./SavedStudies";
 import { Component, useEffect, useState, type ReactNode } from "react";
+import { readWorkspaceCheckpoint, writeWorkspaceCheckpoint } from "../workspaceCheckpoint";
 import {
   useAction,
   useConvexConnectionState,
@@ -11,7 +13,7 @@ import {
   useQuery,
 } from "convex/react";
 import { ConvexError } from "convex/values";
-import { Compass, History, Radar } from "lucide-react";
+import { ArrowLeft, ChevronRight, Radar } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { PurchaseSeed } from "../domain/market";
@@ -33,17 +35,19 @@ export type StudyCaseLink = {
   ready: boolean;
 };
 
+export type FollowupLocation = { id: string | null; requestId?: string; visit: number };
 type Props = {
-  openRequest?: { id: Id<"sourcingCases">; sequence: number; requestId?: Id<"quotationRequests"> } | null;
-  entryVisible?: boolean;
-  newRequest?: number;
+  location: FollowupLocation | null;
+  questionOpen?: boolean;
+  onCloseQuestion?: () => void;
+  onOpen: (id: string | null, requestId?: string) => void;
+  onBack: () => void;
+  backLabel?: string;
+  onOpenStudy: (study: SavedStudy) => void;
   ingredient: string;
   region: string;
   studyId: Id<"studies"> | null;
   onPrepare: (seed: PurchaseSeed) => void;
-  onReview: (selection: WebSelection) => void;
-  onProspect: (prospect: StudyProspect) => void;
-  selections: WebSelection[];
   onStudyCase?: (link: StudyCaseLink) => void;
   comparisonStudyId?: Id<"studies"> | null;
 };
@@ -153,23 +157,24 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
   const status = useQuery(api.sourcing.status, {});
   const create = useMutation(api.sourcing.create);
   const connection = useConvexConnectionState();
-  const [activeId, setActiveId] = useState<Id<"sourcingCases"> | null>(null);
+  const activeId = props.location?.id;
+  const [ingredient, setIngredient] = useState(props.ingredient);
+  const [area, setArea] = useState(props.region);
   const [objective, setObjective] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [expanded, setExpanded] = useState(false);
-  useEffect(() => {
-    if (!props.openRequest) return;
-    setActiveId(props.openRequest.id);
-    setExpanded(true);
-    requestAnimationFrame(() => scrollToContent(document.getElementById("sourcing-title")));
-  }, [props.openRequest]);
-  useEffect(() => {
-    if (!props.newRequest) return;
-    setActiveId(null); setExpanded(true);
-    requestAnimationFrame(() => scrollToContent(document.getElementById("sourcing-title")));
-  }, [props.newRequest]);
   const current = cases?.find((item) => item.id === activeId);
+  useEffect(() => {
+    if (!props.location?.id) {
+      setIngredient(props.ingredient);
+      setArea(props.region);
+      setObjective("");
+      setError("");
+    }
+  }, [props.location?.id, props.ingredient, props.region]);
+  useEffect(() => {
+    if (props.location && !props.location.id) { setObjective(""); setError(""); }
+  }, [props.location?.id, props.location?.visit]);
   const [online, setOnline] = useState(navigator.onLine);
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
@@ -192,13 +197,13 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
         ...(props.studyId
           ? { studyId: props.studyId }
           : {
-              ingredient: props.ingredient.trim(),
-              region: props.region.trim(),
+              ingredient: ingredient.trim(),
+              region: area.trim(),
             }),
         objective: objective.trim(),
       });
-      setActiveId(id);
-      setExpanded(true);
+      setObjective("");
+      props.onOpen(id);
     } catch (cause) {
       setError(message(cause));
     } finally {
@@ -206,229 +211,54 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
     }
   }
 
+  const questionForm = (
+          <form className="sourcing-form followup-intake" onSubmit={event => { event.preventDefault(); void openCase(); }}>
+            {!props.studyId && <div className="followup-context-fields">
+              <label className="field">Ingredient<input value={ingredient} onChange={event => setIngredient(event.target.value)} maxLength={120} /></label>
+              <label className="field">Delivery area<input value={area} onChange={event => setArea(event.target.value)} maxLength={80} /></label>
+            </div>}
+            {props.studyId && <p>{props.ingredient} · {props.region}</p>}
+            <label className="field"><span>What would you like to find out?</span><textarea value={objective} onChange={event => setObjective(event.target.value)} maxLength={500} rows={3} placeholder="Find comparable pack sizes and identify which delivery terms still need a quote." /></label>
+            <div className="sourcing-prompt-chips">
+              <button type="button" className="sourcing-chip" onClick={() => setObjective("Compare pack sizes and published bulk prices")}>Pack sizes & bulk prices</button>
+              <button type="button" className="sourcing-chip" onClick={() => setObjective("Find published delivery coverage and order minimums")}>Delivery & minimums</button>
+            </div>
+            <div className="sourcing-form-actions">
+              <Button type="submit" variant="primary" busy={busy} busyLabel="Saving question…" disabled={!connected || !(props.studyId ? props.ingredient : ingredient).trim() || !area.trim() || !objective.trim() || cases === undefined}>Save research question</Button>
+              <p className="field-hint">Your question is saved first. You choose when to start research or send a message.</p>
+            </div>
+          </form>
+  );
+  if (props.questionOpen) return (
+    <Dialog title="Research a question" className="research-question-dialog" onClose={() => { if (!busy) props.onCloseQuestion?.(); }}>
+      <p className="muted">Save what you need to find out, then choose how to investigate it.</p>
+      {!connected && <p className="notice info" role="status">Reconnecting. Your question stays here until you can save it.</p>}
+      {questionForm}
+      {error && <p className="notice error" role="alert">{error}</p>}
+    </Dialog>
+  );
+  if (!props.location) return null;
   return (
-    <section
-      className={`sourcing-case${expanded ? " is-expanded" : ""}`}
-      aria-labelledby="sourcing-title"
-      hidden={props.entryVisible === false && !expanded}
-    >
-      <div className="sourcing-heading">
-        <div>
-          <Compass size={20} aria-hidden="true" />
-          <h2 id="sourcing-title" tabIndex={-1}>Take the research further</h2>
-        </div>
-        <Button
-          variant="secondary"
-          aria-expanded={expanded}
-          aria-controls="sourcing-body"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {expanded ? "Close research case" : "Open research case"}
-        </Button>
+    <main id="followup-main" className="followup-main" tabIndex={-1}>
+      <div className="workspace-nav">
+        <Button variant="text" onClick={props.onBack}><ArrowLeft size={16} />{props.backLabel ?? "Back to workspace"}</Button>
       </div>
-      <p className="sourcing-subtitle">
-        Investigate beyond the first search. Follow evidence gaps and build a
-        shortlist across research rounds.
-      </p>
-      {expanded && (
-        <div id="sourcing-body">
-          {!connected && (
-            <p className="notice info" role="status">
-              Reconnecting. Saved results remain visible; actions will be
-              available when connected.
-            </p>
-          )}
-          {(() => {
-            const intakeContent = (
-              <div className="sourcing-intake">
-                <form
-                  className="sourcing-form"
-                  onSubmit={(event) => {
-                    event.preventDefault();
-                    void openCase();
-                  }}
-                >
-                  <div className="sourcing-form-header">
-                    <h3>New research question</h3>
-                    {props.ingredient.trim() ? (
-                      <span className="sourcing-tag">
-                        {props.ingredient} · {props.region}
-                      </span>
-                    ) : (
-                      <span className="sourcing-tag sourcing-tag-muted">
-                        Search an ingredient to begin
-                      </span>
-                    )}
-                  </div>
-                  <label className="field">
-                    <span>What would you like to find out?</span>
-                    <textarea
-                      value={objective}
-                      onChange={(event) => setObjective(event.target.value)}
-                      maxLength={500}
-                      rows={2}
-                      placeholder="Find comparable pack sizes and identify which delivery terms still need a quote."
-                    />
-                  </label>
-                  <div className="sourcing-prompt-chips">
-                    <button
-                      type="button"
-                      className="sourcing-chip"
-                      onClick={() => setObjective("Compare 25 lb vs 50 lb bag pricing and bulk delivery terms")}
-                    >
-                      Pack sizes & bulk rates
-                    </button>
-                    <button
-                      type="button"
-                      className="sourcing-chip"
-                      onClick={() => setObjective("Clarify weekly delivery schedule and order minimums")}
-                    >
-                      Delivery & minimums
-                    </button>
-                    <button
-                      type="button"
-                      className="sourcing-chip"
-                      onClick={() => setObjective("Check if supplier provides tax-included pricing and FOB freight")}
-                    >
-                      Taxes & freight
-                    </button>
-                  </div>
-                  <div className="sourcing-form-actions">
-                    <Button
-                      type="submit"
-                      variant="primary"
-                      busy={busy}
-                      busyLabel="Saving case…"
-                      disabled={
-                        !connected ||
-                        !props.ingredient.trim() ||
-                        !props.region.trim() ||
-                        !objective.trim() ||
-                        cases === undefined
-                      }
-                    >
-                      Save research question
-                    </Button>
-                    <span className="field-hint">
-                      No document, quantity or purchase history required. Saving does not make provider calls.
-                    </span>
-                  </div>
-                </form>
-                <div className="sourcing-library">
-                  <div className="sourcing-library-header">
-                    <h3>
-                      <History size={17} aria-hidden="true" /> Your cases
-                      {cases && cases.length > 0 ? ` (${cases.length})` : ""}
-                    </h3>
-                    {cases && cases.length > 0 && (
-                      <span className="field-hint">Priority order by pending terms</span>
-                    )}
-                  </div>
-                  {cases === undefined ? (
-                    <p role="status">Loading saved cases…</p>
-                  ) : cases.length === 0 ? (
-                    <div className="sourcing-workflow-guide">
-                      <div className="sourcing-guide-header">
-                        <h4>How sourcing inquiries work</h4>
-                      </div>
-                      <ol className="sourcing-guide-steps">
-                        <li>
-                          <span className="step-num">1</span>
-                          <div>
-                            <strong>Define objective</strong>
-                            <p>Specify unlisted pack sizes, delivery days, or volume targets.</p>
-                          </div>
-                        </li>
-                        <li>
-                          <span className="step-num">2</span>
-                          <div>
-                            <strong>Track evidence gaps</strong>
-                            <p>Scans catalogs and identifies which terms still need formal quotes.</p>
-                          </div>
-                        </li>
-                        <li>
-                          <span className="step-num">3</span>
-                          <div>
-                            <strong>Direct outreach & quotes</strong>
-                            <p>Draft email or WhatsApp requests; replies link directly to your study.</p>
-                          </div>
-                        </li>
-                      </ol>
-                      <div className="sourcing-guide-footer">
-                        <History size={14} aria-hidden="true" />
-                        <span>No cases yet. Active cases will track responses and next actions here.</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <ul>
-                      {[...cases].sort((a,b) => casePriority(a, comparisons?.find(c => c.id === a.comparisonId)).rank - casePriority(b, comparisons?.find(c => c.id === b.comparisonId)).rank).map((item) => (
-                        <li key={item.id}>
-                          <button
-                            type="button"
-                            className="sourcing-case-link"
-                            aria-pressed={item.id === activeId}
-                            onClick={() => {
-                              setActiveId(item.id);
-                              setError("");
-                            }}
-                          >
-                            <strong>{item.ingredient}</strong>
-                            <span>{item.objective}</span>
-                            <small>{comparisons === undefined ? "Checking next action…" : casePriority(item, comparisons.find(c => c.id === item.comparisonId)).reason}</small>
-                            <span>{comparisons === undefined ? "" : casePriority(item, comparisons.find(c => c.id === item.comparisonId)).next}</span>
-                            <small>
-                              {item.region} ·{" "}
-                              {item.status === "idle"
-                                ? "Saved"
-                                : item.status === "running"
-                                  ? "Researching"
-                                  : item.status === "complete"
-                                    ? "Research finished"
-                                    : item.status === "failed"
-                                      ? "Needs attention"
-                                      : "Research stopped"}
-                            </small>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </div>
-            );
-
-            return current ? (
-              <Disclosure
-                className="sourcing-switcher"
-                key={`switcher:${current.id}`}
-                defaultOpen={false}
-                title="Switch case or save another question"
-              >
-                {intakeContent}
-              </Disclosure>
-            ) : (
-              intakeContent
-            );
-          })()}
-          {error && (
-            <p className="notice error" role="alert">
-              {error}
-            </p>
-          )}
-          {current && (
-            <CaseDetail
-              key={current.id}
-              {...props}
-              token={token}
-              caseId={current.id}
-              connected={connected}
-              liveEnabled={Boolean(status?.enabled)}
-              watchEnabled={Boolean(status?.watchEnabled)}
-            />
-          )}
-        </div>
-      )}
-    </section>
+      <header className="followup-heading">
+        <h1 tabIndex={-1}>{activeId ? current?.ingredient ?? (cases === undefined ? "Opening your follow-up…" : "Follow-up unavailable") : "Research a question"}</h1>
+        <p>{activeId ? current ? `${current.region} · Supplier follow-up` : cases === undefined ? "Restoring your saved messages and findings." : "Return to your workspace to continue another item." : "Find the details you need before choosing a supplier."}</p>
+      </header>
+      <section className="sourcing-case is-expanded" aria-label="Supplier follow-up">
+        {!connected && <p className="notice info" role="status">Reconnecting. Saved results remain visible; actions will be available when connected.</p>}
+        {activeId ? (
+          cases === undefined ? <p role="status">Loading your follow-up…</p>
+          : current ? <CaseDetail key={current.id} {...props} token={token} caseId={current.id} connected={connected} liveEnabled={Boolean(status?.enabled)} watchEnabled={Boolean(status?.watchEnabled)} />
+          : <div className="followup-unavailable"><h2>This follow-up isn’t available.</h2><p>Saved work belongs to the browser where it was created. Open another item from Continue your work.</p></div>
+        ) : (
+          questionForm
+        )}
+        {error && <p className="notice error" role="alert">{error}</p>}
+      </section>
+    </main>
   );
 }
 
@@ -447,7 +277,8 @@ function CaseDetail({
   watchEnabled: boolean;
 }) {
   const detail = useQuery(api.sourcing.get, { token, caseId });
-  const runs = useQuery(api.sourcing.research, { token, caseId });
+  const caseRuns = useQuery(api.sourcing.research, { token, caseId });
+  const allRuns = useQuery(api.research.list, { token });
   const deliveryConfirmations = useQuery(
     api.quotationMail.listDeliveryConfirmations,
     detail?.case.comparisonId
@@ -467,19 +298,28 @@ function CaseDetail({
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-  const [reviewOpen, setReviewOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(true);
+  type CaseSection = "overview" | "sources" | "messages" | "activity";
+  const [section, setSection] = useState<CaseSection>(() => readWorkspaceCheckpoint<CaseSection>(`followup:${caseId}`) ?? "overview");
+  useEffect(() => writeWorkspaceCheckpoint(`followup:${caseId}`, section), [caseId, section]);
+  const studies = useQuery(api.studies.list, { token });
+  const saveStudy = useMutation(api.studies.save);
+  const [evidenceDraft, setEvidenceDraft] = useState<{ selections: WebSelection[]; prospects: StudyProspect[]; baseStudy: SavedStudy | undefined } | null>(null);
+  const [savedEvidenceStudy, setSavedEvidenceStudy] = useState<SavedStudy | null>(null);
+  const [evidenceClientId] = useState(() => crypto.randomUUID());
   const [watchOpen, setWatchOpen] = useState(false);
   const [incoming, setIncoming] = useState<PurchaseSeed | null>(null);
   const [equivalent, setEquivalent] = useState(false);
+  const [sourceEntry, setSourceEntry] = useState<SourcingEntryRequest | null>(null);
   const [mailId, setMailId] = useState<string | null>(null);
   const [mailVisit, setMailVisit] = useState(0);
   useEffect(() => {
-    if (props.openRequest?.id === caseId && props.openRequest.requestId) {
-      setMailId(props.openRequest.requestId);
+    if (props.location?.id === caseId && props.location.requestId) {
+      setSection("messages");
+      setMailId(props.location.requestId);
       setMailVisit(n => n + 1);
     }
-  }, [props.openRequest, caseId]);
+  }, [props.location?.id, props.location?.requestId, props.location?.visit, caseId]);
   async function act(
     key: string,
     operation: () => Promise<unknown>,
@@ -498,7 +338,8 @@ function CaseDetail({
       setPending(null);
     }
   }
-  if (!detail) return <p role="status">Loading the case…</p>;
+  if (detail === undefined) return <p role="status">Loading your follow-up…</p>;
+  if (detail === null) return <p>This follow-up is no longer available.</p>;
   const item = detail.case;
   if (!item)
     return (
@@ -507,6 +348,19 @@ function CaseDetail({
       </p>
     );
   const running = item.status === "running";
+  const linkedStudy = studies?.find(study => study.id === item.studyId);
+  const evidenceStudy = savedEvidenceStudy && (!linkedStudy || savedEvidenceStudy.revision > linkedStudy.revision) ? savedEvidenceStudy : linkedStudy;
+  const selectedEvidence = evidenceDraft?.selections ?? evidenceStudy?.webSelections ?? [];
+  const selectedProspects = evidenceDraft?.prospects ?? evidenceStudy?.prospects ?? [];
+  const associatedComparison = comparisons?.find(comparison => comparison.id === item.comparisonId);
+  const relatedRunIds = new Set([
+    ...(linkedStudy?.prospects ?? []).map(prospect => prospect.runId),
+    ...(linkedStudy?.webSelections ?? []).flatMap(selection => Object.values(selection.seed.sources).flatMap(source => source.webReview ? [source.webReview.runId] : [])),
+    ...Object.values(associatedComparison?.sources ?? {}).flatMap(source => source.webReview ? [source.webReview.runId] : []),
+  ]);
+  const runs = caseRuns === undefined || allRuns === undefined || studies === undefined || comparisons === undefined
+    ? undefined
+    : [...caseRuns, ...allRuns.filter(run => relatedRunIds.has(run.id) && !caseRuns.some(existing => existing.id === run.id))];
   const coverage = researchCoverage(runs ?? []);
   const stopLabels = {
     review_ready: "Candidates ready for review",
@@ -522,6 +376,7 @@ function CaseDetail({
     requests?.filter(
       (request) =>
         (item.studyId && request.studyId === item.studyId) ||
+        (request.prospectId && linkedStudy?.prospects?.some(prospect => prospect.id === request.prospectId)) ||
         (item.comparisonId && request.comparisonId === item.comparisonId) ||
         detail.events.some(
           (event) =>
@@ -538,13 +393,13 @@ function CaseDetail({
     ),
   ];
   const hasEvidence =
-    runs?.some((run) =>
+    caseRuns?.some((run) =>
       run.sources.some(
         (source, index) =>
           source.markdown &&
           source.analysis?.kind !== "irrelevant" &&
           !reviewedIds.includes(`${run.id}:${index}`) &&
-          !props.selections.some(
+          !selectedEvidence.some(
             (selection) => selection.sourceId === `${run.id}:${index}`,
           ),
       ),
@@ -578,25 +433,19 @@ function CaseDetail({
         sourcingCaseId: caseId,
       });
   };
-  function focusSection(selector: string) {
-    requestAnimationFrame(() => {
-      const section = document.querySelector<HTMLElement>(selector);
-      scrollToContent(section);
-    });
-  }
   function nextAction() {
     if (progress.target === "mail") {
       setMailId(progress.requestId);
       setMailVisit((value) => value + 1);
-      focusSection(".sourcing-correspondence");
+      setSection("messages");
     } else if (progress.target === "evidence") {
       setReviewOpen(true);
-      focusSection(".sourcing-reviews");
+      setSection("sources");
     } else if (progress.target === "comparison") openComparison();
     else if (progress.target === "watch") {
       setWatchOpen(true);
-      focusSection(".sourcing-watches");
-    } else if (progress.target === "history") setHistoryOpen(true);
+      setSection("activity");
+    } else if (progress.target === "history") setSection("activity");
     else if (progress.target === "research")
       void act(
         "start",
@@ -606,11 +455,16 @@ function CaseDetail({
   }
   const disabled = !connected || Boolean(pending);
   const contextMatches =
+    (!item.studyId || item.studyId === props.studyId) &&
     props.ingredient.trim().toLowerCase() ===
       item.ingredient.trim().toLowerCase() &&
     props.region.trim().toLowerCase() === item.region.trim().toLowerCase();
   return (
     <div className="sourcing-detail">
+      {sourceEntry && <SourcingEntry entry={sourceEntry} onClose={() => setSourceEntry(null)} onReady={(saved, id, requestId) => {
+        setSavedEvidenceStudy(saved); setEvidenceDraft(null); setSourceEntry(null); props.onOpen(id, requestId ?? undefined);
+      }} />}
+
       {incoming && savedComparison && (
         <Dialog
           title="Update the case comparison"
@@ -680,10 +534,7 @@ function CaseDetail({
       )}
       <div className="sourcing-detail-heading">
         <div>
-          <h3>{item.objective}</h3>
-          <p>
-            {item.ingredient} · {item.region}
-          </p>
+          <h2>{item.objective}</h2>
         </div>
         <span className="sourcing-state" role="status">
           {running
@@ -695,105 +546,152 @@ function CaseDetail({
                 : "Saved case"}
         </span>
       </div>
-      <section aria-label="Case decision brief" className="case-decision-brief">
-        <h4>What we know</h4>
-        <p>{runs === undefined || comparisons === undefined ? "Loading saved evidence and comparison…" : `${coverage.total} retained sources${savedComparison ? ` and a saved comparison of ${savedComparison.offers.length} offers` : "; no saved comparison yet"}.`}</p>
-        <h4>What still needs confirmation</h4>
-        {savedComparison ? (() => {
-          const blockers = comparisonBlockers(savedComparison);
-          const describe = (blocker: typeof blockers[number]) => `${blockerLabels[blocker.kind]} · ${blocker.supplier}: ${blocker.message}`;
-          return blockers.length ? <><p>{describe(blockers[0])}</p>{blockers.length > 1 && <details><summary>Other conditions ({blockers.length - 1})</summary><ul>{blockers.slice(1).map((blocker, index) => <li key={index}>{describe(blocker)}</li>)}</ul></details>}</> : <p>Review the recommendation using your current quantity and preferences.</p>;
-        })() : <p>Review source evidence, product equivalence and commercial terms before deciding.</p>}
-      </section>
-      <section
-        className="sourcing-next"
-        aria-label="Next step for this case"
-        aria-live="polite"
-      >
-        <div>
-          <p className="field-hint">Recommended next action</p>
-          <h3>
-            {!connected
-              ? "You are offline"
-              : progressLoaded
-                ? progress.title
-                : "Checking case updates…"}
-          </h3>
-          <p>
-            {!connected
-              ? "Reconnect to check for new replies and findings. The last saved case is shown below."
-              : progressLoaded
-                ? progress.description
-                : "Loading messages, findings and the saved comparison."}
-          </p>
-          {progressLoaded && progress.action && (
-            <Button
-              variant="primary"
-              disabled={
-                disabled || (progress.target === "research" && runsExhausted)
-              }
-              onClick={nextAction}
-            >
-              {progress.action}
-            </Button>
-          )}
+      <SegmentedControl
+        label="Follow-up sections"
+        value={section}
+        onValueChange={value => { setSection(value); if (value === "sources") setReviewOpen(true); }}
+        options={[{ value: "overview", label: "Overview" }, { value: "messages", label: "Messages" }, { value: "sources", label: "Sources" }, { value: "activity", label: "Activity" }]}
+      />
+      <div hidden={section !== "overview"}>
+      <div className="sourcing-decision-layout">
+        <section aria-label="Case decision brief" className="case-decision-brief">
+          <div>
+            <h3>Saved for this follow-up</h3>
+            <p>
+              {runs === undefined || comparisons === undefined
+                ? "Loading saved evidence and comparison…"
+                : savedComparison
+                  ? `${savedComparison.offers.length} offers saved for comparison. Sources and reviewed terms stay attached to each offer.`
+                  : coverage.total > 0 ? `${coverage.total} sources found. Review their details before adding an offer.`
+                  : "Your question is saved. Add supplier findings or prepare a message to move forward."}
+            </p>
+          </div>
+          <div>
+            <h3>Still to confirm</h3>
+            {savedComparison ? (() => {
+              const blockers = comparisonBlockers(savedComparison);
+              const describe = (blocker: typeof blockers[number]) =>
+                `${blockerLabels[blocker.kind]} · ${blocker.supplier}: ${blocker.message}`;
+              return blockers.length ? (
+                <>
+                  <p>{describe(blockers[0])}</p>
+                  {blockers.length > 1 && (
+                    <Disclosure
+                      className="case-conditions"
+                      title={`Other conditions (${blockers.length - 1})`}
+                    >
+                      <ul>
+                        {blockers.slice(1).map((blocker, index) => (
+                          <li key={index}>{describe(blocker)}</li>
+                        ))}
+                      </ul>
+                    </Disclosure>
+                  )}
+                </>
+              ) : (
+                <p>Review the recommendation using your current quantity and preferences.</p>
+              );
+            })() : (
+              <p>Review source evidence, product equivalence and commercial terms before deciding.</p>
+            )}
+          </div>
+        </section>
+        <div className="sourcing-decision-actions">
+          <section
+            className="sourcing-next"
+            aria-label="Next step for this case"
+            aria-live="polite"
+          >
+            <div>
+
+              <h3>
+                {!connected
+                  ? "You are offline"
+                  : progressLoaded
+                    ? progress.title
+                    : "Checking case updates…"}
+              </h3>
+              <p>
+                {!connected
+                  ? "Reconnect to check for new replies and findings. The last saved case is shown below."
+                  : progressLoaded
+                    ? progress.description
+                    : "Loading messages, findings and the saved comparison."}
+              </p>
+              {progressLoaded && progress.action && (
+                <Button
+                  variant="primary"
+                  disabled={
+                    disabled || (progress.target === "research" && runsExhausted)
+                  }
+                  onClick={nextAction}
+                >
+                  {progress.action}
+                </Button>
+              )}
+            </div>
+          </section>
+          <div className="sourcing-actions">
+      {linkedStudy && <Button variant="text" onClick={() => props.onOpenStudy(linkedStudy)}>Open linked study</Button>}
+
+            {savedComparison && progress.target !== "comparison" && (
+              <Button onClick={openComparison}>Open comparison</Button>
+            )}
+            {progress.target !== "research" &&
+              (liveEnabled || progress.title === "Your question is saved") && (
+                <Button
+                  variant="secondary"
+                  busy={pending === "start"}
+                  busyLabel="Starting research…"
+                  disabled={disabled || running || !liveEnabled || runsExhausted}
+                  onClick={() =>
+                    void act(
+                      "start",
+                      () => start({ token, caseId }),
+                      "Research started. You can close this view and return to the saved case.",
+                    )
+                  }
+                >
+                  {running
+                    ? "Research in progress"
+                    : item.status === "complete"
+                      ? "Continue research from these findings"
+                      : "Investigate this question"}
+                </Button>
+              )}
+            {running && (
+              <Button
+                disabled={disabled}
+                onClick={() =>
+                  void act(
+                    "cancel",
+                    () => cancel({ token, caseId }),
+                    "Research canceled. Earlier evidence is preserved.",
+                  )
+                }
+              >
+                Cancel research
+              </Button>
+            )}
+            {props.studyId && contextMatches && item.studyId !== props.studyId && (
+              <Button
+                disabled={disabled || running}
+                onClick={() =>
+                  void act(
+                    "attach",
+                    () => attach({ token, caseId, studyId: props.studyId! }),
+                    "This saved study is now linked to the case.",
+                  )
+                }
+              >
+                Link current saved study
+              </Button>
+            )}
+          </div>
         </div>
-      </section>
-      <div className="sourcing-actions">
-        {savedComparison && progress.target !== "comparison" && (
-          <Button onClick={openComparison}>Open case comparison</Button>
-        )}
-        {progress.target !== "research" &&
-          (liveEnabled || progress.title === "Your question is saved") && (
-            <Button
-              variant="secondary"
-              busy={pending === "start"}
-              busyLabel="Starting research…"
-              disabled={disabled || running || !liveEnabled || runsExhausted}
-              onClick={() =>
-                void act(
-                  "start",
-                  () => start({ token, caseId }),
-                  "Research started. You can close this view and return to the saved case.",
-                )
-              }
-            >
-              {running
-                ? "Research in progress"
-                : item.status === "complete"
-                  ? "Continue research from these findings"
-                  : "Investigate this question"}
-            </Button>
-          )}
-        {running && (
-          <Button
-            disabled={disabled}
-            onClick={() =>
-              void act(
-                "cancel",
-                () => cancel({ token, caseId }),
-                "Research canceled. Earlier evidence is preserved.",
-              )
-            }
-          >
-            Cancel research
-          </Button>
-        )}
-        {props.studyId && contextMatches && item.studyId !== props.studyId && (
-          <Button
-            disabled={disabled || running}
-            onClick={() =>
-              void act(
-                "attach",
-                () => attach({ token, caseId, studyId: props.studyId! }),
-                "This saved study is now linked to the case.",
-              )
-            }
-          >
-            Link current saved study
-          </Button>
-        )}
       </div>
+      </div>
+      <div hidden={section !== "sources"}>
       {(running || coverage.total > 0 || item.stopReason) && (
         <details className="sourcing-coverage" aria-label="Research coverage">
           <summary>{coverage.total} sources · {coverage.priceDomains} domains with prices — {item.stopReason === "budget" || item.stopReason === "diminishing_returns" ? "coverage incomplete" : "research details"}</summary>
@@ -869,16 +767,12 @@ function CaseDetail({
           findings, messages and your comparison.
         </p>
       )}
-      {error && (
-        <p className="notice error" role="alert">
-          {error}
-        </p>
-      )}
-      {notice && (
-        <p className="field-hint" role="status">
-          {notice}
-        </p>
-      )}
+      {!runs?.length && <p className="followup-empty">No research sources yet. Start with the next step in Overview. Sources attached to saved offers are available in the comparison.</p>}
+      </div>
+      {error && <p className="notice error" role="alert">{error}</p>}
+      {notice && <p className="field-hint" role="status">{notice}</p>}
+      <div hidden={section !== "messages"}>
+      {requests !== undefined && linkedRequests.length === 0 && <p className="followup-empty">No messages yet. Prepare an inquiry from a supplier or from your comparison when you need to confirm terms.</p>}
       {linkedRequests.length > 0 && (
         <section
           className="sourcing-correspondence"
@@ -887,6 +781,7 @@ function CaseDetail({
         >
           <Disclosure
             className="sourcing-disclosure"
+            open={true}
             title={
               <>
                 Supplier conversations{" "}
@@ -905,10 +800,10 @@ function CaseDetail({
                       setMailVisit((value) => value + 1);
                     }}
                   >
-                    <strong>{request.subject}</strong>
-                    <span>
+                    <span className="followup-message-title"><strong>{request.subject}</strong><small>Updated {date(request.updatedAt)}</small></span>
+                    <span className="followup-message-status">
                       {request.replies.length
-                        ? `${request.replies.length} replies received`
+                        ? `${request.replies.length} ${request.replies.length === 1 ? "reply" : "replies"} received`
                         : request.state === "sent"
                           ? "Sent · waiting for reply"
                           : request.state === "draft"
@@ -919,7 +814,7 @@ function CaseDetail({
                                 ? "Sending approved message"
                                 : "Send failed"}
                     </span>
-                    <small>Updated {date(request.updatedAt)}</small>
+                    <ChevronRight size={18} aria-hidden="true" />
                   </button>
                 </li>
               ))}
@@ -929,12 +824,17 @@ function CaseDetail({
             <QuotationMail
               key={`${selectedRequest.id}:${mailVisit}`}
               initialRequestId={selectedRequest.id}
+              dialogOnly
               comparisonId={selectedRequest.comparisonId ?? null}
               studyId={selectedRequest.studyId}
               prospectId={selectedRequest.prospectId}
               resultId={selectedRequest.resultId}
               offers={[]}
               deliveryComparison={savedComparison}
+              onDeliveryApplied={comparison => props.onPrepare({
+                ...comparison, sourcingCaseId: caseId,
+                resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true },
+              })}
               onEditOffer={openComparison}
               onPrepare={(seed) => {
                 if (savedComparison) {
@@ -957,24 +857,9 @@ function CaseDetail({
           )}
         </section>
       )}
-      <div className="sourcing-activity">
-        <div>
-          <History size={20} aria-hidden="true" />
-          <div>
-            <strong>Every step, kept together</strong>
-            <p>
-              {detail.events[0]
-                ? (eventTitles[detail.events[0].kind] ??
-                  detail.events[0].summary)
-                : "Your case history will appear here."}
-            </p>
-          </div>
-        </div>
-        <Button onClick={() => setHistoryOpen(true)}>View case history</Button>
       </div>
-      {historyOpen && (
-        <Dialog title="Case history" onClose={() => setHistoryOpen(false)} wide>
-          <p>{item.objective}</p>
+      <div hidden={section !== "activity"}>
+      <div className="followup-history">
           <p className="field-hint">
             Latest first. Saved decisions, research and message updates stay
             here when you leave.
@@ -987,7 +872,7 @@ function CaseDetail({
             {item.summary && item.status !== "idle" && (
               <p className="sourcing-result">{item.summary}</p>
             )}
-            <h3>How this case developed</h3>
+            <h3>Activity</h3>
             <ol>
               {detail.events.map((event) => (
                 <li key={event.id}>
@@ -1019,15 +904,15 @@ function CaseDetail({
             </ol>
             {detail.events.length === 0 && <p>No actions recorded yet.</p>}
           </section>
-        </Dialog>
-      )}
+      </div>
+      {(watchEnabled || detail.watches.length > 0) && (
       <Disclosure
         className="sourcing-disclosure"
         open={watchOpen}
         onOpenChange={setWatchOpen}
         title={
           <>
-            <Radar size={18} aria-hidden="true" /> Source watches{" "}
+            <Radar size={18} aria-hidden="true" /> Price tracking{" "}
             <span>
               {
                 detail.watches.filter((watch) =>
@@ -1142,16 +1027,38 @@ function CaseDetail({
           ))}
         </section>
       </Disclosure>
+      )}
+      </div>
+      <div hidden={section !== "sources"}>
       {Boolean(runs?.length) && (
         <div className="sourcing-reviews" tabIndex={-1}>
-          {(reviewOpen || progress.target !== "evidence") && <Button
-            aria-expanded={reviewOpen}
-            onClick={() => setReviewOpen(!reviewOpen)}
-          >
-            {reviewOpen ? "Close research evidence" : "Review research evidence"}
-          </Button>}
+          {evidenceDraft && <div className="followup-save-findings">
+            <p>{selectedEvidence.length} reviewed offers and {selectedProspects.length} supplier contacts selected. Save to keep them with this follow-up.</p>
+            <Button variant="primary" disabled={disabled} busy={pending === "save-evidence"} busyLabel="Saving findings…" onClick={() => void act("save-evidence", async () => {
+              const saved = await saveStudy({
+                token, clientId: evidenceClientId, id: evidenceDraft.baseStudy?.id ?? null, expectedRevision: evidenceDraft.baseStudy?.revision ?? 0,
+                term: item.ingredient, region: item.region, selectedIds: evidenceDraft.baseStudy?.selectedIds ?? [],
+                webReviews: selectedEvidence.map(({ seed, sourceId }) => {
+                  const review = seed.sources[sourceId].webReview!;
+                  return { ...review, runId: review.runId as Id<"researchRuns"> };
+                }),
+                prospectIds: selectedProspects.map(prospect => prospect.id),
+              });
+              setSavedEvidenceStudy(saved);
+              try {
+                if (item.studyId !== saved.id) await attach({ token, caseId, studyId: saved.id });
+                setEvidenceDraft(current => current === evidenceDraft ? null : current ? { ...current, baseStudy: saved } : null);
+              } catch (cause) {
+                // The study save succeeded; retain edits and its revision for a safe retry of the link.
+                setEvidenceDraft(current => current ? { ...current, baseStudy: saved } : null);
+                throw cause;
+              }
+            }, "Findings saved with this follow-up.")}>Save findings</Button>
+          </div>}
           {reviewOpen && (
             <ResearchWorkspace
+              connected={connected}
+              reviewDestination="followup"
               autoSelectLatest
               status={researchStatus}
               runs={runs}
@@ -1188,15 +1095,14 @@ function CaseDetail({
                   setError("");
                 } else props.onPrepare({ ...seed, sourcingCaseId: caseId });
               }}
-              selections={
-                contextMatches
-                  ? props.selections.filter(
-                      (selection) =>
-                        !savedComparison?.sources[selection.sourceId],
-                    )
-                  : undefined
-              }
-              onReview={contextMatches ? props.onReview : undefined}
+              selections={selectedEvidence}
+              onReview={selection => setEvidenceDraft({
+                baseStudy: evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy,
+                selections: selectedEvidence.some(item => item.sourceId === selection.sourceId)
+                  ? selectedEvidence.map(item => item.sourceId === selection.sourceId ? selection : item)
+                  : [...selectedEvidence, selection],
+                prospects: selectedProspects,
+              })}
               renderProspect={(run, index) => (
                 <SaveWebProspect
                   token={token}
@@ -1204,13 +1110,30 @@ function CaseDetail({
                   sourceIndex={index}
                   title={run.sources[index].title}
                   url={run.sources[index].url}
-                  onSaved={contextMatches ? props.onProspect : undefined}
+                  simulated={run.simulated}
+                  primaryInquiry
+                  onContinue={item.studyId && evidenceStudy ? (prospect, intent) => {
+                    const base = evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy;
+                    setSourceEntry({ supplier: prospect.supplier, intent, target: { prospectId: prospect.id }, draft: {
+                      clientId: evidenceClientId, id: base?.id ?? null, expectedRevision: base?.revision ?? 0,
+                      term: item.ingredient, region: item.region, selectedIds: base?.selectedIds ?? [],
+                      webSelections: selectedEvidence,
+                      prospects: [...selectedProspects.filter(item => item.id !== prospect.id), prospect],
+                    } });
+                  } : undefined}
+                  savedActionLabel="Keep candidate in this follow-up"
+                  onSaved={prospect => setEvidenceDraft({
+                    baseStudy: evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy,
+                    selections: selectedEvidence,
+                    prospects: [...selectedProspects.filter(item => item.id !== prospect.id), prospect],
+                  })}
                 />
               )}
             />
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

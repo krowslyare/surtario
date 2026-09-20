@@ -6,7 +6,6 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { SavedStudy } from "./SavedStudies";
 import type { SavedComparison } from "./SavedComparisons";
-import { casePriority } from "../domain/casePriority";
 import { useDemoSession } from "./useDemoSession";
 import { Button } from "./ui/Button";
 
@@ -102,14 +101,11 @@ function Connected({ token, titleId, ...props }: Props & { token: string; titleI
     const loading = Boolean(item.comparisonId && confirmed === undefined);
     const next = reply ? "Review reply"
       : uncertain ? "Check unconfirmed send"
-      : draft ? "Review inquiry"
-      : comparison ? (casePriority(item, comparison).rank === 0 ? "Review purchase terms" : "Resume calculation")
-      : item.status === "running" ? "View research progress"
-      : "Continue research";
+      : "Review inquiry";
     entries.push({
       id: item.id, title: item.ingredient, detail: `${item.region} · ${item.objective}`,
-      disabled: loading, next: loading ? "Loading next step…" : next,
-      researchIds: [...new Set([...item.researchRunIds, ...researchIds(study, comparison)])],
+      disabled: loading, next: loading ? "Loading next step…" : nextRequest ? next : "Open follow-up",
+      researchIds: [],
       updatedAt: Math.max(item.updatedAt, study?.updatedAt ?? 0, comparison?.updatedAt ?? 0, ...mail.map(request => request.updatedAt)),
       open: () => { if (!loading) props.onCase(item.id, study, nextRequest?.id); },
     });

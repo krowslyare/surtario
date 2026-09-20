@@ -1,4 +1,6 @@
-import ResearchProgress from "./ResearchProgress";
+import ResearchProgress, { ResearchCompletion } from "./ResearchProgress";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { scrollToContent } from "../scroll";
 import type { ResearchProgress as Progress } from "../../convex/researchValidators";
 import { reviewedWebEvidence } from "../domain/webEvidence";
 import { SaveWebProspect, WebProspectLibrary } from "./WebProspects";
@@ -10,8 +12,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ExternalLink, FileSearch, History, Search } from "lucide-react";
-import { useAction, useQuery } from "convex/react";
+import { Check, ExternalLink, FileSearch, History, Info, Search } from "lucide-react";
+import { useAction, useQuery, useConvexConnectionState } from "convex/react";
 import { ConvexError } from "convex/values";
 import type { Id } from "../../convex/_generated/dataModel";
 import { api } from "../../convex/_generated/api";
@@ -23,6 +25,7 @@ import {
 import { sameStudyContext, type WebSelection, type StudyProspect } from "../domain/study";
 import type { PurchaseSeed } from "../domain/market";
 import { Button } from "./ui/Button";
+import { Disclosure } from "./ui/Disclosure";
 import ExtractionReview from "./ExtractionReview";
 import {
   ProductLinkReader,
@@ -78,6 +81,13 @@ export type WebSearchRequest = {
   region: string;
 };
 
+export type ResearchResumeRequest = {
+  id?: string;
+  clientId?: string;
+  showAllSources?: boolean;
+  sequence: number;
+};
+
 function safeUrl(value: string) {
   try {
     const parsed = new URL(value);
@@ -89,7 +99,7 @@ function safeUrl(value: string) {
   }
 }
 
-function observedLabel(value: string) {
+function observedLabel(value: string, includeTime = false) {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? "Date pending"
@@ -98,6 +108,7 @@ function observedLabel(value: string) {
         month: "short",
         year: "numeric",
         ...(/^\d{4}-\d{2}-\d{2}$/.test(value) ? { timeZone: "UTC" } : {}),
+        ...(includeTime && value.includes("T") ? { hour: "numeric", minute: "2-digit" } as const : {}),
       }).format(date);
 }
 
@@ -113,21 +124,29 @@ export function ResearchWorkspace({
   renderProspect,
   selections,
   onReview,
+  reviewDestination = "study",
+  renderHeaderActions,
   onOpenStudy,
   onBackToOverview,
   pendingRun,
   autoSelectLatest = false,
   resumeRequest,
+  onActiveRun,
   onCalculate,
   caseComparisonContext,
   onExploreDemo,
+  connected = true,
 }: {
+  connected?: boolean;
+  renderHeaderActions?: (context?: { ingredient: string; region: string } | null) => ReactNode;
   pendingRun?: SavedResearch;
   autoSelectLatest?: boolean;
-  resumeRequest?: { id: string; sequence: number } | null;
+  resumeRequest?: ResearchResumeRequest | null;
+  onActiveRun?: (cursor: Omit<ResearchResumeRequest, "sequence">) => void;
   onCalculate?: (seed: PurchaseSeed, context: { ingredient: string; region: string }) => void;
   caseComparisonContext?: { ingredient: string; region: string };
   onExploreDemo?: () => void;
+  reviewDestination?: "study" | "followup";
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
@@ -146,10 +165,16 @@ export function ResearchWorkspace({
   ) => Promise<SavedResearch>;
   onPrepare: (seed: PurchaseSeed) => void;
 }) {
-  const [showAllSources, setShowAllSources] = useState(false);
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const [showAllSources, setShowAllSources] = useState(resumeRequest?.showAllSources ?? false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const historyRef = useRef<HTMLDivElement>(null);
+  const scrollAfterHistory = useRef(false);
+  const [activeId, setActiveId] = useState<string | null>(resumeRequest?.id ?? null);
   const [localRun, setLocalRun] = useState<SavedResearch | null>(null);
   const [searching, setSearching] = useState(false);
+  const reducedMotion = useReducedMotion();
+  const runningVisit = useRef<{ id: string | null; requestKey: string | number | undefined } | null>(null);
+  const [finishedRunId, setFinishedRunId] = useState<string | null>(null);
   const [extracting, setExtracting] = useState<string[]>([]);
   const [reading, setReading] = useState<string[]>([]);
   const [readFailures, setReadFailures] = useState<Record<string, string>>({});
@@ -164,14 +189,17 @@ export function ResearchWorkspace({
     { sourceId: string; seed: PurchaseSeed }[]
   >([]);
   const reviewed = selections ?? localReviewed;
-  useEffect(() => setShowAllSources(false), [request?.id, request?.clientId, activeId]);
+  useEffect(() => setShowAllSources(!request && activeId === resumeRequest?.id && Boolean(resumeRequest?.showAllSources)), [request?.id, request?.clientId, activeId]);
   const [equivalent, setEquivalent] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => onStatus(status), [onStatus, status]);
   useEffect(() => {
     if (!resumeRequest) return;
-    setActiveId(resumeRequest.id); setLocalRun(null); setError(""); setSearching(false);
+    runningVisit.current = null;
+    setFinishedRunId(null);
+    setActiveId(resumeRequest.id ?? null); setLocalRun(null); setError(""); setSearching(false);
+    setShowAllSources(Boolean(resumeRequest.showAllSources));
   }, [resumeRequest]);
 
   useEffect(() => {
@@ -212,7 +240,8 @@ export function ResearchWorkspace({
 
   const active = useMemo(() => {
     if (searching) return pendingRun ?? null;
-    const persisted = runs?.find((run) => run.id === activeId);
+    const persisted = runs?.find((run) => run.id === activeId ||
+      (!activeId && !request && resumeRequest?.clientId && run.clientId === resumeRequest.clientId));
     const localReadResolved = localRun?.sources.some((source, index) => {
       const persistedSource = persisted?.sources[index];
       return (
@@ -229,7 +258,28 @@ export function ResearchWorkspace({
     )
       return localRun;
     return persisted ?? (localRun?.id === activeId ? localRun : null);
-  }, [activeId, localRun, runs, searching, pendingRun]);
+  }, [activeId, localRun, runs, searching, pendingRun, request, resumeRequest]);
+
+  useEffect(() => {
+    if (active) onActiveRun?.({ id: active.id, showAllSources });
+  }, [active?.id, showAllSources, onActiveRun]);
+
+  // A terminal checkpoint can arrive before the action promise resolves.
+  const busy = !error && (active ? active.status === "running" : searching);
+  const requestKey = request?.clientId ?? request?.id;
+  useEffect(() => {
+    if (busy) {
+      runningVisit.current = { id: active?.id ?? null, requestKey };
+      setFinishedRunId(null);
+      return;
+    }
+    const visit = runningVisit.current;
+    runningVisit.current = null;
+    if (visit && !error && active?.status === "complete" &&
+      (visit.id ? visit.id === active.id : visit.requestKey === requestKey)) {
+      setFinishedRunId(active.id);
+    }
+  }, [busy, active?.id, active?.status, error, requestKey]);
 
   async function extract(run: SavedResearch, sourceIndex: number) {
     const sourceId = `${run.id}:${sourceIndex}`;
@@ -328,17 +378,18 @@ export function ResearchWorkspace({
   if (!status) return <p className="notice info">Checking web search…</p>;
 
   // When there are no searches yet and no active search in flight:
-  if (!searching && !active && !error && !runs?.length) {
+  if (!searching && !active && !error && !resumeRequest && !runs?.length) {
     return (
       <section className="live-research" aria-labelledby="live-research-title">
         <div className="live-research-heading">
           <div>
-            <h2 id="live-research-title">Web research</h2>
+            <h2 id="live-research-title">{reviewDestination === "followup" ? "Sources to review" : "Web research"}</h2>
             <p>
               Found pages are candidate sources. Review the content before
               treating them as supplier offers.
             </p>
           </div>
+          {renderHeaderActions?.(request)}
         </div>
 
         {!status.searchEnabled && (
@@ -367,13 +418,13 @@ export function ResearchWorkspace({
     <section className="live-research" aria-labelledby="live-research-title">
       <div className="live-research-heading">
         <div>
-          <h2 id="live-research-title">Web research</h2>
+          <h2 id="live-research-title">{reviewDestination === "followup" ? "Sources to review" : "Web research"}</h2>
           <p>
             Found pages are candidate sources. Review the content before
             treating them as supplier offers.
           </p>
         </div>
-
+        {renderHeaderActions?.(active ?? request)}
       </div>
 
       {!status.searchEnabled && (
@@ -382,46 +433,70 @@ export function ResearchWorkspace({
         </p>
       )}
 
-      {(searching || active?.status === "running") && (
-        <ResearchProgress sources={active?.sources} progress={active?.progress}
-          ingredient={active?.ingredient ?? request?.ingredient ?? "Your ingredient"}
-          region={active?.region ?? request?.region ?? "Your delivery area"} />
-      )}
+      <AnimatePresence initial={false} mode="wait">
+        {busy ? (
+          <motion.div key="searching" exit={{ opacity: 0 }} transition={{ duration: reducedMotion ? 0 : 0.16 }}>
+            <ResearchProgress connected={connected} sources={active?.sources} progress={active?.progress}
+              ingredient={active?.ingredient ?? request?.ingredient ?? "Your ingredient"}
+              region={active?.region ?? request?.region ?? "Your delivery area"} />
+          </motion.div>
+        ) : active?.status === "complete" && finishedRunId === active.id && !error ? (
+          <motion.div key={`finished-${active.id}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: reducedMotion ? 0 : 0.2 }}>
+            <ResearchCompletion count={active.sources.length} partial={active.warning} />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
 
       {!searching && active?.status !== "running" && runs && runs.length > 0 && (
-        <div className="research-history" aria-label="Saved searches">
-          <p className="field-hint">
-            {onReview
-              ? "Your selection remains in My study when you open another search."
-              : "Reviewed selections remain available across saved searches."}{" "}
-            Up to 10 quick searches per browser; case rounds have separate limits. Clearing site data removes access.
-          </p>
-          <span>
-            <History size={16} /> Saved searches
-          </span>
-          <div>
-            {runs.map((run, index) => (
-              <button
-                type="button"
-                className="button text-button"
-                key={run.id}
-                aria-pressed={activeId === run.id}
-                disabled={searching}
-                onClick={() => {
-                  if (activeId === run.id) return;
-                  setActiveId(run.id);
-                  setLocalRun(null);
-                  setEquivalent(false);
-                  setReadFailures({});
-                  setSelectedLinks({});
-                  setReadNotice("");
-                  setError("");
-                }}
-              >
-                Search {index + 1} · {run.ingredient} · {run.region} · {run.sources.length} sources · {observedLabel(run.observedAt)}
-              </button>
-            ))}
-          </div>
+        <div className="research-history" ref={historyRef}>
+          <Disclosure
+            title={<span className="research-history-label"><History size={16} aria-hidden="true" />Saved searches <span>({runs.length})</span></span>}
+            open={historyOpen}
+            onOpenChange={setHistoryOpen}
+            onAfterClose={() => {
+              if (!scrollAfterHistory.current) return;
+              scrollAfterHistory.current = false;
+              const trigger = historyRef.current?.querySelector<HTMLButtonElement>(".disclosure-trigger");
+              scrollToContent(historyRef.current, trigger ?? historyRef.current);
+            }}
+          >
+            <div className="research-history-list" role="group" aria-label="Saved searches">
+              {runs.map((run, index) => (
+                <button
+                  type="button"
+                  className="research-history-option"
+                  key={run.id}
+                  aria-label={`Search ${index + 1} · ${run.ingredient} · ${run.region} · ${run.sources.length} sources · ${observedLabel(run.observedAt, true)}`}
+                  aria-pressed={activeId === run.id}
+                  disabled={searching}
+                  onClick={() => {
+                    historyRef.current?.querySelector<HTMLButtonElement>(".disclosure-trigger")?.focus({ preventScroll: true });
+                    scrollAfterHistory.current = true;
+                    setHistoryOpen(false);
+                    if (activeId === run.id) return;
+                    setActiveId(run.id);
+                    setFinishedRunId(null);
+                    setLocalRun(null);
+                    setEquivalent(false);
+                    setReadFailures({});
+                    setSelectedLinks({});
+                    setReadNotice("");
+                    setError("");
+                  }}
+                >
+                  <span className="research-history-identity"><strong>{run.ingredient}</strong><span>{run.region}</span></span>
+                  <span className="research-history-date">{observedLabel(run.observedAt, true)}<span>{run.sources.length} sources</span></span>
+                  <Check size={16} aria-hidden="true" className="research-history-check" />
+                </button>
+              ))}
+            </div>
+            <p className="field-hint research-history-hint">
+              {onReview
+                ? reviewDestination === "followup" ? "Save findings to keep your reviewed offers with this follow-up." : "Your selection remains in My study when you open another search."
+                : "Reviewed selections remain available across saved searches."}{" "}
+              {reviewDestination !== "followup" && "Up to 10 quick searches per browser; case rounds have separate limits. Clearing site data removes access."}
+            </p>
+          </Disclosure>
         </div>
       )}
 
@@ -432,51 +507,56 @@ export function ResearchWorkspace({
         </p>
       )}
 
-      {active && active.status !== "running" && (
-        <div className="research-run">
-          <div className="research-run-meta">
-            <strong>
-              {active.ingredient} in {active.region}
-            </strong>
-            <span>Observed on {observedLabel(active.observedAt)}</span>
+      {resumeRequest && !request && !active && (
+        <p className="notice info" role="status">
+          {runs === undefined ? "Opening your saved search…" : "This search is unavailable. Open another saved search or change your search to continue."}
+        </p>
+      )}
 
+      {active && active.status !== "running" && (
+        <div className="research-run" data-just-completed={finishedRunId === active.id || undefined}>
+          <div className="research-search-context">
+            <div className="research-run-meta">
+              <h3>
+                {active.ingredient}<span> in {active.region}</span>
+              </h3>
+              <span>Observed on {observedLabel(active.observedAt)}</span>
+            </div>
+            {readNotice && (
+              <p className="field-hint" role="status" aria-live="polite">
+                {readNotice}
+              </p>
+            )}
+            <Disclosure
+              key={active.id}
+              className="research-search-details"
+              title={<span className="research-summary-line"><strong>{active.sources.length} candidate sources</strong><span>Search details</span></span>}
+            >
+              <div className="research-search-detail-copy">
+                <p>
+                  {active.sources.filter((source) => source.markdown).length} with recovered text ·{" "}
+                  {active.sources.filter((source) => !source.markdown).length} without readable text.
+                  Coverage is limited; these counts do not confirm delivery to {active.region} or comparable prices.
+                </p>
+                {active.status === "complete" && status.autoReviewEnabled && active.sources.length > 3 && (
+                  <p>AI analyzes up to 3 product pages automatically. More sources are available below; review their details before adding them to your study.</p>
+                )}
+                {active.discarded > 0 && (
+                  <p>{active.discarded} {active.discarded === 1 ? "result was discarded" : "results were discarded"} because of relevance, duplicate sources, or reading limits.</p>
+                )}
+              </div>
+            </Disclosure>
+            {active.warning && (
+              <p className="research-content-warning">
+                <Info size={16} aria-hidden="true" />
+                The search returned partial content; review the sources.
+              </p>
+            )}
           </div>
-          {readNotice && (
-            <p className="field-hint" role="status" aria-live="polite">
-              {readNotice}
-            </p>
-          )}
-          {active.sources.length > 0 && (
-            <p className="field-hint">
-              {active.sources.length} candidate sources ·{" "}
-              {active.sources.filter((source) => source.markdown).length} with
-              recovered text ·{" "}
-              {active.sources.filter((source) => !source.markdown).length}{" "}
-              without readable text. Coverage is limited; these counts do not
-              confirm delivery to {active.region} or comparable prices.
-            </p>
-          )}
-          {active.status === "complete" && status.autoReviewEnabled && active.sources.length > 3 && (
-            <p className="field-hint">AI analyzes up to 3 product pages automatically. More sources are available below; review their details before adding them to your study.</p>
-          )}
-          {active.warning && (
-            <p className="notice info">
-              The search returned partial content; review the sources.
-            </p>
-          )}
           {active.error && <div className="notice error" role="alert">
             <p>{active.error}</p>
             {!error && onExploreDemo && <Button variant="secondary" onClick={onExploreDemo}>Explore demo catalog</Button>}
           </div>}
-          {active.discarded > 0 && (
-            <p className="field-hint">
-              {active.discarded}{" "}
-              {active.discarded === 1
-                ? "result was discarded"
-                : "results were discarded"}{" "}
-              because of relevance, duplicate sources, or reading limits.
-            </p>
-          )}
           {active.sources.length > 0 &&
             active.sources.every(
               (source) =>
@@ -496,9 +576,15 @@ export function ResearchWorkspace({
               <p>This does not confirm that no suppliers serve the area.</p>
             </div>
           )}
-          {active.sources.length > 12 && <button className="button text-button research-show-sources" aria-expanded={showAllSources} onClick={() => setShowAllSources(value => !value)}>
-            {showAllSources ? "Show first 12 sources" : `Show all ${active.sources.length} sources`}
-          </button>}
+          {active.sources.length > 0 && <div className="research-source-toolbar">
+            <div className="research-source-list-label">
+              <strong>Candidate sources</strong>
+              <span>{active.sources.length > 12 && !showAllSources ? `Showing 12 of ${active.sources.length} sources` : `Showing all ${active.sources.length} sources`}</span>
+            </div>
+            {active.sources.length > 12 && <button className="button text-button research-show-sources" aria-expanded={showAllSources} onClick={() => setShowAllSources(value => !value)}>
+              {showAllSources ? "Show first 12 sources" : `Show all ${active.sources.length} sources`}
+            </button>}
+          </div>}
           <div className="research-sources">
             {active.sources.map((source, index) => ({ source, index }))
               .sort((a, b) => {
@@ -642,8 +728,8 @@ export function ResearchWorkspace({
                           wasReviewed ? "Edit review" : "Review offer"
                         }
                         triggerVariant="primary"
-                        confirmLabel="Add to study"
-                        confirmationNote="Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."
+                        confirmLabel={reviewDestination === "followup" ? "Keep reviewed offer" : "Add to study"}
+                        confirmationNote={reviewDestination === "followup" ? "Review this offer, then save your findings to keep it with this follow-up. No purchase is recorded." : "Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."}
                         onPrepare={(seed) => {
                           const entry = seed.sources[sourceId];
                           if (entry.extraction)
@@ -692,7 +778,7 @@ export function ResearchWorkspace({
                           Boolean(readFailure)
                         }
                       >
-                        <summary>Read a product page from this site</summary>
+                        <summary>Product pages on this site</summary>
                         <ProductLinkReader
                           links={source.inspection.links}
                           selectedUrl={
@@ -756,8 +842,8 @@ export function ResearchWorkspace({
           <strong>
             {reviewed.length}{" "}
             {reviewed.length === 1
-              ? "offer reviewed in My study"
-              : "offers reviewed in My study"}
+              ? `offer reviewed in ${reviewDestination === "followup" ? "this follow-up" : "My study"}`
+              : `offers reviewed in ${reviewDestination === "followup" ? "this follow-up" : "My study"}`}
           </strong>
           <p>
             Save the study to recover your corrections. Comparing a purchase is
@@ -808,8 +894,10 @@ export function ResearchWorkspace({
 }
 
 type LiveResearchProps = {
+  renderHeaderActions?: (context?: { ingredient: string; region: string } | null) => ReactNode;
   caseComparisonContext?: { ingredient: string; region: string };
-  resumeRequest?: { id: string; sequence: number } | null;
+  resumeRequest?: ResearchResumeRequest | null;
+  onActiveRun?: (cursor: Omit<ResearchResumeRequest, "sequence">) => void;
   onCalculate?: (seed: PurchaseSeed, context: { ingredient: string; region: string }) => void;
   onExploreDemo?: () => void;
   onContextualProspect?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
@@ -861,6 +949,7 @@ function ConnectedResearch({
   ...props
 }: LiveResearchProps & { token: string }) {
   const status = useQuery(api.research.status, {});
+  const { isWebSocketConnected } = useConvexConnectionState();
   const runs = useQuery(api.research.list, { token });
   const search = useAction(api.research.search);
   const attempts = useRef(new Map<string, Promise<SavedResearch>>());
@@ -872,6 +961,7 @@ function ConnectedResearch({
     <>
       <ResearchWorkspace
         {...props}
+        connected={isWebSocketConnected}
         renderProspect={(run, index, primaryInquiry) => (
           <SaveWebProspect
             primaryInquiry={primaryInquiry}

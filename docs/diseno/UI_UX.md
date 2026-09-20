@@ -200,3 +200,8 @@ Verificación de 1.2: 94 tests y 46 E2E con un worker satisfactorios; cinco E2E 
 ### Refinamiento de exploración con Impeccable
 
 El recorrido de mercado y su guardado consumen `src/components/ui/Button.tsx`; las variantes y estados viven en `controls.css`. Resultados y resumen siguen `workspace.css`, con fuentes junto a acciones, opciones elegidas visibles y compra opcional secundaria al guardado. `PRODUCT.md` y `DESIGN.md` son entradas resumidas a estas guías. Evidencia y límites en [INTERACCION.md](INTERACCION.md).
+
+
+### Feedback durante la búsqueda · 20 de septiembre de 2026
+
+La espera activa permite una excepción a la regla de ausencia de bucles: las hojas del símbolo de Surtario se mueven suavemente mientras la búsqueda está visible y conectada. Se detienen fuera de pantalla, al ocultar la pestaña, al desconectarse y con movimiento reducido. La edad del último avance recibido y el aviso de espera se distinguen de los contadores reales; no se inventa progreso ni un plazo de finalización. Al terminar, un check breve confirma el cierre sin bloquear resultados. Los errores y la falta de resultados conservan su explicación.

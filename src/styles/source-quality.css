@@ -1,19 +1,18 @@
 .source-quality {
   width: 100%;
   padding: var(--space-3) var(--space-4);
-  border-left: 3px solid var(--color-control-border);
+  border: 1px solid var(--color-border);
   background: var(--color-canvas);
-  border-radius: 0 var(--radius-control) var(--radius-control) 0;
+  border-radius: var(--radius-control);
 }
 
 .source-quality-product {
-  border-left-color: var(--color-primary);
   background: var(--color-success-surface);
 }
 
 .source-quality-irrelevant,
 .source-quality-uncertain {
-  border-left-color: var(--color-warning);
+  border-color: var(--color-control-border);
   background: var(--color-warning-surface);
 }
 
@@ -61,6 +60,35 @@
 
 .source-warnings {
   color: var(--color-warning);
+}
+
+.source-reader-options {
+  width: 100%;
+  min-width: 0;
+  font-size: var(--text-label);
+}
+
+.source-reader-options > summary {
+  min-height: var(--control-min-height);
+  align-content: center;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  line-height: var(--leading-body);
+  cursor: pointer;
+}
+
+.source-reader-options > summary:hover,
+.source-reader-options[open] > summary {
+  color: var(--color-text);
+}
+
+.source-reader-options > summary:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus);
+  outline-offset: var(--focus-offset);
+}
+
+.source-reader-options .button {
+  font-size: var(--text-label);
 }
 
 .product-link-reader {

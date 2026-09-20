@@ -27,6 +27,7 @@ const labels = {
 export default function ReplyOfferReview({
   reply,
   onClose,
+  onComplete,
   onPrepare,
   onAdd,
   comparisonLabel,
@@ -48,6 +49,7 @@ export default function ReplyOfferReview({
   token: string;
   aiEnabled: boolean;
   onClose: () => void;
+  onComplete?: () => void;
   onPrepare: (seed: PurchaseSeed) => void;
   onAdd?: (seed: PurchaseSeed) => void;
   comparisonLabel?: string;
@@ -308,7 +310,7 @@ export default function ReplyOfferReview({
                     appliedAttempt,
                   ),
                 );
-                onClose();
+                (onComplete ?? onClose)();
               } catch (cause) {
                 setError(
                   cause instanceof Error ? cause.message : "Review the match.",
@@ -334,7 +336,7 @@ export default function ReplyOfferReview({
                 appliedAttempt,
               ),
             );
-            onClose();
+            (onComplete ?? onClose)();
           } catch (cause) {
             setError(
               cause instanceof Error ? cause.message : "Review the fields.",

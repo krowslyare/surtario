@@ -95,7 +95,8 @@ test("branded arrival follows loading and leaves when the workspace is ready", a
   let release!: () => void;
   const gate = new Promise<void>(resolve => { release = resolve; });
   await page.route(/\/src\/Workspace\.tsx(?:\?.*)?$/, async route => { await gate; await route.continue(); });
-  await page.goto("/?view=market", { waitUntil: "domcontentloaded" });
+  await page.goto("/");
+  await page.getByRole("link", { name: "Open workspace" }).click();
   await expect(page.getByRole("status")).toContainText("Loading your workspace");
   await expect(page.locator(".workspace-arrival")).toContainText("Good ingredients. Better decisions.");
   release();
@@ -113,15 +114,14 @@ test("failed workspace download offers a retry instead of indefinite loading", a
 for (const reducedMotion of ["reduce", "no-preference"] as const) {
   test(`arrival blocks hidden workspace keyboard access (${reducedMotion})`, async ({ page }) => {
     await page.emulateMedia({ reducedMotion });
-    await page.clock.install();
-    await page.goto("/?view=market");
+    await page.goto("/");
+    await page.getByRole("link", { name: "Open workspace" }).click();
     const content = page.locator(".workspace-content");
     await expect(content.locator("button").first()).toBeAttached();
     await expect(content).toHaveAttribute("inert", "");
     await expect(content).toHaveAttribute("aria-hidden", "true");
     await page.keyboard.press("Tab");
     expect(await content.evaluate(el => el.contains(document.activeElement))).toBe(false);
-    await page.clock.fastForward(2100);
     await expect(page.locator(".workspace-arrival")).toHaveCount(0);
     await expect(content).not.toHaveAttribute("inert");
     await expect(content).not.toHaveAttribute("aria-hidden");
@@ -129,3 +129,18 @@ for (const reducedMotion of ["reduce", "no-preference"] as const) {
     await expect(page.getByRole("link", { name: "Skip to content" })).toBeFocused();
   });
 }
+
+test("reloading the workspace never repeats the landing entrance, even with a slow download", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Open workspace" }).click();
+  await expect(page.locator(".workspace-arrival")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
+  let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  await page.route(/\/src\/Workspace\.tsx(?:\?.*)?$/, async route => { await gate; await route.continue(); });
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("status")).toHaveText("Opening your workspace…");
+  await expect(page.locator(".workspace-arrival")).toHaveCount(0);
+  release();
+  await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
+});

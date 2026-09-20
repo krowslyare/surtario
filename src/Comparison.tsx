@@ -9,6 +9,7 @@ import MissingConditionInsight, {
   ResolvedCondition,
 } from "./components/MissingConditionInsight";
 import Brand from "./components/Brand";
+import { MessagesLink } from "./components/Messages";
 import { Button } from "./components/ui/Button";
 import { Select } from "./components/ui/Select";
 import PurchasingAdvisor, {
@@ -283,25 +284,57 @@ function OfferEditor({
   );
 }
 
+export type ComparisonDraftSnapshot = {
+  seed: PurchaseSeed;
+  /** Separate reset baseline; null denotes the direct example. Optional for older entries. */
+  initialSeed?: PurchaseSeed | null;
+  quantity: string;
+  selectedOfferId: string | null;
+  selectionFingerprint: string | null;
+  savedFingerprint: string | null;
+  baselineRequest: ProcurementRequest;
+  clientId: string;
+  decisionState: AdvisorDecisionState;
+};
+
+const HISTORY_SESSION_KEY = "surtario-comparison-history-v1";
+export function readComparisonDraft(): ComparisonDraftSnapshot | undefined {
+  try {
+    const session = sessionStorage.getItem(HISTORY_SESSION_KEY);
+    return session && session === window.history.state?.comparisonSession ? window.history.state.comparisonDraft : undefined;
+  } catch { return undefined; }
+}
+
 export default function Comparison({
   seed,
+  restoredDraft,
   onPrepare,
   onBack,
+  onOpenMessages,
+  backLabel = "Back to market study",
   persistenceEnabled,
 }: {
   seed?: PurchaseSeed;
+  restoredDraft?: ComparisonDraftSnapshot;
   onPrepare?: (seed: PurchaseSeed) => void;
   onBack?: () => void;
+  onOpenMessages?: () => void;
+  backLabel?: string;
   persistenceEnabled: boolean;
 }) {
   const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
   const { request: exampleRequest, offers: exampleOffers } =
     comparisonExamples[samplePeru ? "pe" : "us"];
+  const [initialSeed] = useState(() =>
+    restoredDraft && "initialSeed" in restoredDraft
+      ? restoredDraft.initialSeed ?? undefined
+      : seed,
+  );
   const [request, setRequest] = useState<ProcurementRequest>({
     ...(seed?.request ?? exampleRequest),
   });
   const [quantity, setQuantity] = useState(
-    seed?.resumeComparison
+    restoredDraft ? restoredDraft.quantity : seed?.resumeComparison
       ? String(seed.request.quantity || "")
       : seed
         ? ""
@@ -325,27 +358,27 @@ export default function Comparison({
     const url = new URL(window.location.href);
     if (savedId) url.searchParams.set("comparison", savedId);
     else url.searchParams.delete("comparison");
-    window.history.replaceState(null, "", url);
+    window.history.replaceState(window.history.state, "", url);
   }, [savedId]);
   const [savedRevision, setSavedRevision] = useState(
     seed?.resumeComparison?.revision ?? 0,
   );
   const [sourcingCaseId, setSourcingCaseId] = useState(seed?.sourcingCaseId);
   const [savedFingerprint, setSavedFingerprint] = useState<string | null>(() =>
-    seed?.resumeComparison?.unchanged ? comparisonStateFingerprint({ request: seed.request, offers: seed.offers, sources: seed.sources, selectedOfferId: seed.resumeComparison.selectedOfferId ?? null }) : null,
+    restoredDraft ? restoredDraft.savedFingerprint : seed?.resumeComparison?.unchanged ? comparisonStateFingerprint({ request: seed.request, offers: seed.offers, sources: seed.sources, selectedOfferId: seed.resumeComparison.selectedOfferId ?? null }) : null,
   );
   const savedComparisons = useRef<SavedComparisonsHandle>(null);
   const [savingAvailable, setSavingAvailable] = useState(false);
-  const [clientId, setClientId] = useState(() => crypto.randomUUID());
+  const [clientId, setClientId] = useState(() => restoredDraft?.clientId ?? crypto.randomUUID());
   const currentClientId = useRef(clientId);
   const [baselineRequest, setBaselineRequest] = useState<ProcurementRequest>(
-    () => ({ ...(seed?.request ?? exampleRequest) }),
+    () => ({ ...(restoredDraft?.baselineRequest ?? seed?.request ?? exampleRequest) }),
   );
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(seed?.resumeComparison?.selectedOfferId ?? null);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(restoredDraft?.selectedOfferId ?? seed?.resumeComparison?.selectedOfferId ?? null);
   const [selectionFingerprint, setSelectionFingerprint] = useState<
     string | null
-  >(seed?.resumeComparison?.selectedOfferId ? JSON.stringify({ request: seed.request, offers: seed.offers }) : null);
-  const [decisionState, setDecisionState] = useState<AdvisorDecisionState>({
+  >(restoredDraft ? restoredDraft.selectionFingerprint : seed?.resumeComparison?.selectedOfferId ? JSON.stringify({ request: seed.request, offers: seed.offers }) : null);
+  const [decisionState, setDecisionState] = useState<AdvisorDecisionState>(restoredDraft?.decisionState ?? {
     context: defaultAdvisorContext,
     invalid: false,
   });
@@ -438,6 +471,25 @@ export default function Comparison({
   const comparisonCurrent =
     savedId !== null && savedFingerprint === currentFingerprint;
 
+  // Keep each browser-history entry tied to its own draft, including unsaved edits.
+  useEffect(() => {
+    const snapshot: ComparisonDraftSnapshot = {
+      initialSeed: initialSeed ?? null,
+      seed: {
+        request, offers, sources, sourcingCaseId,
+        ...(savedId ? { resumeComparison: { id: savedId, revision: savedRevision } } : {}),
+      },
+      quantity, selectedOfferId, selectionFingerprint, savedFingerprint,
+      baselineRequest, clientId, decisionState,
+    };
+    try {
+      const session = sessionStorage.getItem(HISTORY_SESSION_KEY) ?? crypto.randomUUID();
+      sessionStorage.setItem(HISTORY_SESSION_KEY, session);
+      window.history.replaceState({ ...window.history.state, comparisonSession: session, comparisonDraft: snapshot }, "");
+    } catch { /* Storage may be unavailable; explicit saving remains separate. */ }
+  }, [initialSeed, request, offers, sources, sourcingCaseId, savedId, savedRevision, quantity,
+    selectedOfferId, selectionFingerprint, savedFingerprint, baselineRequest, clientId, decisionState]);
+
   function chooseOffer(offerId: string) {
     const evaluation =
       evaluations[offers.findIndex((offer) => offer.id === offerId)];
@@ -449,6 +501,7 @@ export default function Comparison({
 
   function openSaved(comparison: SavedComparison) {
     setSourcingCaseId(undefined);
+    setDecisionState({ context: defaultAdvisorContext, invalid: false });
     const nextClientId = crypto.randomUUID();
     currentClientId.current = nextClientId;
     setClientId(nextClientId);
@@ -483,36 +536,37 @@ export default function Comparison({
   }
 
   function reset() {
-    setSourcingCaseId(seed?.sourcingCaseId);
-    setRequest({ ...(seed?.request ?? exampleRequest) });
+    setDecisionState({ context: defaultAdvisorContext, invalid: false });
+    setSourcingCaseId(initialSeed?.sourcingCaseId);
+    setRequest({ ...(initialSeed?.request ?? exampleRequest) });
     setQuantity(
-      seed?.resumeComparison
-        ? String(seed.request.quantity)
-        : seed
+      initialSeed?.resumeComparison
+        ? String(initialSeed.request.quantity || "")
+        : initialSeed
           ? ""
           : String(exampleRequest.quantity),
     );
-    setOffers((seed?.offers ?? exampleOffers).map((offer) => ({ ...offer })));
-    setSources(seed?.sources ?? initialSources(exampleOffers));
+    setOffers((initialSeed?.offers ?? exampleOffers).map((offer) => ({ ...offer })));
+    setSources(initialSeed?.sources ?? initialSources(exampleOffers));
     setSavedId(
-      (seed?.resumeComparison?.id as Id<"comparisons"> | undefined) ?? null,
+      (initialSeed?.resumeComparison?.id as Id<"comparisons"> | undefined) ?? null,
     );
     setSavedRevision(
-      seed?.resumeComparison
-        ? savedId === seed.resumeComparison.id
+      initialSeed?.resumeComparison
+        ? savedId === initialSeed.resumeComparison.id
           ? savedRevision
-          : seed.resumeComparison.revision
+          : initialSeed.resumeComparison.revision
         : 0,
     );
     setSavedFingerprint(null);
     const nextClientId = crypto.randomUUID();
     currentClientId.current = nextClientId;
     setClientId(nextClientId);
-    setBaselineRequest({ ...(seed?.request ?? exampleRequest) });
+    setBaselineRequest({ ...(initialSeed?.request ?? exampleRequest) });
     setSelectedOfferId(null);
     setSelectionFingerprint(null);
     setModal(null);
-    setMessage(seed ? "Initial selection restored." : "Example restored.");
+    setMessage(initialSeed ? "Initial selection restored." : "Example restored.");
   }
   async function saveComparisonForAdvisor() {
     const startedWith = currentFingerprintRef.current;
@@ -600,10 +654,13 @@ export default function Comparison({
       </a>
       <header className="topbar">
         <Brand />
+        <div className="comparison-topbar-actions">
+        {persistenceEnabled && onOpenMessages && <MessagesLink onClick={onOpenMessages} />}
         <Button variant="text" aria-label="How to compare" onClick={() => setModal("help")}>
           <CircleHelp size={18} />
           <span>How to compare</span>
         </Button>
+        </div>
       </header>
       <main id="comparison-main" className="comparison-main" tabIndex={-1}>
         <div className="workspace-nav">
@@ -611,26 +668,17 @@ export default function Comparison({
             {onBack && (
               <Button variant="text" onClick={onBack}>
                 <ArrowLeft size={16} />
-                Back to market study
+                {backLabel}
               </Button>
             )}
             <span className="demo-badge">
               {hasReviewedSources
                 ? "Reviewed sources"
-                : seed
+                : initialSeed
                   ? "From your sample study"
                   : "Synthetic example"}
             </span>
           </div>
-          <ol className="workflow-steps" aria-label="Progress">
-            <li aria-current={validQuantity ? undefined : "step"}>
-              1. Quantity
-            </li>
-            <li aria-current={!validQuantity || activeSelection ? undefined : "step"}>
-              2. Terms
-            </li>
-            <li aria-current={activeSelection ? "step" : undefined}>3. Choice</li>
-          </ol>
         </div>
         <div className="page-title">
           <div>
@@ -749,7 +797,7 @@ export default function Comparison({
               onClick={() => setModal("reset")}
             >
               <RotateCcw size={16} />
-              {seed ? "Restore selection" : "Restore example"}
+              {initialSeed ? "Restore selection" : "Restore example"}
             </button>
           </aside>
         </div>
@@ -1085,6 +1133,7 @@ export default function Comparison({
         {persistenceEnabled && (
           <PurchasingAdvisor
             key={clientId}
+            initialDecisionState={decisionState}
             onDecisionContext={setDecisionState}
             comparisonId={savedId}
             revision={savedRevision}
@@ -1192,12 +1241,12 @@ export default function Comparison({
       {modal === "reset" && (
         <Dialog
           title={
-            seed ? "Restore the initial selection?" : "Restore this example?"
+            initialSeed ? "Restore the initial selection?" : "Restore this example?"
           }
           onClose={() => setModal(null)}
         >
           <p>
-            {seed
+            {initialSeed
               ? "This restores your selected catalog prices without a quantity or confirmed terms."
               : "This replaces the offers and quantity in this view with the original rice example."}
           </p>
@@ -1206,7 +1255,7 @@ export default function Comparison({
               Keep changes
             </button>
             <button className="button primary" onClick={reset}>
-              {seed ? "Restore selection" : "Restore example"}
+              {initialSeed ? "Restore selection" : "Restore example"}
             </button>
           </div>
         </Dialog>

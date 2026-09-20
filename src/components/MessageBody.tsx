@@ -4,9 +4,9 @@ export function MessageBody({ text }: { text: string }) {
   const shortened = text.length > preview.length;
   return <div className="mail-message">
     <p className="mail-message-text">{preview}{shortened ? "…" : ""}</p>
-    {shortened && <details className="mail-details">
-      <summary>Read full email</summary>
+    {shortened && <Disclosure className="mail-details mail-full-text" title="Read full email">
       <p className="mail-message-text">{text}</p>
-    </details>}
+    </Disclosure>}
   </div>;
 }
+import { Disclosure } from "./ui/Disclosure";

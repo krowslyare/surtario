@@ -1,48 +1,65 @@
-.dialog.wide:has(.extraction-layout) {
+.dialog.wide.extraction-dialog {
   width: min(1040px, calc(100vw - 32px));
+  padding: 0;
+  overflow: clip;
+}
+.extraction-dialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+.extraction-dialog > .dialog-head {
+  flex: none;
+  margin: 0;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+.extraction-dialog > .dialog-head h2 {
+  font-size: var(--text-section);
+}
+.extraction-review-body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-6);
+  overscroll-behavior: contain;
 }
 .extraction-entry {
   margin-top: var(--space-3);
 }
-
 .extraction-intro {
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-5);
   color: var(--color-text-muted);
   font-size: var(--text-label);
 }
-
+.extraction-intro p { margin: 0; }
 .extraction-simulation {
   flex: none;
-  padding: 0.25rem 0.55rem;
-  border: 1px solid var(--color-primary);
-  border-radius: 999px;
-  color: var(--color-primary);
-  background: var(--color-success-surface);
+  color: var(--color-text);
   font-size: var(--text-meta);
-  font-weight: 700;
+  font-weight: 650;
 }
-
 .extraction-layout {
   display: grid;
-  grid-template-columns: minmax(15rem, 0.8fr) minmax(24rem, 1.4fr);
-  gap: var(--space-4);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+  gap: var(--space-6);
   align-items: start;
 }
-
 .extraction-source {
-  position: sticky;
-  top: 0;
   min-width: 0;
-  padding: var(--space-4);
+  padding: var(--space-5);
   border: 1px solid var(--color-border);
-  border-left: 4px solid var(--color-primary);
-  border-radius: var(--radius-control);
+  border-radius: var(--radius-card);
   background: var(--color-canvas);
+  overflow-wrap: anywhere;
 }
-
+.extraction-source h3,
+.extraction-section-heading h3 {
+  margin: 0;
+  font-size: var(--text-body);
+}
 .extraction-source > div p,
 .extraction-source time,
 .extraction-section-heading p,
@@ -50,65 +67,84 @@
   color: var(--color-text-muted);
   font-size: var(--text-meta);
 }
-
+.extraction-source > div p {
+  margin: var(--space-2) 0 0;
+  line-height: 1.6;
+}
+.extraction-source-meta {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  margin-block: var(--space-4);
+}
+.extraction-source-meta a {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--control-min-height);
+  font-size: var(--text-label);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.extraction-source-meta svg { flex: none; }
+.extraction-source .source-record { margin-top: var(--space-4); }
 .extraction-source pre {
-  margin: var(--space-4) 0;
+  margin: var(--space-3) 0 0;
+  max-height: 320px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
   font: inherit;
-  font-size: var(--text-label);
+  font-size: var(--text-meta);
 }
-
-.extraction-review-fields {
-  min-width: 0;
-  border-top: 1px solid var(--color-border);
-}
-
+.extraction-review-fields { min-width: 0; }
 .extraction-section-heading {
   display: flex;
+  align-items: baseline;
   justify-content: space-between;
-  gap: var(--space-3);
-  padding: var(--space-3) 0;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  margin-bottom: var(--space-4);
 }
-
-.extraction-field {
+.extraction-section-heading p { margin: 0; }
+.extraction-fields-grid {
   display: grid;
-  grid-template-columns: minmax(11rem, 0.9fr) minmax(13rem, 1.1fr);
-  gap: var(--space-4);
-  padding: var(--space-3) 0;
-  border-top: 1px solid var(--color-border);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-5);
 }
-
-.extraction-field.is-edited {
-  padding-left: var(--space-3);
-  border-left: 3px solid var(--color-info);
-}
-
+.extraction-field { min-width: 0; }
+.extraction-field--specification { grid-column: 1 / -1; }
+.extraction-field .field { margin: 0; }
+.extraction-field .field > span { margin-bottom: var(--space-2); }
 .extraction-evidence {
-  display: flex;
   min-width: 0;
-  flex-direction: column;
-  justify-content: center;
-  gap: 0.2rem;
   color: var(--color-text-muted);
   font-size: var(--text-meta);
   overflow-wrap: anywhere;
 }
-
-.extraction-evidence strong {
-  color: var(--color-text);
+.extraction-evidence .disclosure-trigger {
+  min-height: var(--control-min-height);
+  padding: var(--space-1) 0;
+  border: 0;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-meta);
+  font-weight: 500;
 }
-
+.extraction-evidence .disclosure-panel-inner {
+  padding: 0 0 var(--space-3);
+}
+.extraction-evidence p { margin: 0 0 var(--space-2); }
+.extraction-evidence strong { color: var(--color-text); }
 .extraction-edited {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: var(--space-1);
   color: var(--color-info);
-  font-weight: 700;
+  font-weight: 650;
 }
-
+.extraction-edited svg { flex: none; }
 .extraction-pending {
-  margin-top: var(--space-4);
+  margin-top: var(--space-5);
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-control);
@@ -116,62 +152,22 @@
   background: var(--color-warning-surface);
   font-size: var(--text-label);
 }
-
-.extraction-confirmation {
-  margin-top: var(--space-4);
+.extraction-confirmation { margin-top: var(--space-4); }
+.extraction-boundary { margin: var(--space-2) 0 0; }
+.extraction-actions { margin-top: var(--space-4); }
+@media (max-width: 800px) {
+  .extraction-layout { grid-template-columns: minmax(0, 1fr); }
 }
-
-.extraction-boundary {
-  margin: var(--space-2) 0 0 calc(1rem + var(--space-2));
+@media (max-width: 600px) {
+  .extraction-dialog > .dialog-head,
+  .extraction-review-body { padding: var(--space-4); }
+  .extraction-source { padding: var(--space-4); }
+  .extraction-fields-grid { gap: var(--space-3); }
 }
-
-.extraction-actions {
-  margin-top: var(--space-4);
+@media (max-width: 480px) {
+  .extraction-fields-grid { grid-template-columns: minmax(0, 1fr); }
 }
-
-@media (max-width: 900px) {
-  .extraction-intro,
-  .extraction-section-heading {
-    flex-direction: column;
-  }
-
-  .extraction-layout,
-  .extraction-field {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .extraction-layout {
-    gap: var(--space-3);
-  }
-
-  .extraction-source {
-    position: static;
-  }
-
-  .extraction-field {
-    gap: var(--space-2);
-  }
-}
-
 @media (max-width: 380px) {
-  .extraction-actions {
-    align-items: stretch;
-  }
-
-  .extraction-actions .button {
-    width: 100%;
-  }
-}
-
-.extraction-evidence summary {
-  cursor: pointer;
-  padding: var(--space-2) 0;
-  min-height: var(--control-min-height);
-}
-.extraction-evidence summary:focus-visible {
-  outline: var(--focus-width) solid var(--color-focus);
-  outline-offset: var(--focus-offset);
-}
-.extraction-evidence details p {
-  margin: var(--space-1) 0;
+  .extraction-actions { align-items: stretch; }
+  .extraction-actions .button { width: 100%; }
 }

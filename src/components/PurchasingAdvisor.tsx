@@ -58,52 +58,71 @@ export function AdvisorVerdict({
   report,
   offers,
   priority,
+  unit,
 }: {
   report: AdvisorReport;
   offers?: SupplierOffer[];
   priority?: string;
+  unit?: ProcurementRequest["unit"];
 }) {
   const [copied, setCopied] = useState(false);
   useEffect(() => setCopied(false), [report.negotiationDraft]);
+  const recommended = report.alternatives.find(option => option.offerId === report.recommendedOfferId && option.eligible);
+  const recommendedOffer = offers?.find(offer => offer.id === recommended?.offerId);
+  const showFigures = Boolean(report.action === "buy" && recommended && recommendedOffer && unit);
   return (
     <div className="advisor-verdict">
-      <div className="advisor-hero-card">
-        <div className="advisor-hero-badge-row">
-          <span className="advisor-verdict-badge">
-            Purchase recommendation
-            {priority
-              ? ` · ${
-                  priority === "cash"
-                    ? "Cash priority"
-                    : priority === "unit_price"
-                      ? "Lowest unit price"
-                      : "Balanced priority"
-                }`
-              : ""}
-          </span>
-        </div>
-        <h3 className="advisor-recommendation">{report.recommendation}</h3>
-        {report.alternatives.some((option) => option.eligible) && (
-          <p className="advisor-hero-impact">{report.impact}</p>
-        )}
-        {!report.alternatives.some((option) => option.eligible) &&
-          report.alternatives.length > 0 && (
-            <div className="advisor-hero-action">
-              <a
-                className="button secondary"
-                href="#comparison"
-                onClick={(event) => {
-                  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-                  const comparison = document.getElementById("comparison");
-                  if (!comparison) return;
-                  event.preventDefault();
-                  scrollToContent(comparison);
-                }}
-              >
-                Review offer details
-              </a>
-            </div>
+      <div className={`advisor-hero-card${showFigures ? " has-figures" : ""}`}>
+        <div className="advisor-hero-copy">
+          <div className="advisor-hero-badge-row">
+            <span className="advisor-verdict-badge">
+              Purchase recommendation
+              {priority
+                ? ` · ${
+                    priority === "cash"
+                      ? "Cash priority"
+                      : priority === "unit_price"
+                        ? "Lowest unit price"
+                        : "Balanced priority"
+                  }`
+                : ""}
+            </span>
+          </div>
+          <h3 className="advisor-recommendation">{report.recommendation}</h3>
+          {report.alternatives.some((option) => option.eligible) && (
+            <p className="advisor-hero-impact">{report.impact}</p>
           )}
+          {!report.alternatives.some((option) => option.eligible) &&
+            report.alternatives.length > 0 && (
+              <div className="advisor-hero-action">
+                <a
+                  className="button secondary"
+                  href="#comparison"
+                  onClick={(event) => {
+                    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+                    const comparison = document.getElementById("comparison");
+                    if (!comparison) return;
+                    event.preventDefault();
+                    scrollToContent(comparison);
+                  }}
+                >
+                  Review offer details
+                </a>
+              </div>
+            )}
+        </div>
+        {showFigures && recommended && recommendedOffer && (
+          <dl className="advisor-hero-figures" aria-label="Recommended offer figures">
+            <div>
+              <dt>Order total</dt>
+              <dd>{recommended.totalCents === null ? "Pending" : money(recommended.totalCents, recommendedOffer.currency)}</dd>
+            </div>
+            <div>
+              <dt>Excess quantity</dt>
+              <dd>{recommended.excessQuantity === null ? "Pending" : <>{numberLabel(recommended.excessQuantity)} <span>{unit}</span></>}</dd>
+            </div>
+          </dl>
+        )}
       </div>
 
       <div className="advisor-evidence-group">
@@ -225,9 +244,11 @@ export function ScenarioDetails({
 export type AdvisorDecisionState = {
   context: AdvisorContext;
   invalid: boolean;
+  raw?: Record<string, string>;
 };
 
 export default function PurchasingAdvisor(props: {
+  initialDecisionState?: AdvisorDecisionState;
   onDecisionContext?: (state: AdvisorDecisionState) => void;
   comparisonId: Id<"comparisons"> | null;
   revision: number;
@@ -271,7 +292,9 @@ function Connected({
   saveBlockedReason,
   onSaveComparison,
   onDecisionContext,
+  initialDecisionState,
 }: {
+  initialDecisionState?: AdvisorDecisionState;
   onDecisionContext?: (state: AdvisorDecisionState) => void;
   comparisonId: Id<"comparisons"> | null;
   revision: number;
@@ -295,12 +318,14 @@ function Connected({
   const prepare = useMutation(api.advisor.prepare),
     explain = useAction(api.advisor.explain);
   const [context, setContext] = useState<AdvisorContext>({
-    ...defaultAdvisorContext,
+    ...(initialDecisionState?.context ?? defaultAdvisorContext),
   });
   const [active, setActive] = useState<Run | null>(null);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
-  const [raw, setRaw] = useState<Record<string, string>>({});
+  const [raw, setRaw] = useState<Record<string, string>>(
+    () => ({ ...initialDecisionState?.raw }),
+  );
   const pending = useRef<{ key: string; clientId: string } | null>(null);
   const mounted = useRef(true);
   const attempt = useRef(0);
@@ -344,8 +369,8 @@ function Connected({
     );
   });
   useEffect(() => {
-    onDecisionContext?.({ context, invalid });
-  }, [context, invalid, onDecisionContext]);
+    onDecisionContext?.({ context, invalid, raw });
+  }, [context, invalid, raw, onDecisionContext]);
   const validRequestQuantity =
     Number.isFinite(request.quantity) && request.quantity > 0;
   const report = analyzePurchase(request, offers, context);
@@ -592,6 +617,7 @@ function Connected({
             report={displayedReport}
             offers={selected && !stale ? selected.snapshot.offers : offers}
             priority={context.priority}
+            unit={selected && !stale ? selected.snapshot.request.unit : request.unit}
           />
         </>
       )}
@@ -609,6 +635,7 @@ function Connected({
               report={selected.report}
               offers={selected.snapshot.offers}
               priority={selected.context.priority}
+              unit={selected.snapshot.request.unit}
             />
           </Disclosure>
         </>

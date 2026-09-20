@@ -12,18 +12,31 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
   );
   await expect(dialog).toContainText("The source content is synthetic");
   await expect(dialog).toContainText("Saco: S/ 80.00");
-  await expect(dialog.getByLabel("Package size")).toHaveValue("");
-  await expect(dialog.getByLabel("Package unit")).toContainText("Pending");
+  await expect(dialog.getByLabel("Package size", { exact: true })).toHaveValue("");
+  await expect(dialog.getByLabel("Package unit", { exact: true })).toContainText("Pending");
   await expect(dialog.locator(".source-record pre")).not.toBeVisible();
   await expect(
     dialog.getByRole("button", { name: "Continue to comparison" }),
   ).toBeDisabled();
 
-  await dialog.getByLabel("Package unit").click();
+  await dialog.getByLabel("Package unit", { exact: true }).click();
   await page.getByRole("option", { name: "kg", exact: true }).click();
-  await dialog.getByLabel("Package size").fill("18");
-  await dialog.getByLabel("Price per package").fill("85");
+  await dialog.getByLabel("Package size", { exact: true }).fill("18");
+  await dialog.getByLabel("Price per package", { exact: true }).fill("85");
   await expect(dialog.getByText("Manually corrected")).toHaveCount(3);
+  const priceEvidence = dialog.getByRole("button", {
+    name: "Source evidence for Price per package",
+    exact: true,
+  });
+  await priceEvidence.focus();
+  await page.keyboard.press("Enter");
+  const evidencePanel = dialog.locator(`#${await priceEvidence.getAttribute("aria-controls")}`);
+  await expect(priceEvidence).toHaveAttribute("aria-expanded", "true");
+  await expect(evidencePanel).toContainText("Original proposal: 80.00");
+  await expect(evidencePanel).toContainText("Saco: S/ 80.00");
+  await priceEvidence.press("Enter");
+  await expect(evidencePanel).toHaveAttribute("aria-hidden", "true");
+  await expect(evidencePanel).toHaveAttribute("inert", "");
   await dialog
     .getByLabel(
       "I reviewed the source and confirm the data, including my corrections",
@@ -55,7 +68,15 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
   });
   await trigger.click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Package size").fill("18");
+  await dialog.getByLabel("Package size", { exact: true }).fill("18");
+  await dialog.getByLabel("Price per package", { exact: true }).focus();
+  expect(
+    await dialog.evaluate((element) => {
+      const header = element.querySelector(".dialog-head")!.getBoundingClientRect();
+      const panel = element.getBoundingClientRect();
+      return header.top >= panel.top && header.bottom <= panel.bottom;
+    }),
+  ).toBe(true);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
@@ -69,5 +90,5 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   await trigger.click();
-  await expect(dialog.getByLabel("Package size")).toHaveValue("18");
+  await expect(dialog.getByLabel("Package size", { exact: true })).toHaveValue("18");
 });

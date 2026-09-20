@@ -57,7 +57,7 @@
   transition: transform var(--motion-selection) var(--ease-settle);
 }
 
-.disclosure[data-state="open"] .disclosure-trigger svg {
+.disclosure[data-state="open"] > .disclosure-trigger > svg {
   transform: rotate(180deg);
 }
 

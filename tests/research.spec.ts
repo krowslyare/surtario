@@ -67,15 +67,16 @@ function Harness(){const[seed,setSeed]=useState(null);return seed?<Comparison se
   await page.getByRole("button", { name: "Review offer" }).click();
   const dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("Review quote data");
-  await dialog.getByLabel("Package unit").click();
+  await dialog.getByLabel("Package unit", { exact: true }).click();
   await page.getByRole("option", { name: "kg", exact: true }).click();
-  await dialog.getByLabel("Package size").fill("18");
+  await dialog.getByLabel("Package size", { exact: true }).fill("18");
   await dialog
     .getByLabel(
       "I reviewed the source and confirm the data, including my corrections",
     )
     .check();
   await dialog.getByRole("button", { name: "Add to study" }).click();
+  await page.getByRole("button", { name: /Saved searches/ }).click();
   await expect(
     page.getByRole("button", { name: /Other saved search/ }),
   ).toContainText("Sep 16, 2026");

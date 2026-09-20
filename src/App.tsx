@@ -1,8 +1,11 @@
 import { Component, lazy, Suspense, useEffect, useState, type ReactNode } from "react";
 import Landing from "./Landing";
 import WorkspaceArrival from "./components/WorkspaceArrival";
+import { consumeWorkspaceEntry } from "./workspaceCheckpoint";
 
 const Workspace = lazy(() => import("./Workspace"));
+// Consume once per document, outside StrictMode's repeated initializers.
+const animateEntry = consumeWorkspaceEntry();
 
 class WorkspaceBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -33,18 +36,18 @@ export default function App({ persistenceEnabled }: { persistenceEnabled: boolea
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view");
   const workspaceRequested =
-    view === "market" || view === "comparison" || view === "brand" ||
+    view === "market" || view === "comparison" || view === "followup" || view === "messages" || view === "brand" ||
     params.get("example") === "pe";
 
   if (!workspaceRequested) return <Landing />;
   return (
     <WorkspaceBoundary>
-      <div className="workspace-content" inert={!revealed || undefined} aria-hidden={!revealed || undefined}>
-        <Suspense fallback={null}>
-          <ReadyWorkspace persistenceEnabled={persistenceEnabled} onReady={onReady} />
+      <div className="workspace-content" inert={(animateEntry && !revealed) || undefined} aria-hidden={(animateEntry && !revealed) || undefined}>
+        <Suspense fallback={animateEntry ? null : <main><p role="status">Opening your workspace…</p></main>}>
+          {animateEntry ? <ReadyWorkspace persistenceEnabled={persistenceEnabled} onReady={onReady} /> : <Workspace persistenceEnabled={persistenceEnabled} />}
         </Suspense>
       </div>
-      <WorkspaceArrival ready={ready} onFinished={onFinished} />
+      {animateEntry && <WorkspaceArrival ready={ready} onFinished={onFinished} />}
     </WorkspaceBoundary>
   );
 }

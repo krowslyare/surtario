@@ -25,13 +25,13 @@ export function Dialog({
     element?.showModal();
     return () => {
       element?.close();
-      if (opener?.isConnected) opener.focus();
+      if (opener?.isConnected && !opener.closest("[hidden], [inert]")) opener.focus({ preventScroll: true });
     };
   }, []);
   return (
     <dialog
       ref={dialog}
-      onCancel={onClose}
+      onCancel={event => { event.preventDefault(); onClose(); }}
       onClick={(event) => {
         if (event.target !== event.currentTarget) return;
         const bounds = event.currentTarget.getBoundingClientRect();

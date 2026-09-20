@@ -298,9 +298,13 @@
   color: var(--color-text-muted);
 }
 .sourcing-detail {
-  margin-top: var(--space-8);
+  margin-top: var(--space-4);
   padding-top: var(--space-6);
   border-top: 1px solid var(--color-border);
+}
+.sourcing-switcher[data-state="closed"] ~ .sourcing-detail {
+  margin-top: 0;
+  border-top: 0;
 }
 .sourcing-detail-heading {
   align-items: flex-start;
@@ -383,18 +387,27 @@
 .sourcing-next {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: var(--space-6);
-  margin-block: var(--space-6);
-  padding: var(--space-6);
-  border: 0;
-  background: var(--color-success-surface);
+  margin: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  background: var(--color-canvas);
   border-radius: var(--radius-panel);
 }
 .sourcing-next h3 {
-  margin-top: 0;
+  margin: var(--space-2) 0;
+  font-size: var(--text-section);
+  font-family: var(--font-display);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
 }
 .sourcing-next p {
-  margin-block: var(--space-3) var(--space-4);
+  margin: 0;
+  font-size: var(--text-label);
+  line-height: 1.6;
+  color: var(--color-text-muted);
+}
+.sourcing-next .button {
+  margin-top: var(--space-4);
 }
 .sourcing-facts {
   margin: 0;
@@ -455,14 +468,6 @@
   outline-offset: 4px;
 }
 
-.sourcing-next h3 {
-  font-size: var(--text-title);
-  font-family: var(--font-display);
-  text-wrap: balance;
-}
-.sourcing-next p {
-  max-width: 60ch;
-}
 .sourcing-activity {
   display: flex;
   align-items: center;
@@ -574,8 +579,179 @@
 .sourcing-coverage > summary:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
 .sourcing-coverage a { color: var(--color-primary); overflow-wrap: anywhere; }
 
-.case-decision-brief { margin-block: var(--space-4, 16px); }
-.case-decision-brief h4 { margin-bottom: 4px; }
-.case-decision-brief p { color: var(--color-text-muted); margin-top: 0; }
+.sourcing-detail-heading > div > p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+.sourcing-detail-heading .sourcing-state {
+  flex-shrink: 0;
+  font-size: var(--text-meta);
+}
+.sourcing-decision-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+  align-items: start;
+}
+.case-decision-brief {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+.case-decision-brief h4 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-label);
+  font-weight: 700;
+}
+.case-decision-brief p,
+.case-conditions li {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.case-conditions {
+  margin-top: var(--space-3);
+  border-block: 1px solid var(--color-border-subtle);
+}
+.case-conditions > .disclosure-trigger {
+  padding-block: var(--space-3);
+  border-bottom: 0;
+  font-size: var(--text-label);
+  font-weight: 600;
+}
+.case-conditions .disclosure-panel-inner {
+  padding: 0 0 var(--space-3);
+}
+.case-conditions ul {
+  margin: 0;
+  padding-left: var(--space-5);
+  display: grid;
+  gap: var(--space-2);
+}
+.sourcing-decision-actions {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+.sourcing-decision-actions .sourcing-actions:empty {
+  display: none;
+}
+.sourcing-decision-actions .sourcing-actions .button {
+  white-space: normal;
+}
+@media (max-width: 900px) {
+  .sourcing-decision-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+}
+@media (max-width: 600px) {
+  .sourcing-detail-heading {
+    flex-direction: column;
+  }
+}
 .decision-actions { margin-block: 16px; }
 .decision-actions > div { border-top: 1px solid var(--color-border); padding-block: 12px; }
+
+/* Follow-ups are a destination, not an expandable block in market results. */
+.followup-main {
+  width: min(100% - 64px, 1200px);
+  margin: 0 auto;
+  padding: var(--space-6) 0 var(--space-8);
+  animation: followup-arrive 180ms ease-out;
+}
+.followup-heading {
+  padding-block: var(--space-5) var(--space-6);
+}
+.followup-heading h1 {
+  margin: 0;
+  font-size: var(--text-title);
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.followup-heading h1:focus { outline: none; }
+.followup-heading p {
+  margin: var(--space-2) 0 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-label);
+}
+.followup-main .sourcing-case {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.followup-main .sourcing-detail {
+  padding: 0;
+  margin: 0;
+  border: 0;
+}
+.followup-main .sourcing-detail-heading {
+  padding-bottom: var(--space-5);
+}
+.followup-main .sourcing-detail-heading h2 {
+  margin: 0;
+  max-width: 65ch;
+  font-size: var(--text-section);
+  line-height: 1.35;
+}
+.followup-main .segmented-control {
+  margin-bottom: var(--space-2);
+  max-width: 100%;
+}
+.followup-main .sourcing-decision-layout {
+  gap: var(--space-8);
+  margin-block: var(--space-6);
+}
+.followup-main .case-decision-brief h3 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-body);
+}
+.followup-main .sourcing-next h3 { margin-top: 0; }
+.followup-main .sourcing-correspondence { margin-top: var(--space-6); }
+.followup-main .sourcing-correspondence > .disclosure > .disclosure-trigger { display: none; }
+.followup-main .sourcing-correspondence ul { margin: 0; }
+.followup-main .sourcing-activity { margin-top: var(--space-6); }
+.followup-intake { max-width: 720px; }
+.followup-context-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.followup-intake .field { display: grid; gap: var(--space-2); }
+.followup-empty, .followup-unavailable { max-width: 65ch; margin-block: var(--space-6); color: var(--color-text-muted); }
+@keyframes followup-arrive { from { opacity: 0.65; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@media (max-width: 760px) {
+  .followup-main { width: calc(100% - 32px); padding-top: var(--space-4); }
+  .followup-main .workspace-nav { align-items: flex-start; }
+  .followup-context-fields { grid-template-columns: 1fr; }
+  .followup-main .segmented-control { display: flex; width: 100%; }
+  .followup-main .segmented-control button { flex: 1; min-width: 0; padding-inline: var(--space-2); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .followup-main { animation: none; }
+}
+
+.followup-save-findings { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); padding-block: var(--space-4); border-bottom: 1px solid var(--color-border); }
+.followup-save-findings p { margin: 0; color: var(--color-text-muted); font-size: var(--text-label); }
+@media (max-width: 600px) { .followup-save-findings { align-items: flex-start; flex-direction: column; } }
+
+.followup-history { margin-top: var(--space-6); }
+.followup-history .sourcing-history { margin-top: var(--space-4); }
+.followup-main .sourcing-correspondence .sourcing-case-link { display: grid; grid-template-columns: minmax(0, 1fr) auto 18px; align-items: center; gap: var(--space-4); padding: var(--space-4); }
+.followup-message-title { display: grid; gap: var(--space-2); min-width: 0; }
+.followup-message-status { color: var(--color-text-muted); font-size: var(--text-label); }
+@media (max-width: 600px) {
+  .followup-main .sourcing-correspondence .sourcing-case-link { grid-template-columns: minmax(0, 1fr) 18px; gap: var(--space-2); }
+  .followup-message-status { grid-column: 1; }
+  .followup-main .sourcing-case-link > svg { grid-column: 2; grid-row: 1 / 3; }
+}
+
+.research-question-dialog { width: min(600px, calc(100vw - 32px)); }
+.research-question-dialog .dialog-head h2 { font-size: var(--text-section); }
+.research-question-dialog > p { margin-bottom: var(--space-5); }
+.research-question-dialog .followup-intake { gap: var(--space-4); }
+.research-question-dialog .field { margin-bottom: 0; }
+.research-question-dialog textarea { min-height: 104px; resize: vertical; }

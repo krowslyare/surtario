@@ -1,6 +1,7 @@
 import { SourceEvidence } from "./SourceEvidence";
 import { useEffect, useState, type ReactNode } from "react";
-import { FileSearch, PencilLine } from "lucide-react";
+import { ExternalLink, FileSearch, PencilLine } from "lucide-react";
+import { Disclosure } from "./ui/Disclosure";
 import {
   draftValues,
   extractionFields,
@@ -119,159 +120,176 @@ export default function ExtractionReview({
       </button>
 
       {open && (
-        <Dialog title="Review quote data" wide onClose={() => setOpen(false)}>
-          <div className="extraction-intro">
-            <span className="extraction-simulation">
-              {source.simulated ? "Synthetic example" : "Source for review"}
-            </span>
-            <p>
-              {source.simulated
-                ? "The source content is synthetic. Review the proposal and confirm the data before continuing."
-                : "Compare each proposal with the source text before using it."}
-            </p>
-          </div>
-
-          <div className="extraction-layout">
-            <article className="extraction-source" aria-label={sourceTextLabel}>
-              <div>
-                <h3>{sourceTextLabel}</h3>
-                <p>{source.title}</p>
-              </div>
-              {originalPreview}
-              <SourceEvidence text={source.text} />
-              {source.url && (
-                <a href={source.url} target="_blank" rel="noopener noreferrer">
-                  Open source page
-                </a>
+        <Dialog
+          title="Review quote data"
+          className="extraction-dialog"
+          wide
+          onClose={() => setOpen(false)}
+        >
+          <div className="extraction-review-body">
+            <div className="extraction-intro">
+              {source.simulated && (
+                <span className="extraction-simulation">Synthetic example</span>
               )}
-              <time dateTime={source.observedAt}>
-                Observed on{" "}
-                {new Intl.DateTimeFormat("en-US", {
-                  day: "numeric",
-                  month: "short",
-                  year: "numeric",
-                  ...(/^\d{4}-\d{2}-\d{2}$/.test(source.observedAt)
-                    ? { timeZone: "UTC" }
-                    : {}),
-                }).format(new Date(source.observedAt))}
-              </time>
-            </article>
-
-            <div className="extraction-review-fields">
-              <div className="extraction-section-heading">
-                <h3>Fields to review</h3>
-                <p>Missing data remains pending.</p>
-              </div>
-              {extractionFields.map((field) => {
-                const copy = fieldCopy[field];
-                const original = proposal[field].value ?? "";
-                const edited = values[field] !== original;
-                return (
-                  <div
-                    className={`extraction-field${edited ? " is-edited" : ""}`}
-                    key={field}
-                  >
-                    <label className="field">
-                      <span>{copy.label}</span>
-                      {copy.kind === "select" ? (
-                        <Select
-                          aria-label={copy.label}
-                          options={
-                            copy.options?.map(([value, label]) => ({
-                              value,
-                              label,
-                            })) ?? []
-                          }
-                          value={values[field]}
-                          onValueChange={(value) => setField(field, value)}
-                        />
-                      ) : (
-                        <input
-                          value={values[field]}
-                          onChange={(event) =>
-                            setField(field, event.target.value)
-                          }
-                          maxLength={
-                            field === "price" || field === "packageContent"
-                              ? 24
-                              : 120
-                          }
-                          inputMode={
-                            field === "price" || field === "packageContent"
-                              ? "decimal"
-                              : "text"
-                          }
-                          placeholder={
-                            field === "price" || field === "packageContent"
-                              ? "Pending"
-                              : undefined
-                          }
-                        />
-                      )}
-                    </label>
-                    <div className="extraction-evidence">
-                      <details>
-                        <summary>Source evidence</summary>
-                        {edited && (
-                          <p>
-                            Original proposal:{" "}
-                            <strong>{original || "Pending"}</strong>
-                          </p>
-                        )}
-                        <p>
-                          {proposal[field].evidence ??
-                            "No published evidence for this field."}
-                        </p>
-                      </details>
-                      {edited && (
-                        <span className="extraction-edited">
-                          <PencilLine size={13} /> Manually corrected
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+              <p>
+                {source.simulated
+                  ? "The source content is synthetic. Review the proposal and confirm the data before continuing."
+                  : "Compare each proposal with the source text before using it."}
+              </p>
             </div>
-          </div>
 
-          <div className="extraction-pending">
-            <strong>Additional terms pending</strong>
-            <p>
-              This extraction does not confirm minimum order, delivery cost, or
-              tax status. Review them separately in the comparison.
-            </p>
-          </div>
+            <div className="extraction-layout">
+              <article className="extraction-source" aria-label={sourceTextLabel}>
+                <div>
+                  <h3>{sourceTextLabel}</h3>
+                  <p>{source.title}</p>
+                </div>
+                <div className="extraction-source-meta">
+                  {source.url && (
+                    <a href={source.url} target="_blank" rel="noopener noreferrer">
+                      Open source page <ExternalLink size={14} aria-hidden="true" />
+                    </a>
+                  )}
+                  <time dateTime={source.observedAt}>
+                    Observed on{" "}
+                    {new Intl.DateTimeFormat("en-US", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      ...(/^\d{4}-\d{2}-\d{2}$/.test(source.observedAt)
+                        ? { timeZone: "UTC" }
+                        : {}),
+                    }).format(new Date(source.observedAt))}
+                  </time>
+                </div>
+                {originalPreview}
+                <SourceEvidence text={source.text} />
+              </article>
 
-          <label className="checkbox extraction-confirmation">
-            <input
-              type="checkbox"
-              checked={confirmed}
-              onChange={(event) => {
-                setConfirmed(event.target.checked);
-                setError("");
-              }}
-            />
-            I reviewed the source and confirm the data, including my corrections
-          </label>
-          <p className="extraction-boundary">{confirmationNote}</p>
+              <div className="extraction-review-fields">
+                <div className="extraction-section-heading">
+                  <h3>Fields to review</h3>
+                  <p>Missing data remains pending.</p>
+                </div>
+                <div className="extraction-fields-grid">
+                  {extractionFields.map((field) => {
+                    const copy = fieldCopy[field];
+                    const original = proposal[field].value ?? "";
+                    const edited = values[field] !== original;
+                    return (
+                      <div
+                        className={`extraction-field extraction-field--${field}${edited ? " is-edited" : ""}`}
+                        key={field}
+                      >
+                        <label className="field">
+                          <span>{copy.label}</span>
+                          {copy.kind === "select" ? (
+                            <Select
+                              aria-label={copy.label}
+                              options={
+                                copy.options?.map(([value, label]) => ({
+                                  value,
+                                  label,
+                                })) ?? []
+                              }
+                              value={values[field]}
+                              onValueChange={(value) => setField(field, value)}
+                            />
+                          ) : (
+                            <input
+                              value={values[field]}
+                              onChange={(event) =>
+                                setField(field, event.target.value)
+                              }
+                              maxLength={
+                                field === "price" || field === "packageContent"
+                                  ? 24
+                                  : 120
+                              }
+                              inputMode={
+                                field === "price" || field === "packageContent"
+                                  ? "decimal"
+                                  : "text"
+                              }
+                              placeholder={
+                                field === "price" || field === "packageContent"
+                                  ? "Pending"
+                                  : undefined
+                              }
+                            />
+                          )}
+                        </label>
+                        <div className="extraction-evidence">
+                          <Disclosure
+                            title={
+                              <span>
+                                Source evidence
+                                <span className="sr-only"> for {copy.label}</span>
+                              </span>
+                            }
+                          >
+                            {edited && (
+                              <p>
+                                Original proposal:{" "}
+                                <strong>{original || "Pending"}</strong>
+                              </p>
+                            )}
+                            <p>
+                              {proposal[field].evidence ??
+                                "No published evidence for this field."}
+                            </p>
+                          </Disclosure>
+                          {edited && (
+                            <span className="extraction-edited">
+                              <PencilLine size={13} /> Manually corrected
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
 
-          {error && (
-            <p className="notice error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="dialog-actions extraction-actions">
-            <button className="button secondary" onClick={() => setOpen(false)}>
-              Close
-            </button>
-            <button
-              className="button primary"
-              disabled={!confirmed || !requiredReady}
-              onClick={continueToComparison}
-            >
-              {confirmLabel}
-            </button>
+            <div className="extraction-pending">
+              <strong>Additional terms pending</strong>
+              <p>
+                This extraction does not confirm minimum order, delivery cost, or
+                tax status. Review them separately in the comparison.
+              </p>
+            </div>
+
+            <label className="checkbox extraction-confirmation">
+              <input
+                type="checkbox"
+                checked={confirmed}
+                onChange={(event) => {
+                  setConfirmed(event.target.checked);
+                  setError("");
+                }}
+              />
+              I reviewed the source and confirm the data, including my corrections
+            </label>
+            <p className="extraction-boundary">{confirmationNote}</p>
+
+            {error && (
+              <p className="notice error" role="alert">
+                {error}
+              </p>
+            )}
+            <div className="dialog-actions extraction-actions">
+              <button className="button secondary" onClick={() => setOpen(false)}>
+                Close
+              </button>
+              <button
+                className="button primary"
+                disabled={!confirmed || !requiredReady}
+                onClick={continueToComparison}
+              >
+                {confirmLabel}
+              </button>
+            </div>
           </div>
         </Dialog>
       )}

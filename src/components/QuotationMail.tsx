@@ -15,6 +15,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { savedQuotationValidator } from "../../convex/quotationValidators";
 import { Dialog } from "./Dialog";
+import { Disclosure } from "./ui/Disclosure";
 
 type Quotation = Infer<typeof savedQuotationValidator>;
 const labels = {
@@ -34,7 +35,12 @@ export default function QuotationMail(props: {
   studyId?: Id<"studies">;
   prospectId?: Id<"webProspects">;
   resultId?: string;
+  supplierName?: string;
   initialRequestId?: Id<"quotationRequests">;
+  dialogOnly?: boolean;
+  conversationContext?: ReactNode;
+  conversationActions?: ReactNode;
+  onCloseConversation?: () => void;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
   onPrepare?: (seed: PurchaseSeed) => void;
@@ -73,12 +79,17 @@ function Connected({
   studyId,
   prospectId,
   resultId,
+  supplierName,
   offers,
   onEditOffer,
   onPrepare,
   onAddReply,
   comparisonLabel,
   initialRequestId,
+  dialogOnly = false,
+  conversationContext,
+  conversationActions,
+  onCloseConversation,
   deliveryComparison,
   deliveryContext,
   deliveryBlocked = false,
@@ -90,7 +101,12 @@ function Connected({
   studyId?: Id<"studies">;
   prospectId?: Id<"webProspects">;
   resultId?: string;
+  supplierName?: string;
   initialRequestId?: Id<"quotationRequests">;
+  dialogOnly?: boolean;
+  conversationContext?: ReactNode;
+  conversationActions?: ReactNode;
+  onCloseConversation?: () => void;
   offers: { id: string; supplier: string }[];
   onEditOffer: (id: string) => void;
   onPrepare?: (seed: PurchaseSeed) => void;
@@ -237,16 +253,29 @@ function Connected({
       setBusy(false);
     }
   }
+  async function copyMessage() {
+    if (!active) return;
+    try {
+      await navigator.clipboard.writeText(active.text);
+      setNotice("Text copied. No message was sent.");
+    } catch {
+      setNotice("Select the text and copy it manually.");
+    }
+  }
   return (
-    <section className="saved-studies quotation-mail" aria-label="Email quote requests">
-      <h2>Request terms by email</h2>
-      <p className="field-hint">
-        {prospectId
-          ? "Request based on a saved web candidate. The noted contact is not the recipient: sending uses only the configured test inbox."
-          : studyId
-            ? "Catalog request based on the saved study. It does not require a quantity or price. The recipient is the test inbox, not the distributor contact."
-            : "The request uses the saved version of this comparison. Save any changes you want to include first."}
-      </p>
+    <section className={dialogOnly ? "quotation-mail-dialog-host" : "saved-studies quotation-mail"} aria-label="Email quote requests">
+      {!dialogOnly && <>
+      <div className="quotation-intro">
+        <h2>{supplierName ?? "Request terms by email"}</h2>
+        {supplierName && <p className="quotation-purpose">Request terms by email</p>}
+        <p className="field-hint">
+          {prospectId
+            ? "Request based on a saved web candidate. The noted contact is not the recipient: sending uses only the configured test inbox."
+            : studyId
+              ? "Ask about price, pack size or delivery. Review before sending to the test inbox; this will not contact the distributor."
+              : "The request uses the saved version of this comparison. Save any changes you want to include first."}
+        </p>
+      </div>
       {status === undefined && (
         <p className="field-hint">Checking email availability…</p>
       )}
@@ -301,22 +330,99 @@ function Connected({
           </button>
         </div>
       ))}
+      </>}
       {active && (
         <Dialog
+          key={active.id}
           title={active.state === "draft" ? "Review quote request" : "Supplier conversation"}
-          className="mail-dialog"
+          className="mail-dialog mail-thread-dialog"
           onClose={() => {
             setActiveId(null);
             setConfirmed(false);
+            onCloseConversation?.();
           }}
         >
+          <div className="mail-thread-body">
+          <div className="mail-conversation-heading">
+          {conversationContext}
+          {active.state !== "draft" && <h3 className="mail-conversation-subject">{active.subject}</h3>}
+          <div className="mail-conversation-meta">
+            <div className="mail-recipient"><span>Test recipient</span><strong>{active.recipient ?? "Not configured"}</strong></div>
+            <p className="mail-status" role="status">
+              {active.replies.length > 0 ? `${active.replies.length} ${active.replies.length === 1 ? "reply received" : "replies received"}` : active.state === "sent" ? "Sent · awaiting reply" : labels[active.state]}
+            </p>
+          </div>
+          </div>
+          {active.replies.length > 0 && <>
+          {active.replies.map((reply, index) => (
+              <Disclosure className="mail-reply" key={reply.messageId} defaultOpen={index === 0}
+                title={index === 0 ? "Latest reply" : "Earlier reply"}
+                description={<time dateTime={reply.receivedAt}>{new Date(reply.receivedAt).toLocaleString("en-US", {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"})}</time>}
+              >
+                <MessageBody text={reply.text} />
+                <div className="mail-reply-actions">
+                {onOpenComparison && deliveryComparison && Object.values(deliveryComparison.sources ?? {}).some(source => source.replyReview?.requestId === active.id && source.replyReview.messageId === reply.messageId) ? (
+                  <button className="button secondary" onClick={() => onOpenComparison?.(deliveryComparison)}>View saved offer</button>
+                ) : onPrepare && (
+                  <button
+                    className="button secondary"
+                    onClick={() => {
+                      setReviewReply({
+                        requestId: active.id,
+                        messageId: reply.messageId,
+                        text: reply.text,
+                        receivedAt: reply.receivedAt,
+                        simulated: active.simulated,
+                        extraction: reply.extraction,
+                        extractionStatus: reply.extractionStatus,
+                        extractionError: reply.extractionError,
+                        extractionAttempts: reply.extractionAttempts,
+                        extractionAttempt: reply.extractionAttempt,
+                      });
+                      setActiveId(null);
+                      setConfirmed(false);
+                    }}
+                  >
+                    Review as new offer
+                  </button>
+                )}
+                {deliveryComparison && active.decisionAction?.kind !== "minimum" && deliveryComparison.offers.some((offer) => offer.freightCents === null) && <>
+                  <button className="button secondary" disabled={deliveryBlocked || deliveryLoading || staleAction} onClick={() => {
+                    setDeliveryReply({ requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, offerId: active.decisionAction?.offerId, context: active.decisionAction?.context });
+                    setActiveId(null);
+                  }}>Use reply to confirm delivery</button>
+                  {deliveryBlocked && <p className="field-hint">Save your comparison changes and check your preferences before confirming delivery.</p>}
+                </>}
+                {deliveryComparison && active.decisionAction?.kind === "minimum" && <button className="button secondary" disabled={deliveryBlocked || deliveryLoading || staleAction} onClick={() => {
+                  setDeliveryReply({requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, term: "minimum", offerId: active.decisionAction!.offerId, context: active.decisionAction!.context}); setActiveId(null);
+                }}>Use reply to confirm minimum</button>}
+                {confirmations?.filter((item) => item.requestId === active.id && item.messageId === reply.messageId).map((item) => <div key={item.id}>
+                  <h4>{item.minimumPackages !== undefined ? "Minimum confirmed" : "Delivery confirmed"}</h4><blockquote>{item.evidenceQuote}</blockquote>
+                  <p className="field-hint">Confirmed {new Date(item.createdAt).toLocaleString()} · comparison revision {item.comparisonRevision}</p>
+                  <p>Before confirmation: {item.before.recommendation}</p><p>After confirmation: {item.after.recommendation}</p>
+                </div>)}
+                {offers.map((offer) => (
+                  <button
+                    className="button text-button"
+                    key={offer.id}
+                    onClick={() => {
+                      setActiveId(null);
+                      onEditOffer(offer.id);
+                    }}
+                  >
+                    Edit terms for {offer.supplier}
+                  </button>
+                ))}
+                </div>
+              </Disclosure>
+          ))}
+          </>}
           {error && (
             <p role="alert" className="notice error">
               {error}
             </p>
           )}
           {active.simulated && <p className="field-hint">Local simulation. No external email was sent.</p>}
-          <div className="mail-recipient"><span>Test recipient</span><strong>{active.recipient ?? "Not configured"}</strong></div>
           {active.state === "draft" ? !editDraft && <>
             {!active.presentationVersion && <h3 className="mail-subject">{active.subject}</h3>}
             {active.decisionAction && <p className="field-hint">{active.decisionAction.reason} Based on comparison revision {active.decisionAction.comparisonRevision}.</p>}
@@ -324,15 +430,15 @@ function Connected({
             {active.presentationVersion === "surtario-v1"
               ? <QuotationEmailPreview subject={active.subject} text={active.text} />
               : <p className="mail-message-text">{active.text}</p>}
-          </> : <details className="mail-details">
-            <summary>Sent request</summary>
+          </> : <Disclosure className="mail-details" title={active.state === "sent" ? "Sent request" : "Request message"} defaultOpen={active.replies.length === 0}>
             {!active.presentationVersion && <h3 className="mail-subject">{active.subject}</h3>}
             {active.decisionAction && <p className="field-hint">{active.decisionAction.reason} Based on comparison revision {active.decisionAction.comparisonRevision}.</p>}
             {staleAction && <p role="status" className="notice info">The comparison changed. This action is historical; prepare a new question from the current comparison before sending or confirming terms.</p>}
             {active.presentationVersion === "surtario-v1"
               ? <QuotationEmailPreview subject={active.subject} text={active.text} />
               : <p className="mail-message-text">{active.text}</p>}
-          </details>}
+            <button className="button text-button mail-copy" onClick={copyMessage}>Copy for WhatsApp</button>
+          </Disclosure>}
           {active.state === "draft" && (
             <div className="inquiry-drafting">
               {status?.draftEnabled && active.aiDraftStatus === "idle" && (
@@ -374,8 +480,7 @@ function Connected({
                 </p>
               )}
               {active.aiDraftStatus === "complete" && active.aiDraftText && (
-                <details>
-                  <summary>Review AI suggestion</summary>
+                <Disclosure className="mail-details" title="Review AI suggestion">
                   <strong>{active.aiDraftSubject}</strong>
                   <pre className="quotation-text">{active.aiDraftText}</pre>
                   <button
@@ -393,7 +498,7 @@ function Connected({
                   >
                     Edit this suggestion
                   </button>
-                </details>
+                </Disclosure>
               )}
               {!editDraft && (
                 <button
@@ -485,9 +590,6 @@ function Connected({
               )}
             </div>
           )}
-          <p className="mail-status" role="status">
-            {active.replies.length > 0 ? `${active.replies.length} ${active.replies.length === 1 ? "reply received" : "replies received"}` : active.state === "sent" ? "Sent. Waiting for a reply." : labels[active.state]}
-          </p>
           {active.failure && <p className="notice error">{active.failure}</p>}
           {active.state === "sending" && <p>Waiting for email provider confirmation…</p>}
           {active.state === "uncertain" && (
@@ -510,21 +612,14 @@ function Connected({
               I reviewed the recipient and message and authorize this test send
             </label>
           )}
-          <div className="dialog-actions mail-actions">
+          {active.state === "draft" && <div className="dialog-actions mail-actions">
             <button
               className="button text-button"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(active.text);
-                  setNotice("Text copied. No message was sent.");
-                } catch {
-                  setNotice("Select the text and copy it manually.");
-                }
-              }}
+              onClick={copyMessage}
             >
               Copy for WhatsApp
             </button>
-            {active.state === "draft" && <button
+            <button
               className="button primary"
               disabled={
                 !status?.enabled ||
@@ -538,12 +633,11 @@ function Connected({
               onClick={sendReviewed}
             >
               Send test request
-            </button>}
-          </div>
+            </button>
+          </div>}
           {notice && <p role="status">{notice}</p>}
-          <details className="mail-details">
-          <summary>Request history</summary>
-          <ul>
+          <Disclosure className="mail-details" title="Request history">
+          <ul className="mail-history">
             <li>Prepared {new Date(active.createdAt).toLocaleString("en-US")}.</li>
             {active.approvedAt !== null && (
               <li>
@@ -559,76 +653,12 @@ function Connected({
               </li>
             )}
           </ul>
-          </details>
-          {active.state !== "draft" && <h3>Supplier replies</h3>}
-          {active.replies.length === 0 ? (
-            <p>
-              No replies are linked yet. They will appear here when available.
-              You can close this window and return later.
-            </p>
-          ) : (
-            active.replies.map((reply, index) => (
-              <details className="mail-reply" key={reply.messageId} open={index === 0}>
-                <summary>{index === 0 ? "Latest reply" : "Earlier reply"}<time>{new Date(reply.receivedAt).toLocaleString("en-US", {month:"short", day:"numeric", hour:"numeric", minute:"2-digit"})}</time></summary>
-                <MessageBody text={reply.text} />
-                <div className="mail-reply-actions">
-                {onPrepare && (
-                  <button
-                    className="button secondary"
-                    onClick={() => {
-                      setReviewReply({
-                        requestId: active.id,
-                        messageId: reply.messageId,
-                        text: reply.text,
-                        receivedAt: reply.receivedAt,
-                        simulated: active.simulated,
-                        extraction: reply.extraction,
-                        extractionStatus: reply.extractionStatus,
-                        extractionError: reply.extractionError,
-                        extractionAttempts: reply.extractionAttempts,
-                        extractionAttempt: reply.extractionAttempt,
-                      });
-                      setActiveId(null);
-                      setConfirmed(false);
-                    }}
-                  >
-                    Review as new offer
-                  </button>
-                )}
-                {deliveryComparison && active.decisionAction?.kind !== "minimum" && deliveryComparison.offers.some((offer) => offer.freightCents === null) && <>
-                  <button className="button secondary" disabled={deliveryBlocked || deliveryLoading || staleAction} onClick={() => {
-                    setDeliveryReply({ requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, offerId: active.decisionAction?.offerId, context: active.decisionAction?.context });
-                    setActiveId(null);
-                  }}>Use reply to confirm delivery</button>
-                  {deliveryBlocked && <p className="field-hint">Save your comparison changes and check your preferences before confirming delivery.</p>}
-                </>}
-                {deliveryComparison && active.decisionAction?.kind === "minimum" && <button className="button secondary" disabled={deliveryBlocked || deliveryLoading || staleAction} onClick={() => {
-                  setDeliveryReply({requestId: active.id, messageId: reply.messageId, text: reply.text, receivedAt: reply.receivedAt, term: "minimum", offerId: active.decisionAction!.offerId, context: active.decisionAction!.context}); setActiveId(null);
-                }}>Use reply to confirm minimum</button>}
-                {confirmations?.filter((item) => item.requestId === active.id && item.messageId === reply.messageId).map((item) => <div key={item.id}>
-                  <h4>{item.minimumPackages !== undefined ? "Minimum confirmed" : "Delivery confirmed"}</h4><blockquote>{item.evidenceQuote}</blockquote>
-                  <p className="field-hint">Confirmed {new Date(item.createdAt).toLocaleString()} · comparison revision {item.comparisonRevision}</p>
-                  <p>Before confirmation: {item.before.recommendation}</p><p>After confirmation: {item.after.recommendation}</p>
-                </div>)}
-                {offers.map((offer) => (
-                  <button
-                    className="button text-button"
-                    key={offer.id}
-                    onClick={() => {
-                      setActiveId(null);
-                      onEditOffer(offer.id);
-                    }}
-                  >
-                    Edit terms for {offer.supplier}
-                  </button>
-                ))}
-                </div>
-              </details>
-            ))
-          )}
+          </Disclosure>
+          {conversationActions && <div className="mail-thread-footer">{conversationActions}</div>}
+          </div>
         </Dialog>
       )}
-      {deliveryReply && deliveryComparison && <ReplyDeliveryReview token={token} reply={deliveryReply} term={deliveryReply.term} targetOfferId={deliveryReply.offerId} comparison={deliveryComparison} context={deliveryReply.context ?? effectiveDeliveryContext} onApplied={onDeliveryApplied} onClose={() => setDeliveryReply(null)} />}
+      {deliveryReply && deliveryComparison && <ReplyDeliveryReview token={token} reply={deliveryReply} term={deliveryReply.term} targetOfferId={deliveryReply.offerId} comparison={deliveryComparison} context={deliveryReply.context ?? effectiveDeliveryContext} onApplied={onDeliveryApplied} onClose={() => { setDeliveryReply(null); onCloseConversation?.(); }} />}
       {reviewReply && onPrepare && (
         <ReplyOfferReview
           reply={{
@@ -645,7 +675,8 @@ function Connected({
           }}
           token={token}
           aiEnabled={status?.extractionEnabled ?? false}
-          onClose={() => setReviewReply(null)}
+          onClose={() => { setReviewReply(null); onCloseConversation?.(); }}
+          onComplete={() => setReviewReply(null)}
           onPrepare={onPrepare}
           onAdd={onAddReply}
           comparisonLabel={comparisonLabel}
