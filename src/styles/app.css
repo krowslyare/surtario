@@ -1722,11 +1722,10 @@ footer {
 }
 .advisor-hero-card {
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-left: 4px solid var(--color-primary);
-  border-radius: var(--radius-control);
-  padding: 20px 24px;
-  box-shadow: 0 1px 3px rgba(66, 32, 45, 0.04);
+  border: 1px solid var(--color-control-border);
+  border-radius: var(--radius-panel);
+  padding: var(--space-6);
+  box-shadow: none;
 }
 .advisor-hero-badge-row {
   display: flex;
@@ -1735,17 +1734,46 @@ footer {
   margin-bottom: var(--space-2);
 }
 .advisor-verdict-badge {
-  display: inline-flex;
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+.advisor-hero-card.has-figures {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(18rem, .7fr);
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-primary);
-  background: rgba(66, 32, 45, 0.07);
-  padding: 3px 10px;
-  border-radius: 999px;
+  gap: var(--space-8);
+}
+.advisor-hero-copy { min-width: 0; }
+.advisor-hero-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-6);
+  margin: 0;
+}
+.advisor-hero-figures dt { color: var(--color-text-muted); font-size: var(--text-label); }
+.advisor-hero-figures dd {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  font-weight: 650;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.advisor-hero-figures dd span { font-size: 1rem; font-weight: 500; }
+@media (max-width: 900px) {
+  .advisor-hero-card.has-figures { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+  .advisor-hero-figures { border-top: 1px solid var(--color-border); padding-top: var(--space-5); }
+}
+@media (max-width: 480px) {
+  .advisor-hero-card { padding: var(--space-5); }
+  .advisor-hero-figures { gap: var(--space-4); }
+}
+@media (max-width: 360px) {
+  .advisor-hero-figures { grid-template-columns: minmax(0, 1fr); }
+  .advisor-hero-figures > div { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-3); }
+  .advisor-hero-figures dd { margin: 0; }
 }
 .advisor-recommendation {
   font-family: var(--font-display);

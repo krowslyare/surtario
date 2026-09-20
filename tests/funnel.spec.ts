@@ -22,7 +22,7 @@ test("unpriced result prepares a recoverable inquiry and reviewed reply without 
   const request = run("quotationMail:list", { token })[0];
   expect(request.state).toBe("draft");
   expect(run("sourcing:list", { token })).toHaveLength(1);
-  await page.reload();
+  await page.goto("/?view=market");
   const hub = page.getByRole("region", { name: "Continue your work", exact: true });
   await expect(hub.getByRole("listitem")).toHaveCount(1);
   await hub.getByRole("button", { name: "Review inquiry", exact: true }).click();
@@ -34,7 +34,7 @@ test("unpriced result prepares a recoverable inquiry and reviewed reply without 
     writeFileSync(path, JSON.stringify([{ requestId: request.id, eventId: randomUUID(), messageId: randomUUID(), threadId: randomUUID(), from: "demo@example.test", receivedAt: new Date().toISOString(), text: "Northwest: long-grain white rice, 25 lb bag for USD 20. Delivery and taxes pending." }]));
     runLocalConvex(["import", "--append", "--table", "quotationReplies", path]);
   } finally { rmSync(directory, { recursive: true }); }
-  await page.reload();
+  await page.goto("/?view=market");
   await hub.getByRole("button", { name: "Review reply", exact: true }).click();
   await page.getByRole("button", { name: "Review as new offer", exact: true }).click();
   const review = page.getByRole("dialog", { name: "Prepare offer from reply", exact: true });
@@ -134,8 +134,9 @@ for (const intent of ["inquiry", "research"] as const) {
     expect(savedCases[0]).toMatchObject({ status: "idle", steps: 0, researchRunIds: [] });
     expect(run("quotationMail:list", { token })).toHaveLength(intent === "inquiry" ? 1 : 0);
     await page.reload();
-    await expect(hub.getByRole("listitem")).toHaveCount(1);
-    await hub.getByRole("button", { name: "Review source search", exact: true }).click();
+    await expect(page).toHaveURL(/view=followup.*case=/);
+    if (intent === "inquiry") await page.getByRole("dialog", { name: "Review quote request", exact: true }).getByRole("button", { name: "Close", exact: true }).click();
+    await page.getByRole("button", { name: "Sources", exact: true }).click();
     await expect(page.getByRole("heading", { name: "Unselected source", exact: true })).toBeVisible();
     expect(run("research:list", { token })).toHaveLength(1);
     // A reopened source must reuse the saved candidate, including corrected fields.
@@ -143,7 +144,8 @@ for (const intent of ["inquiry", "research"] as const) {
     await source.getByRole("button", { name: "View saved candidate", exact: true }).click();
     await expect(review.getByLabel("Potential distributor name")).toHaveValue("Reviewed rice distributor");
     await expect(review.getByLabel("Contact found (optional)")).toHaveValue("sales@supplier.test");
-    await review.getByRole("button", { name: "Close", exact: true }).click();
+    await review.getByRole("button", { name: "Keep candidate in this follow-up", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Save findings", exact: true })).toBeVisible();
     await source.getByRole("button", { name: "Prepare inquiry", exact: true }).click();
     await expect(page.getByRole("dialog", { name: "Review quote request", exact: true })).toContainText("Reviewed rice distributor");
     expect(run("prospects:list", { token })).toHaveLength(1);
@@ -193,7 +195,7 @@ test("continuity keeps independent work separate and its bounded list keyboard a
   await scroll.focus();
   await scroll.press("End");
   await expect.poll(() => scroll.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
-  const resume = hub.getByRole("listitem").filter({ hasText: "Find smaller packs" }).getByRole("button", { name: "Continue research", exact: true });
+  const resume = hub.getByRole("listitem").filter({ hasText: "Find smaller packs" }).getByRole("button", { name: "Open follow-up", exact: true });
   await resume.focus();
   await expect(resume).toBeInViewport();
   await resume.press("Enter");

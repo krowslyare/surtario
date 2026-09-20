@@ -9,6 +9,7 @@ import MissingConditionInsight, {
   ResolvedCondition,
 } from "./components/MissingConditionInsight";
 import Brand from "./components/Brand";
+import { MessagesLink } from "./components/Messages";
 import { Button } from "./components/ui/Button";
 import { Select } from "./components/ui/Select";
 import PurchasingAdvisor, {
@@ -283,15 +284,40 @@ function OfferEditor({
   );
 }
 
+export type ComparisonDraftSnapshot = {
+  seed: PurchaseSeed;
+  quantity: string;
+  selectedOfferId: string | null;
+  selectionFingerprint: string | null;
+  savedFingerprint: string | null;
+  baselineRequest: ProcurementRequest;
+  clientId: string;
+  decisionState: AdvisorDecisionState;
+};
+
+const HISTORY_SESSION_KEY = "surtario-comparison-history-v1";
+export function readComparisonDraft(): ComparisonDraftSnapshot | undefined {
+  try {
+    const session = sessionStorage.getItem(HISTORY_SESSION_KEY);
+    return session && session === window.history.state?.comparisonSession ? window.history.state.comparisonDraft : undefined;
+  } catch { return undefined; }
+}
+
 export default function Comparison({
   seed,
+  restoredDraft,
   onPrepare,
   onBack,
+  onOpenMessages,
+  backLabel = "Back to market study",
   persistenceEnabled,
 }: {
   seed?: PurchaseSeed;
+  restoredDraft?: ComparisonDraftSnapshot;
   onPrepare?: (seed: PurchaseSeed) => void;
   onBack?: () => void;
+  onOpenMessages?: () => void;
+  backLabel?: string;
   persistenceEnabled: boolean;
 }) {
   const samplePeru = new URLSearchParams(window.location.search).get("example") === "pe";
@@ -301,7 +327,7 @@ export default function Comparison({
     ...(seed?.request ?? exampleRequest),
   });
   const [quantity, setQuantity] = useState(
-    seed?.resumeComparison
+    restoredDraft ? restoredDraft.quantity : seed?.resumeComparison
       ? String(seed.request.quantity || "")
       : seed
         ? ""
@@ -325,27 +351,27 @@ export default function Comparison({
     const url = new URL(window.location.href);
     if (savedId) url.searchParams.set("comparison", savedId);
     else url.searchParams.delete("comparison");
-    window.history.replaceState(null, "", url);
+    window.history.replaceState(window.history.state, "", url);
   }, [savedId]);
   const [savedRevision, setSavedRevision] = useState(
     seed?.resumeComparison?.revision ?? 0,
   );
   const [sourcingCaseId, setSourcingCaseId] = useState(seed?.sourcingCaseId);
   const [savedFingerprint, setSavedFingerprint] = useState<string | null>(() =>
-    seed?.resumeComparison?.unchanged ? comparisonStateFingerprint({ request: seed.request, offers: seed.offers, sources: seed.sources, selectedOfferId: seed.resumeComparison.selectedOfferId ?? null }) : null,
+    restoredDraft ? restoredDraft.savedFingerprint : seed?.resumeComparison?.unchanged ? comparisonStateFingerprint({ request: seed.request, offers: seed.offers, sources: seed.sources, selectedOfferId: seed.resumeComparison.selectedOfferId ?? null }) : null,
   );
   const savedComparisons = useRef<SavedComparisonsHandle>(null);
   const [savingAvailable, setSavingAvailable] = useState(false);
-  const [clientId, setClientId] = useState(() => crypto.randomUUID());
+  const [clientId, setClientId] = useState(() => restoredDraft?.clientId ?? crypto.randomUUID());
   const currentClientId = useRef(clientId);
   const [baselineRequest, setBaselineRequest] = useState<ProcurementRequest>(
-    () => ({ ...(seed?.request ?? exampleRequest) }),
+    () => ({ ...(restoredDraft?.baselineRequest ?? seed?.request ?? exampleRequest) }),
   );
-  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(seed?.resumeComparison?.selectedOfferId ?? null);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(restoredDraft?.selectedOfferId ?? seed?.resumeComparison?.selectedOfferId ?? null);
   const [selectionFingerprint, setSelectionFingerprint] = useState<
     string | null
-  >(seed?.resumeComparison?.selectedOfferId ? JSON.stringify({ request: seed.request, offers: seed.offers }) : null);
-  const [decisionState, setDecisionState] = useState<AdvisorDecisionState>({
+  >(restoredDraft ? restoredDraft.selectionFingerprint : seed?.resumeComparison?.selectedOfferId ? JSON.stringify({ request: seed.request, offers: seed.offers }) : null);
+  const [decisionState, setDecisionState] = useState<AdvisorDecisionState>(restoredDraft?.decisionState ?? {
     context: defaultAdvisorContext,
     invalid: false,
   });
@@ -437,6 +463,24 @@ export default function Comparison({
   currentFingerprintRef.current = currentFingerprint;
   const comparisonCurrent =
     savedId !== null && savedFingerprint === currentFingerprint;
+
+  // Keep each browser-history entry tied to its own draft, including unsaved edits.
+  useEffect(() => {
+    const snapshot: ComparisonDraftSnapshot = {
+      seed: {
+        request, offers, sources, sourcingCaseId,
+        ...(savedId ? { resumeComparison: { id: savedId, revision: savedRevision } } : {}),
+      },
+      quantity, selectedOfferId, selectionFingerprint, savedFingerprint,
+      baselineRequest, clientId, decisionState,
+    };
+    try {
+      const session = sessionStorage.getItem(HISTORY_SESSION_KEY) ?? crypto.randomUUID();
+      sessionStorage.setItem(HISTORY_SESSION_KEY, session);
+      window.history.replaceState({ ...window.history.state, comparisonSession: session, comparisonDraft: snapshot }, "");
+    } catch { /* Storage may be unavailable; explicit saving remains separate. */ }
+  }, [request, offers, sources, sourcingCaseId, savedId, savedRevision, quantity,
+    selectedOfferId, selectionFingerprint, savedFingerprint, baselineRequest, clientId, decisionState]);
 
   function chooseOffer(offerId: string) {
     const evaluation =
@@ -600,10 +644,13 @@ export default function Comparison({
       </a>
       <header className="topbar">
         <Brand />
+        <div className="comparison-topbar-actions">
+        {persistenceEnabled && onOpenMessages && <MessagesLink onClick={onOpenMessages} />}
         <Button variant="text" aria-label="How to compare" onClick={() => setModal("help")}>
           <CircleHelp size={18} />
           <span>How to compare</span>
         </Button>
+        </div>
       </header>
       <main id="comparison-main" className="comparison-main" tabIndex={-1}>
         <div className="workspace-nav">
@@ -611,7 +658,7 @@ export default function Comparison({
             {onBack && (
               <Button variant="text" onClick={onBack}>
                 <ArrowLeft size={16} />
-                Back to market study
+                {backLabel}
               </Button>
             )}
             <span className="demo-badge">
@@ -622,15 +669,6 @@ export default function Comparison({
                   : "Synthetic example"}
             </span>
           </div>
-          <ol className="workflow-steps" aria-label="Progress">
-            <li aria-current={validQuantity ? undefined : "step"}>
-              1. Quantity
-            </li>
-            <li aria-current={!validQuantity || activeSelection ? undefined : "step"}>
-              2. Terms
-            </li>
-            <li aria-current={activeSelection ? "step" : undefined}>3. Choice</li>
-          </ol>
         </div>
         <div className="page-title">
           <div>

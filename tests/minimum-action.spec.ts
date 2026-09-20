@@ -38,11 +38,9 @@ for (const accepted of [true, false])
       token,
     );
     await page.goto("/?view=market");
-    await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
-    await page
-      .locator(".sourcing-case-link")
-      .filter({ hasText: "Rice" })
-      .click();
+    await page.getByRole("listitem").filter({ hasText: "Review the minimum against the budget" })
+      .getByRole("button", { name: "Open follow-up", exact: true }).click();
+    await expect(page).toHaveURL(/view=followup.*case=/);
     await page
       .getByRole("button", { name: "Open case comparison", exact: true })
       .click();
@@ -152,11 +150,9 @@ for (const accepted of [true, false])
     await expect(page.getByTestId("total-0")).toHaveText(
       accepted ? "USD 45.00" : "USD 105.00",
     );
+    const comparisonUrl = page.url();
     await page.reload();
-    await page.getByRole("button", { name: "Saved comparisons (1)" }).click();
-    await page
-      .getByRole("button", { name: "Open comparison", exact: true })
-      .click();
+    await expect(page).toHaveURL(comparisonUrl);
     await expect(page.getByTestId("total-0")).toHaveText(
       accepted ? "USD 45.00" : "USD 105.00",
     );
@@ -173,7 +169,7 @@ for (const accepted of [true, false])
     ).toBe(true);
   });
 
-test("case brief and library expose unconfirmed delivery with complete numeric terms", async ({
+test("saved follow-up opens a case brief exposing unconfirmed delivery with complete numeric terms", async ({
   page,
   context,
 }) => {
@@ -202,11 +198,10 @@ test("case brief and library expose unconfirmed delivery with complete numeric t
     token,
   );
   await page.goto("/?view=market");
-  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
-  await expect(page.locator(".sourcing-case-link")).toContainText(
-    "Required delivery is not confirmed.",
-  );
-  await page.locator(".sourcing-case-link").click();
+  const savedFollowup = page.getByRole("listitem").filter({ hasText: "Check delivery availability" });
+  await expect(savedFollowup).toContainText("Portland, OR, US");
+  await savedFollowup.getByRole("button", { name: "Open follow-up", exact: true }).click();
+  await expect(page).toHaveURL(/view=followup.*case=/);
   const brief = page.getByRole("region", { name: "Case decision brief" });
   await expect(brief).toContainText(
     "Supplier A: Required delivery is not confirmed.",

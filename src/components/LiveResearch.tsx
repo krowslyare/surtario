@@ -113,6 +113,8 @@ export function ResearchWorkspace({
   renderProspect,
   selections,
   onReview,
+  reviewDestination = "study",
+  renderHeaderActions,
   onOpenStudy,
   onBackToOverview,
   pendingRun,
@@ -122,12 +124,14 @@ export function ResearchWorkspace({
   caseComparisonContext,
   onExploreDemo,
 }: {
+  renderHeaderActions?: (context?: { ingredient: string; region: string } | null) => ReactNode;
   pendingRun?: SavedResearch;
   autoSelectLatest?: boolean;
   resumeRequest?: { id: string; sequence: number } | null;
   onCalculate?: (seed: PurchaseSeed, context: { ingredient: string; region: string }) => void;
   caseComparisonContext?: { ingredient: string; region: string };
   onExploreDemo?: () => void;
+  reviewDestination?: "study" | "followup";
   selections?: WebSelection[];
   onReview?: (selection: WebSelection) => void;
   onOpenStudy?: () => void;
@@ -333,12 +337,13 @@ export function ResearchWorkspace({
       <section className="live-research" aria-labelledby="live-research-title">
         <div className="live-research-heading">
           <div>
-            <h2 id="live-research-title">Web research</h2>
+            <h2 id="live-research-title">{reviewDestination === "followup" ? "Sources to review" : "Web research"}</h2>
             <p>
               Found pages are candidate sources. Review the content before
               treating them as supplier offers.
             </p>
           </div>
+          {renderHeaderActions?.(request)}
         </div>
 
         {!status.searchEnabled && (
@@ -367,13 +372,13 @@ export function ResearchWorkspace({
     <section className="live-research" aria-labelledby="live-research-title">
       <div className="live-research-heading">
         <div>
-          <h2 id="live-research-title">Web research</h2>
+          <h2 id="live-research-title">{reviewDestination === "followup" ? "Sources to review" : "Web research"}</h2>
           <p>
             Found pages are candidate sources. Review the content before
             treating them as supplier offers.
           </p>
         </div>
-
+        {renderHeaderActions?.(active ?? request)}
       </div>
 
       {!status.searchEnabled && (
@@ -392,9 +397,9 @@ export function ResearchWorkspace({
         <div className="research-history" aria-label="Saved searches">
           <p className="field-hint">
             {onReview
-              ? "Your selection remains in My study when you open another search."
+              ? reviewDestination === "followup" ? "Save findings to keep your reviewed offers with this follow-up." : "Your selection remains in My study when you open another search."
               : "Reviewed selections remain available across saved searches."}{" "}
-            Up to 10 quick searches per browser; case rounds have separate limits. Clearing site data removes access.
+            {reviewDestination !== "followup" && "Up to 10 quick searches per browser; case rounds have separate limits. Clearing site data removes access."}
           </p>
           <span>
             <History size={16} /> Saved searches
@@ -642,8 +647,8 @@ export function ResearchWorkspace({
                           wasReviewed ? "Edit review" : "Review offer"
                         }
                         triggerVariant="primary"
-                        confirmLabel="Add to study"
-                        confirmationNote="Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."
+                        confirmLabel={reviewDestination === "followup" ? "Keep reviewed offer" : "Add to study"}
+                        confirmationNote={reviewDestination === "followup" ? "Review this offer, then save your findings to keep it with this follow-up. No purchase is recorded." : "Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."}
                         onPrepare={(seed) => {
                           const entry = seed.sources[sourceId];
                           if (entry.extraction)
@@ -756,8 +761,8 @@ export function ResearchWorkspace({
           <strong>
             {reviewed.length}{" "}
             {reviewed.length === 1
-              ? "offer reviewed in My study"
-              : "offers reviewed in My study"}
+              ? `offer reviewed in ${reviewDestination === "followup" ? "this follow-up" : "My study"}`
+              : `offers reviewed in ${reviewDestination === "followup" ? "this follow-up" : "My study"}`}
           </strong>
           <p>
             Save the study to recover your corrections. Comparing a purchase is
@@ -808,6 +813,7 @@ export function ResearchWorkspace({
 }
 
 type LiveResearchProps = {
+  renderHeaderActions?: (context?: { ingredient: string; region: string } | null) => ReactNode;
   caseComparisonContext?: { ingredient: string; region: string };
   resumeRequest?: { id: string; sequence: number } | null;
   onCalculate?: (seed: PurchaseSeed, context: { ingredient: string; region: string }) => void;

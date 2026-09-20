@@ -16,21 +16,10 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   await expect(
     page.getByText("Study saved with 1 option", { exact: false }),
   ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "Prepare test request" }),
-  ).toHaveCount(1);
-  await expect(
-    page.getByRole("heading", { name: /Ask Northwest/ }),
-  ).toHaveCount(0);
-  await (page.getByRole("button", { name: "Research a question", exact: true }).or(page.getByRole("button", { name: "Open research case", exact: true }))).filter({ visible: true }).first().click();
-  await page
-    .getByRole("textbox", { name: "What would you like to find out?" })
-    .fill("Clarify delivery before comparing suppliers");
-  await page.getByRole("button", { name: "Save research question" }).click();
-  await page.getByRole("button", { name: "Prepare test request" }).click();
+  await page.getByRole("article").filter({ hasText: "Distribuidor C" }).getByRole("button", { name: "Prepare inquiry", exact: true }).click();
+  await expect(page).toHaveURL(/view=followup.*case=.*message=/);
   const dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("Quantity is still to be determined");
-  await expect(dialog).toContainText("Not configured");
   await expect(dialog.getByRole("checkbox")).not.toBeChecked();
   await expect(
     dialog.getByRole("button", { name: "Send test request" }),
@@ -54,6 +43,7 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   );
   await expect(dialog.getByRole("checkbox")).not.toBeChecked();
   await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Overview", exact: true }).click();
   const nextStep = page.getByRole("region", {
     name: "Next step for this case",
   });
@@ -63,11 +53,14 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
     "Catalog request - clarify delivery",
   );
   await page.keyboard.press("Escape");
+  // Opening the same hub destination twice must reopen the saved message.
+  for (let visit = 0; visit < 2; visit++) {
+    await page.getByRole("button", { name: "Continue your work", exact: true }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Review inquiry", exact: true }).click();
+    await expect(page.getByRole("dialog")).toContainText("Catalog request - clarify delivery");
+    await page.keyboard.press("Escape");
+  }
   await page.reload();
-  await page.getByRole("button", { name: /^My study/ }).click();
-  await page.getByRole("button", { name: "Saved (1)" }).click();
-  await page.getByRole("button", { name: "Open study", exact: true }).click();
-  await page.getByRole("button", { name: "View request" }).click();
   await expect(page.getByRole("dialog")).toContainText("Draft");
   await expect(page.getByRole("dialog")).toContainText(
     "Catalog request - clarify delivery",
@@ -102,6 +95,6 @@ test("saving a priced US offer does not expose an unselected distributor inquiry
   await page.getByRole("button", { name: "Open study", exact: true }).click();
   await expect(page.getByRole("article")).toHaveCount(1);
   await expect(
-    page.getByRole("heading", { name: /Ask Northwest/ }),
+    page.locator(".study-followup").getByRole("heading", { name: /Northwest/ }),
   ).toHaveCount(0);
 });

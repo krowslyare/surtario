@@ -68,23 +68,31 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
   await expect(page.getByRole("button", { name: "Open saved case comparison", exact: true })).toBeVisible();
   await expect(page.getByText("1 selected option in this study", {exact: true})).toBeVisible();
   await expect(page.getByRole("button", {name: "Open saved case comparison", exact: true})).toBeEnabled();
-  // The distributor/candidate must not offer actions for another supplier.
-  const mail = page.getByRole("region", {name: "Email quote requests"});
+  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
+  await page.getByRole("dialog", { name: "Your recent work", exact: true })
+    .getByRole("listitem").filter({ hasText: "Compare the supplier reply with the saved offers" })
+    .getByRole("button", { name: "Review reply", exact: true }).click();
+  await expect(page).toHaveURL(url => url.searchParams.get("view") === "followup"
+    && url.searchParams.get("case") === caseId && url.searchParams.get("message") === requestId);
+  const followupUrl = `/?view=followup&example=pe&case=${caseId}&message=${requestId}`;
+  const mail = page.getByRole("dialog");
+  await expect(mail).toContainText("Synthetic study reply");
+  await expect(mail).toContainText("Distribuidor Respuesta: arroz blanco");
+  // This supplier conversation must not offer actions for another supplier.
   await expect(mail.getByRole("button", {name: "Prepare delivery question"})).toHaveCount(0);
   await expect(mail.getByRole("button", {name: "Prepare minimum proposal"})).toHaveCount(0);
-  await mail.getByRole("button", {name: "Open case comparison", exact: true}).click();
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Back to workspace", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Open saved case comparison", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "Open saved case comparison", exact: true }).click();
   await expect(page.getByRole("button", {name: "Prepare delivery question"})).toBeVisible();
   await page.getByRole("button", {name: "Prepare delivery question"}).click();
   await expect(page.getByRole("dialog")).toContainText("Proveedor B");
   await page.keyboard.press("Escape");
   expect(run("quotationMail:list", {token}).find((request: {comparisonId?: string}) => request.comparisonId === comparison.id)?.decisionAction.kind).toBe("delivery");
-  await page.goto("/?view=market&example=pe");
-  await page.getByRole("button", { name: /^My study/ }).click();
-  await page.getByRole("button", {name: "Saved (1)", exact: true}).click();
-  await page.getByRole("button", {name: "Open study", exact: true}).click();
-  // Keep the case panel closed: this is the independent study mail entry point.
-  await expect(page.getByRole("button", { name: "Open research case", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "View request", exact: true }).click();
+  // Recover the same conversation directly without restoring or replacing the market study.
+  await page.goto(followupUrl);
+  await expect(page.getByRole("dialog")).toContainText("Synthetic study reply");
   await page.getByRole("button", { name: "Review as new offer", exact: true }).click();
   const review = page.getByRole("dialog");
   await review.getByLabel("Supplier", { exact: true }).fill("Distribuidor Respuesta");
@@ -111,11 +119,8 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
   ]);
   expect(saved[0].selectedOfferId).toBeNull();
   if (webCandidate) {
-    await page.goto("/?view=market&example=pe");
-    await page.getByRole("button", { name: /^My study/ }).click();
-  await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
-    await page.getByRole("button", { name: "Open study", exact: true }).click();
-    await page.getByRole("button", { name: "View request", exact: true }).click();
+    await page.goto(followupUrl);
+    await expect(page.getByRole("dialog")).toContainText("Synthetic study reply");
     await page.getByRole("button", {name: "Use reply to confirm delivery", exact: true}).click();
     const delivery = page.getByRole("dialog", {name: "Confirm delivery from this reply", exact: true});
     await delivery.getByLabel("Offer to update", {exact: true}).selectOption(`reply:${requestId!}:${messageId}`);

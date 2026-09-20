@@ -54,10 +54,10 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
   await page.getByRole("button", { name: /Arroz · Lima/ }).click();
   await page.getByRole("button", { name: "Review offer" }).click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Package unit").click();
+  await dialog.getByLabel("Package unit", { exact: true }).click();
   await dialog.getByRole("option", { name: "kg", exact: true }).click();
-  await dialog.getByLabel("Package size").fill("18");
-  await dialog.getByLabel("Price per package").fill("85");
+  await dialog.getByLabel("Package size", { exact: true }).fill("18");
+  await dialog.getByLabel("Price per package", { exact: true }).fill("85");
   await dialog
     .getByLabel(
       "I reviewed the source and confirm the data, including my corrections",

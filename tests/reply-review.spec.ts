@@ -76,7 +76,9 @@ for (const mode of ["new", "append"] as const)
     await page.getByRole("button", { name: "View request" }).click();
     await page.getByRole("button", { name: "Review as new offer" }).click();
     const dialog = page.getByRole("dialog");
-    await expect(dialog).toContainText("Enter the offer manually.");
+    // Manual review is available whether AI credentials are configured or not.
+    await expect(dialog.getByLabel("Supplier", { exact: true })).toBeEditable();
+    await expect(dialog.getByLabel("Price per package", { exact: true })).toHaveValue("");
     await expect(
       dialog.getByRole("button", { name: "Continue with new offer" }),
     ).toBeDisabled();

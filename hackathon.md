@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-20T03:39:31Z
+- **Last updated:** 2026-09-20T08:06:26Z
 
 ## Log
 
@@ -571,3 +571,48 @@ Production build and two focused browser tests passed, including the real search
 ### 2026-09-20 — e9702d1 and progressive price context
 
 Codex review identified a priced source without complete package size/unit appearing as a bare price during analysis. Progress cards now explicitly show "Package size pending" unless both values are available. Extended the existing desktop/mobile progress checks with missing-size, missing-unit and complete-package cases; both browser tests and production build passed. No new provider calls, cloud deployment or merge.
+
+
+### 2026-09-20 — local supplier follow-up layout
+
+Grouped saved catalog correspondence into a bounded follow-up section with supplier heading, concise purpose, preparation action and saved requests. Removed the unstyled duplicate "Ask" heading. Market results now retain a complete border while unselected and on hover, including contextual references.
+
+Production build and the existing priced-offer/no-unselected-inquiry browser check passed. Manual browser checks covered a prepared, unsent draft and recovery after reload, desktop and 390/320 px layouts without overflow or console errors. No paid provider calls, sends, commit, push or deployment; changes remain local on `codex/study-followup-polish`.
+
+
+### 2026-09-20 — local buying recommendation layout
+
+Replaced the recommendation's left accent and shadow with a uniform outline and a plain sentence-case label. Desktop uses the right side for the recommended offer's order total and excess quantity; mobile stacks the figures below the explanation, with compact rows at 320 px. Figures use the existing deterministic report, matching offer currency and current or saved request unit, and appear only for an eligible buy recommendation.
+
+Production build and two existing comparison browser journeys passed, extended to check USD/lb, PEN/kg, zero excess and removal of figures when quantity is incomplete. Manual desktop and 390/320 px inspection showed no overflow or console errors. No provider calls, sends, commit, push or deployment; included in the ongoing local UI polish.
+
+
+### 2026-09-20 — working tree · follow-up navigation and UX audit
+
+The saved case is now a dedicated follow-up destination with Overview, Messages, Sources and Activity. Opening it preserves the market draft; route identity supports reload and browser Back/Forward. The summary separates evidence and pending terms from one next action, using Surtario typography and a uniform outline. Sources, message history and optional price tracking no longer compete in the market screen. The earlier ImageGen reference informed spacing only; the flow audit determined the structure. Removed Quantity / Terms / Choice from comparison.
+
+Preserved case-local source review and revision-checked saving, previously saved candidates, prospect-linked conversations, reply-to-offer merging and delivery confirmation into the same comparison. Each history entry keeps its own comparison draft within the browser session. Repeated message visits reopen correctly, dialog focus does not jump to hidden controls, and correspondence is shown once. Independent reviews found the navigation and draft-preservation defects; fixes are documented in `docs/diseno/AUDITORIA_SEGUIMIENTO.md`.
+
+Verification: 320 unit/backend/configuration tests, production build (including TypeScript), and 23 distinct focused browser journeys passed across the targeted runs. These cover inquiry/reply recovery, source review/save/reload, existing comparison updates, delivery and minimum terms, reactive incoming replies, session isolation, keyboard disclosures, offline behavior, and browser history with different drafts. Manual inspection of the original saved case covered all four sections, desktop and 390/320 px with no horizontal overflow; a fresh browser load produced no runtime errors. Initial test failures from changed destinations and disclosure visibility semantics were corrected without dropping the underlying behavior assertions. No new Firecrawl/OpenAI calls, email sends, commits, pushes or deployments. This does not constitute new live-provider acceptance or a usability study with external users.
+
+Result-header refinement: removed the duplicate search summary and standalone research row. Change search and Research a question share the results heading; the latter opens a bounded dialog and navigates only after saving. Closing preserves its draft and the market selection. Questions use the active web result or My study context, including after searching a different ingredient. Existing follow-ups remain directly accessible. Eleven distinct focused browser journeys passed across this refinement's runs, including the two new modal/context regressions; production build and desktop/390/320 px inspection passed. The existing search-boundary test was updated to validate the request UUID and render the new header slot. No provider calls, sends or remote changes.
+
+Offer-review refinement: replaced the source card's left accent with a uniform outline and separated the source link from its observation date. Related fields share four desktop rows, with individually named evidence disclosures below their controls; narrow mobile layouts stack them. The original file/text, manual corrections, pending terms and explicit confirmation remain available. The modal header stays outside the scrolling body; clipping prevents focus on a lower field from scrolling the header out of view.
+
+Verification: production build (including TypeScript) and 10 distinct focused browser journeys passed across targeted runs, covering web/document review, saved recovery, manual corrections, keyboard evidence disclosure, draft retention and mobile controls. Exact field-name selectors distinguish inputs from the new evidence controls; assertions were retained. Manual checks on an existing saved web source covered 1920 px and 390/320 px, with no horizontal overflow or runtime errors. No new provider calls, sends, commits, pushes or deployment.
+
+
+### 2026-09-20 — local Messages inbox and reply continuity
+
+Added a global Messages destination in the workspace and comparison navigation. Owner-scoped conversations show supplier context, actual recipient, subject, latest activity and separate draft, awaiting-reply, unconfirmed-send and reply-review states. Filters cover all conversations, replies, waiting and drafts; the navigation count means replies whose details have not been saved, not unread mail. Exact stored references recover the related follow-up/comparison, including a standalone comparison created from a study reply.
+
+The latest reply and its review action now precede sent-request controls and history. Opening a conversation does not update prices. Manual review (with optional AI extraction) and saving remain required; already-saved replies open their existing offer instead of attempting a duplicate merge. Successful review preserves the destination and originating message; cancellation closes the conversation.
+
+Verification: production build (including TypeScript), clean diff check, and 12 distinct focused browser journeys passed across targeted runs: Messages (3), reply review (3), study-reply comparison (2), and follow-up navigation (4). Coverage includes reactive reply arrival without extraction or price changes, explicit review/save, existing and new comparisons, reload/deep links, return navigation, unsaved drafts and session isolation. Inbox overflow assertions cover 1920/390/320 px; manual Chrome captures cover the inbox and conversation at 1920/390 px with no runtime errors. Independent review findings about successful handoff, saved-offer access and reply prominence were resolved.
+
+Initial regressions exposed an environment-specific assertion that AI was unavailable and the local demo request capacity accumulated by repeated test imports. The test now asserts manual editability and empty price fields regardless of credentials. Only request/reply fixtures created during this execution were removed from the anonymous local backend; its request count returned to the pre-test 89. A temporary, internal, localhost-guarded cleanup function was removed after use; no backend source changes remain. No new provider calls, email sends, commit, push or cloud deployment. This is local UI/workflow validation, not new live-provider acceptance.
+
+
+Conversation polish: grouped recipient and reply status, kept the newest reply open, and moved WhatsApp copying alongside the sent message. Reply, full-email, sent-request, suggestion and history disclosures now reuse the animated control with keyboard and reduced-motion support. The modal stays anchored with a fixed header and a scrolling body; secondary navigation scrolls with the content on mobile. Nested chevrons now follow their own disclosure state. Requests without a confirmed send are labeled “Request message”.
+
+Verification: production build and two focused browser journeys passed (reactive reply → review → save/reload; draft edit → save → recovery). The reply test checks intermediate collapse heights, stable modal position, keyboard reopening, hidden controls and reduced-motion/mobile operation. Its first run sampled the still-running dialog entrance; it now waits for that animation before measuring disclosure motion. Manual Chrome inspection covered 1920 × 1080 and 390 × 844, expanded content and fixed close control, plus a 320 px overflow check; no runtime errors. Seven disposable requests and two replies created by these runs were backed up locally and removed from the anonymous local backend, restoring its previous count of 89 requests. The temporary cleanup function was removed; no backend source changes, provider calls, sends or remote publication.

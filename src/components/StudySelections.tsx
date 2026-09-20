@@ -6,7 +6,7 @@ import type { StudyProspect, WebSelection } from "../domain/study";
 import { evaluateOffer } from "../domain/procurement";
 import { money, numberLabel } from "../numbers";
 import type { SavedComparison } from "./SavedComparisons";
-import QuotationMail from "./QuotationMail";
+
 import "../styles/study.css";
 
 export default function StudySelections({
@@ -20,7 +20,9 @@ export default function StudySelections({
   onDeliveryApplied,
   onOpenComparison,
   filter,
+  onInquiry,
 }: {
+  onInquiry: (prospect: StudyProspect) => void;
   selections: WebSelection[];
   prospects: StudyProspect[];
   onRemove: (sourceId: string) => void;
@@ -203,16 +205,7 @@ export default function StudySelections({
               reviewed the contact; availability and service area still need
               confirmation.
             </p>
-            <QuotationMail
-              comparisonId={null}
-              prospectId={item.id}
-              offers={[]}
-              onEditOffer={() => {}}
-              onPrepare={onReplyPrepare}
-              deliveryComparison={deliveryComparison}
-              onDeliveryApplied={onDeliveryApplied}
-              onOpenComparison={onOpenComparison}
-            />
+            <button className="button secondary" onClick={() => onInquiry(item)}>Prepare inquiry<ArrowRight size={16} aria-hidden="true" /></button>
           </article>
         ))}
     </div>

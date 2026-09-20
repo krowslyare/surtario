@@ -15,6 +15,7 @@ export function SaveWebProspect({
   title,
   url,
   onSaved,
+  savedActionLabel,
   onContinue,
   simulated,
   primaryInquiry = false,
@@ -25,6 +26,7 @@ export function SaveWebProspect({
   title: string;
   url: string;
   onSaved?: (prospect: StudyProspect) => void;
+  savedActionLabel?: string;
   onContinue?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
   simulated?: boolean;
   primaryInquiry?: boolean;
@@ -114,9 +116,12 @@ export function SaveWebProspect({
           </label>
           {error && <p role="alert">{error}</p>}
           {saved ? (
-            <p role="status">
-              {onContinue ? "Candidate saved. Use Prepare inquiry to continue with its saved context." : "Candidate saved. Open it from your study to prepare an inquiry."}
-            </p>
+            <>
+              <p role="status">{savedActionLabel
+                ? "This candidate is saved. Keep it in this follow-up, then save your findings to retain the link."
+                : onContinue ? "Candidate saved. Use Prepare inquiry to continue with its saved context." : "Candidate saved. Open it from your study to prepare an inquiry."}</p>
+              {savedActionLabel && onSaved && <button className="button primary" onClick={() => { onSaved(saved); setOpen(false); }}>{savedActionLabel}</button>}
+            </>
           ) : (
             <button
               className="button primary"

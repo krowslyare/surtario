@@ -10,6 +10,12 @@ for (const peru of [false, true]) {
     await expect(page.getByLabel("Specification / quality", {exact: true})).toHaveValue(peru ? "Arroz blanco, misma calidad confirmada" : "Long-grain white rice");
     await expect(page.getByRole("heading", {name: peru ? "Proveedor A" : "Supplier A", exact: true})).toBeVisible();
     if (!peru) await expect(page.locator("#comparison")).not.toContainText("S/");
+    const figures = page.getByLabel("Recommended offer figures", { exact: true });
+    await expect(figures.getByRole("definition")).toHaveText(peru ? ["S/ 50.00", "0 kg"] : ["USD 35.00", "10 lb"]);
+    await page.getByLabel("Required quantity").fill("");
+    await expect(figures).toHaveCount(0);
+    await page.getByLabel("Required quantity").fill(peru ? "10" : "40");
+    await expect(figures).toBeVisible();
     const unit = page.getByRole("combobox", {name: "Unit", exact: true});
     await unit.focus();
     await page.keyboard.press("ArrowDown");

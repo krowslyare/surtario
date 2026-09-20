@@ -64,7 +64,7 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
   await tools.click();
   await review.click();
   const dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Package size").fill("27");
+  await dialog.getByLabel("Package size", { exact: true }).fill("27");
   const unit = dialog.getByRole("combobox", {
     name: "Package unit",
   });
@@ -86,7 +86,7 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
   ).toBeFocused();
   await tools.click();
   await review.click();
-  await expect(dialog.getByLabel("Package size")).toHaveValue(
+  await expect(dialog.getByLabel("Package size", { exact: true })).toHaveValue(
     "27",
   );
   await expect(
