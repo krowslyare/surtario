@@ -10,9 +10,9 @@
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting, @convex-dev/workflow
 - **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, crons, realtime queries
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
-- **AI models:** gpt-5.6-luna (local Codex CLI rehearsal only; OpenAI API not yet verified)
+- **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-19T09:04:47Z
+- **Last updated:** 2026-09-20T03:08:00Z
 
 ## Log
 
@@ -489,3 +489,68 @@ Integrated the explanatory content into the page as a section, removing the floa
 ### 2026-09-19 — working tree: consolidated review checkpoint
 
 Prepared the contextual funnel, landing, visual refinements and shared scroll behavior together for pull-request review. Fresh verification passed all 299 unit/backend/configuration tests, frontend/backend TypeScript, the production build and 35-file hosting check, plus all 21 focused browser journeys in one run. Review found no blocking issue in session ownership, stale revisions, preparation rollback, linked comparisons or confirmation boundaries. This checkpoint does not establish live-provider or hosted acceptance; no merge or deployment is included.
+
+
+### 2026-09-19 — working tree: bounded direct OpenAI API acceptance
+
+Verified four real Luna low calls through local Convex actions: clear/ambiguous text, a bundled synthetic image and a real Firecrawl product source. Browser review, study/comparison persistence and an unsent delivery inquiry survived reload and explicit reopen. Local token-only telemetry measured 6,896 input and 1,228 output tokens, approximately USD 0.0029 at standard uncached rates; all 300 tests and both TypeScript checks passed.
+
+Live discovery took 125.88 seconds and returned 14 candidates, 10 readable, with partial coverage. AgentMail inbox reading returned a missing-permission 403; no mail was sent. Multi-round research, API advice/reply extraction, combined mail acceptance and cloud publication remain pending. Identified the static long-search state and comparison reload returning to the example as recording-readiness gaps. No Git push or cloud deployment.
+
+
+### 2026-09-20 — working tree: reactive search progress and saved comparison recovery
+Added real search/read checkpoints to the existing owner-scoped Convex subscription, with Surtario’s symbol, typography and restrained stage motion. Counts represent checked searches/pages, not invented completion percentages or confirmed supplier availability. Continue your work reopens running searches. Saved comparison URLs restore the correct owner-scoped record on reload; unavailable records show an explicit recovery state.
+
+Verified 35 focused backend tests and 10 browser journeys, including live localhost subscriptions driven by synthetic checkpoints, reload, cross-session denial, failure/completion and reduced motion. Inspected desktop/mobile renders and reopened the previously saved real-source comparison with its quantity and unsent inquiry intact. Frontend/backend TypeScript and production build passed. No additional paid provider calls, outbound messages, commit/push or cloud deployment; the AgentMail permission blocker remains.
+
+
+### 2026-09-20 — working tree: useful real-source study and offer hierarchy
+
+Improved catalog traversal to recognize product links containing thumbnails, line breaks and alphanumeric HTML SKUs, while requiring the requested ingredient terms. Trade-supplier metadata now ranks above equivalent retail matches without increasing the existing provider budget. Reopening a saved web study restores its original search instead of showing empty example results.
+
+Reused the existing real search: one additional Firecrawl page read and two Luna low extractions. Food To Live correctly remained a multi-variant catalog; WebstaurantStore yielded a reviewed 50 lb offer at USD 37.49. Saved that offer alongside the existing Della offer and a reviewed F. Garcia distributor contact. All three survived reload; delivery, tax, minimum order and specification equivalence remain unconfirmed. No messages were sent.
+
+Offer cards now distinguish supplier, package price, size, derived unit price, pending terms and compact source/action metadata. Browser inspection at 1280/1440 desktop and 390/320 mobile caught and corrected narrow-screen price wrapping and contact overflow. Verification: 56 focused discovery/source-quality tests, seven funnel/persistence browser journeys, frontend/backend TypeScript and production build passed. New traversal was verified with fixtures and the actual catalog link; no new full paid search was run. Local backend only, no commit/push or cloud deployment.
+
+
+### 2026-09-20 — working tree: local AgentMail setup and readiness correction
+
+The earlier AgentMail permission diagnosis was too broad: the inbox-scoped key can read messages (real HTTP 200) but cannot read administrative inbox metadata. Corrected the readiness probe and verified a real subscription for inbound events. Existing cloud webhook and key permissions were preserved.
+
+Configured the anonymous local backend and added a development-only outbound WebSocket receiver that passes allowed test-inbox replies to the existing internal Convex mutation, preserving thread matching, deduplication and review. Browser inspection verified the configured recipient on a new unsent draft. 22 focused tests and frontend TypeScript passed. No new email sent or OpenAI call, no push or cloud deployment; full local send/reply acceptance remains pending. Receiver must stay running; disconnected events are not replayed automatically.
+
+
+### 2026-09-20 — working tree: fresh sourcing and local mail roundtrip
+
+Sources now arrive through Convex subscriptions during bounded Firecrawl reading, followed by up to three optional Luna reviews. Improved trade/currency prioritization, compact source evidence and recoverable search state. Fixed a hot-reload duplicate-request bug found during live testing; three fresh searches and eleven Luna low calls were counted, including that extra run.
+
+The final real search produced 15 candidates with 11 readable sources. Saved two reviewed published offers and an unpriced distributor; inconsistent product evidence stayed unconfirmed. An authorized real AgentMail roundtrip between test inboxes appeared reactively in the app, followed by Luna extraction, human review and deterministic calculation. Commercial email terms were explicitly synthetic; no real supplier was contacted and no order was placed. Study, conversation and calculation survived reload.
+
+317 unit/backend tests and 16 distinct browser journeys passed, including a rerun under the disabled-provider conditions required by three older tests; real local settings were restored. TypeScript/build and desktop/mobile visual checks passed. Only anonymous localhost was updated; no Git push or cloud deployment. The development mail receiver needs to remain connected and has no offline replay. Automatic multi-round research was not exercised in this bounded acceptance.
+
+
+### 2026-09-20 — working tree: branded supplier correspondence
+
+Added a deterministic Surtario HTML email with a plain-text alternative and the same escaped template in the reviewed preview. New drafts separate context, commercial questions and purchase boundaries. Persisted an optional presentation version so historical plain-text messages retain their original format. Approval, frozen revision, recipient restrictions and idempotency remain unchanged.
+
+Verified one authorized real email between the existing test inboxes: AgentMail accepted it and rendered the branded HTML in the recipient inbox. The message explicitly described a layout test; it was not supplier outreach or a purchase. Reopened the saved study after reload and recovered the sent conversation. Inspected the preview on desktop and at 390/320 px with no horizontal overflow. No OpenAI or Firecrawl calls in this pass.
+
+Clarified that automatic analysis covers up to three product pages, not the whole result set. Reopened the previous live search and expanded all 15 candidate sources (11 with recovered text); these are not 15 confirmed offers. Improved source title hierarchy and separated incomplete-content notices from source links. Source actions still merit a focused hierarchy pass for recording. Verification: 320 tests across 49 files, frontend/backend TypeScript and build passed. Only localhost changed; no Git push or cloud deployment. The received HTML was inspected in AgentMail, not across Gmail/Outlook clients.
+
+
+### 2026-09-20 — working tree: expanded bounded discovery
+
+Raised the English discovery ceiling to 30 sources, three search queries of up to 20 hits each, and a separate 30-page reading budget. Preserved two concurrent reads, bounded rate-limit retries, host diversity, URL deduplication, relevance checks and the three-source automatic AI analysis limit. Completed searches show twelve sources initially with explicit expansion; expanding never makes another provider call. No pricing tier was implemented.
+
+One fresh direct Firecrawl search for long grain white rice in Portland returned 21 sources from 21 distinct domains, 16 with recovered text and five unreadable. These counts are candidate evidence, not verified suppliers or comparable offers. The final automatic analysis finished roughly 137 seconds after the server search began, with source arrivals visible while waiting. Local usage logs recorded exactly three gpt-5.6-luna low calls: 14,834 input and 897 output tokens. No dollar-cost or Firecrawl credit charge is inferred from request counts.
+
+Verification: 42 focused discovery/backend tests, frontend/backend TypeScript, build and three browser tests passed. The 30-source synthetic browser case verified twelve initial cards, expansion and collapse without another search; the real 21-source result was inspected on desktop and 390 px mobile with no overflow or browser errors. Existing saved study remained intact. Updated only the anonymous local backend; no cloud deployment, Git push, extra mail or additional live search.
+
+
+### 2026-09-20 — working tree: action hierarchy and pre-push acceptance
+
+Prioritized the next action on each source card and grouped secondary actions under More options. Fixed both earlier Codex review findings: comparison recovery closes the continuity dialog, and resuming another ingredient clears incompatible working selections while preserving saved studies. Added browser regressions.
+
+One fresh real Firecrawl search returned 21 candidates, 16 readable; up to three Luna low analyses remained subject to review. A reviewed offer was saved, and one branded AgentMail test request/reply appeared reactively in the app. One Luna reply extraction plus human confirmation updated the existing compatible comparison. Explicitly synthetic terms produced three 25 lb bags for a 60 lb need, 15 lb excess and USD 66 including freight; delivery timing stayed pending. Study, source, conversation and calculation survived reload.
+
+320 unit/backend/configuration tests, frontend/backend TypeScript, build and 20 focused browser journeys passed. Desktop and 390/320 px source-action checks showed no overflow or browser errors. Prepared the accumulated changes for PR #37 and another Codex review; no cloud deployment or merge. No actual supplier was contacted and no order was placed.

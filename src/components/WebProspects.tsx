@@ -17,6 +17,7 @@ export function SaveWebProspect({
   onSaved,
   onContinue,
   simulated,
+  primaryInquiry = false,
 }: {
   token: string;
   runId: Id<"researchRuns">;
@@ -26,6 +27,7 @@ export function SaveWebProspect({
   onSaved?: (prospect: StudyProspect) => void;
   onContinue?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
   simulated?: boolean;
+  primaryInquiry?: boolean;
 }) {
   const save = useMutation(api.prospects.save);
   const [intent, setIntent] = useState<"inquiry" | "research" | null>(null);
@@ -38,13 +40,22 @@ export function SaveWebProspect({
     [saved, setSaved] = useState<StudyProspect | null>(null);
   return (
     <>
-      <button className="button text-button" onClick={() => { setIntent(null); setOpen(true); }}>
+      {onContinue && primaryInquiry && <button className="button primary" onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
+      {!onContinue && <button className="button secondary" onClick={() => { setIntent(null); setOpen(true); }}>
         {saved ? "View saved candidate" : "Save potential distributor"}
-      </button>
-      {onContinue && <>
-        <button className="button secondary" onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>
-        {simulated === false && <button className="button text-button" onClick={() => { if (saved) onContinue(saved, "research"); else { setIntent("research"); setOpen(true); } }}>Research missing details</button>}
-      </>}
+      </button>}
+      {onContinue && <details className="source-more-options">
+        <summary>More options</summary>
+        <div className="source-more-actions">
+          <button className="button text-button" onClick={() => { setIntent(null); setOpen(true); }}>
+            {saved ? "View saved candidate" : "Save potential distributor"}
+          </button>
+          {onContinue && <>
+            {!primaryInquiry && <button className="button text-button" onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
+            {simulated === false && <button className="button text-button" onClick={() => { if (saved) onContinue(saved, "research"); else { setIntent("research"); setOpen(true); } }}>Research missing details</button>}
+          </>}
+        </div>
+      </details>}
       {open && (
         <Dialog
           title="Review potential distributor"

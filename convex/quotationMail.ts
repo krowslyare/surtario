@@ -1,3 +1,4 @@
+import { quotationEmailPayload } from "../src/domain/quotationEmail";
 import { decisionActions } from "../src/domain/decisionActions";
 import { decisionActionInput } from "./decisionActionValidators";
 import { advisorContext } from "./advisorValidators";
@@ -132,6 +133,7 @@ async function publicRequest(
     ...(doc.comparisonId ? { comparisonId: doc.comparisonId } : {}),
     ...(doc.studyId ? { studyId: doc.studyId, resultId: doc.resultId } : {}),
     ...(doc.prospectId ? { prospectId: doc.prospectId } : {}),
+    presentationVersion: doc.presentationVersion,
     subject: doc.subject,
     text: doc.text,
     recipient: doc.recipient,
@@ -553,8 +555,15 @@ export const create = mutation({
           "Hello,",
           "",
           `Catalog request for ${prospect.supplier}: ${ingredient} in ${prospect.region}.`,
-          "Quantity is still to be determined. This is not a purchase order.",
-          "Please provide package options, prices, tax, minimum order, and delivery area.",
+          "Quantity is still to be determined.",
+          "",
+          "Could you confirm the following?",
+          "• Package options and prices, including currency",
+          "• Minimum order and applicable tax",
+          "• Delivery area, cost and lead time",
+          "",
+          "This is a quote request, not a purchase order.",
+          "",
           "Thank you.",
         ].join("\n")
       : study
@@ -562,8 +571,15 @@ export const create = mutation({
             "Hello,",
             "",
             `Catalog request for ${distributor!.supplier}: ${ingredient} in ${study.region}.`,
-            "Quantity is still to be determined. This is not a purchase order.",
-            "Please provide package options, prices, tax, minimum order, and delivery area.",
+            "Quantity is still to be determined.",
+            "",
+            "Could you confirm the following?",
+            "• Package options and prices, including currency",
+            "• Minimum order and applicable tax",
+            "• Delivery area, cost and lead time",
+            "",
+            "This is a quote request, not a purchase order.",
+            "",
             "Thank you.",
           ].join("\n")
         : [
@@ -572,7 +588,12 @@ export const create = mutation({
             `I would like to request a quote for ${quantity} of ${comparison!.request.ingredient}.`,
             `Specification: ${comparison!.request.specification}.`,
             "",
-            "Please provide package size, price, minimum order, and delivery terms.",
+            "Could you confirm the following?",
+            "• Package size and price, including currency",
+            "• Minimum order and applicable tax",
+            "• Delivery cost and lead time",
+            "",
+            "This is a quote request, not a purchase order.",
             "",
             "Thank you.",
           ].join("\n");
@@ -580,6 +601,7 @@ export const create = mutation({
     const id = await ctx.db.insert("quotationRequests", {
       ownerHash: hash,
       clientId: args.clientId,
+      presentationVersion: "surtario-v1",
       ...(actionSnapshot ? { decisionAction: actionSnapshot } : {}),
       ...(args.comparisonId
         ? { comparisonId: args.comparisonId }
@@ -612,6 +634,7 @@ const reservationValidator = v.union(
     recipient: v.string(),
     subject: v.string(),
     text: v.string(),
+    presentationVersion: v.optional(v.literal("surtario-v1")),
     idempotencyKey: v.string(),
   }),
 );
@@ -672,6 +695,7 @@ export const reserveSend = internalMutation({
       id: doc._id,
       inboxId: doc.inboxId,
       recipient: doc.recipient,
+      presentationVersion: doc.presentationVersion,
       subject: doc.subject,
       text: doc.text,
       idempotencyKey: doc.idempotencyKey,
@@ -758,7 +782,9 @@ export const send = action({
           body: JSON.stringify({
             to: [reservation.recipient],
             subject: reservation.subject,
-            text: reservation.text,
+            ...(reservation.presentationVersion === "surtario-v1"
+              ? quotationEmailPayload(reservation.subject, reservation.text)
+              : { text: reservation.text }),
           }),
           signal: AbortSignal.timeout(10_000),
         },

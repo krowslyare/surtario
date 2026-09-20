@@ -17,6 +17,7 @@ export const quotationReplyValidator = v.object({
 });
 
 export const savedQuotationValidator = v.object({
+  presentationVersion: v.optional(v.literal("surtario-v1")),
   decisionAction: v.optional(decisionActionSnapshot),
   id: v.id("quotationRequests"),
   simulated: v.boolean(),

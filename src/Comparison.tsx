@@ -20,7 +20,7 @@ import PurchasingAdvisor, {
 import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import SavedComparisons, {
   type SavedComparison,
   type SavedComparisonsHandle,
@@ -321,6 +321,12 @@ export default function Comparison({
   const [savedId, setSavedId] = useState<SavedComparison["id"] | null>(
     (seed?.resumeComparison?.id as SavedComparison["id"]) ?? null,
   );
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (savedId) url.searchParams.set("comparison", savedId);
+    else url.searchParams.delete("comparison");
+    window.history.replaceState(null, "", url);
+  }, [savedId]);
   const [savedRevision, setSavedRevision] = useState(
     seed?.resumeComparison?.revision ?? 0,
   );
@@ -1001,7 +1007,7 @@ export default function Comparison({
                             Review this offer
                           </strong>
                           <details>
-                            <summary>{issues.length} conditions to review</summary>
+                            <summary>{issues.length} {issues.length === 1 ? "condition" : "conditions"} to review</summary>
                             <ul>{issues.map((issue, i) => <li key={i}>{issue}</li>)}</ul>
                           </details>
                           <button

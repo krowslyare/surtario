@@ -252,6 +252,28 @@ export default function MarketStudy({
     setNextIngredient(null);
   }
 
+  function resumeSavedResearch(id: string, ingredient: string, area: string) {
+    const context = webSelections[0] ?? prospects[0] ?? findMarketExampleContextByIds(selectedIds)
+      ?? (study.savedContext ? { ingredient: study.savedContext.term, region: study.savedContext.region } : null);
+    if (context && !sameStudyContext(context, { ingredient, region: area })) {
+      setSelectedIds([]);
+      setWebSelections([]);
+      setProspects([]);
+      setCatalog(allMarketExamples);
+      setStudy({ id: null, revision: 0, savedSelectedIds: [], clientId: crypto.randomUUID() });
+    }
+    setWebRequest(null);
+    setResumeResearch({ id, sequence: Date.now() });
+    setTerm(ingredient);
+    setRegion(area);
+    setSearch({ term: ingredient, region: area });
+    setResultsView("web");
+    setShowStudy(false);
+    setFilter("all");
+    setError("");
+    setContinuityOpen(false);
+  }
+
   function searchWeb() {
     if (!term.trim() || !region.trim()) return;
     setSearch({ term: term.trim(), region: region.trim() });
@@ -261,6 +283,7 @@ export default function MarketStudy({
     setShowStudy(false);
     setFilter("all");
     setWebRequest((current) => ({
+      clientId: crypto.randomUUID(),
       id: (current?.id ?? 0) + 1,
       ingredient: term.trim(),
       region,
@@ -309,7 +332,13 @@ export default function MarketStudy({
     setTerm(saved.term);
     setRegion(saved.region);
     setSearch({ term: saved.term, region: saved.region });
-    setResultsView("example");
+    const sourceRunId = (saved.webSelections ?? [])
+      .flatMap(item => Object.values(item.seed.sources))
+      .find(source => source.webReview)?.webReview?.runId
+      ?? saved.prospects?.[0]?.runId;
+    setWebRequest(null);
+    setResumeResearch(sourceRunId ? { id: sourceRunId, sequence: Date.now() } : null);
+    setResultsView(sourceRunId ? "web" : "example");
     setStudy({
       id: saved.id,
       savedContext: { term: saved.term, region: saved.region },
@@ -585,7 +614,7 @@ export default function MarketStudy({
                     <Info size={16} />
                     Sample data is separate from live search.{" "}
                     {webStatus?.searchEnabled
-                      ? "Live search checks public supplier sources."
+                      ? webStatus?.autoReviewEnabled ? "Live search finds supplier sources. AI analyzes up to 3 product pages first; you can review more from the results." : "Live search checks public supplier sources."
                       : persistenceEnabled && !webStatus
                         ? "Checking live search availability…"
                         : "Demo catalog · fictional examples in Portland / Lima. Live search is unavailable."}
@@ -634,8 +663,8 @@ export default function MarketStudy({
         {persistenceEnabled && !search && !showStudy && resultsView !== "web" && <ContinueWork
           onStudy={openStudy}
           onCase={(id, saved, requestId) => { if (saved) openStudy(saved); setOpenCaseRequest({ id, sequence: Date.now(), requestId }); }}
-          onResearch={(id, ingredient, area) => { setWebRequest(null); setResumeResearch({ id, sequence: Date.now() }); setTerm(ingredient); setRegion(area); setResultsView("web"); setShowStudy(false); }}
-          onComparison={comparison => onPrepare({ ...comparison, resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true } })}
+          onResearch={resumeSavedResearch}
+          onComparison={comparison => { setContinuityOpen(false); onPrepare({ ...comparison, resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true } }); }}
         />}
         <div className="market-support">
           {persistenceEnabled && (
@@ -675,6 +704,7 @@ export default function MarketStudy({
                   resumeRequest={resumeResearch}
                   onContextualProspect={contextualProspect}
                   onCalculate={calculate}
+                  caseComparisonContext={currentStudyCase?.comparison && study.savedContext ? { ingredient: study.savedContext.term, region: study.savedContext.region } : undefined}
                   onExploreDemo={startExample}
                   selections={webSelections}
                   onReview={addReview}
@@ -1073,8 +1103,8 @@ export default function MarketStudy({
         <ContinueWork
           onStudy={saved => { openStudy(saved); setContinuityOpen(false); }}
           onCase={(id, saved, requestId) => { if (saved) openStudy(saved); setOpenCaseRequest({ id, sequence: Date.now(), requestId }); setContinuityOpen(false); }}
-          onResearch={(id, ingredient, area) => { setWebRequest(null); setResumeResearch({ id, sequence: Date.now() }); setTerm(ingredient); setRegion(area); setResultsView("web"); setShowStudy(false); setContinuityOpen(false); }}
-          onComparison={comparison => onPrepare({ ...comparison, resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true } })}
+          onResearch={resumeSavedResearch}
+          onComparison={comparison => { setContinuityOpen(false); onPrepare({ ...comparison, resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true } }); }}
         />
       </Dialog>}
       {nextIngredient && (

@@ -31,12 +31,15 @@ test("guarda condiciones y elección, las recupera y una edición invalida la el
     }),
   ).toBeVisible();
 
+  await expect(page).toHaveURL(/comparison=/);
   await page.reload();
+  // Reload must restore the active record before opening the saved-work list.
+  await expect(page.getByTestId("total-0")).toHaveText("S/ 92.00");
   await page
     .getByRole("button", { name: /Saved comparisons \(1\)/ })
     .click();
   await expect(
-    page.getByText("selected offer", { exact: false }),
+    page.getByRole("region", { name: "Saved comparisons", exact: true }).getByText("selected offer", { exact: false }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Open comparison" }).click();
   await expect(page.getByLabel("Required quantity")).toHaveValue("10");
@@ -70,11 +73,8 @@ test("guarda condiciones y elección, las recupera y una edición invalida la el
     page.getByRole("button", { name: "Selected offer" }),
   ).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Restore example" }).click();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Restore example" })
-    .click();
+  // A saved record now restores its own selection. A new sample is explicit navigation.
+  await page.goto("/?view=comparison&example=pe");
   await expect(
     page.getByText("Comparison saved. Save again after making changes.", {
       exact: false,
@@ -225,4 +225,25 @@ test("una confirmación tardía no asocia el guardado al borrador restaurado", a
   await expect(
     page.getByRole("button", { name: "Saved comparisons (2)" }),
   ).toBeVisible();
+});
+
+test("reload restores the linked comparison and another browser cannot recover it", async ({ page, browser }) => {
+  await page.goto("/?view=comparison&example=pe");
+  await expect(page.locator(".workspace-content")).not.toHaveAttribute("inert");
+  await page.getByLabel("Required quantity").fill("27");
+  await page.getByRole("button", { name: "Save comparison", exact: true }).click();
+  await expect(page).toHaveURL(/comparison=/);
+  const savedUrl = page.url();
+  await page.reload();
+  await expect(page.getByLabel("Required quantity")).toHaveValue("27");
+  const outsider = await browser.newContext();
+  await connectOnlyToLocalBackend(outsider);
+  try {
+    const otherPage = await outsider.newPage();
+    await otherPage.goto(savedUrl);
+    await expect(otherPage.getByRole("heading", { name: "This comparison isn’t available." })).toBeVisible();
+    await expect(otherPage.getByLabel("Required quantity")).toHaveCount(0);
+    await otherPage.getByRole("button", { name: "Back to workspace" }).click();
+    await expect(otherPage).not.toHaveURL(/comparison=/);
+  } finally { await outsider.close(); }
 });

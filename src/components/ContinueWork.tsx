@@ -132,7 +132,7 @@ function Connected({ token, titleId, ...props }: Props & { token: string; titleI
   }
   for (const run of runs.filter(saved => !linkedRuns.has(saved.id))) {
     entries.push({
-      id: run.id, title: run.ingredient, detail: run.region, next: "Review sources",
+      id: run.id, title: run.ingredient, detail: run.region, next: run.status === "running" ? "View search progress" : "Review sources",
       updatedAt: Date.parse(run.observedAt), researchIds: [],
       open: () => props.onResearch(run.id, run.ingredient, run.region),
     });

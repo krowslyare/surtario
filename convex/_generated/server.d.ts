@@ -47,6 +47,7 @@ type Env = {
   readonly REHEARSAL_BRIDGE_URL: string | undefined;
   readonly REHEARSAL_LIVE_FIRECRAWL: string | undefined;
   readonly REPLY_EXTRACTION_ENABLED: string | undefined;
+  readonly SEARCH_AUTO_REVIEW_ENABLED: string | undefined;
   readonly SOURCE_WATCH_ENABLED: string | undefined;
   readonly SOURCING_ENABLED: string | undefined;
 };

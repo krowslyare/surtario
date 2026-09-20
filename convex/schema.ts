@@ -8,6 +8,7 @@ import {
   extractedOfferValidator,
   extractionStatusValidator,
   researchStatusValidator,
+  researchProgressValidator,
   sourceExtensionFields,
 } from "./researchValidators";
 
@@ -85,6 +86,7 @@ export default defineSchema({
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
   researchRuns: defineTable({
+    progress: v.optional(researchProgressValidator),
     ownerHash: v.string(),
     clientId: v.string(),
     simulated: v.optional(v.boolean()),
@@ -114,6 +116,7 @@ export default defineSchema({
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
   quotationRequests: defineTable({
+    presentationVersion: v.optional(v.literal("surtario-v1")),
     decisionAction: v.optional(decisionActionSnapshot),
     aiDraftStatus: v.optional(
       v.union(

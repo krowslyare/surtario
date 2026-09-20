@@ -54,6 +54,7 @@ export default function ExtractionReview({
   source = extractionSource,
   proposal = extractionExample,
   triggerLabel = "Review sample quote",
+  triggerVariant = "secondary",
   onPrepare,
   confirmLabel = "Continue to comparison",
   confirmationNote = "Continuing prepares a comparison. It does not record a purchase or save the document.",
@@ -66,6 +67,7 @@ export default function ExtractionReview({
   source?: ExtractionSource;
   proposal?: ExtractedOffer;
   triggerLabel?: string;
+  triggerVariant?: "primary" | "secondary";
   onPrepare: (seed: PurchaseSeed) => void;
   confirmLabel?: string;
 }) {
@@ -111,7 +113,7 @@ export default function ExtractionReview({
 
   return (
     <section className="extraction-entry" aria-label="Quote review">
-      <button className="button secondary" onClick={() => setOpen(true)}>
+      <button className={`button ${triggerVariant}`} onClick={() => setOpen(true)}>
         <FileSearch size={17} />
         {triggerLabel}
       </button>

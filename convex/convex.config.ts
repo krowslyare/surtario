@@ -8,6 +8,7 @@ const app = defineApp({
     REHEARSAL_BRIDGE_URL: v.optional(v.string()),
     REHEARSAL_LIVE_FIRECRAWL: v.optional(v.string()),
     REHEARSAL_BRIDGE_TOKEN: v.optional(v.string()),
+    SEARCH_AUTO_REVIEW_ENABLED: v.optional(v.string()),
     QUOTATION_DRAFT_ENABLED: v.optional(v.string()),
     SOURCING_ENABLED: v.optional(v.string()),
     SOURCE_WATCH_ENABLED: v.optional(v.string()),

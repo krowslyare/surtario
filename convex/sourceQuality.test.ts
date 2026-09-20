@@ -497,3 +497,8 @@ test.each([ ["S/ 1,79", "179"], ["S/ 1.234,56", "1.23456"], ["USD 1,23,4", "1234
     expect(result.offer.price.value).toBeNull();
   },
 );
+
+test("catalog thumbnail links retain their outer product URL and all ingredient terms", () => {
+  const source = { ...parent, url: "https://supplier.com/rice", title: "Rice", markdown: `[Last Purchased \\\n![](https://supplier.com/thumb.jpg)![](https://supplier.com/second.jpg)Long Grain White Rice 50 lb.](https://supplier.com/long-grain-white-rice/112LGWHT50.html)\n[Long Grain Brown Rice](https://supplier.com/products/long-grain-brown-rice)` };
+  expect(inspectSource(source, "long grain white rice").links).toEqual([{ url: "https://supplier.com/long-grain-white-rice/112LGWHT50.html", label: "Last Purchased Long Grain White Rice 50 lb." }]);
+});

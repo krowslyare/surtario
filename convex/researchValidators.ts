@@ -71,7 +71,21 @@ export const savedResearchSourceValidator = v.object({
   extractionError: v.union(v.string(), v.null()),
 });
 
+export const researchProgressValidator = v.object({
+  stage: v.union(v.literal("searching"), v.literal("reading"), v.literal("reviewing")),
+  reviewsCompleted: v.optional(v.number()),
+  reviewsTotal: v.optional(v.number()),
+  searchesCompleted: v.number(),
+  searchesTotal: v.number(),
+  candidates: v.number(),
+  pagesChecked: v.number(),
+  currentHost: v.union(v.string(), v.null()),
+});
+export type ResearchProgress = Infer<typeof researchProgressValidator>;
+
 export const savedResearchValidator = v.object({
+  clientId: v.optional(v.string()),
+  progress: v.optional(researchProgressValidator),
   id: v.id("researchRuns"),
   simulated: v.boolean(),
   ingredient: v.string(),

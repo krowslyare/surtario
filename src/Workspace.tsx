@@ -1,6 +1,7 @@
 import { scrollToPageStart } from "./scroll";
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import Comparison from "./Comparison";
+import ResumeComparison from "./components/ResumeComparison";
 import MarketStudy from "./MarketStudy";
 import type { PurchaseSeed } from "./domain/market";
 
@@ -17,6 +18,7 @@ export default function Workspace({
       ? requested
       : "market";
   });
+  const [resumeId, setResumeId] = useState(() => new URLSearchParams(window.location.search).get("comparison"));
   const [comparisonKey, setComparisonKey] = useState(0);
   const [seed, setSeed] = useState<PurchaseSeed | undefined>();
   const previousView = useRef(view);
@@ -28,11 +30,23 @@ export default function Workspace({
       ?.focus({ preventScroll: true });
   }, [view]);
   function openComparison(nextSeed?: PurchaseSeed) {
+    setResumeId(null);
     setSeed(nextSeed);
     setComparisonKey((key) => key + 1);
     setView("comparison");
     const url = new URL(window.location.href);
     url.searchParams.set("view", "comparison");
+    if (nextSeed?.resumeComparison) url.searchParams.set("comparison", nextSeed.resumeComparison.id);
+    else url.searchParams.delete("comparison");
+    window.history.replaceState(null, "", url);
+    requestAnimationFrame(scrollToPageStart);
+  }
+  function backToMarket() {
+    setView("market");
+    setResumeId(null);
+    const url = new URL(window.location.href);
+    url.searchParams.set("view", "market");
+    url.searchParams.delete("comparison");
     window.history.replaceState(null, "", url);
     requestAnimationFrame(scrollToPageStart);
   }
@@ -65,21 +79,19 @@ export default function Workspace({
           onManualExample={() => openComparison()}
         />
       </div>
-      {view === "comparison" && (
+      {view === "comparison" && (resumeId ? (
+        persistenceEnabled
+          ? <ResumeComparison id={resumeId} onReady={next => { setSeed(next); setResumeId(null); }} onBack={backToMarket} />
+          : <main><p>Saved comparisons are unavailable while storage is disconnected.</p><button onClick={backToMarket}>Back to workspace</button></main>
+      ) : (
         <Comparison
           key={comparisonKey}
           onPrepare={openComparison}
           seed={seed}
           persistenceEnabled={persistenceEnabled}
-          onBack={() => {
-            setView("market");
-            const url = new URL(window.location.href);
-            url.searchParams.set("view", "market");
-            window.history.replaceState(null, "", url);
-            requestAnimationFrame(scrollToPageStart);
-          }}
+          onBack={backToMarket}
         />
-      )}
+      ))}
     </>
   );
 }

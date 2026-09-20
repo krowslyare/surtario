@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { ArrowRight, ExternalLink, X } from "lucide-react";
+import { ArrowRight, ExternalLink, Info, X } from "lucide-react";
 import { combineReviewedOffers } from "../domain/extraction";
 import type { PurchaseSeed } from "../domain/market";
 import type { StudyProspect, WebSelection } from "../domain/study";
+import { evaluateOffer } from "../domain/procurement";
 import { money, numberLabel } from "../numbers";
 import type { SavedComparison } from "./SavedComparisons";
 import QuotationMail from "./QuotationMail";
@@ -49,29 +50,37 @@ export default function StudySelections({
       {visibleSelections.map(({ sourceId, seed }) => {
         const offer = seed.offers[0],
           source = seed.sources[sourceId].marketSource;
+        const unitPrice = evaluateOffer(seed.request, offer).unitPriceCents;
+        const pendingTerms = [
+          offer.minimumPackages === null ? "Minimum order" : null,
+          offer.taxStatus === "unknown" ? "tax" : null,
+          offer.freightCents === null || !offer.deliveryConfirmed ? "delivery" : null,
+        ].filter(Boolean);
+        let sourceHost = "Original page";
+        try { if (source?.url) sourceHost = new URL(source.url).hostname.replace(/^www\./, ""); } catch { /* Keep the source label. */ }
         return (
           <article
-            className="study-selection"
+            className="study-selection study-offer"
             key={sourceId}
             aria-label={`Offer in study: ${offer.supplier}`}
           >
             <div className="study-selection-heading">
               <div>
-                <span className="eyebrow">
+                <span className="study-selection-label">
                   Reviewed offer ·{" "}
                   {source?.simulated ? "Simulated example" : "Web source"}
                 </span>
                 <h3>{offer.supplier}</h3>
               </div>
               <button
-                className="button text-button"
+                className="button text-button study-remove"
                 aria-label={`Remove offer from ${offer.supplier}`}
                 onClick={() => onRemove(sourceId)}
               >
                 <X size={18} />
               </button>
             </div>
-            <p>
+            <p className="study-selection-product">
               {offer.ingredient} · {offer.specification}
             </p>
             <dl className="study-selection-facts">
@@ -81,33 +90,31 @@ export default function StudySelections({
               </div>
               <div>
                 <dt>Package size</dt>
-                <dd>
-                  {offer.packageContent === null
-                    ? "Needs confirmation"
-                    : `${numberLabel(offer.packageContent)} ${offer.packageUnit}`}
-                </dd>
+                <dd>{offer.packageContent === null ? "Needs confirmation" : `${numberLabel(offer.packageContent)} ${offer.packageUnit}`}</dd>
+              </div>
+              <div>
+                <dt>Price per {seed.request.unit}</dt>
+                <dd>{money(unitPrice, offer.currency)}</dd>
+                <small>From package price</small>
               </div>
             </dl>
-            <p className="field-hint">
-              Minimum order, tax, and delivery need confirmation. Selecting this
-              offer does not record a purchase.
-            </p>
-            <button className="button secondary" onClick={() => onPrepare(seed)}>{deliveryComparison ? "Open case comparison" : "Calculate purchase"}</button>
-            {source?.url && (
-              <a href={source.url} target="_blank" rel="noreferrer">
-                <ExternalLink size={14} /> {source.title}
-              </a>
-            )}
-            {source && (
-              <p className="field-hint">
-                Observed on{" "}
-                {new Date(source.observedAt).toLocaleDateString("en-US")}
-              </p>
-            )}
+            {pendingTerms.length > 0 && <p className="study-selection-pending">
+              <Info size={15} aria-hidden="true" />
+              <span>{pendingTerms.join(", ")} to confirm</span>
+            </p>}
+            <footer className="study-selection-footer">
+              <div className="study-selection-source">
+                {source?.url && <a href={source.url} target="_blank" rel="noreferrer" title={source.title} aria-label={`View source for ${offer.supplier}`}>
+                  <ExternalLink size={14} aria-hidden="true" /> View source <span>· {sourceHost}</span>
+                </a>}
+                {source && <small>Observed {new Date(source.observedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</small>}
+              </div>
+              <button className="button secondary" onClick={() => onPrepare(seed)}>{deliveryComparison ? "Open case comparison" : "Calculate purchase"}<ArrowRight size={16} aria-hidden="true" /></button>
+            </footer>
           </article>
         );
       })}
-      {visibleSelections.length > 0 && (
+      {visibleSelections.length > 0 && selections.length > 1 && (
         <div className="study-comparison-action">
           {selections.length > 1 && (
             <label className="checkbox">
@@ -165,7 +172,7 @@ export default function StudySelections({
           >
             <div className="study-selection-heading">
               <div>
-                <span className="eyebrow">
+                <span className="study-selection-label">
                   Distributor · Request pricing
                   {item.simulated === true
                     ? " · Simulated example"
@@ -176,7 +183,7 @@ export default function StudySelections({
                 <h3>{item.supplier}</h3>
               </div>
               <button
-                className="button text-button"
+                className="button text-button study-remove"
                 aria-label={`Remove distributor ${item.supplier}`}
                 onClick={() => onRemoveProspect(item.id)}
               >

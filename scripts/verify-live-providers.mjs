@@ -60,6 +60,29 @@ export function readiness(values) {
   );
 }
 
+// Message-scoped keys intentionally cannot read administrative inbox metadata.
+export async function checkAgentMail(values, request = fetch) {
+  const response = await request(
+    `https://api.agentmail.to/v0/inboxes/${encodeURIComponent(values.AGENTMAIL_INBOX_ID)}/messages?limit=1`,
+    {
+      headers: { Authorization: `Bearer ${values.AGENTMAIL_API_KEY}` },
+      redirect: "error",
+      signal: AbortSignal.timeout(30_000),
+    },
+  );
+  if (!response.ok) return {
+    status: response.status === 403 ? "blocked" : "failed",
+    httpStatus: response.status,
+    reason: "Message read request rejected; send and delivery are unverified",
+  };
+  const result = await response.json();
+  return {
+    status: Array.isArray(result.messages) ? "passed" : "failed",
+    httpStatus: response.status,
+    proves: "Message read access only; no send, delivery or webhook round trip",
+  };
+}
+
 async function convex(args) {
   try {
     const { stdout } = await run(
@@ -173,37 +196,7 @@ async function main() {
       });
     } else report.checks.firecrawl = { status: "blocked" };
     if (values.AGENTMAIL_API_KEY && values.AGENTMAIL_INBOX_ID) {
-      await check("agentmail", async () => {
-        // https://docs.agentmail.to/api-reference/inboxes/get
-        const response = await fetch(
-          `https://api.agentmail.to/v0/inboxes/${encodeURIComponent(values.AGENTMAIL_INBOX_ID)}`,
-          {
-            headers: { Authorization: `Bearer ${values.AGENTMAIL_API_KEY}` },
-            redirect: "error",
-            signal: AbortSignal.timeout(30_000),
-          },
-        );
-        if (!response.ok) {
-          const error = await response.json().catch(() => ({}));
-          const missingPermission =
-            response.status === 403 && error.code === "missing_permission";
-          return {
-            status: missingPermission ? "blocked" : "failed",
-            httpStatus: response.status,
-            reason: missingPermission
-              ? "Inbox read permission missing; send permission and delivery are unverified"
-              : "Inbox request rejected",
-          };
-        }
-        const inbox = await response.json();
-        return {
-          status:
-            inbox.inbox_id === values.AGENTMAIL_INBOX_ID ? "passed" : "failed",
-          httpStatus: response.status,
-          proves:
-            "Configured inbox access only; no send, delivery or webhook round trip",
-        };
-      });
+      await check("agentmail", () => checkAgentMail(values));
     } else report.checks.agentmail = { status: "blocked" };
   }
   report.checks.openai = {

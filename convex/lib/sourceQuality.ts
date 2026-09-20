@@ -124,8 +124,11 @@ export function inspectSource(
   const links: SourceInspection["links"] = [];
   if (root) {
     const origin = new URL(root).origin;
-    for (const match of text.matchAll(
-      /\[([^\]\n]{1,300})\]\((https?:\/\/[^\s)]+)(?:\s+"[^"]*")?\)/g,
+    // Catalog links often wrap thumbnails and line breaks. Remove image tokens
+    // before reading their outer link; images are not product destinations.
+    const linkedText = text.replace(/!\[[^\]]*\]\([^\n)]*\)/g, "");
+    for (const match of linkedText.matchAll(
+      /\[([^\]]{1,600})\]\((https?:\/\/[^\s)]+)(?:\s+"[^"]*")?\)/g,
     )) {
       const url = publicSourceUrl(match[2]);
       if (!url || url === root || links.some((link) => link.url === url))
@@ -142,7 +145,7 @@ export function inspectSource(
         )
       )
         continue;
-      const label = match[1].replace(/[*_!#]/g, "").trim();
+      const label = match[1].replace(/[*_!#\\]/g, "").replace(/\s+/g, " ").trim();
       let path = parsed.pathname;
       try {
         path = decodeURI(path);
@@ -154,7 +157,8 @@ export function inspectSource(
         /^(?:agregar|añadir|comprar|agotado|leer m[aá]s|ver m[aá]s)$/i.test(
           label,
         ) ||
-        !matches(`${label} ${path}`, words)
+        !words.length ||
+        !words.every(word => containsIngredientTerm(`${label} ${path}`, word))
       )
         continue;
       links.push({ url, label: label.slice(0, 160) });

@@ -91,7 +91,10 @@ test("direct calculation retains pending terms, exact package arithmetic and rec
     expect(brand && navigation && (navigation.y >= brand.y + brand.height || navigation.x >= brand.x + brand.width)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`continuity-${width}.png`), fullPage: true });
   }
-  await hub.getByRole("button", { name: "Resume calculation", exact: true }).click();
+  // The global continuity dialog must close before the comparison opens.
+  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
+  await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Resume calculation", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Your recent work", exact: true })).toBeHidden();
   await expect(page.getByLabel("Required quantity")).toHaveValue("40");
   await expect(page.getByTestId("total-0")).toHaveText("USD 44.00");
   await expect(offer).toContainText("10 lb");
@@ -113,6 +116,7 @@ for (const intent of ["inquiry", "research"] as const) {
     const hub = page.getByRole("region", { name: "Continue your work", exact: true });
     await hub.getByRole("button", { name: "Review sources", exact: true }).click();
     const source = page.locator(".research-sources > article").filter({ hasText: "Test rice supplier" });
+    if (intent === "research") await source.getByText("More options", { exact: true }).click();
     await source.getByRole("button", { name: intent === "inquiry" ? "Prepare inquiry" : "Research missing details", exact: true }).click();
     const review = page.getByRole("dialog", { name: "Review potential distributor", exact: true });
     await expect(review.getByLabel("Potential distributor name")).toHaveValue("Test rice supplier");
@@ -183,4 +187,32 @@ test("continuity keeps independent work separate and its bounded list keyboard a
   await expect(resume).toBeInViewport();
   await resume.press("Enter");
   await expect(page.getByRole("heading", { name: "Find smaller packs", exact: true })).toBeVisible();
+});
+
+
+test("resuming a different ingredient clears only the working selection", async ({ page, context }) => {
+  const token = createHash("sha256").update(randomUUID()).digest("hex");
+  const reserved = run("research:reserveSearch", { token, clientId: randomUUID(), ingredient: "Lentils", region: "Portland, OR, US" });
+  run("research:finishSearch", {
+    id: reserved.run.id, simulated: false, discarded: 0, warning: false,
+    sources: [{ url: "https://supplier.test/lentils", title: "Test lentil supplier", description: "Synthetic E2E source", markdown: null, contentTruncated: false }],
+  });
+  await context.addInitScript(value => localStorage.setItem("procurement-demo-session-v1", value), token);
+  await page.goto("/?view=market");
+  await page.getByRole("button", { name: "Explore rice example", exact: true }).click();
+  await page.getByRole("article", { name: "Result: Cascade Pantry Supply · fictional example", exact: true }).getByRole("button", { name: "Add to study", exact: true }).click();
+  await page.getByRole("button", { name: "Save study", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Saved (1)", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
+  await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Review sources", exact: true }).click();
+  await expect(page.getByRole("button", { name: "My study", exact: true })).toBeVisible();
+  await page.getByRole("heading", { name: "Test lentil supplier", exact: true }).waitFor();
+  await page.getByRole("button", { name: "Prepare inquiry", exact: true }).click();
+  const review = page.getByRole("dialog", { name: "Review potential distributor", exact: true });
+  await review.getByRole("checkbox").check();
+  await review.getByRole("button", { name: "Save and prepare inquiry", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Review quote request", exact: true })).toContainText("Lentils");
+  const studies = run("studies:list", { token });
+  expect(studies).toHaveLength(2);
+  expect(studies.some((study: { selectedIds: string[] }) => study.selectedIds.length === 1)).toBe(true);
 });

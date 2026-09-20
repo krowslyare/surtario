@@ -1,3 +1,4 @@
+import { logLocalModelUsage } from "./modelUsage";
 import { Agent } from "@convex-dev/agent";
 import { createOpenAI } from "@ai-sdk/openai";
 import { providerFetch } from "./providerTransport";
@@ -37,6 +38,7 @@ export async function extractDocument(
     name: "Procurement visual document reader",
     languageModel: createOpenAI({ apiKey, fetch: providerFetch })(model),
     instructions: `${extractionInstructions} Transcribe visible text in its original language without filling illegible parts, and classify the document as quotation, purchase, list, or unknown. Quotes must appear in that transcription. If it is not a quotation or contains ambiguous offers, do not turn purchases or lists into offers: leave every offer field null.`,
+    usageHandler: logLocalModelUsage,
     storageOptions: { saveMessages: "none" },
     contextOptions: { recentMessages: 0, searchOtherThreads: false },
   });
@@ -74,6 +76,7 @@ export async function extractDocument(
         },
       ],
       schema: documentSchema,
+      providerOptions: { openai: { reasoningEffort: "low" } },
       maxRetries: 0,
       maxOutputTokens: 5000,
       abortSignal: AbortSignal.timeout(45000),
