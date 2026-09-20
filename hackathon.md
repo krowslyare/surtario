@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-20T03:18:00Z
+- **Last updated:** 2026-09-20T03:32:30Z
 
 ## Log
 
@@ -559,3 +559,10 @@ One fresh real Firecrawl search returned 21 candidates, 16 readable; up to three
 ### 2026-09-20 — a5cb3f5 and working tree review follow-up
 
 Pushed the integrated sourcing and mail progress to PR #37; GitHub test/build passed. Codex found a recovery bug for saved distributor names/contacts. Source actions now recover the existing owner-scoped candidate before continuing; two browser regressions verify corrected fields and reuse after reload. Build passed. No new provider calls, cloud deployment or merge.
+
+
+### 2026-09-20 — 4301edd and search identity follow-up
+
+The saved-candidate recovery fix passed GitHub test/build. A second Codex review found cached search promises being reused after opening a saved study reset the numeric request counter. Keying attempts by the unique client request ID fixes the stale-ingredient result while retaining duplicate-call protection.
+
+Production build and two focused browser tests passed, including the real search UI with provider calls intercepted and Convex progress across reload. This brings the acceptance to 21 distinct browser journeys without further provider spending. No cloud deployment or merge.

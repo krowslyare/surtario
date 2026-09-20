@@ -531,3 +531,8 @@ Verification: 317 unit/backend tests, frontend/backend TypeScript and production
 ### September 20, 2026 — Codex review follow-up
 
 Published the accumulated local acceptance in PR #37 at `a5cb3f5`; GitHub test/build passed. Codex identified one additional P2: reopening a source forgot the saved distributor's corrected name/contact and could reject continuation as conflicting data. The card now resolves the owner-scoped saved candidate by run/source before enabling actions, displays the persisted fields and reuses its identity. Extended both inquiry/research browser journeys through reload and continuation; both and the production build passed. No provider calls, cloud deployment or merge in this follow-up.
+
+
+### September 20, 2026 — search identity review follow-up
+
+Codex review of `4301edd` found that opening a saved study resets the numeric search counter while the mounted component retains cached promises. Search attempts now use the unique client request ID, preserving same-request deduplication without reusing a previous ingredient's result. A browser regression runs rice search, saved-study recovery and lentil search in the real app, intercepting provider actions; both it and the reactive-progress/reload test passed without provider spending. Production build passed; 21 distinct focused browser journeys have now passed across this acceptance. No cloud deployment or merge.

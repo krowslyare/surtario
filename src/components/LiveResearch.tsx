@@ -164,7 +164,7 @@ export function ResearchWorkspace({
     { sourceId: string; seed: PurchaseSeed }[]
   >([]);
   const reviewed = selections ?? localReviewed;
-  useEffect(() => setShowAllSources(false), [request?.id, activeId]);
+  useEffect(() => setShowAllSources(false), [request?.id, request?.clientId, activeId]);
   const [equivalent, setEquivalent] = useState(false);
   const [error, setError] = useState("");
 
@@ -202,7 +202,7 @@ export function ResearchWorkspace({
     return () => {
       current = false;
     };
-  }, [request?.id]);
+  }, [request?.id, request?.clientId]);
 
   useEffect(() => {
     if (!autoSelectLatest || activeId || request || !runs?.length) return;
@@ -863,7 +863,7 @@ function ConnectedResearch({
   const status = useQuery(api.research.status, {});
   const runs = useQuery(api.research.list, { token });
   const search = useAction(api.research.search);
-  const attempts = useRef(new Map<number, Promise<SavedResearch>>());
+  const attempts = useRef(new Map<string, Promise<SavedResearch>>());
   const fallbackClientId = useMemo(() => crypto.randomUUID(), [props.request?.id]);
   const searchClientId = props.request?.clientId ?? fallbackClientId;
   const extract = useAction(api.research.extract);
@@ -889,8 +889,7 @@ function ConnectedResearch({
         runs={runs}
         pendingRun={runs?.find(run => run.clientId === searchClientId)}
         onSearch={(ingredient, region) => {
-          const requestId = props.request?.id ?? 0;
-          const existing = attempts.current.get(requestId);
+          const existing = attempts.current.get(searchClientId);
           if (existing) return existing;
           const pending = search({
             token,
@@ -898,7 +897,7 @@ function ConnectedResearch({
             ingredient,
             region,
           });
-          attempts.current.set(requestId, pending);
+          attempts.current.set(searchClientId, pending);
           return pending;
         }}
         onExtract={(runId, sourceIndex) =>

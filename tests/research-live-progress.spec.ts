@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { connectOnlyToLocalBackend, runLocalConvex } from "./e2e-local";
+import { assertLocalWebSocketUrl, connectOnlyToLocalBackend, runLocalConvex } from "./e2e-local";
 
 // Synthetic provider checkpoints, real local Convex subscriptions. No search action or paid calls.
 test("local Convex progress updates in place and survives reopening after reload", async ({ page, context }) => {
@@ -31,4 +31,45 @@ test("local Convex progress updates in place and survives reopening after reload
   run("research:finishSearch", { id: reserved.id, sources: [], discarded: 0, warning: false, simulated: true });
   await expect(region).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "No usable sources were retrieved" })).toBeVisible();
+});
+
+
+test("a new client request searches again after the numeric counter is reset", async ({ page }) => {
+  const calls: Array<{ clientId: string; ingredient: string; region: string }> = [];
+  await page.routeWebSocket(/.*/, socket => {
+    assertLocalWebSocketUrl(socket.url());
+    const server = socket.connectToServer();
+    server.onMessage(message => socket.send(message));
+    socket.onMessage(message => {
+      let data;
+      try { data = JSON.parse(String(message)); } catch { server.send(message); return; }
+      if (data.type !== "Action") { server.send(message); return; }
+      // Never forward provider actions: this tests the real React/Convex boundary without spending.
+      expect(data.udfPath).toBe("research:search");
+      const args = data.args[0];
+      calls.push(args);
+      socket.send(JSON.stringify({ type: "ActionResponse", requestId: data.requestId, success: true, logLines: [], result: {
+        id: "mock-search-" + calls.length, clientId: args.clientId, ingredient: args.ingredient, region: args.region,
+        simulated: true, observedAt: "2026-09-20", status: "complete", error: null, warning: false, discarded: 0, sources: [],
+      } }));
+    });
+  });
+  await page.goto("/?view=market");
+  await page.getByRole("button", { name: "Explore rice example", exact: true }).click();
+  await page.getByRole("article", { name: "Result: Cascade Pantry Supply · fictional example", exact: true }).getByRole("button", { name: "Add to study", exact: true }).click();
+  await page.getByRole("button", { name: "Save study", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Saved (1)", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Change search", exact: true }).click();
+  await page.getByRole("button", { name: "Search suppliers", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "No usable sources were retrieved", exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "My study", exact: false }).first().click();
+  await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
+  await page.getByRole("button", { name: "Open study", exact: true }).click();
+  await page.getByRole("button", { name: "Change search", exact: true }).click();
+  await page.getByLabel("Ingredient or category").fill("Lentils");
+  await page.getByRole("button", { name: "Search suppliers", exact: true }).click();
+  await expect(page.getByText("Lentils in Portland, OR, US", { exact: true })).toBeVisible();
+  expect(calls).toHaveLength(2);
+  expect(calls.map(call => call.ingredient)).toEqual(["Rice", "Lentils"]);
+  expect(calls[0].clientId).not.toBe(calls[1].clientId);
 });
