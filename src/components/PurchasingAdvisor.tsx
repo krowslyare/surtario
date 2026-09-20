@@ -244,9 +244,11 @@ export function ScenarioDetails({
 export type AdvisorDecisionState = {
   context: AdvisorContext;
   invalid: boolean;
+  raw?: Record<string, string>;
 };
 
 export default function PurchasingAdvisor(props: {
+  initialDecisionState?: AdvisorDecisionState;
   onDecisionContext?: (state: AdvisorDecisionState) => void;
   comparisonId: Id<"comparisons"> | null;
   revision: number;
@@ -290,7 +292,9 @@ function Connected({
   saveBlockedReason,
   onSaveComparison,
   onDecisionContext,
+  initialDecisionState,
 }: {
+  initialDecisionState?: AdvisorDecisionState;
   onDecisionContext?: (state: AdvisorDecisionState) => void;
   comparisonId: Id<"comparisons"> | null;
   revision: number;
@@ -314,12 +318,14 @@ function Connected({
   const prepare = useMutation(api.advisor.prepare),
     explain = useAction(api.advisor.explain);
   const [context, setContext] = useState<AdvisorContext>({
-    ...defaultAdvisorContext,
+    ...(initialDecisionState?.context ?? defaultAdvisorContext),
   });
   const [active, setActive] = useState<Run | null>(null);
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
-  const [raw, setRaw] = useState<Record<string, string>>({});
+  const [raw, setRaw] = useState<Record<string, string>>(
+    () => ({ ...initialDecisionState?.raw }),
+  );
   const pending = useRef<{ key: string; clientId: string } | null>(null);
   const mounted = useRef(true);
   const attempt = useRef(0);
@@ -363,8 +369,8 @@ function Connected({
     );
   });
   useEffect(() => {
-    onDecisionContext?.({ context, invalid });
-  }, [context, invalid, onDecisionContext]);
+    onDecisionContext?.({ context, invalid, raw });
+  }, [context, invalid, raw, onDecisionContext]);
   const validRequestQuantity =
     Number.isFinite(request.quantity) && request.quantity > 0;
   const report = analyzePurchase(request, offers, context);

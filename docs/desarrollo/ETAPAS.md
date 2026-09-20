@@ -617,3 +617,10 @@ Study-rail spacing: the desktop sticky offset now leaves 24 px below the 100 px 
 Reload continuity (local, 2026-09-20): F5 retains market/search context, selections, filters, source-list expansion, message filter, follow-up section and scroll. The landing entrance animation is limited to the landing → workspace transition. Running research resumes from reactive saved checkpoints, without repeating the action; explicit study saving remains separate. Build/TypeScript and 11 focused browser regressions passed, with four existing progress journeys also passing. Manual Chrome verification covered an existing search on desktop/mobile, Messages/Waiting and follow-up/Activity. No provider calls, backend changes or remote publication.
 
 Consolidation for PR #38: 320 domain/Convex tests in 49 files passed using simulated providers. The final reviewed scope is frontend, focused browser regressions and documentation; no backend or deployment changes.
+
+
+### 2026-09-20 — working tree · PR #38 recovery review corrections
+
+Comparison recovery now restores the advisor's preferences and raw field input, including invalid values, instead of overwriting them with defaults. The original selection is stored separately from the edited draft, so restoring a direct example or study selection removes edits after browser Back and reload. Explicit reset and opening another saved comparison keep their existing preference-reset behavior.
+
+Both Codex P2 findings were reproduced before correction. Three new browser regressions and seven existing focused journeys passed, including session isolation, different history entries and desktop/mobile controls. All 320 tests across 49 files, TypeScript/build and the 35-file hosting check passed; advisor screenshots were inspected at 1280 and 390 px. No new external provider calls or emails; merge and development publication are verified separately.

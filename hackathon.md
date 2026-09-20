@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-20T09:50:44Z
+- **Last updated:** 2026-09-20T20:46:38Z
 
 ## Log
 
@@ -651,3 +651,10 @@ The branded entrance now runs only after entering from the landing. Reload and d
 Validation: production build/TypeScript and 11 focused browser checks passed, including landing entrance/accessibility, delayed workspace loading, study selection/filter/scroll recovery, cleared-session isolation, running/completed research recovery without provider calls, and existing offer navigation/responsive behavior. Four existing progress journeys also passed. Manual Chrome checks recovered a real saved search at scroll 896 px on desktop and 844 px at 390 px mobile, plus the Waiting message filter and Activity follow-up section. Initial checks exposed a pagehide/history timing issue in scroll recovery, fixed with tab session storage. No new provider calls, emails, backend changes, commit, push or deployment.
 
 Consolidation check for PR #38: all 320 domain/Convex tests across 49 files passed with simulated providers. The pending files remain frontend, browser regressions and documentation; the diff and credential-pattern scan were clean. No new backend or deployment work is included.
+
+
+### 2026-09-20 — working tree · PR #38 recovery review corrections
+
+Comparison recovery now restores the advisor's preferences and raw field input, including invalid values, instead of overwriting them with defaults. The original selection is stored separately from the edited draft, so restoring a direct example or study selection removes edits after browser Back and reload. Explicit reset and opening another saved comparison keep their existing preference-reset behavior.
+
+Both Codex P2 findings were reproduced before correction. Three new browser regressions and seven existing focused journeys passed, including session isolation, different history entries and desktop/mobile controls. All 320 tests across 49 files, TypeScript/build and the 35-file hosting check passed; advisor screenshots were inspected at 1280 and 390 px. No new external provider calls or emails; merge and development publication are verified separately.
