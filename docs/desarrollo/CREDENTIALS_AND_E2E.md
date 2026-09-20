@@ -14,9 +14,12 @@ Configure secrets in the Convex backend environment using its dashboard or inter
 | Synthetic image/PDF extraction | `OPENAI_API_KEY`, a compatible `OPENAI_EXTRACTION_MODEL` | `DOCUMENT_EXTRACTION_ENABLED=true` |
 | Linked reply extraction | `OPENAI_API_KEY`, `OPENAI_EXTRACTION_MODEL` | `REPLY_EXTRACTION_ENABLED=true` |
 | Purchasing advisor | `OPENAI_API_KEY`, `OPENAI_ADVISOR_MODEL` | `ADVISOR_ENABLED=true` |
+| Adaptive research | `FIRECRAWL_API_KEY`, `OPENAI_API_KEY`, `OPENAI_EXTRACTION_MODEL` | `SOURCING_ENABLED=true` and live research enabled |
+| Initial web interpretation | Configured web research and extraction | `SEARCH_AUTO_REVIEW_ENABLED=true` |
+| Suggested inquiry | `OPENAI_API_KEY`, `OPENAI_EXTRACTION_MODEL` | `QUOTATION_DRAFT_ENABLED=true` |
 | Test email | `AGENTMAIL_API_KEY`, `AGENTMAIL_INBOX_ID`, `AGENTMAIL_TEST_RECIPIENT`, `AGENTMAIL_WEBHOOK_SECRET` | `AGENTMAIL_ENABLED=true` |
 
-Model names must be selected from the project's actual OpenAI access and verified against the structured-output/multimodal/tool calls used here. Model credentials and API availability have not been tested yet.
+Current verified models: `gpt-5.6-luna` with low reasoning for extraction and advice. Local structured text/image acceptance passed September 19; direct API web, reply, drafting, multiround research and advisor acceptance passed on hosted development September 20. See [HOSTED_ACCEPTANCE.md](HOSTED_ACCEPTANCE.md). This does not establish access to every OpenAI model.
 
 ## Run the acceptance flow
 
@@ -37,7 +40,9 @@ Use one ingredient throughout: research → review → saved comparison → advi
 The commercial stage still requires restaurant access, authenticated accounts, private-document handling and measured usefulness. Recipes and purchase history are separate extensions; they do not block the agreed hackathon decision flow.
 
 
-## Recorded development run — September 9, 2026
+## Historical development run — September 9, 2026
+
+This dated configuration was superseded by the September 20 acceptance linked above.
 
 The author authorized configuration through the logged-in Chrome provider consoles. The target was a newly created, dedicated Convex cloud development deployment; production was not used. Keys and the signing secret were transferred directly into backend environment fields. No secret values or message bodies are included in this record.
 

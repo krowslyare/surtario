@@ -85,6 +85,7 @@ export type ResearchResumeRequest = {
   id?: string;
   clientId?: string;
   showAllSources?: boolean;
+  sourceIndex?: number;
   sequence: number;
 };
 
@@ -168,6 +169,8 @@ export function ResearchWorkspace({
   const [showAllSources, setShowAllSources] = useState(resumeRequest?.showAllSources ?? false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const historyRef = useRef<HTMLDivElement>(null);
+  const sourcesRef = useRef<HTMLDivElement>(null);
+  const focusedSourceRequest = useRef<number | null>(null);
   const scrollAfterHistory = useRef(false);
   const [activeId, setActiveId] = useState<string | null>(resumeRequest?.id ?? null);
   const [localRun, setLocalRun] = useState<SavedResearch | null>(null);
@@ -263,6 +266,15 @@ export function ResearchWorkspace({
   useEffect(() => {
     if (active) onActiveRun?.({ id: active.id, showAllSources });
   }, [active?.id, showAllSources, onActiveRun]);
+
+  useEffect(() => {
+    if (resumeRequest?.sourceIndex === undefined || active?.id !== resumeRequest.id || !showAllSources) return;
+    if (focusedSourceRequest.current === resumeRequest.sequence) return;
+    const source = sourcesRef.current?.querySelector<HTMLElement>(`[data-source-index="${resumeRequest.sourceIndex}"]`);
+    if (!source) return;
+    focusedSourceRequest.current = resumeRequest.sequence;
+    scrollToContent(source);
+  }, [active?.id, resumeRequest, showAllSources]);
 
   // A terminal checkpoint can arrive before the action promise resolves.
   const busy = !error && (active ? active.status === "running" : searching);
@@ -450,7 +462,7 @@ export function ResearchWorkspace({
       {!searching && active?.status !== "running" && runs && runs.length > 0 && (
         <div className="research-history" ref={historyRef}>
           <Disclosure
-            title={<span className="research-history-label"><History size={16} aria-hidden="true" />Saved searches <span>({runs.length})</span></span>}
+            title={<span className="research-history-label"><History size={16} aria-hidden="true" />{reviewDestination === "followup" ? "Searches in this follow-up" : "Saved searches"} <span>({runs.length})</span></span>}
             open={historyOpen}
             onOpenChange={setHistoryOpen}
             onAfterClose={() => {
@@ -538,7 +550,7 @@ export function ResearchWorkspace({
                   {active.sources.filter((source) => !source.markdown).length} without readable text.
                   Coverage is limited; these counts do not confirm delivery to {active.region} or comparable prices.
                 </p>
-                {active.status === "complete" && status.autoReviewEnabled && active.sources.length > 3 && (
+                {reviewDestination !== "followup" && active.status === "complete" && status.autoReviewEnabled && active.sources.length > 3 && (
                   <p>AI analyzes up to 3 product pages automatically. More sources are available below; review their details before adding them to your study.</p>
                 )}
                 {active.discarded > 0 && (
@@ -578,14 +590,14 @@ export function ResearchWorkspace({
           )}
           {active.sources.length > 0 && <div className="research-source-toolbar">
             <div className="research-source-list-label">
-              <strong>Candidate sources</strong>
+              <strong>{reviewDestination === "followup" ? "Sources in this search" : "Candidate sources"}</strong>
               <span>{active.sources.length > 12 && !showAllSources ? `Showing 12 of ${active.sources.length} sources` : `Showing all ${active.sources.length} sources`}</span>
             </div>
             {active.sources.length > 12 && <button className="button text-button research-show-sources" aria-expanded={showAllSources} onClick={() => setShowAllSources(value => !value)}>
               {showAllSources ? "Show first 12 sources" : `Show all ${active.sources.length} sources`}
             </button>}
           </div>}
-          <div className="research-sources">
+          <div className="research-sources" ref={sourcesRef}>
             {active.sources.map((source, index) => ({ source, index }))
               .sort((a, b) => {
                 const rank = (s: ResearchSource) => s.analysis?.kind === "product" && s.extraction?.price.value ? s.extraction.currency.value && s.extraction.packageContent.value ? 4 : 3 : s.inspection?.state === "readable" ? 2 : s.inspection?.state === "unreadable" ? 1 : 0;
@@ -640,6 +652,8 @@ export function ResearchWorkspace({
                 <article
                   className={`research-source${isChild ? " research-source-child" : ""}`}
                   key={sourceId}
+                  data-source-index={index}
+                  tabIndex={-1}
                 >
                   <div className="research-source-copy">
                     <span>

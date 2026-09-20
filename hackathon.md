@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-20T20:46:38Z
+- **Last updated:** 2026-09-20T23:37:05Z
 
 ## Log
 
@@ -658,3 +658,16 @@ Consolidation check for PR #38: all 320 domain/Convex tests across 49 files pass
 Comparison recovery now restores the advisor's preferences and raw field input, including invalid values, instead of overwriting them with defaults. The original selection is stored separately from the edited draft, so restoring a direct example or study selection removes edits after browser Back and reload. Explicit reset and opening another saved comparison keep their existing preference-reset behavior.
 
 Both Codex P2 findings were reproduced before correction. Three new browser regressions and seven existing focused journeys passed, including session isolation, different history entries and desktop/mobile controls. All 320 tests across 49 files, TypeScript/build and the 35-file hosting check passed; advisor screenshots were inspected at 1280 and 390 px. No new external provider calls or emails; merge and development publication are verified separately.
+
+
+### 2026-09-20 — working tree · hosted direct-API acceptance and recording handoff
+
+Verified merged PR #38 (`e25a058`) and its successful development publication. The hosted OpenAI credential and feature gates were configured on the authorized development deployment, with Luna low for extraction and advice. No production deployment or CLI bridge was used. A fresh Firecrawl rice/Portland search returned 21 candidates (16 readable) with three automatic interpretations; two distinct reviewed offers and one no-price candidate were saved and recovered. Reload during research retained the same run.
+
+A separate six-round research case completed through the direct API in 210.288 seconds, retaining 21 unique sources, interpreting 15, and identifying seven independent domains with prices. Budget exhaustion remained explicit and product differences were preserved. One reviewed inquiry was sent through AgentMail to the configured test inbox. Its reply reached the signed webhook and updated Messages without refresh; one AI extraction was reviewed and saved. Commercial terms were explicitly synthetic. Required 60 lb produced three 25 lb packs, 15 lb excess and USD 66 including delivery. Unconfirmed timing correctly blocked selection. No real supplier was contacted and no purchase was recorded.
+
+One advisor run invoked `evaluateScenarios` and `readEvidence`. Editing quantity marked the analysis stale; reload retained the edit, and restoring the original input recovered the matching analysis without another call. A fresh capability saw no owned lists and was denied direct case/advisor access. This was a bounded acceptance, not a complete security or load audit. Source watching stayed disabled; exact API dollar consumption was not measured.
+
+The acceptance exposed a presentation issue: a final one-source round obscured accumulated findings. Local frontend changes open the all-round summary by default and link each prioritized finding to its exact source review, with focus, smooth/reduced-motion navigation and mobile sticky-header clearance. Quick-search analysis-limit copy is no longer applied to multiround research. Manual checks covered 1920/390/320 px with no horizontal overflow or captured runtime errors; 320 domain/Convex tests in 49 files and hosting build validation passed. No backend source changes are included.
+
+Consolidated current stage/configuration evidence and replaced the old CLI recording story with a live-provider script. Submission description and social copy are prepared, not published. New UI remains separate from deployed PR #38 until this branch is integrated. Final narrated video, public-repository release and contest submission remain pending. Details: `docs/desarrollo/HOSTED_ACCEPTANCE.md`, `docs/desarrollo/ENSAYO_DEMO.md`, `docs/entrega/SUBMISSION.md`.

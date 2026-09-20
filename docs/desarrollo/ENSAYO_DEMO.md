@@ -1,37 +1,57 @@
-# Demo: a useful answer changes the decision
+# Grabación en vivo · Surtario
 
-Current local story after PR #35. Use the same saved case throughout. The final narrated video and direct OpenAI API/hosted acceptance remain separate release steps.
+Guion preparado el 20 de septiembre de 2026. Objetivo de montaje: **2:40–2:50**, siempre menos de tres minutos. No es un video grabado ni una duración final medida. Narración propuesta en inglés, igual que la interfaz. La [aceptación hosted](HOSTED_ACCEPTANCE.md) ya ejercitó Firecrawl, OpenAI API, AgentMail y Convex; no hace falta repetir pruebas de carga antes de grabar.
 
-“Encontramos alternativas, pero falta una condición para decidir. Surtario identifica qué preguntar, ayuda a obtener la respuesta y muestra cómo cambia la compra recomendada.”
+## Historia
 
-## Recording sequence
+Investigar un ingrediente, conservar evidencia útil, preguntar lo que falta y calcular el pedido con condiciones revisadas. El producto debe funcionar durante la toma. Se inicia una búsqueda nueva; los resultados guardados solo sirven para continuidad, no para hacer pasar una simulación por una búsqueda en vivo.
 
-| Scene | What to show | Evidence boundary |
+## Preparación de la toma
+
+1. Comprobar que el PR de cierre esté publicado si se quiere mostrar el acceso nuevo a las fuentes de todas las rondas. Usar el hosting de desarrollo autorizado y una ventana de escritorio de 1920 × 1080 al 100%.
+2. Tener abierto el buzón de prueba configurado, sin otras conversaciones o credenciales en pantalla. No escribir a contactos encontrados en internet. La persona que responda usará ese buzón, con términos explícitamente de prueba.
+3. Grabar toda la sesión original. Acelerar las esperas con una indicación visible como **“Search accelerated”**; mantener el mismo estudio/caso. No ocultar fallos ni reemplazar resultados por los del ensayo anterior.
+4. Preparar la pregunta y los términos de abajo como texto de trabajo. No precargar resultados ni afirmar precios antes de que aparezcan. Si la web cambia, mostrar lo que realmente devuelve.
+5. Evitar abrir herramientas de desarrollo, configuración de proveedores o claves durante la captura. Mantener las fuentes, fechas y condiciones pendientes visibles cuando importan.
+
+## Secuencia y narración
+
+| Tiempo objetivo | Acción en pantalla | Narración propuesta |
 | --- | --- | --- |
-| Start with one case | Rice, Portland and the saved research question; what we know, what remains and next action. | No documents, recipe or purchase history required. |
-| Explicit cut to completed research | Open the results of that same case and a reviewed source. | Say “research completed before this take”. The earlier flour run took 592 seconds; that is one measured run, not a universal latency. |
-| The unresolved decision | A: USD 45 per order; B: freight pending. Open the contextual question. | USD 10 is a calculated freight boundary against the complete alternative, not an offered discount or quoted freight. |
-| What we asked and received | Saved, human-reviewed message and its linked reply. | Local take: synthetic web/mail and real Luna CLI. Reply is pre-received test evidence; no real negotiation or supplier communication. |
-| Human confirmation | USD 4 freight and the literal confirming phrase. | Only freight changes. All other terms and original evidence are preserved. |
-| Revised decision | Before/after under cash priority and USD 50 budget: B totals USD 39 versus A USD 45. | An order comparison, not realized savings. No purchase is recorded. |
-| Recovery | Choose after review, save, reload, reopen; save and restore the updated cash-priority scenario. | Same case and sources; updated terms and selection survive. |
+| 0:00–0:15 | Landing → explorar. Ingrediente: `long grain white rice`; zona: `Portland, OR, US`. Iniciar una búsqueda nueva. | “Surtario helps a kitchen research suppliers before it commits to a purchase. Start with one ingredient and a delivery area. No recipe, purchase history or order quantity is required.” |
+| 0:15–0:35 | Mantener progreso, fuentes y finalización visibles. Acelerar la espera explícitamente. | “Firecrawl searches public pages while Convex keeps the research visible as it runs. These are candidate sources. Finding a price does not confirm delivery or make two products equivalent.” |
+| 0:35–1:00 | Revisar un precio con su fuente/fecha; guardar la oferta. Conservar también un candidato sin precio. | “OpenAI extracts proposed details with evidence. I can check and correct them before saving. This supplier has a published pack price; this other candidate still needs a quote. Both belong in my study.” |
+| 1:00–1:20 | Desde el estudio, abrir Research a question, crear la pregunta de abajo e investigar. Mostrar hallazgos de todas las rondas y una fuente priorizada. Acelerar esta espera también. | “When the first search leaves gaps, I can research a specific question. Surtario keeps the rounds together and gives me a path back to each source. Premium and organic products stay distinct.” |
+| 1:20–1:45 | Preparar consulta de un candidato, revisar sugerencia y destinatario de prueba, aprobar una vez. Mostrar Messages; responder desde el buzón controlado. | “I review the inquiry before AgentMail sends it. This recording uses a controlled test inbox to demonstrate the live mail connection. The reply appears here through Convex, without refreshing.” |
+| 1:45–2:15 | Revisar respuesta, pedir campos propuestos una vez, confirmar/corregir. Cantidad 60 lb y términos de abajo. | “A reply is evidence, not an automatic price update. After reviewing these test terms, sixty pounds requires three twenty-five-pound bags. That is seventy-five pounds received, fifteen left in inventory, and sixty-six dollars including delivery.” |
+| 2:15–2:35 | Solicitar asesor una vez; mostrar condición pendiente y por qué selección sigue bloqueada. | “The advisor can inspect the evidence and calculate scenarios. It still cannot confirm a delivery date that the supplier never gave us. That missing condition stays visible and blocks the choice.” |
+| 2:35–2:50 | Guardar comparación, recargar y recuperar. Cierre en el mismo caso. | “I can save the work and return to its sources, messages and calculation. Surtario keeps the evidence close, and the decision stays mine.” |
 
-Use readable holds and a visible disclosure. Do not accelerate a provider wait invisibly or splice a different research case into the result. The main scene is freight; minimum negotiation is a separate supporting demonstration, not a second storyline competing for the three-minute budget.
+Los tiempos son presupuesto editorial. Conservar pausas legibles en revisión, respuesta y cálculo; comprimir esperas, no los momentos de decisión. Si el montaje supera tres minutos, recortar la escena de investigación avanzada antes de volver ilegible el flujo principal.
 
-The minimum example makes the distinction between viability and recommendation: reducing A's minimum from five packs to two makes it fit the USD 50 budget at USD 45, while B at USD 35 stays recommended. A reply retaining five packs leaves the blocking condition unchanged.
+## Pregunta para investigación avanzada
 
-## Timing and artifacts
+> Find published package prices for standard long grain white rice from independent suppliers. Keep premium, organic and regenerative products distinct; leave delivery and taxes unconfirmed unless explicitly stated.
 
-The verified main walkthrough took **114.971 seconds**. A separately timed closing segment saved and explicitly restored the updated cash-priority scenario in **13.640 seconds**. Combined screen time is **128.611 seconds (2:09 rounded)**, with an explicit edit between segments of the same case. These are automated browser rehearsals with reading holds, not a narrated/exported video. The final result check confirmed the saved USD 50 budget, USD 45/39 totals, original evidence, one reply/confirmation for the current request, and recovered selection. The final scene shows the current saved scenario rather than stale AI advice.
+El ensayo tardó 210.288 segundos en seis rondas y encontró 21 fuentes únicas, 15 interpretadas y siete dominios con precios. Es evidencia de una ejecución, no un resultado que deba prometer la toma nueva.
 
-The measured local browser rehearsal is recorded in the current consolidation evidence. Its timing includes navigation, confirmation, save/reload and deliberate reading holds. It is an automated walkthrough, not a narrated exported video. Final recording must be timed again with actual narration and an exported duration below 180 seconds.
+## Respuesta controlada para la escena de correo
 
-Local artifacts are under `.local/rehearsal/`: sanitized timing/acceptance records and desktop/mobile captures; the session file contains a capability token and must not be committed or shared. Do not commit private messages or credentials.
+Enviar solo como respuesta al mensaje de prueba recién recibido; no a un proveedor real:
 
-## Before the final take
+> SYNTHETIC INTEGRATION TEST ONLY — not an offer from the web supplier.
+>
+> Supplier: Surtario Hosted Test Supplier.
+> Product: long grain white rice, standard white rice.
+> Package: 25 lb bag. Price: USD 20.00 per bag.
+> Minimum order: 2 bags.
+> Delivery: USD 6.00 per order to Portland, Oregon.
+> Goods and delivery prices include all taxes.
+> Delivery timing remains unconfirmed.
+> No purchase has been placed.
 
-- Keep the synthetic/previously completed disclosures visible wherever applicable.
-- Verify the original URL, observation date, reviewed fields, received reply and current comparison revision in the selected session.
-- Keep the final story in one case. Evidence details and timeline open only when they explain a decision.
-- Complete the direct OpenAI API and deployed journey described in [current consolidation](CONSOLIDACION_DECISION.md) when the key is available and the target is authorized. Luna CLI success does not satisfy that acceptance.
-- A real test-mail send, deployment, public repository change, video upload and contest submission each require their corresponding authorization. None happened as an implicit recording step.
+Revisar y guardar antes de calcular. No marcar la entrega como confirmada, ni usar estos términos para afirmar ahorro real. La conexión de correo es real; los términos comerciales son de prueba. El asesor y las extracciones usan Luna API con razonamiento bajo.
+
+## Cierre de entrega
+
+Reproducir el archivo exportado completo: menos de 180 segundos, texto legible, audio entendible y continuidad del mismo trabajo. Publicar solo tras revisar el resultado. Enlaces y textos listos en [SUBMISSION](../entrega/SUBMISSION.md). La grabación y publicación siguen pendientes; los antiguos tiempos de ensayo CLI de PR #35 no describen este recorrido.

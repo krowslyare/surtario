@@ -1,38 +1,28 @@
 # Etapas de desarrollo
 
-**Current iteration after merged PR #36:** [contextual funnel and recovery](#september-19-2026--contextual-funnel-and-recovery), product landing and navigation refinements. Older test counts below belong to their dated deliveries. The current branch is being prepared for review; cloud publication and live-provider acceptance are separate.
+Esta tabla es la única fuente de estado de las etapas. Las entradas fechadas conservan el historial; un bloqueo antiguo no sustituye la evidencia posterior. Implementación, pruebas locales, aceptación externa y entrega al concurso son resultados distintos.
 
-Esta tabla es la fuente de estado del proyecto. Marcar una etapa completada solo con evidencia de su criterio de salida. El calendario del plan es orientativo; ante retrasos aplicar sus recortes, sin afirmar resultados no ejecutados.
+## Estado · 20 de septiembre de 2026
 
-The PR #36 review corrections are described in [the current consolidation record](CONSOLIDACION_DECISION.md#pr-36-review-corrections): comparison-only action routing, complete blocker projection and visible term/viability deltas. That record describes the preceding PR; its validation is distinct from the current funnel and landing work.
-
-## Estado
-
-September 17 live follow-up: [current provider checks](LIVE_PROVIDER_CHECKS.md) found real Firecrawl partial coverage (13 sources / 11 with text; 128.459 s), a missing AgentMail `inbox_read` permission, and absent OpenAI credentials/models. Added a reproducible redacted preflight/probe command. Full integrated API acceptance remains blocked; CI does not certify it.
+Baseline desplegada: **PR #38, `e25a058`**, publicación de desarrollo comprobada en GitHub Actions. Se configuró OpenAI en `dev:incredible-wolverine-122` y se ejecutó el recorrido acotado con Firecrawl, Luna API, AgentMail y Convex reactivo. No se utilizó producción ni Luna CLI para esta aceptación. [Resultados y límites](HOSTED_ACCEPTANCE.md).
 
 | Etapa | Resultado | Estado | Evidencia actual |
 | --- | --- | --- | --- |
-| 0 | Repositorio organizado y plan ejecutable | Completada | README, guía, plan, revisión y primera entrega locales |
-| 1 | Base de desarrollo y caso de compra calculable | Completada localmente | UI manual, 27 tests, 7 pruebas de navegador y build; comandos en README |
-| 2 | Viabilidad de integraciones externas | En curso | Real Firecrawl discovery/product read and AgentMail round trip/replay passed. Local source inspection and real Luna replay now distinguish catalogs, products and missing prices. Direct OpenAI API and combined hosted acceptance remain pending; see source-analysis evidence below |
-| 3 | Estudio de mercado y compra opcional | En curso | Unified saved study for reviewed web offers, no-price candidates and selected examples; manual/XLSX/CSV lists and synthetic image/PDF extraction implemented. Local study save/reload and manual boundaries verified; complete hosted acceptance pending |
-| 4 | Solicitud, respuesta y decisión conectadas | En curso | Guided save/scenario/advice and explicit AI suggestions for linked replies implemented. Local Luna CLI exercised reply extraction, actual advisor tools and saved-analysis recovery; browser tests cover reply-to-new/existing comparison. The earlier real AgentMail round trip is recorded separately. Direct OpenAI API and the combined hosted journey remain pending |
-| 5 | Demo pública aislada y robusta | En preparación | Reviewed main backend/frontend published to development on September 10; all eight hosted files match the build, SPA/404/unsigned-webhook checks and synthetic study save/reload/reopen passed. Complete provider journey and final public-demo acceptance remain pending |
-| 6 | Impacto opcional en recetas | Pendiente, recortable | No condiciona etapas 3–5 ni entrega |
-| 7 | Materiales y entrega del concurso | Pendiente | Requisitos documentados; nada publicado |
-| P | Habilitación y validación de piloto privado | Pendiente, vía comercial independiente | No hay restaurante disponible |
+| 0 | Repositorio organizado y plan ejecutable | Completada | README, guías, plan y registro factual |
+| 1 | Base y cálculo comprobable | Completada | Cálculos deterministas; 320 pruebas en 49 archivos y build satisfactorios el 20 de septiembre |
+| 2 | Viabilidad de integraciones | Verificada con alcance acotado | Firecrawl real; Luna API local para texto claro/ambiguo e imagen; Luna API hosted para web, investigación, correo y asesor; AgentMail ida/vuelta con webhook |
+| 3 | Mercado a estudio y compra opcional | Implementada y verificada | Búsqueda nueva sin cantidad, dos ofertas revisadas guardadas, candidato sin precio, fuentes y especificaciones preservadas; recuperación y aislamiento |
+| 4 | Solicitud, respuesta y decisión | Implementada y verificada con datos de prueba | Correo aprobado, respuesta reactiva, extracción revisada, cálculo de USD 66, asesor con sus dos herramientas e invalidación. La entrega pendiente bloqueó la selección en la prueba nueva; selección positiva y confirmación parcial constan en aceptaciones anteriores |
+| 5 | Demo aislada utilizable | Aceptación de desarrollo realizada | Hosting PR #38, recarga de búsqueda/cálculo, rechazo de otra sesión; revisión manual y límites en HOSTED_ACCEPTANCE. Ajuste de navegación posterior aún en rama de cierre |
+| 6 | Recetas | Recortada de la entrega | No bloquea investigación ni compra |
+| 7 | Materiales y entrega | Preparados; publicación pendiente | Guion y textos de entrega redactados. Falta video final, repo público, publicación social y confirmación de envío |
+| P | Piloto privado | Pendiente, independiente | Sin restaurante validado; no habilitar documentos privados ni afirmar preparación comercial |
 
-Preparación del agente: skills cargados, MCP invocable pero status requiere autenticación. Backend local probado por CLI y HTTP; AI files instalados. Ver [SETUP_AGENTE.md](./SETUP_AGENTE.md). La evidencia de persistencia proviene de las pruebas de aplicación, no del estado del MCP.
+La configuración real se describe en [CREDENTIALS_AND_E2E](CREDENTIALS_AND_E2E.md). `SOURCE_WATCH_ENABLED` permanece apagado: no se iniciaron consultas recurrentes. Las pruebas de UI no requieren repetir búsquedas pagadas.
 
-Bloque de persistencia completado localmente: selección y fuentes recuperables, biblioteca reactiva, aislamiento de sesión y control de revisiones. Ver [evidencia y límites](./PERSISTENCIA_ESTUDIOS.md). No habilita datos privados ni completa la demo pública.
+Próximo cierre: revisar/integrar el PR de aceptación, comprobar su despliegue y grabar el [recorrido en vivo](ENSAYO_DEMO.md). [Materiales de entrega](../entrega/SUBMISSION.md). No hay otra función grande necesaria para el video.
 
-The integrated study, reply and advisor flow is implemented and verified locally. Reviewed web offers and no-price candidates share one recoverable study. Reply AI suggestions retain manual fallback and observed-attempt provenance; a single advisor action saves and analyzes the current scenario without duplicate calls on recovery. 173 unit/backend/configuration tests, all 54 browser journeys, frontend/backend typechecks and hosting checks passed. Computer use exercised the linked synthetic mail flow with real Luna CLI extraction and advice. Two separate real Firecrawl requests and recorded-source interpretation passed. See [integrated evidence](DEMO_FLOW_VALIDATION.md) and [source-analysis evidence](FIRECRAWL_SOURCE_ANALYSIS.md). The reviewed main backend and frontend were published to the dedicated development deployment on September 10; see [hosting verification](HOSTING.md). Combined live-provider acceptance remains pending.
-
-Next: confirm the intended OpenAI account/project, configure its server key and compatible models, then verify web/document extraction and advisor tools against real responses. The separate Firecrawl and authorized AgentMail checks do not complete stages 2–4. Finish the combined hosted acceptance flow and rehearsal before treating the development preview as the final demo. See [provider procedure and dated evidence](./CREDENTIALS_AND_E2E.md).
-
-Revisión visual aplicada: Manrope local y tokens verde bosque/blanco cálido; búsqueda y resultados como foco principal, herramientas al costado en escritorio y después de los resultados en móvil, precio normalizado destacado y acceso persistente al estudio. La portada ilustrada fue retirada. Ver [guía visual y evidencia](../diseno/UI_UX.md). No modifica el estado de integraciones ni habilita publicación.
-
-Ensayo del guion actual completado en navegador: explorar → guardar/recuperar → consulta sin envío → compra opcional → totales comprobados. 36 pruebas de dominio/backend y 19 de navegador, build y smoke de cálculo local satisfactorios. [Guion y brechas de concurso](./ENSAYO_DEMO.md); video no grabado, integraciones y publicación pendientes.
+La dirección visual vigente es Surtario: berenjena, porcelana, rábano y ají; Bricolage Grotesque y Manrope. Ver [UI_UX](../diseno/UI_UX.md). Las paletas y límites históricos de entregas anteriores no son instrucciones actuales.
 
 ## 1 · Base y caso de referencia
 
@@ -65,7 +55,7 @@ Trabajo: explorar por insumo/categoría y zona; separar catálogo, distribuidor 
 
 Salida: estudio recuperable sin documentos ni cantidad; contacto sin precio conserva fuente sin asignar cero; búsqueda vacía no afirma ausencia de proveedores; categoría amplia no mezcla productos incompatibles. Al continuar a compra, mostrar paquetes, mínimo, excedente y desembolso sin inventar entrega o impuestos. Una oferta nueva no registra compra.
 
-The current implementation saves selected examples, reviewed web sources and no-price candidates in local Convex. Browser recovery and owned-source reconstruction are verified. Real Firecrawl calls are recorded separately; combined hosted acceptance remains pending.
+The implementation saves selected examples, reviewed web offers and no-price candidates in Convex. Recovery and owned-source reconstruction are verified. The September 20 hosted acceptance is recorded in [HOSTED_ACCEPTANCE.md](HOSTED_ACCEPTANCE.md).
 
 ## 4 · Cotización a decisión
 
@@ -83,7 +73,7 @@ Trabajo: sesiones independientes, documentos sintéticos incluidos, límites por
 
 Entrada pública con «Probar ejemplo», sin planes de suscripción, checkout ni pago para explorar. Los precios de insumos sí forman parte de la comparación.
 
-Development hosting is published with `@convex-dev/static-hosting` 0.2.1. HTTPS root and hashed assets match the build, extensionless routes return the SPA shell, missing assets return 404, and the webhook rejects unsigned requests. The full provider journey and final release acceptance remain pending. See [hosting contract and evidence](./HOSTING.md).
+Development hosting is published with `@convex-dev/static-hosting` 0.2.1. HTTPS root and hashed assets match the build, extensionless routes return the SPA shell, missing assets return 404, and the webhook rejects unsigned requests. The bounded hosted provider journey passed on September 20; final contest delivery remains pending. See [hosting contract](./HOSTING.md) and [current acceptance](HOSTED_ACCEPTANCE.md).
 
 Salida: dos visitantes no interfieren; no se permite envío arbitrario ni acceso a archivos ajenos; fuente vieja lleva fecha; el E2E completo pasa. Verificar URL real después de publicar dentro del alcance autorizado. Si sigue local, registrar «preparado para desplegar», no «publicado».
 

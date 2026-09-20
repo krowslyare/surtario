@@ -2,6 +2,8 @@
 
 Entrega separada del descubrimiento web. El objetivo es revisar una solicitud vinculada a una comparación o estudio guardado, enviarla a un buzón de prueba autorizado y recuperar respuestas del mismo hilo.
 
+Current acceptance: the September 20 hosted roundtrip exercised an approved AI-assisted draft, signed reply ingestion, live Messages updates, direct Luna API field suggestions and human review before saving. [Evidence](HOSTED_ACCEPTANCE.md). The original September 9 entry below is historical.
+
 ## Contrato
 
 - La solicitud toma insumo, especificación y cantidad de la comparación guardada. No registra una compra. Una cantidad pendiente permite pedir catálogo y condiciones sin comprometer volumen.
@@ -53,7 +55,7 @@ El borrador editable para copiar sigue separado: sus cambios no se envían al co
 
 ## Oferta desde respuesta
 
-«Revisar como nueva oferta» permite transcribir y confirmar una oferta del correo y abrir una comparación nueva guardable, o añadirla a la comparación actual guardada tras confirmar equivalencia. Esta incorporación conserva fuentes y cantidad y elimina la elección anterior. El servidor vincula la procedencia por solicitud/mensaje; no sobrescribe ofertas anteriores ni registra compra. [Contrato y límites](RESPUESTA_A_OFERTA.md). La extracción de precios del correo sigue siendo manual.
+«Revisar como nueva oferta» permite transcribir y confirmar una oferta del correo y abrir una comparación nueva guardable, o añadirla a la comparación actual guardada tras confirmar equivalencia. Esta incorporación conserva fuentes y cantidad y elimina la elección anterior. El servidor vincula la procedencia por solicitud/mensaje; no sobrescribe ofertas anteriores ni registra compra. [Contrato y límites](RESPUESTA_A_OFERTA.md). Con `REPLY_EXTRACTION_ENABLED=true`, “Suggest fields with AI” propone los campos con citas del correo. Requiere un clic explícito y revisión humana; recibir el mensaje nunca actualiza precios automáticamente. La entrada manual sigue disponible.
 
 
 
