@@ -41,7 +41,7 @@ export default function ResearchProgress({ progress, ingredient, region, sources
       <ul>{sources.slice(0, 6).map(source => <li key={source.url}>
         <div><span>{new URL(source.url).hostname.replace(/^www\./, "")}</span><strong>{source.title}</strong></div>
         <div className="research-arrival-state">
-          {source.extractionStatus === "running" ? <><LoaderCircle size={15} className="research-reading-icon" /> Reading terms</> : source.analysis?.kind === "product" && source.extraction?.price.value ? <><strong>{source.extraction.currency.value ?? "Currency pending"} {source.extraction.price.value}</strong><span>{source.extraction.packageContent.value} {source.extraction.packageUnit.value} · To review</span></> : <><Check size={15} /> Source read</>}
+          {source.extractionStatus === "running" ? <><LoaderCircle size={15} className="research-reading-icon" /> Reading terms</> : source.analysis?.kind === "product" && source.extraction?.price.value ? <><strong>{source.extraction.currency.value ?? "Currency pending"} {source.extraction.price.value}</strong><span>{source.extraction.packageContent.value && source.extraction.packageUnit.value ? `${source.extraction.packageContent.value} ${source.extraction.packageUnit.value}` : "Package size pending"} · To review</span></> : <><Check size={15} /> Source read</>}
         </div>
       </li>)}</ul>
       {sources.length > 6 && <p className="research-progress-note">{sources.length - 6} more sources collected. All will be available when the search finishes.</p>}

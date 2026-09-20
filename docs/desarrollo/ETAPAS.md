@@ -536,3 +536,8 @@ Published the accumulated local acceptance in PR #37 at `a5cb3f5`; GitHub test/b
 ### September 20, 2026 — search identity review follow-up
 
 Codex review of `4301edd` found that opening a saved study resets the numeric search counter while the mounted component retains cached promises. Search attempts now use the unique client request ID, preserving same-request deduplication without reusing a previous ingredient's result. A browser regression runs rice search, saved-study recovery and lentil search in the real app, intercepting provider actions; both it and the reactive-progress/reload test passed without provider spending. Production build passed; 21 distinct focused browser journeys have now passed across this acceptance. No cloud deployment or merge.
+
+
+### 2026-09-20 — e9702d1 and progressive price context
+
+Codex review identified a priced source without complete package size/unit appearing as a bare price during analysis. Progress cards now explicitly show "Package size pending" unless both values are available. Extended the existing desktop/mobile progress checks with missing-size, missing-unit and complete-package cases; both browser tests and production build passed. No new provider calls, cloud deployment or merge.

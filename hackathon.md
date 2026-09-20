@@ -12,7 +12,7 @@
 - **Auth:** Other (capacidad anónima de demo; sin cuentas)
 - **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-20T03:32:30Z
+- **Last updated:** 2026-09-20T03:39:31Z
 
 ## Log
 
@@ -566,3 +566,8 @@ Pushed the integrated sourcing and mail progress to PR #37; GitHub test/build pa
 The saved-candidate recovery fix passed GitHub test/build. A second Codex review found cached search promises being reused after opening a saved study reset the numeric request counter. Keying attempts by the unique client request ID fixes the stale-ingredient result while retaining duplicate-call protection.
 
 Production build and two focused browser tests passed, including the real search UI with provider calls intercepted and Convex progress across reload. This brings the acceptance to 21 distinct browser journeys without further provider spending. No cloud deployment or merge.
+
+
+### 2026-09-20 — e9702d1 and progressive price context
+
+Codex review identified a priced source without complete package size/unit appearing as a bare price during analysis. Progress cards now explicitly show "Package size pending" unless both values are available. Extended the existing desktop/mobile progress checks with missing-size, missing-unit and complete-package cases; both browser tests and production build passed. No new provider calls, cloud deployment or merge.
