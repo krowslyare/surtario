@@ -117,6 +117,8 @@ export const create = mutation({
       .unique();
     if (prior) {
       if (
+        prior.title !== args.title.trim() ||
+        prior.sourceKind !== args.sourceKind ||
         prior.region !== args.region.trim() ||
         JSON.stringify(
           prior.rows.map(({ caseId: _id, state: _state, ...r }) => r),

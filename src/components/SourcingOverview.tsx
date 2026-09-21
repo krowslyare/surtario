@@ -105,6 +105,8 @@ function Connected({ token, ...props }: Props & { token: string }) {
     `${item.ingredient} ${item.region} ${item.suppliers.join(" ")}`.toLowerCase().includes(search.trim().toLowerCase());
   const matching = ordered.filter(matches);
   const visible = matching.filter(item => !item.batchId);
+  const standalone = ordered.filter(item => !item.batchId);
+  const standaloneAttention = standalone.filter(item => item.next.attention);
   const chooseFilter = (value: Filter) => { setFilter(value); (document.getElementById("overview-work") ?? document.getElementById("ingredient-batches"))?.scrollIntoView({ behavior: "instant", block: "start" }); };
   async function open(item: Work, target: Target = item.next.target, requestId?: string) {
     if (opening) return;
@@ -133,20 +135,20 @@ function Connected({ token, ...props }: Props & { token: string }) {
         <button key={value} aria-pressed={filter === value} onClick={() => chooseFilter(value)}><strong>{count}</strong><span>{label}</span><ArrowRight size={18} /></button>)}
     </div>
     {filter !== "all" && <Button variant="text" onClick={() => setFilter("all")}>Show all work</Button>}
-    <IngredientBatchProgress onOpen={props.onOpenCase} visibleCaseIds={filter === "all" && !search ? undefined : matching.flatMap(item => item.caseId ? [item.caseId] : [])} />
+    <IngredientBatchProgress nextSteps={Object.fromEntries(items.filter(item => item.batchId && item.caseId).map(item => [item.caseId!, { title: item.next.title, action: action(item) }]))} onOpen={props.onOpenCase} visibleCaseIds={filter === "all" && !search ? undefined : matching.flatMap(item => item.caseId ? [item.caseId] : [])} />
     <p className="overview-scope">{data.limited ? "Recent work only: this session exceeds the overview’s supported record limit." : "Work in this browser session."} A work item can need attention while research continues.</p>
     {!items.length ? <section className="overview-empty"><img src="/brand/surtario-symbol.svg" alt="" width="64" height="64" /><h2>Start with what your kitchen needs.</h2><p>Research an ingredient and delivery area. Your saved studies, supplier conversations and decisions will come together here.</p><Button variant="secondary" onClick={props.onResearch}>Explore suppliers<ArrowRight size={16} /></Button></section> : <>
-      <div className={`overview-priorities ${researching.length ? "has-research" : ""}`}>
-        <section aria-labelledby="attention-title"><div className="overview-section-title"><div><h2 id="attention-title">Needs your attention</h2><p>Review what’s holding up your next step.</p></div>{attention.length > 3 && <Button variant="text" onClick={() => chooseFilter("attention")}>See all {attention.length}</Button>}</div>
-          {attention.length ? <ul className="overview-attention">{ordered.filter(item => item.next.attention).slice(0, 3).map(item => <li key={item.id}>
+      {standalone.length > 0 && <div className={`overview-priorities ${standalone.some(item => item.next.researching) ? "has-research" : ""}`}>
+        <section aria-labelledby="attention-title"><div className="overview-section-title"><div><h2 id="attention-title">Needs your attention</h2><p>Review what’s holding up your next step.</p></div>{standaloneAttention.length > 3 && <Button variant="text" onClick={() => chooseFilter("attention")}>See all {standaloneAttention.length}</Button>}</div>
+          {standaloneAttention.length ? <ul className="overview-attention">{standaloneAttention.slice(0, 3).map(item => <li key={item.id}>
             <p className="overview-ingredient">{item.ingredient}<span>{item.region}</span></p><div className="overview-attention-detail"><h3>{item.next.title}</h3><p>{item.next.description}</p></div>{action(item)}
-          </li>)}</ul> : <p className="overview-clear"><Check size={20} />No reviews are waiting. Continue any saved work below.</p>}
+          </li>)}</ul> : <p className="overview-clear"><Check size={20} />{attention.length ? "List ingredients needing attention are shown above." : "No reviews are waiting. Continue any saved work below."}</p>}
         </section>
         {researching.some(item => !item.batchId) && <section className="overview-research" aria-labelledby="research-title"><h2 id="research-title">Research in progress</h2>
           {researching.filter(item => !item.batchId).map(item => <article key={item.id}><h3>{item.ingredient}</h3><p>{item.region}</p><p>{item.active ? ({ searching: "Finding public sources", reading: "Reading product pages", reviewing: "Interpreting source evidence" }[item.active.stage] ?? "Research in progress") : "Investigating this question"}</p>
             {item.status === "running" && item.caseId && <p>Round {Math.min(item.steps + 1, 6)} of up to 6</p>}<p>{item.active?.retained ?? item.retained} sources retained · {item.active?.interpreted ?? item.interpreted} interpretations</p><Button variant="text" onClick={() => void open(item, "research")}>Open research<ArrowRight size={16} /></Button></article>)}
         </section>}
-      </div>
+      </div>}
       {items.some(item => !item.batchId) && <section id="overview-work" aria-labelledby="work-title"><div className="overview-section-title"><div><h2 id="work-title">All sourcing work</h2><p>Your research, saved studies and supplier conversations.</p></div>{changed && <Button variant="text" onClick={() => { order.current = desired; rerender(value => value + 1); }}>New activity · update order</Button>}</div>
         <div className="overview-toolbar"><label>Find work<input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Ingredient, supplier or location" /></label>
           <label>Sort by<Select aria-label="Sort by" value={sort} onValueChange={value => { setSort(value); order.current = []; }} options={[{ value: "priority", label: "Priority" }, { value: "recent", label: "Recent activity" }]} /></label></div>

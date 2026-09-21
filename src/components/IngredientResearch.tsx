@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useConvexConnectionState } from "convex/react";
 import { ConvexError } from "convex/values";
 import { ArrowRight, Check, MapPin, Search } from "lucide-react";
@@ -52,6 +52,7 @@ function Selection({
     );
     setStarted(false);
     setError("");
+    request.current = { fingerprint: "", id: crypto.randomUUID() };
   }, [batch]);
   async function launch(ids: Set<string>) {
     if (busy || started) return;
@@ -236,26 +237,37 @@ function Selection({
     </div>
   );
 }
+type BatchNextStep = { title: string; action: ReactNode };
+
 export function IngredientBatchProgress({
   onOpen,
   visibleCaseIds,
+  nextSteps,
 }: {
   onOpen: (id: string, runId?: string) => void;
   visibleCaseIds?: string[];
+  nextSteps?: Record<string, BatchNextStep>;
 }) {
   const { token } = useDemoSession();
   return token ? (
-    <Progress token={token} onOpen={onOpen} visibleCaseIds={visibleCaseIds} />
+    <Progress
+      token={token}
+      onOpen={onOpen}
+      visibleCaseIds={visibleCaseIds}
+      nextSteps={nextSteps}
+    />
   ) : null;
 }
 function Progress({
   token,
   onOpen,
   visibleCaseIds,
+  nextSteps,
 }: {
   token: string;
   onOpen: (id: string, runId?: string) => void;
   visibleCaseIds?: string[];
+  nextSteps?: Record<string, BatchNextStep>;
 }) {
   const data = useQuery(api.ingredientBatches.list, { token });
   const stop = useMutation(api.sourcing.cancel),
@@ -332,6 +344,7 @@ function Progress({
                   .map((row, index) => {
                     const c = batch.cases.find((c) => c.id === row.caseId);
                     if (!c) return null;
+                    const nextStep = nextSteps?.[c.id];
                     const isQueued = row.state === "queued",
                       isRunning = c.status === "running";
                     const label = isQueued
@@ -370,9 +383,6 @@ function Progress({
                                 {c.sources} sources · {c.interpreted}{" "}
                                 interpreted
                               </strong>
-                              <span>
-                                Review evidence before confirming offers
-                              </span>
                             </>
                           ) : (
                             <span>
@@ -385,6 +395,12 @@ function Progress({
                                   : c.summary}
                             </span>
                           )}
+                          {!isQueued && (nextStep || c.sources > 0) && (
+                            <span>
+                              {nextStep?.title ??
+                                "Review evidence before confirming offers"}
+                            </span>
+                          )}
                           <time dateTime={new Date(c.updatedAt).toISOString()}>
                             Updated{" "}
                             {new Date(c.updatedAt).toLocaleTimeString("en-US", {
@@ -394,22 +410,25 @@ function Progress({
                           </time>
                         </div>
                         <div className="batch-row-actions">
-                          {!isQueued && (
-                            <Button
-                              variant="secondary"
-                              onClick={() =>
-                                onOpen(
-                                  c.id,
-                                  c.sources
-                                    ? c.researchRunIds.at(-1)
-                                    : undefined,
-                                )
-                              }
-                            >
-                              {c.sources ? "Review findings" : "View progress"}
-                              <ArrowRight size={15} />
-                            </Button>
-                          )}
+                          {!isQueued &&
+                            (nextStep?.action ?? (
+                              <Button
+                                variant="secondary"
+                                onClick={() =>
+                                  onOpen(
+                                    c.id,
+                                    c.sources
+                                      ? c.researchRunIds.at(-1)
+                                      : undefined,
+                                  )
+                                }
+                              >
+                                {c.sources
+                                  ? "Review findings"
+                                  : "View progress"}
+                                <ArrowRight size={15} />
+                              </Button>
+                            ))}
                           {isQueued ? (
                             <Button
                               variant="text"

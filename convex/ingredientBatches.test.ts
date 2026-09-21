@@ -50,6 +50,21 @@ test("capacity is atomic, request replay is stable, and another session cannot r
     input = selection();
   const id = await t.mutation(api.ingredientBatches.create, input);
   expect(await t.mutation(api.ingredientBatches.create, input)).toBe(id);
+  expect(
+    await t.mutation(api.ingredientBatches.create, {
+      ...input,
+      title: ` ${input.title} `,
+      region: ` ${input.region} `,
+    }),
+  ).toBe(id);
+  for (const change of [
+    { title: "Another list" },
+    { sourceKind: "ai" as const },
+  ]) {
+    await expect(
+      t.mutation(api.ingredientBatches.create, { ...input, ...change }),
+    ).rejects.toThrow(/different selection/);
+  }
   const own = await t.query(api.ingredientBatches.list, { token });
   expect(own.remaining).toBe(6);
   expect(own.batches[0].cases).toHaveLength(4);

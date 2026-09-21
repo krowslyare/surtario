@@ -12,7 +12,7 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-21T22:03:00Z
+- **Last updated:** 2026-09-21T22:26:56Z
 
 ## Current delivery
 
@@ -151,3 +151,8 @@ Validation passed 334 domain/backend tests, 38/38 focused browser tests in the f
 Implemented explicit photo/PDF reading with OpenAI, editable original/corrected rows, ambiguity review, source fingerprints and one/many selection. Excel/CSV/text remain available. Two durable Workflow lanes coordinate existing individual sourcing cases, with atomic capacity checks, idempotent starts, owner isolation, independent stop/retry and incremental Overview findings. PDF originals render locally; the interface uses the established visual system and preserves list selection during navigation.
 
 On an isolated local backend, direct OpenAI read the synthetic kitchen list from both PNG and PDF into four correct ingredients. A real Firecrawl/OpenAI batch completed one run per ingredient: 17/15/15/25 sources and 12/10/12/12 interpretations respectively, all ending at the six-round budget. Observed two active/two queued, reloaded without duplicate cases, and opened rice evidence while other research continued. No files in Convex Storage, no mail requests and no purchases were created. This is local external acceptance, not hosted publication or private-customer enablement. Automated checks and the complete acceptance boundary are recorded in [VERIFICATION](docs/VERIFICATION.md).
+
+
+### 2026-09-21 - PR #43 review corrections
+
+Confirmed and fixed replacement-versus-retry request identity and incomplete metadata validation on batch replay. Removed repeated batch attention cards while retaining the shared priority actions inside each ingredient row. Regression checks cover identical replacement, unconfirmed retries, changed title/provenance and exact evidence/comparison/reply destinations. Desktop/mobile inspection used preserved local results; no additional provider calls, mail, merge or publication were made. Final validation is recorded in [VERIFICATION](docs/VERIFICATION.md).
