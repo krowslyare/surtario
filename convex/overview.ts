@@ -14,7 +14,7 @@ const mail = v.object({
 });
 const work = v.object({
   id: v.string(), kind: v.union(v.literal("case"), v.literal("study"), v.literal("comparison"), v.literal("search"), v.literal("inquiry")),
-  objective: v.optional(v.string()),
+  objective: v.optional(v.string()), batchId: v.optional(v.id("ingredientBatches")),
   ingredient: v.string(), region: v.string(), suppliers: v.array(v.string()), updatedAt: v.number(),
   caseId: v.optional(v.id("sourcingCases")), studyId: v.optional(v.id("studies")), comparisonId: v.optional(v.id("comparisons")),
   runIds: v.array(v.id("researchRuns")), status: v.string(), steps: v.number(),
@@ -135,7 +135,7 @@ export const list = query({
           ...(comparison?.offers ?? []).map(offer => offer.supplier), ...(study?.results ?? []).map(result => result.supplier),
           ...(study?.prospects ?? []).map(prospect => prospect.supplier), ...(study?.webSelections ?? []).flatMap(s => s.seed.offers.map(o => o.supplier)),
         ])],
-        ...(sourcingCase ? { caseId: sourcingCase._id, objective: sourcingCase.objective } : {}), ...(study ? { studyId: study._id } : {}), ...(comparison ? { comparisonId: comparison._id } : {}),
+        ...(sourcingCase ? { caseId: sourcingCase._id, objective: sourcingCase.objective, ...(sourcingCase.batchId ? { batchId: sourcingCase.batchId } : {}) } : {}), ...(study ? { studyId: study._id } : {}), ...(comparison ? { comparisonId: comparison._id } : {}),
         status: sourcingCase?.status ?? "idle", steps: sourcingCase?.steps ?? 0,
         updatedAt: Math.max(sourcingCase?.updatedAt ?? 0, study?.updatedAt ?? 0, comparison?.updatedAt ?? 0, ...mailRows.flatMap(row => [row.updatedAt, ...row.replies.map(reply => Date.parse(reply.receivedAt)).filter(Number.isFinite)])),
         runIds: [...new Set([...(sourcingCase?.researchRunIds ?? []), ...sourceRuns(study, comparison)])].flatMap(id => { const valid = ctx.db.normalizeId("researchRuns", id); return valid ? [valid] : []; }),

@@ -37,6 +37,7 @@ export default function Workspace({
   const [comparisonKey, setComparisonKey] = useState(0);
   const [seed, setSeed] = useState<PurchaseSeed | undefined>(initialDraft?.seed);
   const marketScroll = useRef(0);
+  const overviewScroll = useRef(0);
   const previousView = useRef(`${view}:${route.caseId ?? ""}`);
   useEffect(() => {
     function restore() {
@@ -62,13 +63,14 @@ export default function Workspace({
     if (previousView.current === destination) return;
     previousView.current = destination;
     const frame = requestAnimationFrame(() => {
-      window.scrollTo({ top: view === "market" ? marketScroll.current : 0, behavior: "instant" });
+      window.scrollTo({ top: view === "market" ? marketScroll.current : view === "overview" ? overviewScroll.current : 0, behavior: "instant" });
       document.querySelector<HTMLElement>(`#${view}-main h1`)?.focus({ preventScroll: true });
     });
     return () => cancelAnimationFrame(frame);
   }, [view, route.caseId]);
   function navigate(next: Route, replace = false) {
     if (view === "market" && next.view !== "market") marketScroll.current = window.scrollY;
+    if (view === "overview" && next.view !== "overview") overviewScroll.current = window.scrollY;
     const url = new URL(window.location.href);
     for (const key of ["case", "message", "comparison", "fromCase", "fromMessage", "from", "section", "run"]) url.searchParams.delete(key);
     url.hash = "";

@@ -26,7 +26,7 @@ describe("batchFromSavedList", () => {
       column: null,
       hasHeader: false,
       method: "spreadsheet",
-      sourceLabel: "Lista guardada · XLSX o CSV revisado",
+      sourceLabel: "Saved list · XLSX o CSV revisado",
     });
   });
 });

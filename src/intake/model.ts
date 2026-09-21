@@ -8,6 +8,9 @@ export type IntakeRow = {
   ingredient: string;
   original: string[];
   line: number;
+  reference?: string;
+  documentHash?: string;
+  needsReview?: boolean;
 };
 export type IntakeBatch = {
   rows: IntakeRow[];
@@ -15,7 +18,7 @@ export type IntakeBatch = {
   sheet: string;
   column: number | null;
   hasHeader: boolean;
-  method: "manual" | "spreadsheet" | "transcription";
+  method: "manual" | "spreadsheet" | "transcription" | "ai";
   sourceLabel?: string;
 };
 export function fileKind(file: Pick<File, "name" | "size">) {

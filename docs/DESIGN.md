@@ -49,3 +49,9 @@ Support initial, empty, busy, partial, disconnected, failed, saved and stale sta
 ## Review expectations
 
 For changed interfaces, inspect the actual UI on desktop/mobile, keyboard behavior, reduced motion and preserved drafts. Run the relevant existing regression checks and build. Screenshots and tool audit output are local work artifacts, not product routes or proof of full accessibility certification.
+
+## Kitchen list to ingredient progress
+
+Use **Import ingredient list** for the input and **Supplier quotes** for commercial-document examples. Explain the purpose in plain language. Review places the original beside editable rows on desktop and above them on narrow screens; uncertain names have an explicit review action. Selection and delivery area precede research, with one shared route for one or several ingredients.
+
+Overview uses the existing type, plum/neutral palette, borders, focus tokens and spacing. Batch rows align ingredient, actual phase, available evidence and next action; mobile rows stack without hiding actions. Preserve selection and return position while opening a case. Show explicit empty/filter/error/limit states, keep available findings accessible and distinguish research from confirmed offers. Do not use simulated progress percentages or present source quantities as confirmed orders.

@@ -1,6 +1,6 @@
 # Architecture and product contracts
 
-Surtario supports one ingredient/market at a time: explore public evidence, save a study, optionally ask for missing terms and compare a purchase. No recipe, purchase history, document or order quantity is required for market research. The interface is English-first; original source quotations retain their language.
+Each Surtario study supports one ingredient/market: explore public evidence, save a study, optionally ask for missing terms and compare a purchase. No recipe, purchase history, document or order quantity is required for market research. The interface is English-first; original source quotations retain their language.
 
 ## Runtime structure
 
@@ -48,7 +48,11 @@ Without sales and other business costs, the app cannot claim real profit or prov
 
 ## Documents and optional monitoring
 
-Manual lists and reviewed XLSX/CSV columns can be saved as ingredient names with provenance; file bytes and unrelated columns stay local. Bundled synthetic PNG/PDF quotes exercise model extraction. Private documents support local manual transcription only; anonymous private-file upload is not enabled.
+Manual lists and reviewed XLSX/CSV columns remain local until their selected names are explicitly saved. Ingredient-list reading is a separate path from supplier quote extraction: a list starts research; a quote proposes commercial fields for a single comparison. Bundled synthetic quotes retain their existing review flow.
+
+An explicit **Read list with AI** sends a PNG/JPEG/WebP/PDF (up to 3 MB) through a capability-scoped HTTP action to OpenAI. The server checks format, signature, byte count and request identity. File bytes remain in memory and are never stored in Convex Storage or Agent messages. Proposed rows expire after 24 hours; explicitly saved reviewed text remains with the session. This is bounded anonymous demo access, not restaurant-account authentication or private-pilot enablement. Provider data handling still applies, and the UI discloses the transmission before reading.
+
+Rows preserve the interpreted original line, page/position, file fingerprint and corrected ingredient. Ambiguous rows require review or removal. Quantities remain unconfirmed source context, never automatic purchase needs. A recent reading can be reopened without another model request; the original file must be reselected to preview it after reload. PDF pages render locally with PDF.js, independently of AI reading.
 
 Optional source watches are implemented but disabled in hosted acceptance. They cover up to three selected, reviewed real sources for seven days, with daily checks. Changed price/package values produce review proposals, not automatic offer updates. Failed or mismatched readings stay unverified. This is not global price surveillance or browser/email push notifications.
 
@@ -63,3 +67,11 @@ Tests exercise deterministic results, ownership, revisions, provider boundaries 
 Overview, case next steps and Messages share reply identifiers and mail priority. Counts describe work items and may overlap: a case can need review while research runs or a supplier reply is outstanding. Source review is a separate, versioned acknowledgement on a research run. Its evidence hash prevents a stale review from clearing newly changed evidence; it never confirms commercial terms. Saved decision cards use the original confirmation reports and flag later comparison revisions.
 
 A manual refresh uses `research.search` with an owned `studyId`, preserving ingredient and market. It shares the existing quick-search allowance, cooldown and provider gates; overlapping refreshes for the same study reuse the active run. New sources are compared by URL; interpreted differences are review prompts, not verified supplier changes. Missing extracted fields do not establish changed terms. A refresh saves research only: reviewed studies and comparisons change through their existing explicit review/save paths. No recurring watch is enabled by opening or refreshing Overview.
+
+## Ingredient research batches
+
+A batch coordinates existing sourcing cases; each selected row has one independent case, evidence and review/comparison path. Creation is atomic and idempotent by session/request ID, rejects changed replay input and checks the entire selection against the remaining ten-case session allowance before starting anything. A list may hold 100 reviewed names; a batch can only start the available case capacity. Separate equal ingredient names are never silently merged.
+
+Two durable Workflow lanes await complete child research workflows. A slot is released after the child finishes, not when its asynchronous start returns. Only one batch (or standalone research outside it) may run per session. Reloading or closing a tab does not own the queue. Queued cancellation, active stopping and an individual failed/stopped retry preserve other rows. Stop invalidates late writes while the outstanding request drains before releasing its lane; it cannot refund provider requests already sent. Explicit continuation from a batch case also uses the coordinator. The existing three-run/six-round case budgets remain in force.
+
+Overview counts cases once, groups their batch progress and opens saved findings before the batch completes. Backend phases and available counts drive progress; no timed percentages are fabricated. Source totals in batch rows deduplicate exact URLs across that case's rounds, while review cards describe their outstanding review scope. Research completion, reviewed evidence and a purchase decision remain different states. No batch sends mail or selects offers.

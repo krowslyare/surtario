@@ -44,7 +44,7 @@ test("revisión documental guardada recupera evidencia, condiciones y elección 
     token,
   );
   await page.goto("/?example=pe");
-  await page.getByText("Quotes and documents", { exact: true }).click();
+  await page.getByText("Supplier quotes", { exact: true }).click();
   await page.getByRole("button", { name: "Review extracted data" }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Package unit", { exact: true }).click();

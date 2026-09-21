@@ -89,3 +89,31 @@ Manual inspection used the existing real-source acceptance workspace on localhos
 The first browser run lacked the isolated backend's local CLI selector configuration; correcting that local setup resolved the harness failures. The configured run then exposed a route race when Back arrived during lazy mounting after reload, which was fixed and verified, and an old test expectation that incorrectly retained `from=overview` after global navigation. Assertions now check the same saved case with the correct origin. The added mobile navigation assertion was corrected to include the Messages reply-count label. No retry or timeout increase was added.
 
 Final local checks passed **334 domain/backend tests in 51 files**, **38/38 focused browser tests in one final run**, frontend TypeScript and the production/hosting build (35 files). The browser run covers landing entry, market/save/reload, contextual research, mobile/global navigation, messages, comparison recovery, live local Convex subscriptions and explicit empty/outcome states. Existing nonfatal bundle-size and test-provider warnings remain. An adversarial frontend review checked route origins, event callback arguments, legacy links, preserved drafts and pending/empty states; backend/provider contracts are unchanged.
+
+
+## September 21: ingredient-list import and independent research (local, separate PR)
+
+The new branch was tested against two isolated anonymous Convex backends: a disposable automated-test dataset on port 3270, and a preserved real-provider dataset on port 3280. Neither changed the hosted deployment. The previously merged PR #42 is separately confirmed published by [Verify run 35653681215](https://github.com/krowslyare/restaurant-procurement/actions/runs/35653681215).
+
+### Real external acceptance
+
+A synthetic kitchen list was uploaded explicitly as PNG and then PDF through the actual browser/HTTP/OpenAI path. Both readings returned Long-grain white rice, All-purpose flour, Vegetable oil and Red onions. Original lines retained 40 lb, 25 lb, 1 jug and 10 lb as source notes; these did not become purchase requirements. The user-facing review and list save preserved original text, correction and file fingerprint. The PDF preview initially failed with the browser's native viewer; replacing it with local PDF.js canvas rendering resolved desktop and narrow-screen inspection. That final visual preview was checked by manual transcription without purchasing another AI reading.
+
+A four-ingredient batch in Portland, Oregon used real Firecrawl and direct OpenAI calls. The UI showed two researching and two queued. Persisted start/completion events independently confirmed a maximum of two active cases over the entire batch and zero remaining at completion. Reload recovered the same batch and cases. Rice findings were opened while flour was still interpreting and the other ingredients remained queued; returning to Overview retained the ongoing work. Final backend read-back confirmed one inactive batch, four settled rows and exactly one research run per case:
+
+| Ingredient | Distinct source URLs within the case | Interpreted URLs | Terminal result |
+| --- | ---: | ---: | --- |
+| Long-grain white rice | 17 | 12 | Six-round limit reached |
+| All-purpose flour | 15 | 10 | Six-round limit reached |
+| Vegetable oil | 15 | 12 | Six-round limit reached |
+| Red onions | 25 | 12 | Six-round limit reached |
+
+The sum is 72 per-ingredient source URLs and 46 interpretations, not 72 globally unique suppliers or verified offers. All four need human evidence review. The batch took about nine minutes; proposed video timings are editorial, not measured completion promises. The backend contained two completed list readings, zero stored file objects and zero quotation requests. No supplier message, offer selection, purchase, source watch or private customer document was involved. Ignored `.local/ingredient-acceptance/report.json` retains the redacted read-back; raw provider data and credentials are not committed.
+
+### Automated and visual checks
+
+340 domain/backend tests in 53 files pass with simulated providers, including durable two-lane concurrency, a stopped action retaining its slot, provider failure isolation, individual retry and duplicate retry, atomic capacity rejection, request replay, session ownership, ambiguous review, file signature/type/size rejection, sanitized provider errors reading expiry and compact deduplicated source counters for long URLs. Frontend and backend TypeScript pass. The hosting build resolves 37 files; PDF code and its worker are bundled separately. Existing bundle-size and test-provider warnings are nonfatal.
+
+The full browser run passed 143 of 144 tests; its single failure was a stale “Open follow-up” locator left by the previous naming change. It was corrected to the visible “Open research question” label without changing the keyboard assertion; the final focused run passed all 13 funnel, ingredient-list and Overview tests. The browser suite verifies original quote/document flows, CSV/XLSX/text/manual image input, a resumed AI proposal, required ambiguity review, saved original/corrected provenance, navigation selection continuity and actual local PDF rendering. Browser fixtures simulate proposed rows; they do not establish model acceptance. Manual UI inspection covered 1920 × 1080, 390 px and 320 px, independent batch rows, explicit empty filters, source destinations and the original-document review. The real provider journey described above is separate evidence.
+
+Adversarial review checked owned record access, input bounds, unchanged-replay recovery, asynchronous start versus workflow completion, stop/retry races, stale result rejection, coordinator recovery and the distinction between source quantities and purchase needs. Anonymous capabilities remain the existing demo security boundary; authenticated restaurant accounts/private-pilot enablement are outside this PR. This change is not merged or deployed by these checks.

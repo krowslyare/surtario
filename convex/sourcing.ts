@@ -52,6 +52,7 @@ export function view(row: Doc<"sourcingCases">) {
     _creationTime,
     ownerHash: _owner,
     workflowId: _workflow,
+    sourceProgress: _progress,
     runs: _runs,
     ...rest
   } = row;
@@ -305,6 +306,12 @@ export const start = mutation({
   handler: async (ctx, args) => {
     const row = await owned(ctx, args.token, args.caseId);
     if (row.status === "running") return null;
+    if (row.batchId) {
+      await ctx.runMutation(internal.ingredientBatches.continueResearch, { caseId: row._id, expectedRevision: row.revision });
+      return null;
+    }
+    const batches = await ctx.db.query("ingredientBatches").withIndex("by_ownerHash", q => q.eq("ownerHash", row.ownerHash)).take(10);
+    if (batches.some(b => b.active)) throw new ConvexError("Your ingredient list is still researching. Open its progress to stop or retry an ingredient.");
     if (!sourcingEnabled())
       throw new ConvexError("Case research is not enabled by the server.");
     if (row.runs >= 3)
@@ -354,7 +361,9 @@ export const cancel = mutation({
       summary: "Research canceled. Any late result will not update this case.",
       updatedAt: Date.now(),
     });
-    if (row.workflowId)
+    // Batch lanes retain their place until an already-issued action returns.
+    // Revision guards reject late output; the next checkpoint ends the child.
+    if (row.workflowId && !row.batchId)
       await cancelWorkflow(
         ctx,
         components.workflow,
@@ -442,6 +451,15 @@ export const snapshot = internalQuery({
     };
   },
 });
+// Keep Overview metadata small even when a provider returns long URLs.
+async function sourceKey(url: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(url));
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+async function progressMap(row: Doc<"sourcingCases">) {
+  return new Map(await Promise.all((row.sourceProgress ?? []).map(async source =>
+    ["urlHash" in source ? source.urlHash : await sourceKey(source.url), source.interpreted] as const)));
+}
 export const recordStep = internalMutation({
   args: {
     caseId: v.id("sourcingCases"),
@@ -481,7 +499,13 @@ export const recordStep = internalMutation({
       discarded: args.discarded ?? 0,
       warning: args.warning ?? false,
     });
+    const progress = await progressMap(row);
+    for (const source of args.sources) {
+      const key = await sourceKey(source.url);
+      progress.set(key, progress.get(key) || source.extractionStatus === "complete");
+    }
     await ctx.db.patch(row._id, {
+      sourceProgress: [...progress].map(([urlHash, interpreted]) => ({ urlHash, interpreted })),
       steps: row.steps + 1,
       researchRunIds: [...row.researchRunIds, runId].slice(-RESEARCH_POLICY.retainedRuns),
       summary: args.reason.slice(0, 1500),
@@ -534,7 +558,10 @@ export const recordAnalysis = internalMutation({
     const sources = [...run.sources];
     sources[args.sourceIndex] = args.source;
     await ctx.db.patch(run._id, { sources });
+    const progress = await progressMap(row), key = await sourceKey(args.source.url);
+    progress.set(key, progress.get(key) || args.source.extractionStatus === "complete");
     await ctx.db.patch(row._id, {
+      sourceProgress: [...progress].map(([urlHash, interpreted]) => ({ urlHash, interpreted })),
       summary: `Round ${row.steps}: interpreted ${sources.filter((source) => source.extractionStatus === "complete").length} of ${sources.length} candidate pages.`,
       updatedAt: Date.now(),
     });

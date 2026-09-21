@@ -10,7 +10,7 @@ for (const width of [1920, 1440, 390, 320]) {
     await page.locator(".market-search input").first().focus();
     await expect(page.locator(".market-search")).toHaveCSS("box-shadow", "none");
 
-    const heading = page.getByRole("button", { name: "Quotes and documents", exact: true });
+    const heading = page.getByRole("button", { name: "Supplier quotes", exact: true });
     await heading.click();
     const section = page.getByRole("region", { name: "Photo and PDF extraction" });
     await expect(section).toBeVisible();

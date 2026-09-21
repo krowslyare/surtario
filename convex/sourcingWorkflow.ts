@@ -10,6 +10,7 @@ import { z } from "zod";
 import { v } from "convex/values";
 import { components, internal } from "./_generated/api";
 import { env, internalAction, internalMutation } from "./_generated/server";
+import { researchProgressValidator } from "./researchValidators";
 import { planValidator, candidate } from "./sourcingValidators";
 import { providerFetch } from "./lib/providerTransport";
 import { discoverSources, readProductPage } from "./lib/firecrawl";
@@ -42,6 +43,7 @@ export const plan = internalAction({
     if (!snapshot) return null;
     if (!sourcingEnabled())
       throw new Error("Research was disabled by the server.");
+    await ctx.runMutation(internal.sourcingWorkflow.setPhase, { caseId: input.caseId, revision: input.revision, phase: "Planning" });
     const coverage = researchCoverage(snapshot.runs);
     const prior = snapshot.history.flatMap((event) =>
       event.query ? [event.query] : [],
@@ -211,6 +213,7 @@ export const investigate = internalAction({
     if (!sourcingEnabled())
       throw new Error("Research was disabled by the server.");
     const selected = input.plan;
+    await ctx.runMutation(internal.sourcingWorkflow.setPhase, { caseId: input.caseId, revision: input.revision, phase: selected.action === "read" ? "Reading pages" : "Searching suppliers" });
     if (selected.action === "stop")
       return { sources: [], warning: false, discarded: 0 };
     const coverage = researchCoverage(snapshot.runs);
@@ -273,6 +276,14 @@ export const investigate = internalAction({
           excludeUrls: [...known],
         },
         env.FIRECRAWL_API_KEY,
+        providerFetch,
+        async progress => {
+          const active: boolean = await ctx.runMutation(internal.sourcingWorkflow.setPhase, {
+            caseId: input.caseId, revision: input.revision,
+            phase: progress.stage === "reading" ? "Reading pages" : "Searching suppliers", progress,
+          });
+          if (!active) throw new Error("Research stopped before another provider request.");
+        },
       );
       sources = result.sources;
       warning = result.warning;
@@ -312,6 +323,7 @@ export const analyzeCandidate = internalAction({
       inspectSource(source, snapshot.case.ingredient).state !== "readable"
     )
       return null;
+    await ctx.runMutation(internal.sourcingWorkflow.setPhase, { caseId: input.caseId, revision: input.revision, phase: "Interpreting evidence" });
     let result: Infer<typeof candidate>;
     const base = {
       url: source.url,
@@ -361,6 +373,7 @@ export const run = defineWorkflow(components.workflow, {
   returns: v.null(),
   workpoolOptions: { retryActionsByDefault: false },
 }).handler(async (step, input): Promise<null> => {
+  await step.runMutation(internal.sourcingWorkflow.setPhase, { ...input, phase: "Planning", workflowId: step.workflowId });
   for (let index = 0; index < MAX_STEPS; index++) {
     const selected: Infer<typeof planValidator> | null = await step.runAction(
       internal.sourcingWorkflow.plan,
@@ -440,5 +453,15 @@ export const completed = internalMutation({
           "Research could not finish. Saved evidence remains available; external calls were not retried automatically.",
       });
     return null;
+  },
+});
+
+export const setPhase = internalMutation({
+  args: { ...args, phase: v.string(), workflowId: v.optional(v.string()), progress: v.optional(researchProgressValidator) }, returns: v.boolean(),
+  handler: async (ctx, input) => {
+    const row = await ctx.db.get(input.caseId);
+    if (row?.revision !== input.revision || row.status !== "running") return false;
+    await ctx.db.patch(row._id, { phase: input.phase, ...(input.progress ? { discoveryProgress: input.progress } : input.phase === "Planning" ? { discoveryProgress: undefined } : {}), ...(input.workflowId ? { workflowId: input.workflowId } : {}), updatedAt: Date.now() });
+    return true;
   },
 });

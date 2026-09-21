@@ -1,3 +1,6 @@
+import IngredientPdfPreview from "./IngredientPdfPreview";
+import IngredientResearch from "./IngredientResearch";
+import IngredientListReader, { RecentListReadings } from "./IngredientListReader";
 import { useEffect, useRef, useState } from "react";
 import { FilePlus2, ListPlus, X } from "lucide-react";
 import { Dialog } from "./Dialog";
@@ -22,10 +25,12 @@ export default function IngredientIntake({
   onExplore,
   activeIngredient,
   persistenceEnabled,
+  onStarted,
 }: {
   onExplore: (ingredient: string) => void;
   activeIngredient: string | null;
   persistenceEnabled: boolean;
+  onStarted?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [batch, setBatch] = useState<IntakeBatch | null>(null);
@@ -34,11 +39,11 @@ export default function IngredientIntake({
   const [savedId, setSavedId] = useState<Id<"ingredientLists"> | null>(null);
   const [viewSource, setViewSource] = useState(false);
   return (
-    <section className="ingredient-intake" aria-label="Ingredient intake">
+    <section className={`ingredient-intake ${batch ? "has-batch" : ""}`} aria-label="Ingredient intake">
       <div className="intake-actions">
         <button className="button secondary" onClick={() => setOpen(true)}>
           <FilePlus2 size={17} />
-          {batch ? "Replace ingredient list" : "Add list or file"}
+          {batch ? "Replace ingredient list" : "Import ingredient list"}
         </button>
         <span>Excel, CSV, photo/PDF, or manual entry</span>
       </div>
@@ -53,11 +58,7 @@ export default function IngredientIntake({
               View list source
             </button>
           </div>
-          <p>
-            Research one ingredient at a time in the selected area. Saving the
-            list keeps only reviewed names; the file remains local.
-          </p>
-          <div className="ingredient-queue">
+          {persistenceEnabled ? <IngredientResearch batch={batch} onStarted={onStarted} /> : <div className="ingredient-queue">
             {batch.rows.map((row) => (
               <button
                 className="button secondary"
@@ -70,7 +71,7 @@ export default function IngredientIntake({
                 {row.ingredient}
               </button>
             ))}
-          </div>
+          </div>}
         </div>
       )}
       {persistenceEnabled && (
@@ -95,6 +96,7 @@ export default function IngredientIntake({
       {open && (
         <IntakeDialog
           replacing={!!batch}
+          persistenceEnabled={persistenceEnabled}
           onClose={() => setOpen(false)}
           onConfirm={(next) => {
             setBatch(next);
@@ -117,7 +119,7 @@ export default function IngredientIntake({
           </p>
           <p className="field-hint">
             {batch.method === "transcription"
-              ? "Manual transcript; automatic extraction pending."
+              ? "Manually transcribed from the source document."
               : "Data reviewed by you. It does not record purchases or offers."}
           </p>
           {batch.file && <LocalSource file={batch.file} />}
@@ -126,8 +128,9 @@ export default function IngredientIntake({
               <div key={row.id}>
                 <strong>{row.ingredient}</strong>
                 <p>
-                  Row {row.line}: {row.original.join(" | ")}
+                  {row.reference ?? `Row ${row.line}`}: {row.original.join(" | ")}
                 </p>
+                {row.documentHash && <small className="intake-document-hash">Original file SHA-256: {row.documentHash}</small>}
               </div>
             ))}
           </div>
@@ -147,20 +150,23 @@ function LocalSource({ file }: { file: File }) {
   return (
     <div className="local-source">
       {image && url && (
-        <img src={url} alt="Original document for transcription" />
+        <img src={url} alt="Original ingredient list" />
       )}
+      {(file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) && <IngredientPdfPreview file={file} />}
       <a href={url || undefined} download={file.name}>
-        Descargar original local
+        Download original file
       </a>
     </div>
   );
 }
-function IntakeDialog({
+export function IntakeDialog({
   replacing,
+  persistenceEnabled,
   onClose,
   onConfirm,
 }: {
   replacing: boolean;
+  persistenceEnabled: boolean;
   onClose: () => void;
   onConfirm: (batch: IntakeBatch) => void;
 }) {
@@ -172,6 +178,7 @@ function IntakeDialog({
   const [text, setText] = useState("");
   const [rows, setRows] = useState<IntakeRow[] | null>(null);
   const [busy, setBusy] = useState(false);
+  const [aiRead, setAiRead] = useState(false);
   const [error, setError] = useState("");
   const controller = useRef<AbortController | null>(null);
   useEffect(() => () => controller.current?.abort(), []);
@@ -184,6 +191,7 @@ function IntakeDialog({
     controller.current = current;
     setError("");
     setRows(null);
+    setAiRead(false);
     setSheets([]);
     setFile(null);
     setColumn(-1);
@@ -224,12 +232,14 @@ function IntakeDialog({
   function confirm() {
     try {
       validateRows(rows ?? []);
+      if (rows?.some(row => row.needsReview)) throw new Error("Review each flagged ingredient or remove its row before confirming.");
       onConfirm({
         file,
+        ...(aiRead && !file ? { sourceLabel: "Recent AI list reading · original file not stored" } : {}),
         sheet: sheet?.name ?? "",
         column: sheet ? column : null,
         hasHeader: !!sheet && header,
-        method: sheet ? "spreadsheet" : file ? "transcription" : "manual",
+        method: aiRead ? "ai" : sheet ? "spreadsheet" : file ? "transcription" : "manual",
         rows: rows!.map((row) => ({
           ...row,
           ingredient: row.ingredient.trim(),
@@ -242,10 +252,9 @@ function IntakeDialog({
     }
   }
   return (
-    <Dialog title="Add ingredients" wide onClose={onClose}>
+    <Dialog title="Import ingredient list" className="intake-dialog" wide onClose={onClose}>
       <p className="field-hint">
-        Use sample files. They are read in this browser and are not uploaded to the
-        server. They are lost when you reload.
+        Turn a kitchen list into ingredients you can research. Spreadsheets and text are read locally; photos and PDFs can be sent to AI after you choose Read list with AI.
       </p>
       {replacing && (
         <p className="notice info">
@@ -254,6 +263,7 @@ function IntakeDialog({
       )}
       {!rows ? (
         <>
+          {persistenceEnabled && !file && <RecentListReadings onRead={next => { setAiRead(true); setRows(next); setError(""); }} />}
           <label className="field intake-file">
             <span>Ingredient file (optional)</span>
             <span className="intake-file-button" aria-hidden="true">
@@ -271,7 +281,7 @@ function IntakeDialog({
           </label>
           <p className="field-hint">
             Up to 3 MB; XLSX/CSV with up to 100 ingredients, 20 columns, and 10 sheets.
-            CSV en UTF-8. XLS antiguo no admitido.
+            Use UTF-8 CSV. Convert older XLS files to XLSX.
           </p>
           {busy && <p role="status">Reading file in your browser…</p>}
           {file && (
@@ -377,10 +387,7 @@ function IntakeDialog({
               <>
                 {document && (
                   <>
-                    <p className="notice info">
-                      AI extraction is not configured in this demo. You can transcribe
-                      the ingredients and keep this file as the source.
-                    </p>
+                    {persistenceEnabled && <IngredientListReader file={file!} onRead={next => { setAiRead(true); setRows(next); setError(""); }} />}
                     <LocalSource file={file!} />
                   </>
                 )}
@@ -421,6 +428,8 @@ function IntakeDialog({
             Correct the names or remove rows. You do not need price or quantity
             or a recipe to research.
           </p>
+          <div className={`intake-review-layout ${file ? "has-source" : ""}`}>
+          {file && <aside className="intake-review-source"><p className="eyebrow">Your original</p><LocalSource file={file} /><p className="field-hint">Quantities and notes remain unconfirmed source context.</p></aside>}
           <div className="intake-review">
             {rows.map((row, index) => (
               <div className="intake-review-row" key={row.id}>
@@ -441,7 +450,10 @@ function IntakeDialog({
                       )
                     }
                   />
+                  <span className="field-hint">{row.reference ?? `Row ${row.line}`}: {row.original.join(" | ")}</span>
+                  {row.needsReview && <span className="intake-needs-review">Needs review — check this name against the original.</span>}
                 </label>
+                {row.needsReview && <button className="button secondary" onClick={() => setRows(rows.map(item => item.id === row.id ? { ...item, needsReview: false } : item))}>I checked this row</button>}
                 <button
                   className="icon-button"
                   aria-label={`Remove ingredient ${index + 1}`}
@@ -453,7 +465,7 @@ function IntakeDialog({
                 </button>
               </div>
             ))}
-          </div>
+          </div></div>
           <div className="dialog-actions">
             <button className="button secondary" onClick={() => setRows(null)}>
               Back to input

@@ -16,7 +16,15 @@ import { documentKind, documentResult } from "./documentValidators";
 import { prospectContent } from "./prospectValidators";
 import { advisorRunContent } from "./advisorValidators";
 import { caseFields, eventFields, watchFields } from "./sourcingValidators";
+import { ingredientListSourceKind } from "./ingredientListValidators";
+import { listRow, batchFields, extractionFields } from "./ingredientResearchValidators";
 export default defineSchema({
+  ingredientBatches: defineTable({ ownerHash: v.string(), ...batchFields })
+    .index("by_ownerHash", ["ownerHash"])
+    .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
+  ingredientExtractions: defineTable({ ownerHash: v.string(), ...extractionFields })
+    .index("by_ownerHash", ["ownerHash"])
+    .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
   deliveryConfirmations: defineTable(deliveryConfirmationFields)
     .index("by_comparisonId", ["comparisonId"])
     .index("by_comparisonId_and_messageId_and_offerId", ["comparisonId", "messageId", "offerId"]),
@@ -24,6 +32,10 @@ export default defineSchema({
     ownerHash: v.string(),
     ...caseFields,
     workflowId: v.optional(v.string()),
+    sourceProgress: v.optional(v.array(v.union(
+      v.object({ urlHash: v.string(), interpreted: v.boolean() }),
+      v.object({ url: v.string(), interpreted: v.boolean() }), // Earlier local acceptance rows.
+    ))),
     runs: v.number(),
   })
     .index("by_ownerHash", ["ownerHash"])
@@ -40,7 +52,8 @@ export default defineSchema({
     ownerHash: v.string(),
     clientId: v.string(),
     ingredients: v.array(v.string()),
-    sourceKind: v.union(v.literal("manual"), v.literal("spreadsheet")),
+    sourceKind: ingredientListSourceKind,
+    rows: v.optional(v.array(listRow)),
     updatedAt: v.number(),
   })
     .index("by_ownerHash", ["ownerHash"])

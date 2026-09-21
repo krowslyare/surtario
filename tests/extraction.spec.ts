@@ -4,7 +4,7 @@ test("revisa evidencia, conserva pendientes y prepara comparación sin compra", 
   page,
 }) => {
   await page.goto("/?example=pe");
-  await page.getByText("Quotes and documents", { exact: true }).click();
+  await page.getByText("Supplier quotes", { exact: true }).click();
   await page.getByRole("button", { name: "Review sample quote" }).click();
   const dialog = page.getByRole("dialog");
   expect(await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
@@ -62,7 +62,7 @@ test("el diálogo conserva el borrador y no desborda a 320 px", async ({
 }) => {
   await page.setViewportSize({ width: 320, height: 760 });
   await page.goto("/?example=pe");
-  await page.getByText("Quotes and documents", { exact: true }).click();
+  await page.getByText("Supplier quotes", { exact: true }).click();
   const trigger = page.getByRole("button", {
     name: "Review sample quote",
   });

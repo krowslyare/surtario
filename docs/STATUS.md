@@ -4,14 +4,15 @@ Updated September 21, 2026. This is the current status source; `hackathon.md` re
 
 | Area | State | Evidence / boundary |
 | --- | --- | --- |
-| Product and calculations | Implemented | Ingredient-first study; deterministic order comparison; 334 domain/backend tests locally; 320 at the September 20 hosted acceptance |
+| Product and calculations | Implemented | Ingredient-first study; deterministic order comparison; 340 domain/backend tests locally; 320 at the September 20 hosted acceptance |
 | Provider integration | Bounded acceptance passed | Firecrawl, direct Luna API, AgentMail round trip and Convex reactive updates; see [VERIFICATION](VERIFICATION.md) |
 | Study and follow-up | Implemented and exercised | Reviewed offers/no-price candidates, sources, messages and recoverable comparisons |
 | Decision | Implemented | Missing terms block selection; local five-offer flow reaches selection after synthetic terms are confirmed; hosted acceptance retained its delivery blocker |
-| Hosted app | Development published | PR #41, `f053dc6`; [Verify run 35643296196](https://github.com/krowslyare/restaurant-procurement/actions/runs/35643296196) verified 35 published files, SPA fallback and missing-asset behavior |
+| Hosted app | Development published | PR #42, `32f080e`; [Verify run 35653681215](https://github.com/krowslyare/restaurant-procurement/actions/runs/35653681215) verified 35 published files, SPA fallback and missing-asset behavior |
 | Recording UX follow-up | Merged and published in PR #40 | Bulk analysis/review, explicit saved states, 12 study options, six-offer comparison, compact layout and shared terms |
 | Sourcing overview and manual refresh | Merged and published in PR #41 | Reactive work priorities, exact destinations, persisted research review, historical reply outcomes and an explicit live study refresh. Real Firecrawl/OpenAI acceptance ran on an isolated local backend; see [VERIFICATION](VERIFICATION.md) |
-| Overview presentation and navigation | Separate PR branch; not deployed | Explicit decision empty states, separated sections, contextual research questions, four mobile navigation entries and corrected return destinations. Local verification is recorded in [VERIFICATION](VERIFICATION.md) |
+| Overview presentation and navigation | Merged and published in PR #42 | Explicit decision empty states, separated sections, contextual research questions, four mobile navigation entries and corrected return destinations. Local verification is recorded in [VERIFICATION](VERIFICATION.md) |
+| Ingredient-list research | Implemented on separate PR branch; not deployed | Photo/PDF AI reading, reviewed provenance, one/many selection, durable two-lane research and independent Overview results. Local real PNG/PDF + four-ingredient Firecrawl/OpenAI acceptance; details in [VERIFICATION](VERIFICATION.md) |
 | Repository cleanup | Verified locally | Five public guides, README workflow diagram, working notes/tooling excluded; 320 tests and hosting build passed from a tracked-file snapshot with a fresh offline dependency installation |
 | Recipes / private pilot | Outside release | No customer-data enablement or validated restaurant pilot |
 | Submission | Pending | Final video, public GitHub release, social post and entry confirmation remain outstanding |
@@ -20,4 +21,4 @@ The hosted configuration uses `gpt-5.6-luna` with low reasoning. Recurring sourc
 
 [All Gas](https://www.convex.dev/hackathons/all-gas) requires a public repository with root `hackathon.md`, an accessible accepted-host URL, a video under three minutes and a sponsor-tagged social post. Requirements were checked September 20. The live app is https://incredible-wolverine-122.convex.site; the repository remains private until an authorized release.
 
-Recording/submission drafts and older planning notes are kept locally under ignored `.local/repository-notes/`; they are not required to build or evaluate the source. The overview is published. The presentation/navigation follow-up remains on its separate PR branch; final recording and submission remain outstanding.
+Recording/submission drafts and older planning notes are kept locally under ignored `.local/repository-notes/`; they are not required to build or evaluate the source. The overview is published. The presentation/navigation follow-up is published in PR #42; ingredient-list research remains on its separate branch; final recording and submission remain outstanding.

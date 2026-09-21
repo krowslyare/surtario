@@ -4,7 +4,10 @@ import { Webhook } from "svix";
 import { env, httpAction } from "./_generated/server";
 import { components, internal } from "./_generated/api";
 
+import { read as readIngredientList, options as ingredientListOptions } from "./ingredientExtraction";
 const http = httpRouter();
+http.route({ path: "/ingredient-list/read", method: "POST", handler: readIngredientList });
+http.route({ path: "/ingredient-list/read", method: "OPTIONS", handler: ingredientListOptions });
 
 http.route({
   path: "/agentmail/webhook",
