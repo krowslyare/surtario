@@ -1,3 +1,4 @@
+import ResearchReviewStatus from "./ResearchReviewStatus";
 import ResearchProgress, { ResearchCompletion } from "./ResearchProgress";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { scrollToContent } from "../scroll";
@@ -161,6 +162,7 @@ export function ResearchWorkspace({
   onRead,
   onPrepare,
   renderProspect,
+  renderReviewStatus,
   selections,
   availableStudySlots,
   onReview,
@@ -177,6 +179,7 @@ export function ResearchWorkspace({
   onExploreDemo,
   connected = true,
 }: {
+  renderReviewStatus?: (runId: string) => ReactNode;
   connected?: boolean;
   renderHeaderActions?: (context?: { ingredient: string; region: string } | null) => ReactNode;
   pendingRun?: SavedResearch;
@@ -656,6 +659,7 @@ export function ResearchWorkspace({
         </div>
         {renderHeaderActions?.(active ?? request)}
       </div>
+      {active?.sources.length ? renderReviewStatus?.(active.id) : null}
 
       {!status.searchEnabled && (
         <p className="notice info">
@@ -1370,6 +1374,7 @@ function ConnectedResearch({
     <>
       <ResearchWorkspace
         {...props}
+        renderReviewStatus={runId => <ResearchReviewStatus token={token} runId={runId} />}
         connected={isWebSocketConnected}
         renderProspect={(run, index, primaryInquiry) => (
           <SaveWebProspect

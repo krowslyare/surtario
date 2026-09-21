@@ -68,10 +68,10 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
   await expect(page.getByRole("button", { name: "Open saved case comparison", exact: true })).toBeVisible();
   await expect(page.getByText("1 selected option in this study", {exact: true})).toBeVisible();
   await expect(page.getByRole("button", {name: "Open saved case comparison", exact: true})).toBeEnabled();
-  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
-  await page.getByRole("dialog", { name: "Your recent work", exact: true })
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work")
     .getByRole("listitem").filter({ hasText: "Compare the supplier reply with the saved offers" })
-    .getByRole("button", { name: "Review reply", exact: true }).click();
+    .getByRole("button", { name: "Review supplier reply", exact: true }).click();
   await expect(page).toHaveURL(url => url.searchParams.get("view") === "followup"
     && url.searchParams.get("case") === caseId && url.searchParams.get("message") === requestId);
   const followupUrl = `/?view=followup&example=pe&case=${caseId}&message=${requestId}`;
@@ -82,7 +82,8 @@ for (const webCandidate of [false, true]) test(`a reply opened from a ${webCandi
   await expect(mail.getByRole("button", {name: "Prepare delivery question"})).toHaveCount(0);
   await expect(mail.getByRole("button", {name: "Prepare minimum proposal"})).toHaveCount(0);
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Back to workspace", exact: true }).click();
+  await page.getByRole("button", { name: "Back to overview", exact: true }).click();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await expect(page.getByRole("button", { name: "Open saved case comparison", exact: true })).toBeEnabled();
   await page.getByRole("button", { name: "Open saved case comparison", exact: true }).click();
   await expect(page.getByRole("button", {name: "Prepare delivery question"})).toBeVisible();

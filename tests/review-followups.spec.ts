@@ -26,7 +26,8 @@ test("equivalent web offers with different wording save and reopen without chang
   run("studies:save", { token, clientId: crypto.randomUUID(), id: null, expectedRevision: 0, term: "Rice", region: "Portland, OR, US", selectedIds: [], webReviews: proposals.map((offer, sourceIndex) => ({ runId: reserved.id, sourceIndex, values: draftValues(offer), confirmed: true })) });
   await context.addInitScript(value => localStorage.setItem("procurement-demo-session-v1", value), token);
   await page.goto("/?view=market");
-  await page.getByRole("region", { name: "Continue your work", exact: true }).getByRole("button", { name: "Resume study", exact: true }).click();
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("button", { name: "Open study", exact: true }).click();
   await page.getByLabel("I confirm the selected offers match the same ingredient, specification, base unit, and currency").check();
   await page.getByRole("button", { name: "Compare 2 reviewed offers", exact: true }).click();
   const save = page.getByRole("button", { name: "Save comparison", exact: true });

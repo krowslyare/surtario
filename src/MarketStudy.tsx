@@ -30,6 +30,7 @@ import {
 import { money, numberLabel } from "./numbers";
 import Brand from "./components/Brand";
 import ContinueWork from "./components/ContinueWork";
+import SourcingOverview from "./components/SourcingOverview";
 import Messages, { MessagesLink } from "./components/Messages";
 import SourcingEntry, { type SourcingEntryRequest } from "./components/SourcingEntry";
 import MarketHero from "./components/MarketHero";
@@ -71,7 +72,7 @@ type MarketCheckpoint = {
   selectedIds: string[]; webSelections: WebSelection[]; prospects: StudyProspect[];
   filter: "all" | "catalog" | "distributor" | "reference";
   showStudy: boolean; resultsView: "example" | "web"; searchOpen: boolean;
-  continuityOpen: boolean; extrasIngredientOpen: boolean; extrasQuotesOpen: boolean;
+  extrasIngredientOpen: boolean; extrasQuotesOpen: boolean;
   researchCursor: Omit<ResearchResumeRequest, "sequence"> | null;
 };
 
@@ -88,16 +89,20 @@ export default function MarketStudy({
   messages,
   onOpenMessages,
   onSelectMessage,
+  overview, onOpenOverview, fromOverview,
 }: {
+  overview: boolean;
+  onOpenOverview: () => void;
+  fromOverview?: boolean;
   persistenceEnabled: boolean;
   active: boolean;
   followup: FollowupLocation | null;
-  onOpenFollowup: (id: string | null, requestId?: string) => void;
+  onOpenFollowup: (id: string | null, requestId?: string, sourceRunId?: string) => void;
   onExitFollowup: () => void;
   onBackFollowup: () => void;
   followupBackLabel?: string;
   messages: { requestId?: string; visit: number } | null;
-  onOpenMessages: () => void;
+  onOpenMessages: (id?: string) => void;
   onSelectMessage: (id?: string) => void;
   onPrepare: (seed: PurchaseSeed) => void;
   onManualExample: () => void;
@@ -129,7 +134,9 @@ export default function MarketStudy({
   );
   const [entry, setEntry] = useState<SourcingEntryRequest | null>(null);
   const [resumeResearch, setResumeResearch] = useState<ResearchResumeRequest | null>(() => restored?.researchCursor ? { ...restored.researchCursor, sequence: 0 } : null);
-  const [continuityOpen, setContinuityOpen] = useState(restored?.continuityOpen ?? false);
+  // Mount the market on first use, then keep its drafts when returning to Overview.
+  const marketMounted = useRef(active);
+  if (active) marketMounted.current = true;
   const [questionOpen, setQuestionOpen] = useState(false);
   const [questionContext, setQuestionContext] = useState<{ ingredient: string; region: string } | null>(null);
   const [webStatus, setWebStatus] = useState<ResearchStatus | undefined>();
@@ -192,11 +199,11 @@ export default function MarketStudy({
   useEffect(() => {
     writeWorkspaceCheckpoint<MarketCheckpoint>("market", {
       study, catalog, term, region, search, selectedIds, webSelections, prospects,
-      filter, showStudy, resultsView, searchOpen, continuityOpen,
+      filter, showStudy, resultsView, searchOpen,
       extrasIngredientOpen, extrasQuotesOpen, researchCursor,
     });
   }, [study, catalog, term, region, search, selectedIds, webSelections, prospects,
-    filter, showStudy, resultsView, searchOpen, continuityOpen,
+    filter, showStudy, resultsView, searchOpen,
     extrasIngredientOpen, extrasQuotesOpen, researchCursor]);
 
   function openExtras(target: "ingredients" | "quotes") {
@@ -347,10 +354,11 @@ export default function MarketStudy({
     setNextIngredient(null);
   }
 
-  function resumeSavedResearch(id: string, ingredient: string, area: string) {
+  function resumeSavedResearch(id: string, ingredient: string, area: string, saved?: SavedStudy) {
     const context = webSelections[0] ?? prospects[0] ?? findMarketExampleContextByIds(selectedIds)
       ?? (study.savedContext ? { ingredient: study.savedContext.term, region: study.savedContext.region } : null);
-    if (context && !sameStudyContext(context, { ingredient, region: area })) {
+    if (saved) openStudy(saved);
+    else if (context && !sameStudyContext(context, { ingredient, region: area })) {
       setSelectedIds([]);
       setWebSelections([]);
       setProspects([]);
@@ -367,8 +375,7 @@ export default function MarketStudy({
     setShowStudy(false);
     setFilter("all");
     setError("");
-    setContinuityOpen(false);
-    if (followup || messages) onExitFollowup();
+    if (overview || followup || messages) onExitFollowup();
   }
 
   function validateSearchIngredient() {
@@ -567,7 +574,7 @@ export default function MarketStudy({
   return (
     <>
       <a
-        href={messages ? "#messages-main" : followup ? "#followup-main" : search || showStudy || resultsView === "web" ? "#market-results" : "#market-search"}
+        href={overview ? "#overview-main" : messages ? "#messages-main" : followup ? "#followup-main" : search || showStudy || resultsView === "web" ? "#market-results" : "#market-search"}
         className="skip-link"
       >
         Skip to content
@@ -575,12 +582,13 @@ export default function MarketStudy({
       <header className="topbar market-topbar">
         <Brand />
         <nav className="brand-nav" aria-label="Main navigation">
+          {persistenceEnabled && <Button variant="text" aria-current={overview ? "page" : undefined} onClick={onOpenOverview}>Overview</Button>}
           <Button
             variant="text"
             className="brand-explore"
-            aria-current={!followup && !messages && !showStudy ? "page" : undefined}
+            aria-current={!overview && !followup && !messages && !showStudy ? "page" : undefined}
             onClick={() => {
-              if (followup || messages) onExitFollowup();
+              if (overview || followup || messages) onExitFollowup();
               setShowStudy(false);
               setFilter("all");
               setSearchOpen(true);
@@ -596,9 +604,9 @@ export default function MarketStudy({
           </Button>
           <Button
             variant="text"
-            aria-current={!followup && !messages && showStudy ? "page" : undefined}
+            aria-current={!overview && !followup && !messages && showStudy ? "page" : undefined}
             onClick={() => {
-              if (followup || messages) onExitFollowup();
+              if (overview || followup || messages) onExitFollowup();
               setShowStudy(true);
               setFilter("all");
             }}
@@ -609,11 +617,20 @@ export default function MarketStudy({
               <span className="selection-count">{optionCount}</span>
             )}
           </Button>
-          {persistenceEnabled && <MessagesLink active={Boolean(messages)} onClick={onOpenMessages} />}
-          {persistenceEnabled && <Button variant="text" onClick={() => setContinuityOpen(true)}>Continue your work</Button>}
+          {persistenceEnabled && <Button variant="text" aria-current={followup ? "page" : undefined} onClick={() => onOpenFollowup(null)}>Follow-ups</Button>}
+          {persistenceEnabled && <MessagesLink active={Boolean(messages)} onClick={() => onOpenMessages()} />}
+
         </nav>
       </header>
-      <div hidden={Boolean(followup || messages)}>
+      {overview && (persistenceEnabled ? <SourcingOverview onResearch={() => { onExitFollowup(); setShowStudy(false); setSearchOpen(true); }} onOpen={(item, target, requestId, runId, saved) => {
+        if (target === "mail") { if (item.caseId) onOpenFollowup(item.caseId, requestId); else onOpenMessages(requestId); }
+        else if (saved?.comparison) onPrepare({ ...saved.comparison, resumeComparison: { id: saved.comparison.id, revision: saved.comparison.revision, selectedOfferId: saved.comparison.selectedOfferId, unchanged: true } });
+        else if (item.caseId) onOpenFollowup(item.caseId, undefined, target === "evidence" || target === "research" ? runId : undefined);
+        else if (runId && (target !== "work" || item.kind === "search")) resumeSavedResearch(runId, item.ingredient, item.region, saved?.study);
+        else { if (saved?.study) openStudy(saved.study); onExitFollowup(); }
+      }} /> : <main id="overview-main"><h1>Overview is unavailable</h1><p>Connect saved storage to recover your sourcing work.</p></main>)}
+      {marketMounted.current && <div hidden={Boolean(overview || followup || messages)}>
+      {fromOverview && <Button variant="text" onClick={onOpenOverview}><ArrowLeft size={16} />Back to overview</Button>}
       <main
         id="market-main"
         className={`market-main ${search || showStudy ? "has-results" : "is-intro"} ${showStudy ? "is-study" : ""} ${resultsView === "web" ? "is-live-research" : ""}`}
@@ -764,12 +781,7 @@ export default function MarketStudy({
             {error}
           </p>
         )}
-        {persistenceEnabled && !search && !showStudy && resultsView !== "web" && <ContinueWork
-          onStudy={openStudy}
-          onCase={(id, _saved, requestId) => onOpenFollowup(id, requestId)}
-          onResearch={resumeSavedResearch}
-          onComparison={comparison => { setContinuityOpen(false); onPrepare({ ...comparison, resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true } }); }}
-        />}
+        {persistenceEnabled && !search && !showStudy && resultsView !== "web" && <ContinueWork onOverview={onOpenOverview} />}
         <div className="market-support">
           <div className="market-workspace">
           <div className="market-content">
@@ -1160,14 +1172,14 @@ export default function MarketStudy({
           </span>
         </footer>
       </main>
-      </div>
-          {messages && (persistenceEnabled ? <Messages {...messages} onSelect={onSelectMessage} onBack={onExitFollowup} onPrepare={onPrepare} onOpenFollowup={onOpenFollowup} /> : <main id="messages-main" className="messages-main"><h1>Messages are unavailable</h1><p>Storage is disconnected.</p><Button onClick={onExitFollowup}>Back to workspace</Button></main>)}
+      </div>}
+          {messages && (persistenceEnabled ? <Messages {...messages} backLabel={fromOverview ? "Back to overview" : undefined} onExplore={onExitFollowup} onSelect={onSelectMessage} onBack={fromOverview ? onOpenOverview : onExitFollowup} onPrepare={onPrepare} onOpenFollowup={onOpenFollowup} /> : <main id="messages-main" className="messages-main"><h1>Messages are unavailable</h1><p>Storage is disconnected.</p><Button onClick={onExitFollowup}>Back to workspace</Button></main>)}
           {!persistenceEnabled && followup && <main id="followup-main" className="followup-main">
             <Button variant="text" onClick={onExitFollowup}><ArrowLeft size={16} />Back to workspace</Button>
             <h1>Saved follow-ups are unavailable</h1>
             <p>Storage is disconnected. Return to your workspace to keep exploring.</p>
           </main>}
-          {persistenceEnabled && (
+          {persistenceEnabled && !overview && (
             <SourcingCase
               location={followup}
               questionOpen={questionOpen}
@@ -1188,14 +1200,6 @@ export default function MarketStudy({
             />
           )}
       {entry && <SourcingEntry entry={entry} onReady={entryReady} onClose={() => setEntry(null)} />}
-      {continuityOpen && <Dialog title="Your recent work" className="continuity-dialog" onClose={() => setContinuityOpen(false)}>
-        <ContinueWork
-          onStudy={saved => { openStudy(saved); if (followup || messages) onExitFollowup(); setContinuityOpen(false); }}
-          onCase={(id, _saved, requestId) => { onOpenFollowup(id, requestId); setContinuityOpen(false); }}
-          onResearch={resumeSavedResearch}
-          onComparison={comparison => { setContinuityOpen(false); onPrepare({ ...comparison, resumeComparison: { id: comparison.id, revision: comparison.revision, selectedOfferId: comparison.selectedOfferId, unchanged: true } }); }}
-        />
-      </Dialog>}
       {nextIngredient && (
         <Dialog
           title="Research another ingredient"

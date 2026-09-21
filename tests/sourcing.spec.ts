@@ -53,8 +53,8 @@ test("research case works without selected offers, persists on reload and isolat
   const other = await browser.newContext();
   await connectOnlyToLocalBackend(other);
   const isolated = await other.newPage();
-  await isolated.goto("/?view=market");
-  await expect(isolated.getByRole("heading", { name: "No saved work yet" })).toBeVisible();
+  await isolated.goto("/?view=overview");
+  await expect(isolated.getByRole("heading", { name: "Start with what your kitchen needs." })).toBeVisible();
   await isolated.goto(followupUrl);
   await expect(isolated.getByRole("heading", { name: "This follow-up isn’t available." })).toBeVisible();
   await expect(isolated.getByRole("heading", { name: "Compare pack sizes before requesting delivery terms", exact: true })).toHaveCount(0);
@@ -223,12 +223,12 @@ test("reviewed new evidence returns to the same case comparison and preserves it
     token,
   );
   await page.goto("/?view=market");
-  await page.getByRole("listitem").filter({ hasText: "Review the latest price" })
-    .getByRole("button", { name: "Open follow-up", exact: true }).click();
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("listitem").filter({ hasText: "Review the latest price" })
+    .getByRole("button", { name: "Arroz", exact: true }).click();
   await expect(page).toHaveURL(/view=followup.*case=/);
-  await page
-    .getByRole("button", { name: "Review findings", exact: true })
-    .click();
+  await expect(page.getByRole("region", { name: "Next step for this case" })).toContainText("Comparison needs confirmation");
+  await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Sources", exact: true }).click();
   const [caseRow] = run("sourcing:list", { token });
   const caseRuns = run("sourcing:research", { token, caseId: caseRow.id });
   const latestIndex = caseRuns.findIndex((item: { id: string }) => item.id === secondId);
@@ -355,8 +355,9 @@ test("a waiting case reacts to a later supplier reply and opens that conversatio
       token,
     );
     await page.goto("/?view=market");
-    await page.getByRole("listitem").filter({ hasText: "Wait for delivery terms" })
-      .getByRole("button", { name: "Open follow-up", exact: true }).click();
+    await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+    await page.locator("#overview-work").getByRole("listitem").filter({ hasText: "Wait for delivery terms" })
+      .getByRole("button", { name: "Arroz", exact: true }).click();
     await expect(page).toHaveURL(/view=followup.*case=/);
     const next = page.getByRole("region", { name: "Next step for this case" });
     await expect(next).toContainText("Waiting for the supplier");
@@ -365,13 +366,13 @@ test("a waiting case reacts to a later supplier reply and opens that conversatio
       "Delivery terms inquiry",
     );
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: "Overview", exact: true }).click();
+    await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Overview", exact: true }).click();
     await next.getByRole("button", { name: "View sent message" }).click();
     await expect(page.getByRole("dialog")).toContainText(
       "Delivery terms inquiry",
     );
     await page.keyboard.press("Escape");
-    await page.getByRole("button", { name: "Overview", exact: true }).click();
+    await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Overview", exact: true }).click();
     seed("quotationReplies", {
       requestId: request.id,
       eventId: crypto.randomUUID(),

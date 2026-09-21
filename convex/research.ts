@@ -52,6 +52,7 @@ export function publicRun(run: Doc<"researchRuns">): SavedResearch {
   return {
     id: run._id,
     clientId: run.clientId,
+    ...(run.studyId ? { studyId: run.studyId } : {}),
     ...(run.progress ? { progress: run.progress } : {}),
     simulated: run.simulated ?? false,
     ingredient: run.ingredient,
@@ -102,7 +103,7 @@ export const list = query({
  * Split the indexed UUID range around case: so adaptive page bodies never enter
  * the quota read. This works for existing rows without a migration or new calls.
  */
-async function quickSearches(ctx: QueryCtx | MutationCtx, hash: string) {
+export async function quickSearches(ctx: QueryCtx | MutationCtx, hash: string) {
   const ranges = await Promise.all([
     ctx.db.query("researchRuns").withIndex("by_ownerHash_and_clientId", q =>
       q.eq("ownerHash", hash).gte("clientId", "0").lt("clientId", "case:")
@@ -123,6 +124,7 @@ const reserveResult = v.union(
 export const reserveSearch = internalMutation({
   args: {
     token: v.string(),
+    studyId: v.optional(v.id("studies")),
     clientId: v.string(),
     ingredient: v.string(),
     region: v.string(),
@@ -133,6 +135,12 @@ export const reserveSearch = internalMutation({
     if (!UUID.test(args.clientId))
       throw new ConvexError("Invalid request.");
     const input = cleanInput(args.ingredient, args.region);
+    if (args.studyId) {
+      const study = await ctx.db.get(args.studyId);
+      if (!study || study.ownerHash !== hash) throw new ConvexError("Study unavailable.");
+      if (study.term !== input.ingredient || study.region !== input.region)
+        throw new ConvexError("Refresh must preserve the study ingredient and market.");
+    }
     const existing = await ctx.db
       .query("researchRuns")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -142,12 +150,16 @@ export const reserveSearch = internalMutation({
     if (existing) {
       if (
         existing.ingredient !== input.ingredient ||
-        existing.region !== input.region
+        existing.region !== input.region || existing.studyId !== args.studyId
       )
         throw new ConvexError("This request already exists with different data.");
       return { kind: "existing" as const, run: publicRun(existing) };
     }
     const own = await quickSearches(ctx, hash);
+    if (args.studyId) {
+      const active = own.find(run => run.studyId === args.studyId && run.status === "running");
+      if (active) return { kind: "existing" as const, run: publicRun(active) };
+    }
     if (own.length >= MAX_PER_SESSION)
       throw new ConvexError("This session supports up to 10 quick searches; case research has its own limits.");
     if (own[0] && Date.now() - own[0].createdAt < COOLDOWN_MS)
@@ -164,6 +176,7 @@ export const reserveSearch = internalMutation({
       );
     const now = Date.now();
     const id = await ctx.db.insert("researchRuns", {
+      ...(args.studyId ? { studyId: args.studyId } : {}),
       simulated: webResearchSimulated(),
       ownerHash: hash,
       clientId: args.clientId,
@@ -296,6 +309,7 @@ export const failSearch = internalMutation({
 export const search = action({
   args: {
     token: v.string(),
+    studyId: v.optional(v.id("studies")),
     clientId: v.string(),
     ingredient: v.string(),
     region: v.string(),

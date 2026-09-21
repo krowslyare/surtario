@@ -13,12 +13,12 @@ export default function Workspace({
   persistenceEnabled: boolean;
 }) {
   useWorkspaceScrollRecovery();
-  type Route = { view: "market" | "comparison" | "brand" | "followup" | "messages"; caseId: string | null; requestId?: string; comparisonId: string | null; fromCase: string | null; fromMessage?: string };
+  type Route = { view: "market" | "overview" | "comparison" | "brand" | "followup" | "messages"; caseId: string | null; requestId?: string; comparisonId: string | null; fromCase: string | null; fromMessage?: string; fromOverview?: boolean; section?: "sources"; runId?: string };
   function readRoute(): Route {
     const params = new URLSearchParams(window.location.search);
     const requested = params.get("view");
-    const view = requested === "comparison" || requested === "followup" || requested === "messages" || (import.meta.env.DEV && requested === "brand") ? requested : "market";
-    return { view, caseId: params.get("case"), requestId: params.get("message") ?? undefined, comparisonId: params.get("comparison"), fromCase: params.get("fromCase"), fromMessage: params.get("fromMessage") ?? undefined };
+    const view = requested === "overview" || requested === "comparison" || requested === "followup" || requested === "messages" || (import.meta.env.DEV && requested === "brand") ? requested : "market";
+    return { view, caseId: params.get("case"), requestId: params.get("message") ?? undefined, comparisonId: params.get("comparison"), fromCase: params.get("fromCase"), fromMessage: params.get("fromMessage") ?? undefined, fromOverview: params.get("from") === "overview", section: params.get("section") === "sources" ? "sources" : undefined, runId: params.get("run") ?? undefined };
   }
   const [route, setRoute] = useState<Route>(readRoute);
   const view = route.view;
@@ -59,9 +59,12 @@ export default function Workspace({
   function navigate(next: Route, replace = false) {
     if (view === "market" && next.view !== "market") marketScroll.current = window.scrollY;
     const url = new URL(window.location.href);
-    for (const key of ["case", "message", "comparison", "fromCase", "fromMessage"]) url.searchParams.delete(key);
+    for (const key of ["case", "message", "comparison", "fromCase", "fromMessage", "from", "section", "run"]) url.searchParams.delete(key);
     url.hash = "";
     url.searchParams.set("view", next.view);
+    if (next.fromOverview) url.searchParams.set("from", "overview");
+    if (next.section) url.searchParams.set("section", next.section);
+    if (next.runId) url.searchParams.set("run", next.runId);
     if (next.caseId) url.searchParams.set("case", next.caseId);
     if (next.requestId) url.searchParams.set("message", next.requestId);
     if (next.comparisonId) url.searchParams.set("comparison", next.comparisonId);
@@ -74,28 +77,30 @@ export default function Workspace({
     setRoute(next);
     setVisit(value => value + 1);
   }
-  function openFollowup(id: string | null, requestId?: string) {
-    navigate({ view: "followup", caseId: id, requestId, comparisonId: null, fromCase: null, fromMessage: view === "messages" ? route.requestId : undefined });
+  function openFollowup(id: string | null, requestId?: string, sourceRunId?: string) {
+    navigate({ view: "followup", caseId: id, requestId, section: sourceRunId ? "sources" : undefined, runId: sourceRunId, fromOverview: view === "overview" || route.fromOverview, comparisonId: null, fromCase: null, fromMessage: view === "messages" ? route.requestId : undefined });
   }
   function openMessages(requestId?: string, replace = false) {
-    navigate({ view: "messages", caseId: null, requestId, comparisonId: null, fromCase: null }, replace);
+    navigate({ view: "messages", caseId: null, requestId, fromOverview: view === "overview" || route.fromOverview, comparisonId: null, fromCase: null }, replace);
   }
   function openComparison(nextSeed?: PurchaseSeed) {
     setResumeId(null);
     setSeed(nextSeed);
     setRestoredDraft(undefined);
     setComparisonKey(key => key + 1);
-    navigate({ view: "comparison", caseId: null, comparisonId: nextSeed?.resumeComparison?.id ?? null, fromCase: view === "followup" ? route.caseId : null, fromMessage: view === "messages" ? route.requestId : undefined });
+    navigate({ view: "comparison", caseId: null, fromOverview: view === "overview" || (view === "followup" && route.fromOverview), comparisonId: nextSeed?.resumeComparison?.id ?? null, fromCase: view === "followup" ? route.caseId : null, fromMessage: view === "messages" ? route.requestId : undefined });
   }
+  function openOverview() { navigate({ view: "overview", caseId: null, comparisonId: null, fromCase: null }); }
   function backToMarket() {
     setResumeId(null);
-    if (view === "followup" && window.history.state?.previous?.view === "market") { window.history.back(); return; }
-    navigate({ view: "market", caseId: null, comparisonId: null, fromCase: null });
+    if ((view === "followup" || view === "comparison") && window.history.state?.previous?.view === "market") { window.history.back(); return; }
+    navigate({ view: "market", caseId: null, comparisonId: null, fromCase: null, fromOverview: view === "overview" || route.fromOverview });
   }
   function backFromComparison() {
     if (route.fromMessage) openMessages(route.fromMessage);
     else if (window.history.state?.previous?.view === "followup" && route.fromCase) window.history.back();
     else if (route.fromCase) openFollowup(route.fromCase);
+    else if (route.fromOverview) openOverview();
     else backToMarket();
   }
   if (view === "brand") {
@@ -120,16 +125,19 @@ export default function Workspace({
             : "Local rehearsal · Luna CLI AI · Simulated web and email · Sample data"}
         </aside>
       )}
-      <div hidden={view !== "market" && view !== "followup" && view !== "messages"}>
+      <div hidden={view !== "market" && view !== "overview" && view !== "followup" && view !== "messages"}>
         <MarketStudy
           persistenceEnabled={persistenceEnabled}
-          followup={view === "followup" ? { id: route.caseId, requestId: route.requestId, visit } : null}
+          overview={view === "overview"}
+          onOpenOverview={openOverview}
+          fromOverview={route.fromOverview}
+          followup={view === "followup" ? { id: route.caseId, requestId: route.requestId, section: route.section, runId: route.runId, visit } : null}
           onOpenFollowup={openFollowup}
           onExitFollowup={backToMarket}
-          onBackFollowup={() => route.fromMessage ? openMessages(route.fromMessage) : backToMarket()}
-          followupBackLabel={route.fromMessage ? "Back to messages" : undefined}
+          onBackFollowup={() => route.fromMessage ? openMessages(route.fromMessage) : route.fromOverview ? openOverview() : backToMarket()}
+          followupBackLabel={route.fromMessage ? "Back to messages" : route.fromOverview ? "Back to overview" : undefined}
           messages={view === "messages" ? { requestId: route.requestId, visit } : null}
-          onOpenMessages={() => { if (view !== "messages") openMessages(); }}
+          onOpenMessages={id => { if (view !== "messages" || id) openMessages(id); }}
           onSelectMessage={id => openMessages(id, true)}
           active={view === "market"}
           onPrepare={openComparison}
@@ -149,7 +157,7 @@ export default function Workspace({
           persistenceEnabled={persistenceEnabled}
           onBack={backFromComparison}
           onOpenMessages={() => openMessages()}
-          backLabel={route.fromMessage ? "Back to messages" : route.fromCase ? "Back to follow-up" : "Back to market study"}
+          backLabel={route.fromMessage ? "Back to messages" : route.fromCase ? "Back to follow-up" : route.fromOverview ? "Back to overview" : "Back to market study"}
         />
       ))}
     </>

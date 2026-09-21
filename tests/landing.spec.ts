@@ -100,7 +100,7 @@ test("branded arrival follows loading and leaves when the workspace is ready", a
   await expect(page.getByRole("status")).toContainText("Loading your workspace");
   await expect(page.locator(".workspace-arrival")).toContainText("Good ingredients. Better decisions.");
   release();
-  await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your sourcing workspace", exact: true })).toBeVisible();
   await expect(page.locator(".workspace-arrival")).toHaveCount(0);
 });
 
@@ -134,7 +134,7 @@ test("reloading the workspace never repeats the landing entrance, even with a sl
   await page.goto("/");
   await page.getByRole("link", { name: "Open workspace" }).click();
   await expect(page.locator(".workspace-arrival")).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your sourcing workspace", exact: true })).toBeVisible();
   let release!: () => void;
   const gate = new Promise<void>(resolve => { release = resolve; });
   await page.route(/\/src\/Workspace\.tsx(?:\?.*)?$/, async route => { await gate; await route.continue(); });
@@ -142,5 +142,5 @@ test("reloading the workspace never repeats the landing entrance, even with a sl
   await expect(page.getByRole("status")).toHaveText("Opening your workspace…");
   await expect(page.locator(".workspace-arrival")).toHaveCount(0);
   release();
-  await expect(page.getByRole("button", { name: "Explore rice example" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your sourcing workspace", exact: true })).toBeVisible();
 });

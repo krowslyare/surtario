@@ -14,7 +14,7 @@ test("study purchase keeps its case through save, recovery and repeated opening"
     .fill("Keep the study comparison in this case");
   await page.getByRole("button", { name: "Save research question" }).click();
   await expect(page).toHaveURL(/view=followup.*case=/);
-  const followupUrl = page.url();
+  let followupUrl = page.url();
   await page.getByRole("button", { name: "Back to workspace", exact: true }).click();
   await expect(page).toHaveURL(/view=market/);
   await page
@@ -23,10 +23,12 @@ test("study purchase keeps its case through save, recovery and repeated opening"
     .getByRole("button", { name: "Add to study" })
     .click();
   await page.getByRole("button", { name: "Save study", exact: true }).click();
-  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
-  await page.getByRole("dialog", { name: "Your recent work" }).getByRole("listitem")
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("listitem")
     .filter({ hasText: "Keep the study comparison in this case" })
-    .getByRole("button", { name: "Open follow-up", exact: true }).click();
+    .getByRole("button", { name: "Rice", exact: true }).click();
+  await expect(page).toHaveURL(/view=followup.*case=/);
+  followupUrl = page.url();
   await page.getByRole("button", { name: "Link current saved study" }).click();
   await expect(page.getByRole("button", { name: "Open linked study", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Activity", exact: true }).click();
@@ -39,8 +41,8 @@ test("study purchase keeps its case through save, recovery and repeated opening"
       .toContainText("Demo examples and contacts without prices cannot be tracked");
   } else await expect(tracking).toHaveCount(0);
   await page.reload();
-  await expect(page).toHaveURL(followupUrl);
-  await page.getByRole("button", { name: "Back to workspace", exact: true }).click();
+  await expect(page).toHaveURL(/view=followup.*case=/);
+  await page.getByRole("button", { name: "Back to overview", exact: true }).click();
   await page.getByRole("button", { name: /^My study/ }).click();
   await page.getByRole("button", { name: "Saved (1)", exact: true }).click();
   await page.getByRole("button", { name: "Open study", exact: true }).click();
@@ -76,7 +78,7 @@ test("study purchase keeps its case through save, recovery and repeated opening"
   await expect(
     page.getByRole("region", { name: "Case history" }),
   ).toContainText("Reviewed comparison saved");
-  await page.getByRole("button", { name: "Overview", exact: true }).click();
+  await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Overview", exact: true }).click();
   await page
     .getByRole("region", { name: "Next step for this case" })
     .getByRole("button", { name: "Open case comparison" })
@@ -90,7 +92,8 @@ test("study purchase keeps its case through save, recovery and repeated opening"
 
   await page.getByRole("button", { name: "Back to follow-up", exact: true }).click();
   await expect(page).toHaveURL(followupUrl);
-  await page.getByRole("button", { name: "Back to workspace", exact: true }).click();
+  await page.getByRole("button", { name: "Back to overview", exact: true }).click();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await page
     .getByRole("button", { name: "Calculate purchase", exact: true })
     .click();

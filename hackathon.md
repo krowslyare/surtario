@@ -12,13 +12,13 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-21T11:50:13Z
+- **Last updated:** 2026-09-21T14:07:26Z
 
 ## Current delivery
 
 The development app has exercised real Firecrawl discovery, direct OpenAI extraction/advice and an AgentMail test-inbox round trip with reactive Convex updates. People review evidence and commercial terms; neither a reply nor a selected offer places a purchase. [Executed acceptance and limits](docs/VERIFICATION.md).
 
-The deployed baseline is PR #39 (`0eee328`): CI passed and development publication verified 35 files, SPA fallback and missing-asset behavior. The recording UX follow-up is a separate change awaiting PR review and deployment. The final narrated video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
+The deployed baseline is PR #40 (`92d322d`): CI passed and development publication verified 35 files, SPA fallback and missing-asset behavior. Sourcing overview and manual study refresh are a separate PR change verified locally, including real Firecrawl/OpenAI calls; they have not been deployed. The final narrated video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
 
 ## Log
 
@@ -125,3 +125,13 @@ Verification passed 325 domain/backend tests in 49 files, frontend/backend TypeS
 ### 2026-09-21 - working tree · PR #40 review corrections
 
 Validated and corrected both Codex review findings: normalized equivalent web offers can be saved and reopened, and filtered study comparisons only use visible offers. Source wording is preserved; incompatible manual identity edits still block saving. Three focused browser tests passed against isolated local Convex, including F5, re-save, filtered selection and existing selected-offer recovery. TypeScript/build and all 35 hosting files passed checks. No provider calls or mail were repeated. Integration and development publication remain separate outcomes tracked on PR #40.
+
+### 2026-09-21 - Sourcing overview and manual market refresh
+
+Added a session-scoped overview for pending replies, research, saved work and historical decision outcomes. Actual case/study/comparison links determine grouping; independent work stays separate. Review acknowledgements persist against an evidence version, and confirmed reply outcomes retain their original monetary context. Opening the overview uses summaries and does not launch research.
+
+A manual study update uses the configured Firecrawl/OpenAI path, reuses the existing quota and deduplicates concurrent updates while preserving reviewed offers. An isolated local acceptance completed an initial discovery and one refresh, each retaining 23 sources with 17 readable pages and three direct model interpretations. The saved USD 25.69 / 50 lb CHEF'STORE evidence remained unchanged; absent commercial terms stayed pending. There were no new URLs or explicit changed price/package details in this repeated observation. A missing extracted currency was corrected as an unresolved value rather than a supplier-change signal.
+
+The real study, follow-up and pending comparison appeared as one work item. No new email transport call, supplier contact, purchase, recurring watch or hosted deployment occurred in this acceptance. [Executed checks and limits](docs/VERIFICATION.md).
+
+Validation: 334 domain/backend tests, frontend/backend TypeScript and the 35-file hosting build passed. All 141 browser cases were verified across a full run and focused reruns, including exact reply navigation, deterministic saved outcomes, review persistence, session isolation, summary-only loading, responsive layouts and preserved drafts. This is local validation plus bounded real-provider acceptance, not deployment of the overview.

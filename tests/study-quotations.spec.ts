@@ -43,7 +43,7 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   );
   await expect(dialog.getByRole("checkbox")).not.toBeChecked();
   await page.keyboard.press("Escape");
-  await page.getByRole("button", { name: "Overview", exact: true }).click();
+  await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Overview", exact: true }).click();
   const nextStep = page.getByRole("region", {
     name: "Next step for this case",
   });
@@ -55,8 +55,8 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   await page.keyboard.press("Escape");
   // Opening the same hub destination twice must reopen the saved message.
   for (let visit = 0; visit < 2; visit++) {
-    await page.getByRole("button", { name: "Continue your work", exact: true }).click();
-    await page.getByRole("dialog").getByRole("button", { name: "Review inquiry", exact: true }).click();
+    await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+    await page.locator("#overview-work").getByRole("button", { name: "Review saved message", exact: true }).click();
     await expect(page.getByRole("dialog")).toContainText("Catalog request - clarify delivery");
     await page.keyboard.press("Escape");
   }

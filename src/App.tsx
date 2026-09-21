@@ -36,7 +36,7 @@ export default function App({ persistenceEnabled }: { persistenceEnabled: boolea
   const params = new URLSearchParams(window.location.search);
   const view = params.get("view");
   const workspaceRequested =
-    view === "market" || view === "comparison" || view === "followup" || view === "messages" || view === "brand" ||
+    view === "overview" || view === "market" || view === "comparison" || view === "followup" || view === "messages" || view === "brand" ||
     params.get("example") === "pe";
 
   if (!workspaceRequested) return <Landing />;

@@ -6,6 +6,7 @@ import { ArrowLeft, ChevronRight, Inbox, Mail } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { SavedQuotation } from "../../convex/quotationValidators";
 import type { PurchaseSeed } from "../domain/market";
+import { pendingReplies as unreviewedReplies, replyKey } from "../domain/workStatus";
 import { mergeReplyOffer } from "../domain/replyReview";
 import { useDemoSession } from "./useDemoSession";
 import { Button } from "./ui/Button";
@@ -34,9 +35,9 @@ function useMailbox(token: string | null) {
   const reviewed = new Set([
     ...comparisons.flatMap(item => Object.values(item.sources ?? {})),
     ...studies.flatMap(item => (item.webSelections ?? []).flatMap(selection => Object.values(selection.seed.sources))),
-  ].flatMap(source => source.replyReview ? [`${source.replyReview.requestId}:${source.replyReview.messageId}`] : []));
+  ].flatMap(source => source.replyReview ? [replyKey(source.replyReview.requestId, source.replyReview.messageId)] : []));
   for (const result of confirmationResults) {
-    if (result && !(result instanceof Error)) for (const item of result) reviewed.add(`${item.requestId}:${item.messageId}`);
+    if (result && !(result instanceof Error)) for (const item of result) reviewed.add(replyKey(item.requestId, item.messageId));
   }
   return requests.map(request => {
     const prospect = prospects.find(item => item.id === request.prospectId);
@@ -51,7 +52,7 @@ function useMailbox(token: string | null) {
       ?? "Supplier inquiry";
     const ingredient = prospect?.ingredient ?? study?.term ?? comparison?.request.ingredient ?? linkedCase?.ingredient;
     const region = prospect?.region ?? study?.region ?? linkedCase?.region;
-    const pendingReplies = request.replies.filter(reply => !reviewed.has(`${request.id}:${reply.messageId}`)).length;
+    const pendingReplies = unreviewedReplies(request, [...reviewed]).length;
     const latest = Math.max(request.updatedAt, ...request.replies.map(reply => Date.parse(reply.receivedAt)).filter(Number.isFinite));
     return { request, supplier, ingredient, region, linkedCase, comparison, pendingReplies, latest };
   }).sort((a, b) => b.latest - a.latest || a.request.id.localeCompare(b.request.id));
@@ -71,8 +72,9 @@ export function MessagesLink({ active, onClick }: { active?: boolean; onClick: (
 
 function ConnectedMessagesLink({ active, onClick }: { active?: boolean; onClick: () => void }) {
   const { token } = useDemoSession();
-  const entries = useMailbox(token);
-  const count = entries?.reduce((sum, entry) => sum + entry.pendingReplies, 0) ?? 0;
+  const overview = useQuery(api.overview.list, token ? { token } : "skip");
+  const requests = new Map(overview?.items.flatMap(item => item.requests.map(request => [request.id, { request, reviewed: item.reviewedReplyIds }] as const)));
+  const count = [...requests.values()].reduce((sum, item) => sum + unreviewedReplies(item.request, item.reviewed).length, 0);
   return <Button variant="text" aria-current={active ? "page" : undefined} onClick={onClick}>
     <Mail size={18} aria-hidden="true" />Messages
     {count > 0 && <span className="messages-count"><span aria-hidden="true">{count}</span><span className="sr-only">{count} {count === 1 ? "reply" : "replies"} to review</span></span>}
@@ -84,6 +86,8 @@ type Props = {
   visit: number;
   onSelect: (id?: string) => void;
   onBack: () => void;
+  onExplore: () => void;
+  backLabel?: string;
   onPrepare: (seed: PurchaseSeed) => void;
   onOpenFollowup: (id: string, requestId?: string) => void;
 };
@@ -91,7 +95,7 @@ type Props = {
 export default function Messages(props: Props) {
   const { token, error } = useDemoSession();
   return <main id="messages-main" className="messages-main" tabIndex={-1}>
-    <Button variant="text" onClick={props.onBack}><ArrowLeft size={16} />Back to workspace</Button>
+    <Button variant="text" onClick={props.onBack}><ArrowLeft size={16} />{props.backLabel ?? "Back to workspace"}</Button>
     <header className="messages-heading">
       <h1 tabIndex={-1}>Messages</h1>
       <p>Your supplier inquiries and replies, across all your saved work.</p>
@@ -151,7 +155,7 @@ function ConnectedMessages({ token, ...props }: Props & { token: string }) {
       <Inbox size={28} aria-hidden="true" />
       <h2>{entries.length ? "No messages in this view" : "Your supplier conversations start here"}</h2>
       <p>{entries.length ? "Choose another filter to see your saved conversations." : "Choose Prepare inquiry on a supplier to draft your first message. Sent requests and incoming replies will stay together here."}</p>
-      {!entries.length && <Button variant="secondary" onClick={props.onBack}>Explore suppliers</Button>}
+      {!entries.length && <Button variant="secondary" onClick={props.onExplore}>Explore suppliers</Button>}
     </div>}
     {selected && <QuotationMail
       key={`${selected.request.id}:${props.visit}`}

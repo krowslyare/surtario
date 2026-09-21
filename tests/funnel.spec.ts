@@ -23,9 +23,10 @@ test("unpriced result prepares a recoverable inquiry and reviewed reply without 
   expect(request.state).toBe("draft");
   expect(run("sourcing:list", { token })).toHaveLength(1);
   await page.goto("/?view=market");
-  const hub = page.getByRole("region", { name: "Continue your work", exact: true });
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  const hub = page.locator("#overview-work");
   await expect(hub.getByRole("listitem")).toHaveCount(1);
-  await hub.getByRole("button", { name: "Review inquiry", exact: true }).click();
+  await hub.getByRole("button", { name: "Review saved message", exact: true }).click();
   await expect(page.getByRole("dialog", { name: "Review quote request", exact: true })).toContainText("Northwest Restaurant Goods");
   // Inject a synthetic inbound reply through the local test fixture; no provider call.
   const directory = mkdtempSync(join(tmpdir(), "funnel-reply-"));
@@ -34,8 +35,8 @@ test("unpriced result prepares a recoverable inquiry and reviewed reply without 
     writeFileSync(path, JSON.stringify([{ requestId: request.id, eventId: randomUUID(), messageId: randomUUID(), threadId: randomUUID(), from: "demo@example.test", receivedAt: new Date().toISOString(), text: "Northwest: long-grain white rice, 25 lb bag for USD 20. Delivery and taxes pending." }]));
     runLocalConvex(["import", "--append", "--table", "quotationReplies", path]);
   } finally { rmSync(directory, { recursive: true }); }
-  await page.goto("/?view=market");
-  await hub.getByRole("button", { name: "Review reply", exact: true }).click();
+  await page.goto("/?view=overview");
+  await hub.getByRole("button", { name: "Review supplier reply", exact: true }).click();
   await page.getByRole("button", { name: "Review as new offer", exact: true }).click();
   const review = page.getByRole("dialog", { name: "Prepare offer from reply", exact: true });
   await review.getByLabel("Supplier", { exact: true }).fill("Northwest");
@@ -50,7 +51,7 @@ test("unpriced result prepares a recoverable inquiry and reviewed reply without 
   await page.getByLabel("Required quantity").fill("40");
   await page.getByRole("button", { name: "Save comparison", exact: true }).click();
   await expect(page.getByText("Comparison saved. Save again after making changes.", { exact: true })).toBeVisible();
-  await page.goto("/?view=market");
+  await page.goto("/?view=overview");
   await expect(hub.getByRole("listitem")).toHaveCount(1);
   const saved = run("comparisons:list", { token });
   expect(saved).toHaveLength(1);
@@ -81,7 +82,8 @@ test("direct calculation retains pending terms, exact package arithmetic and rec
   await expect(page.getByText("Comparison saved. Save again after making changes.", { exact: true })).toBeVisible();
   await page.goto("/?view=market");
   await page.reload();
-  const hub = page.getByRole("region", { name: "Continue your work", exact: true });
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  const hub = page.locator("#overview-work");
   await expect(hub.getByRole("listitem")).toHaveCount(1);
   for (const width of [1920, 390, 320]) {
     await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
@@ -91,10 +93,10 @@ test("direct calculation retains pending terms, exact package arithmetic and rec
     expect(brand && navigation && (navigation.y >= brand.y + brand.height || navigation.x >= brand.x + brand.width)).toBe(true);
     await page.screenshot({ path: testInfo.outputPath(`continuity-${width}.png`), fullPage: true });
   }
-  // The global continuity dialog must close before the comparison opens.
-  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
-  await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Resume calculation", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Your recent work", exact: true })).toBeHidden();
+  // Leaving Overview must expose only the restored comparison.
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("button", { name: "Open comparison", exact: true }).click();
+  await expect(page.locator("#overview-work")).toBeHidden();
   await expect(page.getByLabel("Required quantity")).toHaveValue("40");
   await expect(page.getByTestId("total-0")).toHaveText("USD 44.00");
   await expect(offer).toContainText("10 lb");
@@ -113,7 +115,8 @@ for (const intent of ["inquiry", "research"] as const) {
     });
     await context.addInitScript(value => localStorage.setItem("procurement-demo-session-v1", value), token);
     await page.goto("/?view=market");
-    const hub = page.getByRole("region", { name: "Continue your work", exact: true });
+    await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  const hub = page.locator("#overview-work");
     await hub.getByRole("button", { name: "Review sources", exact: true }).click();
     // The market workspace stays mounted while the follow-up is active.
     // Target the visible source heading, not text in both retained workspaces.
@@ -162,7 +165,8 @@ test("failed search remains an error until the user explicitly opens the demo", 
   run("research:failSearch", { id: reserved.run.id });
   await context.addInitScript(value => localStorage.setItem("procurement-demo-session-v1", value), token);
   await page.goto("/?view=market");
-  await page.getByRole("region", { name: "Continue your work", exact: true }).getByRole("button", { name: "Review sources", exact: true }).click();
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("button", { name: "Review research", exact: true }).click();
   const results = page.getByRole("region", { name: "Web research", exact: true });
   await expect(results.getByRole("alert")).toBeVisible();
   await expect(page.getByRole("article", { name: /Result: Cascade Pantry/ })).toHaveCount(0);
@@ -175,11 +179,12 @@ test("continuity keeps independent work separate and its bounded list keyboard a
   const token = createHash("sha256").update(randomUUID()).digest("hex");
   await context.addInitScript(value => localStorage.setItem("procurement-demo-session-v1", value), token);
   await page.goto("/?view=market");
-  const hub = page.getByRole("region", { name: "Continue your work", exact: true });
-  await expect(hub.getByRole("heading", { name: "No saved work yet" })).toBeVisible();
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  const hub = page.locator("#overview-work");
+  await expect(page.getByRole("heading", { name: "Start with what your kitchen needs." })).toBeVisible();
   for (const width of [1920, 390]) {
     await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
-    await hub.screenshot({ path: testInfo.outputPath(`continuity-empty-${width}.png`) });
+    await page.locator("#overview-main").screenshot({ path: testInfo.outputPath(`continuity-empty-${width}.png`) });
   }
   run("sourcing:create", { token, ingredient: "Rice", region: "Portland, OR, US", objective: "Find smaller packs" });
   run("sourcing:create", { token, ingredient: "Rice", region: "Portland, OR, US", objective: "Check delivery schedule" });
@@ -187,18 +192,18 @@ test("continuity keeps independent work separate and its bounded list keyboard a
     run("sourcing:create", { token, ingredient, region: "Portland, OR, US", objective: "Review available package sizes and published prices" });
   }
   await expect(hub.getByRole("listitem")).toHaveCount(8);
-  await expect(hub.getByText("8 saved items", { exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "0 Needs your attention", exact: true })).toBeVisible();
   await expect(hub.getByRole("listitem").filter({ has: page.getByText("Rice", { exact: true }) })).toHaveCount(2);
-  const scroll = hub.getByRole("group", { name: "Saved work", exact: true });
+  const scroll = hub.locator(".overview-work-list");
   for (const width of [1920, 390, 320]) {
     await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    expect(await scroll.evaluate(element => element.clientHeight <= 360 && element.scrollHeight > element.clientHeight)).toBe(true);
+    await expect(scroll.getByRole("listitem")).toHaveCount(8);
     await hub.screenshot({ path: testInfo.outputPath(`continuity-many-${width}.png`) });
   }
-  await scroll.focus();
-  await scroll.press("End");
-  await expect.poll(() => scroll.evaluate(element => element.scrollTop)).toBeGreaterThan(0);
+  await hub.getByLabel("Find work").fill("Rice");
+  await expect(scroll.getByRole("listitem")).toHaveCount(2);
+  await hub.getByLabel("Find work").fill("");
   const resume = hub.getByRole("listitem").filter({ hasText: "Find smaller packs" }).getByRole("button", { name: "Open follow-up", exact: true });
   await resume.focus();
   await expect(resume).toBeInViewport();
@@ -220,8 +225,8 @@ test("resuming a different ingredient clears only the working selection", async 
   await page.getByRole("article", { name: "Result: Cascade Pantry Supply · fictional example", exact: true }).getByRole("button", { name: "Add to study", exact: true }).click();
   await page.getByRole("button", { name: "Save study", exact: true }).click();
   await expect(page.getByRole("button", { name: "Saved (1)", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
-  await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Review sources", exact: true }).click();
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("button", { name: "Review sources", exact: true }).click();
   await expect(page.getByRole("button", { name: "My study", exact: true })).toBeVisible();
   await page.getByRole("heading", { name: "Test lentil supplier", exact: true }).waitFor();
   await page.getByRole("button", { name: "Prepare inquiry", exact: true }).click();

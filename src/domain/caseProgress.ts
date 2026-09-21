@@ -1,53 +1,22 @@
+import { mailAttention } from "./workStatus";
 /** Presentation derived from persisted facts. Research completion is not purchase readiness. */
 export type CaseProgressInput = {
   status: string;
   liveEnabled: boolean;
   hasComparison: boolean;
   hasEvidence: boolean;
+  blocker?: string | null;
   watches: { status: string; lastOutcome: string }[];
   requests: { id: string; state: string; replies: { messageId: string }[] }[];
   reviewedReplyIds: string[];
 };
 export function caseProgress(input: CaseProgressInput) {
-  const reply = input.requests.find((request) =>
-    request.replies.some(
-      (item) =>
-        !input.reviewedReplyIds.includes(
-          `reply:${request.id}:${item.messageId}`,
-        ),
-    ),
-  );
-  if (reply)
-    return {
-      title: "A supplier replied",
-      description:
-        "Review the reply and confirm its terms before updating your comparison.",
-      action: "Review supplier reply",
-      target: "mail",
-      requestId: reply.id,
-    } as const;
-  const uncertain = input.requests.find(
-    (request) => request.state === "uncertain" || request.state === "failed",
-  );
-  if (uncertain)
-    return {
-      title: "Check the message outcome",
-      description:
-        "Sending was not confirmed. Review the recorded outcome before taking another action; an uncertain send must not be repeated automatically.",
-      action: "Check message outcome",
-      target: "mail",
-      requestId: uncertain.id,
-    } as const;
-  const draft = input.requests.find((request) => request.state === "draft");
-  if (draft)
-    return {
-      title: "Your message needs review",
-      description:
-        "Check the recipient and saved message. Nothing is sent until you approve that version.",
-      action: "Review saved message",
-      target: "mail",
-      requestId: draft.id,
-    } as const;
+  const mail = mailAttention(input.requests, input.reviewedReplyIds);
+  if (mail) return { ...mail, target: "mail" as const };
+  if (input.blocker) return {
+    title: "Comparison needs confirmation", description: input.blocker,
+    action: "Review comparison", target: "comparison" as const,
+  };
   if (input.hasEvidence)
     return {
       title: "Research findings to review",

@@ -39,7 +39,7 @@ export default function Landing() {
       <a className="skip-link" href="#landing-main">Skip to content</a>
       <header className="landing-header">
         <Brand compact />
-        <a className="landing-enter" href="/?view=market" onClick={markWorkspaceEntry}>
+        <a className="landing-enter" href="/?view=overview" onClick={markWorkspaceEntry}>
           Open workspace <ArrowUpRight size={18} aria-hidden="true" />
         </a>
       </header>
