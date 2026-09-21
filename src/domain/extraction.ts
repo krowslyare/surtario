@@ -1,6 +1,7 @@
 import { parseCents, parseDecimal } from "../numbers";
 import type { PurchaseSeed } from "./market";
 import type { Currency, PackageUnit, SupplierOffer } from "./procurement";
+import { MAX_COMPARISON_OFFERS } from "./study";
 
 export const extractionFields = [
   "supplier",
@@ -32,6 +33,28 @@ export type ExtractionSource = {
   simulated: boolean;
 };
 export type ReviewedValues = Record<ExtractionField, string>;
+export function searchMarketCurrency(region: string): "USD" | "PEN" | undefined {
+  if (/\b(peru|perú|lima)\b/i.test(region)) return "PEN";
+  if (/\b(us|usa|united states)\b/i.test(region)) return "USD";
+  return undefined;
+}
+
+/** Missing and invalid values both need individual review before bulk saving. */
+export function quickReviewIssues(values: ReviewedValues): string[] {
+  const issues: string[] = [];
+  for (const key of ["supplier", "ingredient", "specification"] as const)
+    if (!values[key].trim() || values[key].trim().length > 120) issues.push(key);
+  const content = parseDecimal(values.packageContent);
+  if (content === null || !Number.isFinite(content) || content <= 0 || content > 1e6)
+    issues.push("package size");
+  if (!["kg", "g", "lb", "oz", "L", "ml", "unit"].includes(values.packageUnit))
+    issues.push("package unit");
+  const price = parseCents(values.price);
+  if (price === null || !Number.isSafeInteger(price) || price < 0)
+    issues.push("price");
+  if (!["USD", "PEN"].includes(values.currency)) issues.push("currency");
+  return issues;
+}
 export function draftValues(offer: ExtractedOffer): ReviewedValues {
   return Object.fromEntries(
     extractionFields.map((key) => [key, offer[key].value ?? ""]),
@@ -42,6 +65,7 @@ export function extractionToPurchase(
   extracted: ExtractedOffer,
   values: ReviewedValues,
   confirmed: boolean,
+  defaults: Partial<ReviewedValues> = {},
 ): PurchaseSeed {
   if (!confirmed)
     throw new Error(
@@ -93,7 +117,7 @@ export function extractionToPurchase(
   const audit = extractionFields
     .map(
       (key) =>
-        `${fieldLabels[key]}: ${extracted[key].value ?? "Pending"}; evidence: ${extracted[key].evidence ?? "No evidence"}${values[key] !== (extracted[key].value ?? "") ? `; manual correction: ${values[key] || "Pending"}` : ""}`,
+        `${fieldLabels[key]}: ${extracted[key].value ?? "Pending"}; evidence: ${extracted[key].evidence ?? "No evidence"}${values[key] !== (extracted[key].value ?? "") ? defaults[key] === values[key] ? `; search-market default: ${values[key]}` : `; manual correction: ${values[key] || "Pending"}` : ""}`,
     )
     .join("\n");
   return {
@@ -143,26 +167,33 @@ export function combineReviewedOffers(
     throw new Error("Confirm that the reviewed offers are equivalent.");
   if (
     !seeds.length ||
-    seeds.length > 3 ||
+    seeds.length > MAX_COMPARISON_OFFERS ||
     seeds.some((seed) => seed.offers.length !== 1)
   )
-    throw new Error("Select one to three reviewed offers.");
+    throw new Error(`Select one to ${MAX_COMPARISON_OFFERS} reviewed offers.`);
   const first = seeds[0];
-  const offers = seeds.flatMap((seed) => seed.offers);
-  if (new Set(offers.map((offer) => offer.id)).size !== offers.length)
+  const reviewedOffers = seeds.flatMap((seed) => seed.offers);
+  if (new Set(reviewedOffers.map((offer) => offer.id)).size !== reviewedOffers.length)
     throw new Error("The same source cannot appear twice.");
   if (
     seeds.some(
       (seed) =>
-        seed.request.ingredient !== first.request.ingredient ||
-        seed.request.specification !== first.request.specification ||
         seed.request.unit !== first.request.unit ||
         seed.offers[0].currency !== first.offers[0].currency,
     )
   )
     throw new Error(
-      "Review the ingredient, specification, unit, and currency; these offers are not comparable yet.",
+      "The selected offers need the same base unit and currency before they can be compared.",
     );
+  // The user explicitly confirmed product equivalence. Keep each reviewed
+  // source unchanged in `sources`, while using one comparison label so the
+  // deterministic evaluator does not mistake wording differences for a
+  // different product.
+  const offers = reviewedOffers.map((offer) => ({
+    ...offer,
+    ingredient: first.request.ingredient,
+    specification: first.request.specification,
+  }));
   return {
     request: { ...first.request, quantity: 0 },
     offers: structuredClone(offers),

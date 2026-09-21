@@ -73,6 +73,19 @@
 .study-selection-source a:hover { text-decoration: underline; }
 .study-selection-source a span, .study-selection-source small { font-size: 12px; color: var(--color-text-muted); }
 .study-selection-footer .button { flex: 0 0 auto; }
+.study-selection-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.study-compare-pick {
+  min-height: 44px;
+  padding-inline: 4px;
+  font-size: 13px;
+  font-weight: 700;
+}
 @media (max-width: 600px) {
   .study-offer { padding: 20px 16px; }
   .study-offer .study-selection-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -82,6 +95,8 @@
   .study-offer .study-selection-facts > div:last-child small { grid-column: 1 / -1; }
   .study-offer .study-selection-facts dd { font-size: 20px; }
   .study-selection-footer { align-items: stretch; flex-direction: column; }
+  .study-selection-actions { align-items: stretch; flex-direction: column; }
+  .study-selection-actions .button { width: 100%; }
   .study-selection-source a { min-height: 44px; }
   .study-selection-heading h3 { font-size: 20px; }
 }

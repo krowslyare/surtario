@@ -6,6 +6,7 @@ import type { PurchaseSeed } from "../../src/domain/market";
 import {
   extractionFields,
   extractionToPurchase,
+  searchMarketCurrency,
   type ReviewedValues,
 } from "../../src/domain/extraction";
 import { inspectSource } from "./sourceQuality";
@@ -66,6 +67,9 @@ export async function reconstructWebReview(
       source.extraction,
       review.values,
       review.confirmed,
+      !source.extraction.currency.value
+        ? { currency: searchMarketCurrency(run.region) ?? "" }
+        : {},
     );
     seed.sources[ref].webReview = { ...review };
     return seed;

@@ -55,7 +55,7 @@ test("prepara correo desde comparación guardada sin enviar al faltar configurac
   await page.getByRole("button", { name: "Open comparison" }).click();
   await page.getByRole("button", { name: "View request" }).click();
   await expect(page.getByRole("dialog")).toContainText("Draft");
-  await expect(page.getByRole("dialog")).toContainText(
-    "No replies are linked yet",
-  );
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Send test request" })).toBeDisabled();
+  await page.getByRole("dialog").getByText("Request history", { exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("Prepared");
 });

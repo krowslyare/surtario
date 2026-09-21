@@ -47,6 +47,12 @@ export function SaveWebProspect({
   const loading = prospects === undefined;
   return (
     <>
+      {saved && (
+        <div className="source-save-state" role="status">
+          <Check size={15} aria-hidden="true" />
+          Saved distributor
+        </div>
+      )}
       {onContinue && primaryInquiry && <button className="button primary" disabled={loading} onClick={() => { if (saved) onContinue(saved, "inquiry"); else { setIntent("inquiry"); setOpen(true); } }}>Prepare inquiry</button>}
       {!onContinue && <button className="button secondary" disabled={loading} onClick={() => { setIntent(null); setOpen(true); }}>
         {saved ? "View saved candidate" : "Save potential distributor"}
@@ -168,12 +174,14 @@ export function WebProspectLibrary({
   onPrepare,
   onSelect,
   selectedIds,
+  availableStudySlots,
   onContinue,
 }: {
   token: string;
   onPrepare: (seed: PurchaseSeed) => void;
   onSelect?: (prospect: StudyProspect) => void;
   selectedIds?: string[];
+  availableStudySlots?: number;
   onContinue?: (prospect: StudyProspect, intent: "inquiry" | "research") => void;
 }) {
   const prospects = useQuery(api.prospects.list, { token });
@@ -206,7 +214,7 @@ export function WebProspectLibrary({
                 <button
                   className="button secondary"
                   aria-pressed={selectedIds?.includes(item.id) ?? false}
-                  disabled={selectedIds?.includes(item.id) || (selectedIds?.length ?? 0) >= 3}
+                  disabled={selectedIds?.includes(item.id) || availableStudySlots === 0}
                   onClick={() => onSelect(item)}
                 >
                   {selectedIds?.includes(item.id) ? <Check size={16} aria-hidden="true" /> : <Bookmark size={16} aria-hidden="true" />}

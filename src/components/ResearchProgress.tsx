@@ -40,6 +40,11 @@ export default function ResearchProgress({ progress, ingredient, region, sources
   const disconnected = !connected || !online;
   const waiting = updateAge >= 30;
   const ageLabel = updateAge < 5 ? "Just updated" : `Last update ${updateAge < 60 ? `${updateAge}s` : `${Math.floor(updateAge / 60)}m ${updateAge % 60}s`} ago`;
+  const title = reviewing
+    ? "Preparing your shortlist"
+    : reading
+      ? "Reading the details"
+      : "Finding your options";
   return <section ref={panel} className="research-progress" aria-label="Search progress" data-animate={inView && visible && !disconnected}>
     <div className="research-progress-intro">
       <svg className="research-brand-loader" viewBox="0 0 64 64" aria-hidden="true">
@@ -49,7 +54,12 @@ export default function ResearchProgress({ progress, ingredient, region, sources
       </svg>
       <div>
         <p className="research-progress-context">{ingredient} <span>· {region}</span></p>
-        <h3 key={progress?.stage ?? "searching"}>{reviewing ? "Preparing your shortlist." : reading ? "Reading the details." : "Finding your options."}</h3>
+        <h3 key={progress?.stage ?? "searching"} aria-label={`${title}.`}>
+          <span aria-hidden="true">{title}</span>
+          <span className="research-title-ellipsis" aria-hidden="true">
+            <span>.</span><span>.</span><span>.</span>
+          </span>
+        </h3>
         <p>Checking public sources. You’ll review what we find.</p>
       </div>
     </div>
@@ -89,7 +99,7 @@ export default function ResearchProgress({ progress, ingredient, region, sources
       </li>)}</ul>
       {sources.length > 6 && <p className="research-progress-note">{sources.length - 6} more sources collected. All will be available when the search finishes.</p>}
     </div>}
-    <p className="research-progress-note">{disconnected ? "Collected sources stay here. Reconnecting does not start another search." : "Your search is saved here as it runs. You can return to it from Continue your work."}</p>
+    <p className="research-progress-note">{disconnected ? "Collected sources stay here. Reconnecting does not start another search." : "You can leave this page. Research will keep running, and you can return from Continue your work."}</p>
   </section>;
 }
 

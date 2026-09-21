@@ -3,7 +3,7 @@ import { mutation, query } from "./_generated/server";
 import { savedStudyValidator } from "./studyValidators";
 import { webReviewInputValidator } from "./comparisonValidators";
 import { extractionFields } from "../src/domain/extraction";
-import { sameStudyContext, type WebSelection } from "../src/domain/study";
+import { MAX_STUDY_OPTIONS, sameStudyContext, type WebSelection } from "../src/domain/study";
 import { reconstructWebReview } from "./lib/webReviews";
 import {
   findMarketExampleContext,
@@ -89,14 +89,14 @@ export const save = mutation({
     const reviews = args.webReviews ?? [];
     const prospectIds = args.prospectIds ?? [];
     if (
-      reviews.length > 3 ||
-      prospectIds.length > 3 ||
+      reviews.length > MAX_STUDY_OPTIONS ||
+      prospectIds.length > MAX_STUDY_OPTIONS ||
       new Set(reviews.map((r) => `${r.runId}:${r.sourceIndex}`)).size !==
         reviews.length ||
       new Set(prospectIds).size !== prospectIds.length
     )
       throw new ConvexError(
-        "Select up to three web offers and three distinct distributors.",
+        `Select up to ${MAX_STUDY_OPTIONS} distinct web offers or distributors.`,
       );
     const webSelections = [];
     for (const review of reviews) {
@@ -138,13 +138,14 @@ export const save = mutation({
       );
     if (
       args.selectedIds.length > 4 ||
+      selectedIds.length + webSelections.length + prospects.length > MAX_STUDY_OPTIONS ||
       (!selectedIds.length && !webSelections.length && !prospects.length) ||
       (selectedIds.length > 0 &&
         (!selectedExampleContext ||
           (!context && selectedExampleContext !== requestedExampleContext)))
     )
       throw new ConvexError(
-        "Select one to four example options, one web offer, or one reviewed distributor.",
+        `Keep up to ${MAX_STUDY_OPTIONS} options in one study.`,
       );
     if (
       context &&

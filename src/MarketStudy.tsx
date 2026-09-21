@@ -56,6 +56,7 @@ import type { Id } from "../convex/_generated/dataModel";
 import StudySelections from "./components/StudySelections";
 import SourcingCase, { type StudyCaseLink, type FollowupLocation } from "./components/SourcingCase";
 import {
+  MAX_STUDY_OPTIONS,
   sameStudyContext,
   studyOptionCount,
   type StudyProspect,
@@ -294,24 +295,33 @@ export default function MarketStudy({
   }
 
   function addReview(selection: WebSelection) {
-    if (!canAddContext(selection)) return;
+    if (!canAddContext(selection)) return false;
+    if (!webSelections.some((item) => item.sourceId === selection.sourceId) && optionCount >= MAX_STUDY_OPTIONS) {
+      setError(`My study can hold up to ${MAX_STUDY_OPTIONS} options.`);
+      return false;
+    }
     setWebSelections((current) =>
       current.some((item) => item.sourceId === selection.sourceId)
         ? current.map((item) =>
             item.sourceId === selection.sourceId ? selection : item,
           )
-        : current.length < 3
+        : selectedIds.length + prospects.length + current.length < MAX_STUDY_OPTIONS
           ? [...current, selection]
           : current,
     );
+    return true;
   }
 
   function toggleProspect(prospect: StudyProspect) {
     if (!canAddContext(prospect)) return;
+    if (!prospects.some((item) => item.id === prospect.id) && optionCount >= MAX_STUDY_OPTIONS) {
+      setError(`My study can hold up to ${MAX_STUDY_OPTIONS} options.`);
+      return;
+    }
     setProspects((current) =>
       current.some((item) => item.id === prospect.id)
         ? current.filter((item) => item.id !== prospect.id)
-        : current.length < 3
+        : selectedIds.length + webSelections.length + current.length < MAX_STUDY_OPTIONS
           ? [...current, prospect]
           : current,
     );
@@ -449,6 +459,10 @@ export default function MarketStudy({
   }
   function toggle(result: MarketResult) {
     if (!selectedIds.includes(result.id) && !canAddContext(result)) return;
+    if (!selectedIds.includes(result.id) && optionCount >= MAX_STUDY_OPTIONS) {
+      setError(`My study can hold up to ${MAX_STUDY_OPTIONS} options.`);
+      return;
+    }
     if (showStudy && selectedIds.includes(result.id)) {
       requestAnimationFrame(() =>
         document
@@ -776,6 +790,7 @@ export default function MarketStudy({
                   caseComparisonContext={currentStudyCase?.comparison && study.savedContext ? { ingredient: study.savedContext.term, region: study.savedContext.region } : undefined}
                   onExploreDemo={startExample}
                   selections={webSelections}
+                  availableStudySlots={Math.max(0, MAX_STUDY_OPTIONS - optionCount)}
                   onReview={addReview}
                   onOpenStudy={() => {
                     setShowStudy(true);

@@ -22,6 +22,7 @@ import { mergeReplyOffer } from "./domain/replyReview";
 import QuotationMail from "./components/QuotationMail";
 import { Dialog } from "./components/Dialog";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { MAX_COMPARISON_OFFERS } from "./domain/study";
 import SavedComparisons, {
   type SavedComparison,
   type SavedComparisonsHandle,
@@ -30,6 +31,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  ChevronRight,
   CircleHelp,
   FileText,
   Info,
@@ -172,7 +174,7 @@ function OfferEditor({
       wide
     >
       <p className="muted">
-        Enter the quoted terms. Leave unknown values blank to keep them pending.
+        Enter the quoted terms. Unknown values can stay blank and will be saved as pending; the final order total will wait for confirmation.
       </p>
       <form onSubmit={save}>
         <div className="form-grid">
@@ -241,7 +243,7 @@ function OfferEditor({
             "freight",
             "Delivery per order",
             offer?.freightCents == null ? null : offer.freightCents / 100,
-            "0 if included. Leave blank if unknown.",
+            "Enter 0 if included. Leave blank to save it as pending.",
           )}
           <label className="field full-width">
             <span>Tax on goods and delivery</span>
@@ -277,6 +279,92 @@ function OfferEditor({
           <button className="button primary" type="submit">
             <Check size={18} />
             Save offer
+          </button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
+function SharedTermsEditor({
+  offerCount,
+  onApply,
+  onClose,
+}: {
+  offerCount: number;
+  onApply: (terms: Partial<SupplierOffer>) => void;
+  onClose: () => void;
+}) {
+  const [error, setError] = useState("");
+  function apply(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const minimumText = String(data.get("minimum") ?? "").trim();
+    const freightText = String(data.get("freight") ?? "").trim();
+    const minimumPackages = minimumText === "" ? null : parseDecimal(minimumText, 0);
+    const freightCents = freightText === "" ? null : parseCents(freightText);
+    if (
+      (minimumText !== "" &&
+        (minimumPackages === null ||
+          !Number.isSafeInteger(minimumPackages) ||
+          minimumPackages < 1)) ||
+      (freightText !== "" && (freightCents === null || freightCents < 0))
+    ) {
+      setError("Enter a whole minimum of at least 1 and a nonnegative delivery amount.");
+      return;
+    }
+    const taxStatus = String(data.get("tax") ?? "");
+    const terms: Partial<SupplierOffer> = {};
+    if (minimumText !== "") terms.minimumPackages = minimumPackages;
+    if (freightText !== "") terms.freightCents = freightCents;
+    if (taxStatus) terms.taxStatus = taxStatus as SupplierOffer["taxStatus"];
+    if (data.get("delivery") === "on") terms.deliveryConfirmed = true;
+    if (Object.keys(terms).length === 0) {
+      setError("Enter at least one shared term to apply.");
+      return;
+    }
+    onApply(terms);
+  }
+  return (
+    <Dialog title={`Apply shared terms to ${offerCount} offers`} onClose={onClose}>
+      <p className="muted">
+        Enter only terms that are true for every offer. Blank fields keep each offer's current value.
+      </p>
+      <form onSubmit={apply}>
+        <div className="form-grid shared-terms-form">
+          <label className="field">
+            <span>Minimum packs</span>
+            <input name="minimum" inputMode="numeric" placeholder="Keep current values" />
+          </label>
+          <label className="field">
+            <span>Delivery per order</span>
+            <input name="freight" inputMode="decimal" placeholder="Keep current values" />
+            <small>Enter 0 only when delivery is included.</small>
+          </label>
+          <label className="field full-width">
+            <span>Tax on goods and delivery</span>
+            <Select
+              aria-label="Shared tax on goods and delivery"
+              name="tax"
+              defaultValue=""
+              options={[
+                { value: "", label: "Keep current values" },
+                { value: "included", label: "Final amounts, including tax" },
+                { value: "excluded", label: "Tax still needs to be added" },
+                { value: "unknown", label: "Mark as to confirm" },
+              ]}
+            />
+          </label>
+          <label className="checkbox full-width">
+            <input name="delivery" type="checkbox" />
+            <span>All suppliers can deliver when I need it</span>
+          </label>
+        </div>
+        {error && <p className="notice error" role="alert">{error}</p>}
+        <div className="dialog-actions">
+          <button type="button" className="button secondary" onClick={onClose}>Cancel</button>
+          <button className="button primary" type="submit">
+            <Check size={18} /> Apply to {offerCount} offers
           </button>
         </div>
       </form>
@@ -346,7 +434,7 @@ export default function Comparison({
   const [sources, setSources] = useState(
     () => seed?.sources ?? initialSources(exampleOffers),
   );
-  const [modal, setModal] = useState<"new" | "reset" | "help" | null>(null);
+  const [modal, setModal] = useState<"new" | "reset" | "help" | "shared-terms" | null>(null);
   const [editing, setEditing] = useState<string | null>(null);
   const [sourceId, setSourceId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -410,6 +498,25 @@ export default function Comparison({
       count: members.length,
     };
   });
+  const merchandiseSummaries = (["PEN", "USD"] as const).flatMap((currency) => {
+    const members = evaluations.filter(
+      (result) =>
+        result.offer.currency === currency &&
+        result.offer.ingredient === effectiveRequest.ingredient &&
+        result.offer.specification === effectiveRequest.specification &&
+        result.unitPriceCents !== null,
+    );
+    if (members.length < 2) return [];
+    const lowestUnitPrice = Math.min(...members.map((result) => result.unitPriceCents!));
+    return [{
+      currency,
+      count: members.length,
+      lowest: members
+        .filter((result) => result.unitPriceCents === lowestUnitPrice)
+        .map((result) => result.offer),
+      lowestUnitPrice,
+    }];
+  });
   const source = sourceId ? sources[sourceId] : null;
   const editingOffer = offers.find((offer) => offer.id === editing);
   const unit = unitName(request.unit);
@@ -434,8 +541,11 @@ export default function Comparison({
           entry.replyReview !== undefined) &&
         entry.label !== "Manual entry" &&
         offer.supplier === entry.original.supplier &&
-        offer.ingredient === entry.original.ingredient &&
-        offer.specification === entry.original.specification
+        (entry.webReview?.confirmed === true
+          ? offer.ingredient === baselineRequest.ingredient &&
+            offer.specification === baselineRequest.specification
+          : offer.ingredient === entry.original.ingredient &&
+            offer.specification === entry.original.specification)
       );
     });
   const pendingQuantity = quantity.trim() === "";
@@ -620,7 +730,31 @@ export default function Comparison({
     }));
     setEditing(null);
     setModal(null);
-    setMessage("Offer updated in this view.");
+    const pendingTerms = [
+      offer.minimumPackages === null ? "minimum" : null,
+      offer.freightCents === null ? "delivery cost" : null,
+      offer.taxStatus === "unknown" ? "tax" : null,
+      !offer.deliveryConfirmed ? "delivery timing" : null,
+    ].filter((value): value is string => value !== null);
+    const pendingLabel = new Intl.ListFormat("en-US", {
+      style: "long",
+      type: "conjunction",
+    }).format(pendingTerms);
+    setMessage(
+      pendingTerms.length > 0
+        ? `Offer saved. ${pendingLabel.charAt(0).toUpperCase()}${pendingLabel.slice(1)} ${pendingTerms.length === 1 ? "remains" : "remain"} pending, so the final order total is pending.`
+        : "Offer updated in this view.",
+    );
+  }
+  function applySharedTerms(terms: Partial<SupplierOffer>) {
+    setOffers((current) => current.map((offer) => ({ ...offer, ...terms })));
+    setSources((current) =>
+      Object.fromEntries(
+        Object.entries(current).map(([id, source]) => [id, { ...source, edited: true }]),
+      ),
+    );
+    setModal(null);
+    setMessage(`Shared terms applied to ${offers.length} offers.`);
   }
   function missingExample(kind: "weight" | "freight") {
     setOffers((current) =>
@@ -684,7 +818,7 @@ export default function Comparison({
           <div>
             <h1 tabIndex={-1}>Compare before you buy</h1>
             <p>
-              Enter a quantity and confirm the terms to calculate the order.
+              Compare listed prices first. Confirm commercial terms only when you need a final order total.
             </p>
           </div>
         </div>
@@ -819,14 +953,22 @@ export default function Comparison({
                   : "· Sample prices, not live quotes"}
               </p>
             </div>
-            <button
-              className="button primary"
-              disabled={offers.length >= 4}
-              onClick={() => setModal("new")}
-            >
-              <Plus size={18} />
-              Add offer
-            </button>
+            <div className="comparison-heading-actions">
+              {offers.length > 1 && (
+                <button className="button secondary" onClick={() => setModal("shared-terms")}>
+                  <Check size={18} />
+                  Apply shared terms
+                </button>
+              )}
+              <button
+                className="button primary"
+                disabled={offers.length >= MAX_COMPARISON_OFFERS}
+                onClick={() => setModal("new")}
+              >
+                <Plus size={18} />
+                Add offer
+              </button>
+            </div>
           </div>
           {offers.length === 0 ? (
             <div className="empty-state">
@@ -845,6 +987,11 @@ export default function Comparison({
             </div>
           ) : (
             <>
+              {message && (
+                <p className="notice info comparison-update" role="status">
+                  {message}
+                </p>
+              )}
               <div
                 className="comparison-summary"
                 aria-live="polite"
@@ -870,6 +1017,22 @@ export default function Comparison({
                         </div>
                       ),
                     )}
+                  </>
+                ) : merchandiseSummaries.length > 0 ? (
+                  <>
+                    <span className="summary-icon pending">
+                      <Scale size={22} />
+                    </span>
+                    {merchandiseSummaries.map(({ currency, count, lowest, lowestUnitPrice }) => (
+                      <div key={currency}>
+                        <h3>
+                          {lowest.map((offer) => offer.supplier).join(" and ")} has the lowest listed price per {unit}
+                        </h3>
+                        <p>
+                          {money(lowestUnitPrice, currency)} per {unit} based on package prices across {count} offers. Confirm minimums, delivery and tax for final order totals.
+                        </p>
+                      </div>
+                    ))}
                   </>
                 ) : (
                   <>
@@ -933,47 +1096,56 @@ export default function Comparison({
                               : `${numberLabel(offer.packageContent)} ${unitName(offer.packageUnit ?? "")} per pack`}
                           </p>
                         </div>
+                        <div className="offer-heading-actions">
+                          <button
+                            className="icon-button"
+                            aria-label={`Edit ${offer.supplier}`}
+                            onClick={() => setEditing(offer.id)}
+                          >
+                            <Pencil size={17} />
+                          </button>
+                          <button
+                            className="icon-button remove-offer"
+                            aria-label={`Remove ${offer.supplier}`}
+                            onClick={() => setDeleting(offer.id)}
+                          >
+                            <Trash2 size={17} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="offer-decision">
+                        <div className="offer-total">
+                          <span>Order total</span>
+                          <strong data-testid={`total-${index}`}>
+                            {money(result.totalCents, offer.currency)}
+                          </strong>
+                          <span
+                            className={`status ${isComplete ? "" : "warning"}`}
+                          >
+                            {isComplete ? (
+                              <Check size={14} />
+                            ) : (
+                              <Info size={14} />
+                            )}
+                            {isComplete
+                              ? "Terms confirmed"
+                              : result.unitPriceCents !== null
+                                ? "Listed price ready · final terms pending"
+                                : "Details or terms are missing"}
+                          </span>
+                        </div>
                         <button
-                          className="icon-button"
-                          aria-label={`Edit ${offer.supplier}`}
-                          onClick={() => setEditing(offer.id)}
+                          className={`${activeSelection === offer.id ? "button primary" : "button secondary"} offer-choice`}
+                          disabled={!result.eligibleForComparison}
+                          aria-pressed={activeSelection === offer.id}
+                          onClick={() => chooseOffer(offer.id)}
                         >
-                          <Pencil size={17} />
+                          <Check size={16} />
+                          {activeSelection === offer.id
+                            ? "Selected offer"
+                            : "Choose offer"}
                         </button>
                       </div>
-                      <div className="offer-total">
-                        <span>Order total</span>
-                        <strong data-testid={`total-${index}`}>
-                          {money(result.totalCents, offer.currency)}
-                        </strong>
-                        <span
-                          className={`status ${isComplete ? "" : "warning"}`}
-                        >
-                          {isComplete ? (
-                            <Check size={14} />
-                          ) : (
-                            <Info size={14} />
-                          )}
-                          {isComplete
-                            ? "Terms confirmed"
-                            : "Details or terms are missing"}
-                        </span>
-                      </div>
-                      <button
-                        className={
-                          activeSelection === offer.id
-                            ? "button primary"
-                            : "button secondary"
-                        }
-                        disabled={!result.eligibleForComparison}
-                        aria-pressed={activeSelection === offer.id}
-                        onClick={() => chooseOffer(offer.id)}
-                      >
-                        <Check size={16} />
-                        {activeSelection === offer.id
-                          ? "Selected offer"
-                          : "Choose offer"}
-                      </button>
                       <dl className="offer-details">
                         <div>
                           <dt>You would receive</dt>
@@ -1055,7 +1227,10 @@ export default function Comparison({
                             Review this offer
                           </strong>
                           <details>
-                            <summary>{issues.length} {issues.length === 1 ? "condition" : "conditions"} to review</summary>
+                            <summary>
+                              <ChevronRight className="issue-chevron" size={16} />
+                              <span>{issues.length} {issues.length === 1 ? "condition" : "conditions"} to review</span>
+                            </summary>
                             <ul>{issues.map((issue, i) => <li key={i}>{issue}</li>)}</ul>
                           </details>
                           <button
@@ -1066,33 +1241,28 @@ export default function Comparison({
                           </button>
                         </div>
                       )}
-                      <div className="offer-source">
-                        <div>
-                          <FileText size={16} />
-                          <span>
-                            {sourceInfo?.label ?? "Manual entry"}
-                            <small>
-                              {sourceInfo ? displayDate(sourceInfo.date) : ""}
-                              {sourceInfo?.edited
-                                ? " · Edited manually"
-                                : ""}
-                            </small>
-                          </span>
+                      <div className="offer-footer">
+                        <div className="offer-source">
+                          <div>
+                            <FileText size={16} />
+                            <span>
+                              {sourceInfo?.label ?? "Manual entry"}
+                              <small>
+                                {sourceInfo ? displayDate(sourceInfo.date) : ""}
+                                {sourceInfo?.edited
+                                  ? " · Edited manually"
+                                  : ""}
+                              </small>
+                            </span>
+                          </div>
+                          <button
+                            className="button text-button"
+                            onClick={() => setSourceId(offer.id)}
+                          >
+                            View source
+                          </button>
                         </div>
-                        <button
-                          className="button text-button"
-                          onClick={() => setSourceId(offer.id)}
-                        >
-                          View source
-                        </button>
                       </div>
-                      <button
-                        className="remove-offer"
-                        onClick={() => setDeleting(offer.id)}
-                      >
-                        <Trash2 size={14} />
-                        Remove offer
-                      </button>
                     </article>
                   );
                 })}
@@ -1222,9 +1392,7 @@ export default function Comparison({
           </span>
           <span>No recipes or purchase history required.</span>
         </footer>
-        <p role="status" className="sr-only">
-          {message}
-        </p>
+        {offers.length === 0 && <p role="status" className="sr-only">{message}</p>}
       </main>
       {(modal === "new" || editingOffer) && (
         <OfferEditor
@@ -1236,6 +1404,13 @@ export default function Comparison({
             setModal(null);
             setEditing(null);
           }}
+        />
+      )}
+      {modal === "shared-terms" && (
+        <SharedTermsEditor
+          offerCount={offers.length}
+          onApply={applySharedTerms}
+          onClose={() => setModal(null)}
         />
       )}
       {modal === "reset" && (

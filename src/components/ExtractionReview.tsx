@@ -61,6 +61,8 @@ export default function ExtractionReview({
   confirmationNote = "Continuing prepares a comparison. It does not record a purchase or save the document.",
   originalPreview,
   sourceTextLabel = "Original text",
+  defaultCurrency,
+  savedValues,
 }: {
   confirmationNote?: string;
   originalPreview?: ReactNode;
@@ -71,20 +73,26 @@ export default function ExtractionReview({
   triggerVariant?: "primary" | "secondary";
   onPrepare: (seed: PurchaseSeed) => void;
   confirmLabel?: string;
+  defaultCurrency?: "USD" | "PEN";
+  savedValues?: ReviewedValues;
 }) {
+  const initialValues = () => {
+    const draft = savedValues ? { ...savedValues } : draftValues(proposal);
+    if (!draft.currency && defaultCurrency) draft.currency = defaultCurrency;
+    return draft;
+  };
   const [open, setOpen] = useState(false);
-  const [values, setValues] = useState<ReviewedValues>(() =>
-    draftValues(proposal),
-  );
+  const [values, setValues] = useState<ReviewedValues>(initialValues);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState("");
 
   const proposalKey = JSON.stringify(proposal);
+  const savedValuesKey = JSON.stringify(savedValues);
   useEffect(() => {
-    setValues(draftValues(proposal));
+    setValues(initialValues());
     setConfirmed(false);
     setError("");
-  }, [source.id, proposalKey]);
+  }, [source.id, proposalKey, defaultCurrency, savedValuesKey]);
 
   const setField = (field: ExtractionField, value: string) => {
     setValues((current) => ({ ...current, [field]: value }));
@@ -101,7 +109,15 @@ export default function ExtractionReview({
 
   function continueToComparison() {
     try {
-      const seed = extractionToPurchase(source, proposal, values, confirmed);
+      const seed = extractionToPurchase(
+        source,
+        proposal,
+        values,
+        confirmed,
+        !proposal.currency.value && defaultCurrency
+          ? { currency: defaultCurrency }
+          : {},
+      );
       onPrepare(seed);
       setOpen(false);
       setError("");
@@ -239,10 +255,22 @@ export default function ExtractionReview({
                                 "No published evidence for this field."}
                             </p>
                           </Disclosure>
+                          {field === "currency" &&
+                            !proposal.currency.value &&
+                            defaultCurrency &&
+                            values.currency === defaultCurrency && (
+                              <span className="extraction-defaulted">
+                                Search market default · {defaultCurrency}
+                              </span>
+                            )}
                           {edited && (
-                            <span className="extraction-edited">
-                              <PencilLine size={13} /> Manually corrected
-                            </span>
+                            field !== "currency" ||
+                            proposal.currency.value ||
+                            values.currency !== defaultCurrency ? (
+                              <span className="extraction-edited">
+                                <PencilLine size={13} /> Manually corrected
+                              </span>
+                            ) : null
                           )}
                         </div>
                       </div>

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRight, ExternalLink, Info, X } from "lucide-react";
 import { combineReviewedOffers } from "../domain/extraction";
 import type { PurchaseSeed } from "../domain/market";
-import type { StudyProspect, WebSelection } from "../domain/study";
+import { MAX_COMPARISON_OFFERS, type StudyProspect, type WebSelection } from "../domain/study";
 import { evaluateOffer } from "../domain/procurement";
 import { money, numberLabel } from "../numbers";
 import type { SavedComparison } from "./SavedComparisons";
@@ -38,14 +38,31 @@ export default function StudySelections({
     string | null
   >(null);
   const [error, setError] = useState("");
-  const fingerprint = JSON.stringify(selections);
-  const confirmed = confirmedFingerprint === fingerprint;
   const visibleSelections = selections.filter(
     ({ seed }) =>
       filter === "all" ||
       (filter === "catalog" && seed.offers[0].priceCents !== null) ||
       (filter === "distributor" && seed.offers[0].priceCents === null),
   );
+  const [comparisonIds, setComparisonIds] = useState<string[]>(() =>
+    visibleSelections.slice(0, MAX_COMPARISON_OFFERS).map((item) => item.sourceId),
+  );
+  const visibleIdsFingerprint = visibleSelections.map((item) => item.sourceId).join("|");
+  useEffect(() => {
+    setComparisonIds((current) => {
+      const valid = current.filter((id) =>
+        visibleSelections.some((item) => item.sourceId === id),
+      ).slice(0, MAX_COMPARISON_OFFERS);
+      return valid.length
+        ? valid
+        : visibleSelections.slice(0, MAX_COMPARISON_OFFERS).map((item) => item.sourceId);
+    });
+  }, [visibleIdsFingerprint]);
+  const comparisonSelections = visibleSelections.length <= MAX_COMPARISON_OFFERS
+    ? visibleSelections
+    : visibleSelections.filter((item) => comparisonIds.includes(item.sourceId));
+  const fingerprint = JSON.stringify(comparisonSelections);
+  const confirmed = confirmedFingerprint === fingerprint;
   const prospectsVisible = filter === "all" || filter === "distributor";
   return (
     <div className="study-selections">
@@ -111,14 +128,37 @@ export default function StudySelections({
                 </a>}
                 {source && <small>Observed {new Date(source.observedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</small>}
               </div>
-              <button className="button secondary" onClick={() => onPrepare(seed)}>{deliveryComparison ? "Open case comparison" : "Calculate purchase"}<ArrowRight size={16} aria-hidden="true" /></button>
+              <div className="study-selection-actions">
+                {visibleSelections.length > MAX_COMPARISON_OFFERS && (
+                  <label className="checkbox study-compare-pick">
+                    <input
+                      type="checkbox"
+                      checked={comparisonIds.includes(sourceId)}
+                      disabled={
+                        !comparisonIds.includes(sourceId) &&
+                        comparisonSelections.length >= MAX_COMPARISON_OFFERS
+                      }
+                      onChange={(event) => {
+                        setComparisonIds((current) =>
+                          event.target.checked
+                            ? [...current, sourceId].slice(0, MAX_COMPARISON_OFFERS)
+                            : current.filter((id) => id !== sourceId),
+                        );
+                        setError("");
+                      }}
+                    />
+                    Compare
+                  </label>
+                )}
+                <button className="button secondary" onClick={() => onPrepare(seed)}>{deliveryComparison ? "Open case comparison" : "Calculate this offer"}<ArrowRight size={16} aria-hidden="true" /></button>
+              </div>
             </footer>
           </article>
         );
       })}
       {visibleSelections.length > 0 && selections.length > 1 && (
         <div className="study-comparison-action">
-          {selections.length > 1 && (
+          {comparisonSelections.length > 1 && (
             <label className="checkbox">
               <input
                 type="checkbox"
@@ -127,19 +167,19 @@ export default function StudySelections({
                   setConfirmedFingerprint(e.target.checked ? fingerprint : null)
                 }
               />
-              I confirm these web offers match the same ingredient,
+              I confirm the selected offers match the same ingredient,
               specification, base unit, and currency
             </label>
           )}
           <button
             className="button primary"
-            disabled={selections.length > 1 && !confirmed}
+            disabled={comparisonSelections.length === 0 || (comparisonSelections.length > 1 && !confirmed)}
             onClick={() => {
               try {
                 onPrepare(
                   combineReviewedOffers(
-                    selections.map((item) => item.seed),
-                    selections.length === 1 || confirmed,
+                    comparisonSelections.map((item) => item.seed),
+                    comparisonSelections.length === 1 || confirmed,
                   ),
                 );
                 setError("");
@@ -152,11 +192,13 @@ export default function StudySelections({
               }
             }}
           >
-            Compare reviewed offers <ArrowRight size={16} />
+            Compare {comparisonSelections.length} reviewed {comparisonSelections.length === 1 ? "offer" : "offers"} <ArrowRight size={16} />
           </button>
           <p className="field-hint">
-            Optional: enter the amount you need next and review the total cost.
-            Catalog examples are compared separately.
+            {visibleSelections.length > MAX_COMPARISON_OFFERS
+              ? `Choose up to ${MAX_COMPARISON_OFFERS} offers above, then enter the amount you need and review the total cost.`
+              : "Optional: enter the amount you need next and review the total cost."}
+            {" "}Catalog examples are compared separately.
           </p>
           {error && (
             <p className="notice error" role="alert">

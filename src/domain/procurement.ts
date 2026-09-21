@@ -95,6 +95,34 @@ const unitDefinition: Record<
   unit: { dimension: "count", canonicalFactor: 1 },
 };
 
+export function comparisonUnitForPackage(unit: PackageUnit): BaseUnit {
+  if (unit === "g") return "kg";
+  if (unit === "oz") return "lb";
+  if (unit === "ml") return "L";
+  return unit;
+}
+
+export function pricePerComparisonUnit(
+  priceCents: number,
+  packageContent: number,
+  packageUnit: PackageUnit,
+): { unit: BaseUnit; priceCents: number } | null {
+  if (
+    !Number.isFinite(priceCents) ||
+    priceCents < 0 ||
+    !Number.isFinite(packageContent) ||
+    packageContent <= 0
+  ) return null;
+  const unit = comparisonUnitForPackage(packageUnit);
+  const normalizedContent =
+    (packageContent * unitDefinition[packageUnit].canonicalFactor) /
+    unitDefinition[unit].canonicalFactor;
+  const normalizedPrice = priceCents / normalizedContent;
+  return Number.isFinite(normalizedPrice)
+    ? { unit, priceCents: normalizedPrice }
+    : null;
+}
+
 function issue(
   field: string,
   code: ProcurementIssueCode,

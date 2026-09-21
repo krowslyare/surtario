@@ -35,19 +35,21 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
     expect(intermediate.length > 0).toBe(reducedMotion === "no-preference");
     await expect(page.getByRole("heading", { name: "Compare offers on equal terms" })).toBeInViewport();
     await page.keyboard.press("Tab");
+    await expect(page.getByRole("button", { name: "Apply shared terms", exact: true })).toBeFocused();
+    await page.keyboard.press("Tab");
     await expect(page.getByRole("button", { name: "Add offer", exact: true })).toBeFocused();
   });
 }
 
-test("four offers reflow without overflow on desktop and mobile", async ({ page }, testInfo) => {
+test("six offers reflow without overflow on desktop and mobile", async ({ page }, testInfo) => {
   await page.goto("/?view=comparison");
-  for (const supplier of ["Supplier C", "Supplier D"]) {
+  for (const supplier of ["Supplier C", "Supplier D", "Supplier E", "Supplier F"]) {
     await page.getByRole("button", { name: "Add offer", exact: true }).click();
     await page.getByLabel("Supplier", { exact: true }).fill(supplier);
     await page.getByRole("button", { name: "Save offer", exact: true }).click();
   }
   const offers = page.locator(".offers-grid > article");
-  await expect(offers).toHaveCount(4);
+  await expect(offers).toHaveCount(6);
   await expect(page.getByRole("button", { name: "Add offer", exact: true })).toBeDisabled();
   for (const width of [1920, 390, 320]) {
     await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
@@ -70,6 +72,6 @@ test("four offers reflow without overflow on desktop and mobile", async ({ page 
       }
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await page.locator("#comparison").screenshot({ path: testInfo.outputPath(`four-offers-${width}.png`) });
+    await page.locator("#comparison").screenshot({ path: testInfo.outputPath(`six-offers-${width}.png`) });
   }
 });

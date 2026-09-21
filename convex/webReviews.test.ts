@@ -7,6 +7,62 @@ import { extractionExample, extractionSource } from "../fixtures/extraction";
 import { draftValues, extractionToPurchase } from "../src/domain/extraction";
 const modules = import.meta.glob("./**/*.ts");
 const token = "a".repeat(64);
+
+test("market-default currency audit survives server reconstruction", async () => {
+  const { t, args, ref } = await setup();
+  const proposal = { ...extractionExample, currency: { value: null, evidence: null } };
+  await t.run(async ctx => {
+    const row = (await ctx.db.get(args.webReviews[0].runId))!;
+    await ctx.db.patch(row._id, {
+      region: "Portland, OR, US",
+      sources: row.sources.map(source => ({ ...source, extraction: proposal })),
+    });
+  });
+  const saved = await t.mutation(api.comparisons.save, {
+    ...args,
+    offers: args.offers.map(offer => ({ ...offer, currency: "USD" as const })),
+    webReviews: args.webReviews.map(review => ({ ...review, values: { ...review.values, currency: "USD" } })),
+  });
+  expect(saved.sources[ref].extraction?.proposed.currency.value).toBeNull();
+  expect(saved.sources[ref].marketSource?.evidence).toContain("search-market default: USD");
+});
+
+test("six equivalent web offers save, reopen, remove and restore without rewriting original specifications", async () => {
+  const { t, args } = await setup();
+  const ids = await t.run(async (ctx) => {
+    const row = (await ctx.db.get(args.webReviews[0].runId))!;
+    const { _id, _creationTime, ...fields } = row;
+    const ids = [_id];
+    for (let i = 1; i < 7; i++) ids.push(await ctx.db.insert("researchRuns", { ...fields, clientId: crypto.randomUUID() }));
+    return ids;
+  });
+  const reviews = ids.map((runId, index) => ({
+    ...args.webReviews[0], runId,
+    values: { ...args.webReviews[0].values, specification: `Reviewed wording ${index}` },
+  }));
+  const seeds = reviews.map(review => extractionToPurchase(
+    { ...extractionSource, id: `${review.runId}:0` }, extractionExample, review.values, true,
+  ));
+  const { combineReviewedOffers } = await import("../src/domain/extraction");
+  const seed = combineReviewedOffers(seeds.slice(0, 6), true);
+  const input = { ...args, request: seed.request, offers: seed.offers, selectedOfferId: null, webReviews: reviews.slice(0, 6) };
+  const saved = await t.mutation(api.comparisons.save, input);
+  await expect(t.mutation(api.comparisons.save, { ...input, webReviews: reviews })).rejects.toThrow(/one and 6/);
+  const [reopened] = await t.query(api.comparisons.list, { token });
+  const update = { ...input, id: saved.id, expectedRevision: 1, webReviews: undefined, offers: reopened.offers.slice(0, 5) };
+  const removed = await t.mutation(api.comparisons.save, update);
+  const restored = await t.mutation(api.comparisons.save, {
+    ...update, expectedRevision: removed.revision,
+    offers: reopened.offers.map(offer => ({ ...offer, freightCents: 500 })),
+  });
+  expect(restored.offers).toHaveLength(6);
+  expect(restored.sources[`${ids[5]}:0`].original.specification).toBe("Reviewed wording 5");
+  expect(restored.offers[5].specification).toBe("Reviewed wording 0");
+  await expect(t.mutation(api.comparisons.save, {
+    ...update, expectedRevision: restored.revision,
+    offers: [{ ...restored.offers[0], supplier: "forged" }],
+  })).rejects.toThrow(/must match/);
+});
 async function setup(simulated = false) {
   const t = convexTest(schema, modules);
   const reserved = await t.mutation(internal.research.reserveSearch, {

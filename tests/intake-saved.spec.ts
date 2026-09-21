@@ -32,7 +32,7 @@ test("guarda nombres revisados y recupera la cola después de recargar", async (
   ).toBeVisible();
 
   await page.reload();
-  await page.getByText("Ingredient list", { exact: true }).click();
+  // The expanded ingredient-list panel is restored by the workspace checkpoint.
   await expect(
     page.getByRole("heading", { name: "2 reviewed ingredients" }),
   ).toHaveCount(0);

@@ -25,7 +25,7 @@ test("local Convex progress updates in place and survives reopening after reload
   await expect(page.getByLabel("Sources arriving")).toContainText("Source read");
 
   await page.reload();
-  await page.getByRole("button", { name: "View search progress", exact: true }).click();
+  // F5 restores the active run directly; recovery must not need another click.
   await expect(region).toContainText("8 candidate sources · 3 pages checked");
   await expect(page.getByLabel("Sources arriving")).toContainText("Rice wholesale source");
   run("research:finishSearch", { id: reserved.id, sources: [], discarded: 0, warning: false, simulated: true });
@@ -39,10 +39,26 @@ test("a new client request searches again after the numeric counter is reset", a
   await page.routeWebSocket(/.*/, socket => {
     assertLocalWebSocketUrl(socket.url());
     const server = socket.connectToServer();
-    server.onMessage(message => socket.send(message));
+    const statusQueries = new Set<number>();
+    server.onMessage(message => {
+      const response = JSON.parse(String(message));
+      if (response.type === "Transition") {
+        for (const update of response.modifications ?? []) {
+          if (update.type === "QueryUpdated" && statusQueries.has(update.queryId))
+            update.value = { autoReviewEnabled: false, searchEnabled: true, extractionEnabled: false };
+        }
+      }
+      socket.send(JSON.stringify(response));
+    });
     socket.onMessage(message => {
       let data;
       try { data = JSON.parse(String(message)); } catch { server.send(message); return; }
+      if (data.type === "ModifyQuerySet") {
+        for (const query of data.modifications ?? []) {
+          if (query.type === "Add" && query.udfPath === "research:status") statusQueries.add(query.queryId);
+          if (query.type === "Remove") statusQueries.delete(query.queryId);
+        }
+      }
       if (data.type !== "Action") { server.send(message); return; }
       // Never forward provider actions: this tests the real React/Convex boundary without spending.
       expect(data.udfPath).toBe("research:search");

@@ -1,15 +1,15 @@
 # Delivery status
 
-Updated September 20, 2026. This is the current status source; `hackathon.md` retains the dated build history. Implementation, local tests, external acceptance and contest submission are separate outcomes.
+Updated September 21, 2026. This is the current status source; `hackathon.md` retains the dated build history. Implementation, local tests, external acceptance and contest submission are separate outcomes.
 
 | Area | State | Evidence / boundary |
 | --- | --- | --- |
-| Product and calculations | Implemented | Ingredient-first study; deterministic order comparison; 320 domain/backend tests at the latest acceptance |
+| Product and calculations | Implemented | Ingredient-first study; deterministic order comparison; 325 domain/backend tests locally; 320 at the hosted acceptance |
 | Provider integration | Bounded acceptance passed | Firecrawl, direct Luna API, AgentMail round trip and Convex reactive updates; see [VERIFICATION](VERIFICATION.md) |
 | Study and follow-up | Implemented and exercised | Reviewed offers/no-price candidates, sources, messages and recoverable comparisons |
-| Decision | Implemented | Missing terms block selection; positive selection/partial confirmations have earlier acceptance, and the latest test retained its delivery blocker |
-| Hosted app | Development published | Baseline PR #38, `e25a058`; its GitHub Actions publication succeeded |
-| Acceptance follow-up | PR #39 | `cf8e301` passed CI and Codex review; its source-navigation refinement is not yet claimed deployed |
+| Decision | Implemented | Missing terms block selection; local five-offer flow reaches selection after synthetic terms are confirmed; hosted acceptance retained its delivery blocker |
+| Hosted app | Development published | PR #39, `0eee328`; GitHub Actions verified 35 published files, SPA fallback and missing-asset behavior |
+| Recording UX follow-up | [PR #40](https://github.com/krowslyare/restaurant-procurement/pull/40) | Bulk analysis/review, explicit saved states, 12 study options, six-offer comparison, compact layout and shared terms. Both Codex findings corrected and verified locally; integration/publication tracked on the PR |
 | Repository cleanup | Verified locally | Five public guides, README workflow diagram, working notes/tooling excluded; 320 tests and hosting build passed from a tracked-file snapshot with a fresh offline dependency installation |
 | Recipes / private pilot | Outside release | No customer-data enablement or validated restaurant pilot |
 | Submission | Pending | Final video, public GitHub release, social post and entry confirmation remain outstanding |

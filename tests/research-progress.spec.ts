@@ -6,7 +6,7 @@ for (const outcome of ["complete", "empty", "failed"] as const) {
     await page.route("**/__progress_test.tsx", async route => {
       const code = `import React from 'react';const {useState,useRef}=React;import ReactDOM from 'react-dom/client';import {ResearchWorkspace} from '/src/components/LiveResearch.tsx';import '/src/styles/tokens.css';import '/src/styles/app.css';
 const base={id:'current',clientId:'test-request',simulated:true,ingredient:'Rice',region:'Portland',observedAt:'2026-09-19',status:'running',sources:[],error:null,warning:false,discarded:0};
-function Harness(){const[run,setRun]=useState(null);const[calls,setCalls]=useState(0);const[connected,setConnected]=useState(true);const resolve=useRef(null);return <main><ResearchWorkspace connected={connected} status={{searchEnabled:true,extractionEnabled:true}} runs={run?[run]:[]} pendingRun={run??undefined} request={{id:1,ingredient:'Rice',region:'Portland'}} onStatus={()=>{}} onSearch={()=>{setCalls(n=>n+1);setRun({...base,progress:{stage:'searching',searchesCompleted:0,searchesTotal:3,candidates:0,pagesChecked:0,currentHost:null}});return new Promise(done=>{resolve.current=done})}} onExtract={async()=>{throw Error('not used')}} onPrepare={()=>{}}/><output aria-label="Search calls">{calls}</output><button onClick={()=>setConnected(value=>!value)}>Toggle connection</button><button onClick={()=>setRun({...base,sources:[[null,'lb'],['25',null],['25','lb']].map(([size,unit],i)=>({url:'https://supplier.com/rice-'+i,title:'Rice source '+i,extractionStatus:'complete',analysis:{kind:'product'},extraction:{price:{value:'20'},currency:{value:'USD'},packageContent:{value:size},packageUnit:{value:unit}}})),progress:{stage:'reading',searchesCompleted:3,searchesTotal:3,candidates:8,pagesChecked:3,currentHost:'supplier.com'}})}>Provider checkpoint</button><button onClick={()=>{const final={...base,status:'${outcome === "empty" ? "complete" : outcome}',sources:${outcome === "complete" ? "[{url:'https://supplier.test/rice',title:'Rice supplier',description:'Rice available by the pack',markdown:'Contact the supplier for current terms.',contentTruncated:false,extraction:null,extractionStatus:'idle',extractionError:null}]" : "[]"},warning:${outcome === "complete"},error:${outcome === "failed" ? "'Search failed. Start a new request to try again.'" : "null"}};setRun(final);resolve.current(final)}}>Provider finishes</button></main>};ReactDOM.createRoot(document.getElementById('root')).render(<Harness/>);`;
+function Harness(){const[run,setRun]=useState(null);const[calls,setCalls]=useState(0);const[connected,setConnected]=useState(true);const resolve=useRef(null);return <main><ResearchWorkspace connected={connected} status={{searchEnabled:true,extractionEnabled:true}} runs={run?[run]:[]} pendingRun={run??undefined} request={{id:1,ingredient:'Rice',region:'Portland'}} onStatus={()=>{}} onSearch={()=>{setCalls(n=>n+1);setRun({...base,progress:{stage:'searching',searchesCompleted:0,searchesTotal:3,candidates:0,pagesChecked:0,currentHost:null}});return new Promise(done=>{resolve.current=done})}} onExtract={async()=>{throw Error('not used')}} onPrepare={()=>{}}/><output aria-label="Search calls">{calls}</output><button onClick={()=>setConnected(value=>!value)}>Toggle connection</button><button onClick={()=>setRun({...base,sources:[[null,'lb'],['25',null],['25','lb']].map(([size,unit],i)=>({url:'https://supplier.com/rice-'+i,title:'Rice source '+i,extractionStatus:'complete',analysis:{kind:'product'},extraction:{supplier:{value:null},ingredient:{value:null},specification:{value:null},warnings:[],price:{value:'20'},currency:{value:'USD'},packageContent:{value:size},packageUnit:{value:unit}}})),progress:{stage:'reading',searchesCompleted:3,searchesTotal:3,candidates:8,pagesChecked:3,currentHost:'supplier.com'}})}>Provider checkpoint</button><button onClick={()=>{const final={...base,status:'${outcome === "empty" ? "complete" : outcome}',sources:${outcome === "complete" ? "[{url:'https://supplier.test/rice',title:'Rice supplier',description:'Rice available by the pack',markdown:'Contact the supplier for current terms.',contentTruncated:false,extraction:null,extractionStatus:'idle',extractionError:null}]" : "[]"},warning:${outcome === "complete"},error:${outcome === "failed" ? "'Search failed. Start a new request to try again.'" : "null"}};setRun(final);resolve.current(final)}}>Provider finishes</button></main>};ReactDOM.createRoot(document.getElementById('root')).render(<Harness/>);`;
       const { transform } = await import("esbuild");
       const module = await (await page.request.get("/src/main.tsx")).text();
       const react = module.match(/"([^" ]*\/react\.js[^" ]*)"/)![1];
@@ -20,6 +20,8 @@ function Harness(){const[run,setRun]=useState(null);const[calls,setCalls]=useSta
     await expect(page.getByRole("heading", { name: "Finding your options." })).toBeVisible();
     await page.getByRole("button", { name: "Provider checkpoint" }).click();
     const progress = page.getByRole("region", { name: "Search progress" });
+    await expect(progress.locator(".research-title-ellipsis > span")).toHaveCount(3);
+    await expect(progress).toContainText("You can leave this page. Research will keep running");
     await expect(progress).toContainText("8 candidate sources · 3 pages checked");
     await expect(progress).toContainText("supplier.com");
     const arrivals = progress.getByLabel("Sources arriving");
@@ -27,6 +29,11 @@ function Harness(){const[run,setRun]=useState(null);const[calls,setCalls]=useSta
     await expect(arrivals.getByText("25 lb · To review", { exact: true })).toBeVisible();
     if (outcome === "complete") {
       await expect(progress.locator(".research-leaf-left")).toHaveCSS("animation-name", "research-leaf-breathe");
+      await expect(progress.locator(".research-title-ellipsis > span").first()).toHaveCSS("animation-name", "research-ellipsis");
+      await page.screenshot({
+        path: "/tmp/surtario-progress-ellipsis.png",
+        fullPage: true,
+      });
       // Shift wall-clock age only; keep the animation clock on its real timeline.
       await page.clock.setSystemTime(new Date(Date.now() + 35_000));
       await expect(progress).toContainText("Waiting for the next update.");
@@ -40,6 +47,7 @@ function Harness(){const[run,setRun]=useState(null);const[calls,setCalls]=useSta
     } else {
       await expect(progress.getByRole("heading")).toHaveCSS("animation-name", "none");
       await expect(progress.locator(".research-leaf-left")).toHaveCSS("animation-name", "none");
+      await expect(progress.locator(".research-title-ellipsis > span").first()).toHaveCSS("animation-name", "none");
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.getByRole("button", { name: "Provider finishes" }).click();

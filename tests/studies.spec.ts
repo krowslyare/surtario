@@ -201,7 +201,8 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await directory.getByRole("button", { name: "Prepare inquiry" }).click();
     const inquiry = page.getByRole("dialog", { name: "Review quote request", exact: true });
-    await expect(inquiry).toContainText("Quantity is still to be determined. This is not a purchase order.");
+    await expect(inquiry).toContainText("Quantity is still to be determined.");
+    await expect(inquiry).toContainText("This is a quote request, not a purchase order.");
     await expect(inquiry.getByRole("button", { name: "Send test request" })).toBeDisabled();
     await inquiry.getByRole("button", { name: "Edit saved message" }).click();
     await expect(inquiry.getByLabel("Message text")).toHaveValue(/Quantity is still to be determined/);
@@ -209,6 +210,7 @@ test("ensayo de demo: investigar, recuperar, consultar y preparar compra", async
     await expect(page.getByRole("dialog")).toHaveCount(0);
   });
   await test.step("Continuar a compra conservando condiciones pendientes", async () => {
+    await page.getByRole("button", { name: "My study 3", exact: true }).click();
     await page
       .getByRole("button", { name: "Plan purchase", exact: true })
       .click();

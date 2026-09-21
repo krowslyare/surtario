@@ -115,7 +115,11 @@ for (const intent of ["inquiry", "research"] as const) {
     await page.goto("/?view=market");
     const hub = page.getByRole("region", { name: "Continue your work", exact: true });
     await hub.getByRole("button", { name: "Review sources", exact: true }).click();
-    const source = page.locator(".research-sources > article").filter({ hasText: "Test rice supplier" });
+    // The market workspace stays mounted while the follow-up is active.
+    // Target the visible source heading, not text in both retained workspaces.
+    const source = page.locator(".research-sources > article").filter({
+      has: page.getByRole("heading", { name: "Test rice supplier", exact: true }),
+    });
     if (intent === "research") await source.getByText("More options", { exact: true }).click();
     await source.getByRole("button", { name: intent === "inquiry" ? "Prepare inquiry" : "Research missing details", exact: true }).click();
     const review = page.getByRole("dialog", { name: "Review potential distributor", exact: true });

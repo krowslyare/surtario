@@ -143,6 +143,12 @@
   font-weight: 650;
 }
 .extraction-edited svg { flex: none; }
+.extraction-defaulted {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  font-weight: 650;
+}
 .extraction-pending {
   margin-top: var(--space-5);
   padding: var(--space-3) var(--space-4);

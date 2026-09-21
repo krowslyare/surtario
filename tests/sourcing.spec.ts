@@ -233,6 +233,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
   const caseRuns = run("sourcing:research", { token, caseId: caseRow.id });
   const latestIndex = caseRuns.findIndex((item: { id: string }) => item.id === secondId);
   expect(latestIndex).toBeGreaterThanOrEqual(0);
+  await page.locator(".sourcing-reviews").getByRole("button", { name: "Searches in this follow-up (2)", exact: true }).click();
   await page.locator(".sourcing-reviews")
     .getByRole("button", { name: new RegExp(`^Search ${latestIndex + 1} · Arroz · Lima`) }).click();
   await page
@@ -258,7 +259,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
   await page.getByRole("button", { name: "Sources", exact: true }).click();
   await page
     .locator(".sourcing-reviews")
-    .getByRole("button", { name: "Compare reviewed offers", exact: true })
+    .getByRole("button", { name: "Compare 1 reviewed offer", exact: true })
     .click();
   dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("earlier evidence remains in history");
