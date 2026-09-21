@@ -1,0 +1,52 @@
+.overview-main { max-width: var(--content-max-width); margin: auto; padding: 3rem 3rem 5rem; }
+.overview-heading, .overview-section-title { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
+.overview-heading h1 { font-size: clamp(2.2rem, 3.2vw, 3.6rem); max-width: 22ch; margin: .25rem 0; }
+.overview-summary { font-size: 1.1rem; margin: 1.25rem 0 2rem; color: var(--color-text-muted); }
+.overview-counts { display: grid; grid-template-columns: repeat(3, 1fr); border-block: 1px solid var(--color-control-border); }
+.overview-counts button { display: flex; align-items: center; gap: 1rem; min-height: 100px; border: 0; background: transparent; padding: 1.5rem; color: var(--color-text); text-align: left; cursor: pointer; font: inherit; }
+.overview-counts button + button { border-left: 1px solid var(--color-border); }
+.overview-counts button strong { font-family: var(--font-display); font-size: 2.7rem; font-weight: 600; }
+.overview-counts button svg { margin-left: auto; flex-shrink: 0; }
+.overview-counts button[aria-pressed="true"], .overview-counts button:hover { background: var(--color-hero); }
+.overview-scope, .overview-main small, .overview-section-title > span { color: var(--color-text-muted); font-size: .8rem; }
+.overview-priorities { margin: 2.5rem 0 3.5rem; }
+.overview-priorities.has-research { display: grid; grid-template-columns: minmax(0, 2fr) minmax(270px, 1fr); gap: 3rem; }
+.overview-main h2 { font-size: 1.55rem; }
+.overview-attention, .overview-work-list { list-style: none; margin: 1.25rem 0 0; padding: 0; }
+.overview-attention { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); }
+.overview-attention li { padding: 1.5rem; border: 1px solid var(--color-control-border); border-radius: var(--radius-panel); }
+.overview-attention h3 { font-size: 1.3rem; margin: 1.25rem 0 .5rem; }
+.overview-attention li > p:not(.overview-ingredient) { color: var(--color-text-muted); margin-bottom: 1rem; }
+.overview-ingredient { font-weight: 700; margin: 0; }
+.overview-ingredient span { display: block; font-size: .85rem; color: var(--color-text-muted); font-weight: 400; margin-top: .25rem; }
+.overview-research { padding: 1.5rem; border-radius: var(--radius-panel); background: var(--color-surface-subtle); border: 1px solid var(--color-border); }
+.overview-research article { padding-block: 1.2rem; border-bottom: 1px solid var(--color-border); }
+.overview-research article:last-child { border: 0; padding-bottom: 0; }
+.overview-research article p { font-size: .9rem; margin: .5rem 0; }
+.overview-clear { display: flex; align-items: center; gap: .75rem; padding: 1.5rem 0; }
+.overview-toolbar { display: flex; gap: 1.5rem; align-items: end; margin: 1.5rem 0 1rem; }
+.overview-toolbar label { display: grid; gap: .5rem; font-size: .85rem; }
+.overview-toolbar label:first-child { flex: 1; max-width: 36rem; }
+.overview-toolbar input, .overview-toolbar select { min-height: var(--control-min-height); background: var(--color-surface); border: 1px solid var(--color-control-border); border-radius: var(--radius-control); padding: .65rem .8rem; font: inherit; color: var(--color-text); width: 100%; }
+.overview-filters { display: flex; flex-wrap: wrap; gap: .5rem; }
+.overview-filters [aria-pressed="true"] { background: var(--color-primary); color: var(--color-on-primary); }
+#overview-work { scroll-margin-top: 8rem; }
+.overview-work-list > li { display: grid; grid-template-columns: minmax(170px, .9fr) minmax(0, 1.4fr) minmax(220px, .8fr); gap: 1.5rem; align-items: center; padding: 1.5rem 0; border-top: 1px solid var(--color-border); }
+.overview-work-list p { margin: .35rem 0; font-size: .9rem; color: var(--color-text-muted); }
+.overview-work-name { font-family: var(--font-display); font-size: 1.3rem; color: var(--color-text); font-weight: 600; background: none; border: 0; padding: .5rem 0; min-height: 44px; text-align: left; cursor: pointer; }
+.overview-work-name:hover { text-decoration: underline; }
+.overview-work-actions { display: grid; justify-items: start; gap: .5rem; }
+.overview-decisions { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--color-control-border); }
+.overview-outcomes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 1rem; margin-top: 1.5rem; }
+.overview-outcomes article { background: var(--color-lime); padding: 1.5rem; border-radius: var(--radius-panel); }
+.overview-outcomes article p { margin: .75rem 0; }
+.overview-outcomes article small { display: block; }
+.overview-order-total strong { display: block; font-family: var(--font-display); font-size: 1.7rem; }
+.overview-historical { font-weight: 600; }
+.overview-empty { max-width: 42rem; padding: 4rem 0; }
+.overview-empty h2 { font-size: 2rem; margin: 1rem 0; }
+.overview-empty p { color: var(--color-text-muted); margin-bottom: 1.5rem; }
+.overview-main button:focus-visible, .overview-main input:focus-visible, .overview-main select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.research-reviewed { margin: 1.5rem 0; border-top: 1px solid var(--color-border); padding-top: 1rem; }
+@media (max-width: 1000px) { .overview-main { padding: 2rem 1.5rem 4rem; } .overview-priorities.has-research { grid-template-columns: 1fr; gap: 1.5rem; } .overview-work-list > li { grid-template-columns: 1fr 1.5fr; } .overview-work-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; } }
+@media (max-width: 600px) { .overview-main { padding: 1.5rem 1rem 3rem; } .overview-heading { align-items: start; flex-direction: column; } .overview-counts { grid-template-columns: 1fr; } .overview-counts button { min-height: 76px; padding: .75rem; } .overview-counts button + button { border-left: 0; border-top: 1px solid var(--color-border); } .overview-counts button strong { min-width: 2ch; font-size: 2.2rem; } .overview-section-title { align-items: start; flex-wrap: wrap; gap: .5rem; } .overview-toolbar { flex-direction: column; align-items: stretch; } .overview-work-list > li { grid-template-columns: 1fr; gap: .65rem; } .overview-attention li, .overview-outcomes article { padding: 1.15rem; } .overview-summary { font-size: 1rem; } }

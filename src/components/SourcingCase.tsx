@@ -1,16 +1,18 @@
+import ResearchReviewStatus from "./ResearchReviewStatus";
 import { comparisonBlockers, blockerLabels } from "../domain/comparisonBlockers";
 import { researchCoverage, RESEARCH_POLICY } from "../domain/researchCoverage";
 import { Disclosure } from "./ui/Disclosure";
 import { SegmentedControl } from "./ui/SegmentedControl";
 import SourcingEntry, { type SourcingEntryRequest } from "./SourcingEntry";
 import type { SavedStudy } from "./SavedStudies";
-import { Component, useEffect, useState, type ReactNode } from "react";
+import { Component, useEffect, useMemo, useState, type ReactNode } from "react";
 import { readWorkspaceCheckpoint, writeWorkspaceCheckpoint } from "../workspaceCheckpoint";
 import {
   useAction,
   useConvexConnectionState,
   useMutation,
   useQuery,
+  useQueries,
 } from "convex/react";
 import { ConvexError } from "convex/values";
 import { ArrowLeft, ChevronRight, Radar } from "lucide-react";
@@ -35,7 +37,7 @@ export type StudyCaseLink = {
   ready: boolean;
 };
 
-export type FollowupLocation = { id: string | null; requestId?: string; visit: number };
+export type FollowupLocation = { id: string | null; requestId?: string; section?: "sources"; runId?: string; visit: number };
 type Props = {
   location: FollowupLocation | null;
   questionOpen?: boolean;
@@ -279,6 +281,11 @@ function CaseDetail({
   const detail = useQuery(api.sourcing.get, { token, caseId });
   const caseRuns = useQuery(api.sourcing.research, { token, caseId });
   const allRuns = useQuery(api.research.list, { token });
+  const reviewQueries = useMemo(() => Object.fromEntries([...(caseRuns ?? []), ...(allRuns ?? [])].map(run => [
+    run.id, { query: api.overview.research, args: { token, runId: run.id } },
+  ])), [caseRuns, allRuns, token]);
+  const researchReviews = useQueries(reviewQueries);
+
   const deliveryConfirmations = useQuery(
     api.quotationMail.listDeliveryConfirmations,
     detail?.case.comparisonId
@@ -321,6 +328,12 @@ function CaseDetail({
       setMailVisit(n => n + 1);
     }
   }, [props.location?.id, props.location?.requestId, props.location?.visit, caseId]);
+  useEffect(() => {
+    if (props.location?.section === "sources") {
+      setSection("sources");
+      if (props.location.runId) setSourceResume({ id: props.location.runId, sequence: props.location.visit });
+    }
+  }, [props.location?.section, props.location?.runId, props.location?.visit]);
   async function act(
     key: string,
     operation: () => Promise<unknown>,
@@ -355,6 +368,7 @@ function CaseDetail({
   const selectedProspects = evidenceDraft?.prospects ?? evidenceStudy?.prospects ?? [];
   const associatedComparison = comparisons?.find(comparison => comparison.id === item.comparisonId);
   const relatedRunIds = new Set([
+    ...(allRuns ?? []).filter(run => run.studyId === item.studyId && item.studyId).map(run => run.id),
     ...(linkedStudy?.prospects ?? []).map(prospect => prospect.runId),
     ...(linkedStudy?.webSelections ?? []).flatMap(selection => Object.values(selection.seed.sources).flatMap(source => source.webReview ? [source.webReview.runId] : [])),
     ...Object.values(associatedComparison?.sources ?? {}).flatMap(source => source.webReview ? [source.webReview.runId] : []),
@@ -389,17 +403,20 @@ function CaseDetail({
   );
   const reviewedIds = [
     ...Object.keys(savedComparison?.sources ?? {}),
+    ...(linkedStudy?.webSelections ?? []).flatMap(selection => Object.values(selection.seed.sources).flatMap(source => source.replyReview ? [`reply:${source.replyReview.requestId}:${source.replyReview.messageId}`] : [])),
     ...(deliveryConfirmations ?? []).map(
       (item) => `reply:${item.requestId}:${item.messageId}`,
     ),
   ];
   const hasEvidence =
-    caseRuns?.some((run) =>
+    runs?.some((run) =>
+      researchReviews[run.id] && !(researchReviews[run.id] instanceof Error) && !researchReviews[run.id].reviewed &&
       run.sources.some(
         (source, index) =>
           source.markdown &&
           source.analysis?.kind !== "irrelevant" &&
           !reviewedIds.includes(`${run.id}:${index}`) &&
+          !selectedProspects.some(prospect => prospect.runId === run.id && prospect.sourceIndex === index) &&
           !selectedEvidence.some(
             (selection) => selection.sourceId === `${run.id}:${index}`,
           ),
@@ -409,6 +426,7 @@ function CaseDetail({
     status: item.status,
     liveEnabled,
     hasComparison: Boolean(savedComparison),
+    blocker: savedComparison ? comparisonBlockers(savedComparison)[0]?.message : undefined,
     hasEvidence,
     watches: detail.watches,
     requests: linkedRequests,
@@ -416,6 +434,7 @@ function CaseDetail({
   });
   const progressLoaded =
     requests !== undefined &&
+    Object.values(researchReviews).every(review => review && !(review instanceof Error)) &&
     runs !== undefined &&
     comparisons !== undefined &&
     (!detail.case.comparisonId || deliveryConfirmations !== undefined);
@@ -1064,6 +1083,7 @@ function CaseDetail({
           </div>}
           {reviewOpen && (
             <ResearchWorkspace
+            renderReviewStatus={runId => <ResearchReviewStatus token={token} runId={runId} />}
               connected={connected}
               reviewDestination="followup"
               autoSelectLatest

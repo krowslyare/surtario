@@ -1276,6 +1276,7 @@ export const confirmReplyDelivery = mutation({
       sources: { ...comparison.sources, [offer.id]: { ...comparison.sources[offer.id], edited: true } },
     });
     const id = await ctx.db.insert("deliveryConfirmations", {
+      currency: offer.currency, ingredient: comparison.request.ingredient, previousMinimumPackages: offer.minimumPackages,
       requestId: request._id, messageId: reply.messageId, comparisonId: comparison._id,
       offerId: offer.id, freightCents: minimum ? offer.freightCents : args.freightCents!, ...(minimum ? { minimumPackages: args.minimumPackages! } : {}), evidenceQuote: args.evidenceQuote,
       receivedAt: reply.receivedAt, context: c, before, after, comparisonRevision: revision, createdAt,

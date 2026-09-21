@@ -84,6 +84,7 @@ export const researchProgressValidator = v.object({
 export type ResearchProgress = Infer<typeof researchProgressValidator>;
 
 export const savedResearchValidator = v.object({
+  studyId: v.optional(v.id("studies")),
   clientId: v.optional(v.string()),
   progress: v.optional(researchProgressValidator),
   id: v.id("researchRuns"),

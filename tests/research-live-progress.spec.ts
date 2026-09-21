@@ -14,7 +14,8 @@ test("local Convex progress updates in place and survives reopening after reload
   run("research:updateProgress", { id: reserved.id, progress });
   await page.addInitScript(token => localStorage.setItem("procurement-demo-session-v1", token), token);
   await page.goto("/?view=market");
-  await page.getByRole("button", { name: "View search progress", exact: true }).click();
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("button", { name: "View progress", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Finding your options." })).toBeVisible();
   run("research:updateProgress", { id: reserved.id, progress: { ...progress, stage: "reading", searchesCompleted: 3, candidates: 8, pagesChecked: 3, currentHost: "supplier.com" } });
   const region = page.getByRole("region", { name: "Search progress", exact: true });

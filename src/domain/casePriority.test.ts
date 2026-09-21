@@ -2,18 +2,18 @@ import { expect, test } from "vitest";
 import { casePriority } from "./casePriority";
 import { usRiceOffers, usRiceRequest } from "../../fixtures/procurement";
 test("worklist ranks explicit missing terms without inventing spend or urgency", () => {
-  const item = { status: "complete", researchRunIds: ["run"] };
+  const item = { status: "complete", researchRunIds: ["run"], pendingEvidence: 1 };
   const blocked = casePriority(item, {
     request: usRiceRequest,
     offers: usRiceOffers.map((o) => ({ ...o, freightCents: null })),
   });
-  expect(blocked.reason).toBe("Commercial terms need confirmation");
+  expect(blocked.next).toBe("Review comparison");
   expect(blocked.rank).toBeLessThan(
     casePriority({ status: "failed", researchRunIds: [] }).rank,
   );
-  expect(casePriority(item).reason).toBe("Research evidence available");
+  expect(casePriority(item).next).toBe("Review findings");
   expect(casePriority({ status: "idle", researchRunIds: [] }).reason).toBe(
-    "Saved question",
+    "Your saved evidence is available whenever you need it.",
   );
 });
 

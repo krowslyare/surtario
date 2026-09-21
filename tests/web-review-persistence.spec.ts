@@ -49,8 +49,8 @@ test("revisión web guardada recupera evidencia, condiciones y elección en Conv
     token,
   );
   await page.goto("/?example=pe");
-  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
-  await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Review sources", exact: true }).first().click();
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("button", { name: "Review findings", exact: true }).first().click();
   await expect(page.getByRole("heading", { name: "Arroz in Lima", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Review offer" }).click();
   const dialog = page.getByRole("dialog");

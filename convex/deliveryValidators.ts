@@ -2,6 +2,9 @@ import { v } from "convex/values";
 import { advisorContext, advisorReport } from "./advisorValidators";
 
 export const deliveryConfirmationFields = {
+  currency: v.optional(v.union(v.literal("USD"), v.literal("PEN"))),
+  ingredient: v.optional(v.string()),
+  previousMinimumPackages: v.optional(v.union(v.number(), v.null())),
   requestId: v.id("quotationRequests"),
   messageId: v.string(),
   comparisonId: v.id("comparisons"),

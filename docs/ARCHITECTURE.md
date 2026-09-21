@@ -55,3 +55,11 @@ Optional source watches are implemented but disabled in hosted acceptance. They 
 ## Verification boundary
 
 Tests exercise deterministic results, ownership, revisions, provider boundaries and recovery. Local fixtures/CLI rehearsals and external provider acceptance are different evidence. Read [VERIFICATION](VERIFICATION.md) for what was actually executed and [STATUS](STATUS.md) for delivery state.
+
+## Sourcing overview and manual study refresh
+
+`overview.list` derives session-scoped work from existing case/study/comparison links and orphan searches or conversations. Ingredient/location text alone never joins independent work. Reads use existing bounded indexes and return summaries, excluding source bodies, transcripts and mail text. Case-run subscriptions return one summarized research run at a time. Limits are displayed when legacy data exceeds supported inventory caps.
+
+Overview, case next steps and Messages share reply identifiers and mail priority. Counts describe work items and may overlap: a case can need review while research runs or a supplier reply is outstanding. Source review is a separate, versioned acknowledgement on a research run. Its evidence hash prevents a stale review from clearing newly changed evidence; it never confirms commercial terms. Saved decision cards use the original confirmation reports and flag later comparison revisions.
+
+A manual refresh uses `research.search` with an owned `studyId`, preserving ingredient and market. It shares the existing quick-search allowance, cooldown and provider gates; overlapping refreshes for the same study reuse the active run. New sources are compared by URL; interpreted differences are review prompts, not verified supplier changes. Missing extracted fields do not establish changed terms. A refresh saves research only: reviewed studies and comparisons change through their existing explicit review/save paths. No recurring watch is enabled by opening or refreshing Overview.

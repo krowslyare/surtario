@@ -86,6 +86,8 @@ export default defineSchema({
     .index("by_ownerHash", ["ownerHash"])
     .index("by_ownerHash_and_clientId", ["ownerHash", "clientId"]),
   researchRuns: defineTable({
+    studyId: v.optional(v.id("studies")),
+    reviewedEvidenceKey: v.optional(v.string()),
     progress: v.optional(researchProgressValidator),
     ownerHash: v.string(),
     clientId: v.string(),

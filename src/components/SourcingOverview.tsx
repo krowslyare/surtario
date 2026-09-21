@@ -1,0 +1,188 @@
+import { Component, useMemo, useRef, useState, type ReactNode } from "react";
+import { useAction, useConvex, useConvexConnectionState, useQueries, useQuery } from "convex/react";
+import type { FunctionReturnType } from "convex/server";
+import { ConvexError } from "convex/values";
+import { ArrowRight, Check, RefreshCw, Search } from "lucide-react";
+import { api } from "../../convex/_generated/api";
+import { useDemoSession } from "./useDemoSession";
+import { hasObservedChanges, workStatus } from "../domain/workStatus";
+import { Button } from "./ui/Button";
+import { Dialog } from "./Dialog";
+import { Select } from "./ui/Select";
+import "../styles/overview.css";
+
+export type OverviewItem = FunctionReturnType<typeof api.overview.list>["items"][number];
+type Run = FunctionReturnType<typeof api.overview.research>;
+type Target = "work" | "mail" | "comparison" | "evidence" | "research";
+type OpenData = { study?: import("./SavedStudies").SavedStudy; comparison?: import("./SavedComparisons").SavedComparison };
+type Props = { onResearch: () => void; onOpen: (item: OverviewItem, target: Target, requestId?: string, runId?: string, saved?: OpenData) => Promise<void> | void };
+
+function useOverview(token: string) {
+  const data = useQuery(api.overview.list, { token });
+  const queries = useMemo(() => {
+    const known = new Set(data?.quickRuns.map(run => run.id));
+    const ids = [...new Set(data?.items.flatMap(item => item.runIds) ?? [])].filter(id => !known.has(id));
+    return Object.fromEntries(ids.map(runId => [runId, { query: api.overview.research, args: { token, runId } }]));
+  }, [data, token]);
+  const research = useQueries(queries);
+  const values = Object.values(research) as (Run | Error | undefined)[];
+  const failed = values.find(value => value instanceof Error);
+  if (failed instanceof Error) throw failed;
+  if (!data || values.some(value => !value)) return undefined;
+  const runs = [...data.quickRuns, ...values as Run[]];
+  const items = data.items.map(item => {
+    const related = runs.filter(run => item.runIds.includes(run.id));
+    const pending = related.filter(run => !run.reviewed).flatMap(run => run.sources.filter(source => source.reviewable && !item.reviewedSourceIds.includes(source.id)));
+    const pendingRun = related.find(run => !run.reviewed && run.sources.some(source => pending.some(p => p.id === source.id)));
+    const latest = [...related].sort((a, b) => b.createdAt - a.createdAt)[0];
+    const refresh = latest?.studyId ? latest : undefined;
+    const knownUrls = new Set([...item.baselineSources.map(source => source.url), ...related.filter(run => run.id !== refresh?.id).flatMap(run => run.sources.map(source => source.url))]);
+    const newSources = refresh?.sources.filter(source => !knownUrls.has(source.url)).length ?? 0;
+    const changedSources = refresh?.sources.filter(source => source.values && item.baselineSources.some(previous => previous.url === source.url && hasObservedChanges(previous.baseline, source.values!))).length ?? 0;
+    const active = related.find(run => run.status === "running");
+    const status = workStatus({ requests: item.requests, reviewedReplyIds: item.reviewedReplyIds, blocker: item.blocker,
+      pendingEvidence: pending.length, running: item.status === "running" || Boolean(active),
+      failed: item.status === "failed" || item.status === "canceled" || latest?.status === "failed", hasComparison: Boolean(item.comparisonId) });
+    if (status.target === "work") {
+      if (item.kind === "search") status.action = "Review sources";
+      else if (item.kind === "study") status.action = "Open study";
+      else if (item.kind === "case") status.action = "Open follow-up";
+    }
+    return { ...item, next: status, latest, active, pendingRun, refresh, newSources, changedSources,
+      suppliers: [...new Set([...item.suppliers, ...related.flatMap(run => run.sources.flatMap(source => source.supplier ? [source.supplier] : []))])],
+      updatedAt: Math.max(item.updatedAt, ...related.map(run => run.createdAt)),
+      retained: new Set(related.flatMap(run => run.sources.map(source => source.url))).size,
+      interpreted: related.reduce((sum, run) => sum + run.interpreted, 0),
+    };
+  });
+  return { ...data, items };
+}
+
+type Work = NonNullable<ReturnType<typeof useOverview>>["items"][number];
+type Filter = "all" | "attention" | "researching" | "waiting";
+
+export default function SourcingOverview(props: Props) {
+  const { token, error } = useDemoSession();
+  return <main id="overview-main" className="overview-main">
+    <div className="overview-heading"><div><p className="eyebrow">Sourcing overview</p><h1 tabIndex={-1}>Your sourcing workspace</h1></div>
+      <Button variant="primary" onClick={props.onResearch}><Search size={18} />Research an ingredient</Button></div>
+    {error ? <p role="alert">Site storage is unavailable. Saved work cannot be recovered.</p> : !token ? <p role="status">Loading your work…</p> :
+      <OverviewBoundary><Connected {...props} token={token} /></OverviewBoundary>}
+  </main>;
+}
+
+function Connected({ token, ...props }: Props & { token: string }) {
+  const convex = useConvex();
+  const data = useOverview(token);
+  const connected = useConvexConnectionState().isWebSocketConnected;
+  const availability = useQuery(api.research.status, {});
+  const refresh = useAction(api.research.search);
+  const [filter, setFilter] = useState<Filter>("all");
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("priority");
+  const order = useRef<string[]>([]);
+  const [, rerender] = useState(0);
+  const [refreshItem, setRefreshItem] = useState<Work | null>(null);
+  const [refreshing, setRefreshing] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [opening, setOpening] = useState<string | null>(null);
+  if (!data) return <><p role="status">Loading your work and next steps…</p>{!connected && <p role="status">Connecting to your saved workspace…</p>}</>;
+  const { items, outcomes } = data;
+  const attention = items.filter(item => item.next.attention);
+  const researching = items.filter(item => item.next.researching);
+  const waiting = items.filter(item => item.next.waiting);
+  const sorted = [...items].sort((a, b) => sort === "recent" ? b.updatedAt - a.updatedAt || a.id.localeCompare(b.id)
+    : a.next.rank - b.next.rank || a.updatedAt - b.updatedAt || a.id.localeCompare(b.id));
+  const desired = sorted.map(item => item.id);
+  if (!order.current.length) order.current = desired;
+  const orderedIds = [...order.current.filter(id => desired.includes(id)), ...desired.filter(id => !order.current.includes(id))];
+  const ordered = orderedIds.map(id => items.find(item => item.id === id)!);
+  const changed = desired.join() !== orderedIds.join();
+  const matches = (item: Work) => (filter === "all" || (filter === "attention" ? item.next.attention : filter === "researching" ? item.next.researching : item.next.waiting)) &&
+    `${item.ingredient} ${item.region} ${item.suppliers.join(" ")}`.toLowerCase().includes(search.trim().toLowerCase());
+  const visible = ordered.filter(matches);
+  const chooseFilter = (value: Filter) => { setFilter(value); document.getElementById("overview-work")?.scrollIntoView({ behavior: "instant", block: "start" }); };
+  async function open(item: Work, target: Target = item.next.target, requestId?: string) {
+    if (opening) return;
+    setOpening(item.id); setError("");
+    try {
+      const saved: OpenData = {};
+      if (target === "comparison" || (target === "work" && !item.caseId && item.comparisonId)) {
+        saved.comparison = (await convex.query(api.comparisons.list, { token })).find(row => row.id === item.comparisonId);
+        if (!saved.comparison) throw new Error("Comparison unavailable");
+      } else if (item.studyId && !item.caseId) {
+        saved.study = (await convex.query(api.studies.list, { token })).find(row => row.id === item.studyId);
+        if (!saved.study) throw new Error("Study unavailable");
+      }
+      await props.onOpen(item, target, requestId ?? ("requestId" in item.next ? item.next.requestId : undefined),
+      (target === "evidence" ? item.pendingRun : item.active ?? item.latest)?.id, saved); }
+    catch { setError("This work could not be opened. Your saved evidence is preserved; check your connection and try again."); }
+    finally { setOpening(null); }
+  }
+  const action = (item: Work) => <Button variant="secondary" disabled={Boolean(opening)} onClick={() => void open(item)}>{opening === item.id ? "Opening…" : item.next.action}<ArrowRight size={16} /></Button>;
+  return <>
+    <p className="overview-summary" aria-live="polite">{attention.length ? `${attention.length} ${attention.length === 1 ? "work item needs" : "work items need"} your attention.` : items.length ? "No reviews are waiting in your saved work." : "Your next sourcing decision starts here."} {researching.length > 0 && `${researching.length} ${researching.length === 1 ? "research task is" : "research tasks are"} in progress.`}</p>
+    {!connected && <p className="notice warning" role="status">Connection interrupted. Showing the last received state; updates will resume when connected.</p>}
+    {error && <p role="alert" className="notice error">{error}</p>}
+    <div className="overview-counts" aria-label="Filter sourcing work">
+      {([["attention", "Needs your attention", attention.length], ["researching", "Research in progress", researching.length], ["waiting", "Waiting for suppliers", waiting.length]] as const).map(([value, label, count]) =>
+        <button key={value} aria-pressed={filter === value} onClick={() => chooseFilter(value)}><strong>{count}</strong><span>{label}</span><ArrowRight size={18} /></button>)}
+    </div>
+    <p className="overview-scope">{data.limited ? "Recent work only: this session exceeds the overview’s supported record limit." : "Work in this browser session."} A work item can need attention while research continues.</p>
+    {!items.length ? <section className="overview-empty"><img src="/brand/surtario-symbol.svg" alt="" width="64" height="64" /><h2>Start with what your kitchen needs.</h2><p>Research an ingredient and delivery area. Your saved studies, supplier conversations and decisions will come together here.</p><Button variant="secondary" onClick={props.onResearch}>Explore suppliers<ArrowRight size={16} /></Button></section> : <>
+      <div className={`overview-priorities ${researching.length ? "has-research" : ""}`}>
+        <section aria-labelledby="attention-title"><div className="overview-section-title"><h2 id="attention-title">Needs your attention</h2>{attention.length > 3 && <Button variant="text" onClick={() => chooseFilter("attention")}>See all {attention.length}</Button>}</div>
+          {attention.length ? <ul className="overview-attention">{ordered.filter(item => item.next.attention).slice(0, 3).map(item => <li key={item.id}>
+            <p className="overview-ingredient">{item.ingredient}<span>{item.region}</span></p><h3>{item.next.title}</h3><p>{item.next.description}</p>{action(item)}
+          </li>)}</ul> : <p className="overview-clear"><Check size={20} />No reviews are waiting. Continue any saved work below.</p>}
+        </section>
+        {researching.length > 0 && <section className="overview-research" aria-labelledby="research-title"><h2 id="research-title">Research in progress</h2>
+          {researching.map(item => <article key={item.id}><h3>{item.ingredient}</h3><p>{item.region}</p><p>{item.active ? ({ searching: "Finding public sources", reading: "Reading product pages", reviewing: "Interpreting source evidence" }[item.active.stage] ?? "Research in progress") : "Investigating this question"}</p>
+            {item.status === "running" && item.caseId && <p>Round {Math.min(item.steps + 1, 6)} of up to 6</p>}<p>{item.active?.retained ?? item.retained} sources retained · {item.active?.interpreted ?? item.interpreted} interpretations</p><Button variant="text" onClick={() => void open(item, "research")}>Open research<ArrowRight size={16} /></Button></article>)}
+        </section>}
+      </div>
+      <section id="overview-work" aria-labelledby="work-title"><div className="overview-section-title"><h2 id="work-title">All sourcing work</h2>{changed && <Button variant="text" onClick={() => { order.current = desired; rerender(value => value + 1); }}>New activity · update order</Button>}</div>
+        <div className="overview-toolbar"><label>Find work<input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Ingredient, supplier or location" /></label>
+          <label>Sort by<Select aria-label="Sort by" value={sort} onValueChange={value => { setSort(value); order.current = []; }} options={[{ value: "priority", label: "Priority" }, { value: "recent", label: "Recent activity" }]} /></label></div>
+        <div className="overview-filters" role="group" aria-label="Work status">{([["all", "All"], ["attention", "Needs attention"], ["researching", "Researching"], ["waiting", "Waiting"]] as const).map(([value, label]) => <Button key={value} variant="text" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</Button>)}</div>
+        {!visible.length ? <p>No work matches these filters.</p> : <ul className="overview-work-list">{visible.map(item => <li key={item.id}>
+          <div><button className="overview-work-name" onClick={() => void open(item, "work")}>{item.ingredient}</button><p>{item.region}</p>{item.objective && <p>{item.objective}</p>}<small>{item.kind === "case" ? "Follow-up" : item.kind === "search" ? "Search" : item.kind === "inquiry" ? "Conversation" : item.kind === "comparison" ? "Comparison" : "Study"} · {date(item.updatedAt)}</small></div>
+          <div><strong>{item.next.title}</strong><p>{item.next.description}</p>{item.refresh && <small>Research {item.refresh.status === "running" ? "started" : item.refresh.status === "failed" ? "interrupted" : "updated"} {date(item.refresh.createdAt)} · {item.newSources} new sources · {item.changedSources} {item.changedSources === 1 ? "source" : "sources"} with different interpreted details. Review against the saved evidence.</small>}{item.activeWatches > 0 && <small>{item.activeWatches} active source {item.activeWatches === 1 ? "watch" : "watches"}</small>}</div>
+          <div className="overview-work-actions">{action(item)}{item.studyId && <Button variant="text" disabled={!connected || !availability?.searchEnabled || item.next.researching || refreshing === item.id} onClick={() => setRefreshItem(item)}><RefreshCw size={15} />{refreshing === item.id ? "Updating research…" : "Update market research"}</Button>}</div>
+        </li>)}</ul>}
+      </section>
+      <section className="overview-decisions" aria-labelledby="decisions-title"><div className="overview-section-title"><h2 id="decisions-title">Recent decision updates</h2><span>From reviewed supplier replies</span></div>
+        {!outcomes.length ? <p>Confirmed terms and their saved before/after results will appear here.</p> : <div className="overview-outcomes">{outcomes.map(outcome => <article key={outcome.id}>
+          <p className="eyebrow">{outcome.ingredient} · {outcome.term}</p><h3>{outcome.supplier}</h3>
+          <p>{outcome.term === "Minimum confirmed" ? `Minimum: ${outcome.beforeMinimum === null ? "pending" : outcome.beforeMinimum} → ${outcome.value} packs` : `Reviewed delivery fee: ${amount(outcome.value, outcome.currency)}`}</p>
+          <p className="overview-order-total">Order total <strong>{amount(outcome.beforeTotal, outcome.currency)} → {amount(outcome.afterTotal, outcome.currency)}</strong></p>
+          <p>{outcome.recommendationChanged ? "The recommendation changed under your saved preferences." : "The recommendation is unchanged under your saved preferences."}</p>
+          {outcome.affordableBefore !== true && outcome.affordableAfter === true && <p>This option now fits the saved budget.</p>}
+          <small>{date(outcome.createdAt)} · revision {outcome.revision}</small>{outcome.stale && <p className="overview-historical">Saved outcome · a newer comparison revision exists</p>}
+          <Button variant="text" onClick={() => { const item = items.find(item => item.comparisonId === outcome.comparisonId); if (item) void open(item, "comparison"); }}>Open updated comparison<ArrowRight size={16} /></Button>
+        </article>)}</div>}
+      </section>
+    </>}
+    {refreshItem && <Dialog title="Update market research" onClose={() => setRefreshItem(null)}>
+      <p>Search again for <strong>{refreshItem.ingredient}</strong> in <strong>{refreshItem.region}</strong>, including newly listed suppliers and current public details.</p>
+      <p>This runs one live search and, when enabled, interprets up to three product pages. New findings are saved for review; your confirmed study and comparison stay as they are.</p>
+      <p className="field-hint">Uses the session’s existing search allowance. This is a one-time update.</p>
+      <div className="dialog-actions"><Button onClick={() => setRefreshItem(null)}>Keep current research</Button><Button variant="primary" disabled={!connected || Boolean(refreshing)} onClick={() => {
+        const item = refreshItem; setRefreshing(item.id); setRefreshItem(null); setError("");
+        void refresh({ token, clientId: crypto.randomUUID(), studyId: item.studyId!, ingredient: item.ingredient, region: item.region })
+          .catch(cause => setError(cause instanceof ConvexError && typeof cause.data === "string" ? cause.data : "The update could not be confirmed. Check the saved research before starting another."))
+          .finally(() => setRefreshing(null));
+      }}>Search for updates</Button></div>
+    </Dialog>}
+  </>;
+}
+
+function date(value: number) { return new Date(value).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+function amount(value: number | null, currency: string | null) {
+  return value === null ? "Pending" : !currency ? "Currency not saved" : `${currency} ${(value / 100).toFixed(2)}`;
+}
+class OverviewBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  render() { return this.state.failed ? <div role="alert"><p>Your sourcing work could not be loaded. Saved records are preserved.</p><Button onClick={() => this.setState({ failed: false })}>Try again</Button></div> : this.props.children; }
+}

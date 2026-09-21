@@ -37,12 +37,12 @@ for (const accepted of [true, false])
       (value) => localStorage.setItem("procurement-demo-session-v1", value),
       token,
     );
-    await page.goto("/?view=market");
-    await page.getByRole("listitem").filter({ hasText: "Review the minimum against the budget" })
-      .getByRole("button", { name: "Open follow-up", exact: true }).click();
+    await page.goto("/?view=overview");
+    await page.locator("#overview-work").getByRole("listitem").filter({ hasText: "Review the minimum against the budget" })
+      .getByRole("button", { name: "Rice", exact: true }).click();
     await expect(page).toHaveURL(/view=followup.*case=/);
     await page
-      .getByRole("button", { name: "Open case comparison", exact: true })
+      .getByRole("button", { name: /(?:Open case|Review) comparison/, exact: true })
       .click();
     const advisor = page.getByRole("region", { name: "Purchasing advisor" });
     await advisor.getByText("Budget and preferences").click();
@@ -197,10 +197,10 @@ test("saved follow-up opens a case brief exposing unconfirmed delivery with comp
     (value) => localStorage.setItem("procurement-demo-session-v1", value),
     token,
   );
-  await page.goto("/?view=market");
-  const savedFollowup = page.getByRole("listitem").filter({ hasText: "Check delivery availability" });
+  await page.goto("/?view=overview");
+  const savedFollowup = page.locator("#overview-work").getByRole("listitem").filter({ hasText: "Check delivery availability" });
   await expect(savedFollowup).toContainText("Portland, OR, US");
-  await savedFollowup.getByRole("button", { name: "Open follow-up", exact: true }).click();
+  await savedFollowup.getByRole("button", { name: "Rice", exact: true }).click();
   await expect(page).toHaveURL(/view=followup.*case=/);
   const brief = page.getByRole("region", { name: "Case decision brief" });
   await expect(brief).toContainText(

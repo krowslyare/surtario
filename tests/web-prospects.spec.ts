@@ -37,8 +37,8 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     token,
   );
   await page.goto("/?example=pe");
-  await page.getByRole("button", { name: "Continue your work", exact: true }).click();
-  await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Review sources", exact: true }).first().click();
+  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.locator("#overview-work").getByRole("button", { name: "Review sources", exact: true }).first().click();
   await expect(page.getByRole("heading", { name: "Arroz in Arequipa", exact: true })).toBeVisible();
   await page.getByText("More options", { exact: true }).click();
   await page
