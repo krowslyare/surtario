@@ -24,7 +24,7 @@ test("follow-up is a recoverable destination and preserves the market draft", as
   await expect(followup.getByRole("button", { name: "Other conditions (1)" })).toHaveAttribute("aria-expanded", "true");
   await followup.getByRole("button", { name: /(?:Open (?:case )?|Review )comparison/, exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`comparison=${comparison.id}.*fromCase=${caseId}`));
-  await page.getByRole("button", { name: "Back to follow-up", exact: true }).click();
+  await page.getByRole("button", { name: "Back to research", exact: true }).click();
   await expect(followup).toBeVisible();
   await page.getByRole("button", { name: "Back to overview", exact: true }).click();
   await page.getByRole("navigation").getByRole("button", { name: "Explore suppliers", exact: true }).click();
@@ -45,7 +45,7 @@ test("follow-up is a recoverable destination and preserves the market draft", as
   await expect(followup.getByRole("region", { name: "Case history" })).toBeVisible();
   await expect(followup.getByRole("region", { name: "Next step for this case" })).toBeHidden();
   await page.goto("/?view=followup&case=unavailable");
-  await expect(page.getByRole("heading", { name: "This follow-up isn’t available." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "This research question isn’t available." })).toBeVisible();
 });
 
 test("browser Back restores the correct unsaved comparison rather than a later one", async ({ page, context }) => {
@@ -134,5 +134,5 @@ test("a question from My study keeps its ingredient after a different search", a
   await dialog.getByRole("button", { name: "Save research question" }).click();
   await expect(page.locator("#followup-main").getByRole("heading", { name: "Rice", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Back to workspace", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Open supplier follow-up", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open research question", exact: true })).toBeVisible();
 });

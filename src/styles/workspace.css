@@ -1309,7 +1309,9 @@
   .continue-actions { align-items: flex-start; }
   .market-topbar { flex-wrap: wrap; }
   .market-topbar .brand { flex: 0 0 auto; }
-  .market-topbar .brand-nav { flex-wrap: wrap; }
+  .market-topbar .brand-nav { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); width: 100%; gap: 0; }
+  .market-topbar .brand-nav .button { padding-inline: 4px; font-size: 12px; }
+  .market-topbar .brand-nav svg, .market-topbar .brand-explore-detail { display: none; }
 }
 .sourcing-case[hidden] { display: none; }
 /* Hidden workspaces retain drafts but must leave layout and keyboard order. */

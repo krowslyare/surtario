@@ -12,13 +12,13 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-21T14:07:26Z
+- **Last updated:** 2026-09-21T19:22:34Z
 
 ## Current delivery
 
 The development app has exercised real Firecrawl discovery, direct OpenAI extraction/advice and an AgentMail test-inbox round trip with reactive Convex updates. People review evidence and commercial terms; neither a reply nor a selected offer places a purchase. [Executed acceptance and limits](docs/VERIFICATION.md).
 
-The deployed baseline is PR #40 (`92d322d`): CI passed and development publication verified 35 files, SPA fallback and missing-asset behavior. Sourcing overview and manual study refresh are a separate PR change verified locally, including real Firecrawl/OpenAI calls; they have not been deployed. The final narrated video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
+The deployed baseline is PR #41 (`f053dc6`), including sourcing overview and manual study refresh: CI passed and development publication verified 35 files, SPA fallback and missing-asset behavior. A separate presentation/navigation follow-up passed local checks and remains on its own PR branch. The final narrated video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
 
 ## Log
 
@@ -135,3 +135,12 @@ A manual study update uses the configured Firecrawl/OpenAI path, reuses the exis
 The real study, follow-up and pending comparison appeared as one work item. No new email transport call, supplier contact, purchase, recurring watch or hosted deployment occurred in this acceptance. [Executed checks and limits](docs/VERIFICATION.md).
 
 Validation: 334 domain/backend tests, frontend/backend TypeScript and the 35-file hosting build passed. All 141 browser cases were verified across a full run and focused reruns, including exact reply navigation, deterministic saved outcomes, review persistence, session isolation, summary-only loading, responsive layouts and preserved drafts. This is local validation plus bounded real-provider acceptance, not deployment of the overview.
+
+
+### 2026-09-21 - PR #41 publication and overview presentation follow-up
+
+Merged the authorized PR #41 into main as `f053dc6`. [Verify run 35643296196](https://github.com/krowslyare/restaurant-procurement/actions/runs/35643296196) passed tests and published the development backend/frontend, then verified 35 files, SPA fallback and the missing-asset response. The hosted Overview loaded existing saved work without browser console errors.
+
+On a separate branch, clarified the decision-history empty state and separated next steps, work and outcomes. Removed the global Follow-ups intake; Research a question stays contextual and saved research stays accessible from its study and Overview. Global navigation clears obsolete return links, and early browser Back after reload reconciles the visible route. The four top-level destinations remain visible at 390 and 320 px. No source values or commercial terms are fabricated for the recording.
+
+Validation passed 334 domain/backend tests, 38/38 focused browser tests in the final run, frontend TypeScript and the 35-file hosting build. Desktop/mobile review used existing real-source data; automated fixtures stayed on a separate local backend. Initial local selector setup and an early-Back route failure were corrected and rechecked without retries or relaxed assertions. The new presentation change is not merged or deployed; no new provider or mail calls were made.

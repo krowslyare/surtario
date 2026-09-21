@@ -71,14 +71,17 @@ test("study purchase keeps its case through save, recovery and repeated opening"
     }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Back to market study" }).click();
-  await page.getByRole("button", { name: "Open supplier follow-up", exact: true }).click();
+  await page.getByRole("button", { name: "Open research question", exact: true }).click();
+  const fromStudy = new URL(followupUrl);
+  fromStudy.searchParams.delete("from");
+  followupUrl = fromStudy.href;
   await expect(page).toHaveURL(followupUrl);
   await page.getByRole("button", { name: "Activity", exact: true }).click();
   await expect(page.getByRole("region", { name: "Case history", exact: true })).toBeVisible();
   await expect(
     page.getByRole("region", { name: "Case history" }),
   ).toContainText("Reviewed comparison saved");
-  await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Overview", exact: true }).click();
+  await page.getByRole("group", { name: "Research sections" }).getByRole("button", { name: "Overview", exact: true }).click();
   await page
     .getByRole("region", { name: "Next step for this case" })
     .getByRole("button", { name: "Open case comparison" })
@@ -90,9 +93,9 @@ test("study purchase keeps its case through save, recovery and repeated opening"
   await page.getByRole("button", { name: "Save comparison changes", exact: true }).click();
   await expect(page.getByText("Comparison saved with a selected offer. Save again after making changes.", { exact: true })).toBeVisible();
 
-  await page.getByRole("button", { name: "Back to follow-up", exact: true }).click();
+  await page.getByRole("button", { name: "Back to research", exact: true }).click();
   await expect(page).toHaveURL(followupUrl);
-  await page.getByRole("button", { name: "Back to overview", exact: true }).click();
+  await page.getByRole("button", { name: "Back to workspace", exact: true }).click();
   await page.getByRole("button", { name: /^My study/ }).click();
   await page
     .getByRole("button", { name: "Calculate purchase", exact: true })

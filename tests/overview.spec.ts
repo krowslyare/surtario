@@ -32,6 +32,7 @@ test("overview reacts to a reply, opens its exact conversation, records the deci
   const overview = page.locator("#overview-main");
   const work = overview.locator(".overview-work-list > li");
   await expect(work).toHaveCount(1);
+  await expect(overview.getByRole("heading", { name: "No decision updates yet", exact: true })).toBeVisible();
   expect([...queries].filter(name => ["research:list", "studies:list", "comparisons:list", "quotationMail:list", "documents:list", "sourcing:research"].includes(name))).toEqual([]);
   await expect(overview.getByRole("button", { name: "1 Waiting for suppliers", exact: true })).toBeVisible();
   seed("quotationReplies", { requestId, eventId: randomUUID(), messageId: randomUUID(), threadId: randomUUID(), from: "test@example.test", receivedAt: new Date().toISOString(), text: "El flete es PEN 8 por pedido." });
@@ -41,6 +42,8 @@ test("overview reacts to a reply, opens its exact conversation, records the deci
   for (const width of [1920, 390, 320]) {
     await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await expect(page.getByRole("navigation").getByRole("button", { name: "Explore suppliers", exact: true })).toBeInViewport();
+    await expect(page.getByRole("navigation").getByRole("button", { name: /^Messages/ })).toBeInViewport();
     await page.screenshot({ path: info.outputPath(`overview-${width}.png`), fullPage: true });
   }
   await page.emulateMedia({ reducedMotion: "reduce" });
@@ -54,7 +57,7 @@ test("overview reacts to a reply, opens its exact conversation, records the deci
   await confirm.getByRole("checkbox", { name: /I confirm this reply gives/ }).check();
   await confirm.getByRole("button", { name: "Confirm delivery and save", exact: true }).click();
   await expect(page.getByTestId("total-0")).toHaveText("S/ 48.00");
-  await page.getByRole("button", { name: "Back to follow-up", exact: true }).click();
+  await page.getByRole("button", { name: "Back to research", exact: true }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
   await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
   await expect(work).toHaveCount(1);
@@ -96,6 +99,7 @@ test("reviewed research clears its reminder across reload and another browser se
   const otherPage = await isolated.newPage();
   await otherPage.goto(new URL("/?view=overview", page.url()).href);
   await expect(otherPage.getByRole("heading", { name: "Start with what your kitchen needs.", exact: true })).toBeVisible();
+  await expect(otherPage.getByRole("region", { name: "Recent decision updates", exact: true })).toContainText("No decision updates yet");
   await isolated.close();
 });
 
@@ -118,4 +122,36 @@ test("opening a study refresh restores its study context and browser Back return
   await expect(page).toHaveURL(/view=overview/);
   expect(run("studies:list", { token })).toHaveLength(1);
   expect(run("research:list", { token })).toHaveLength(1);
+});
+
+
+test("global navigation leaves research context while browser Back restores the exact saved question", async ({ page, context }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const token = createHash("sha256").update(randomUUID()).digest("hex");
+  const study = run("studies:save", { token, clientId: randomUUID(), id: null, expectedRevision: 0, term: "Rice", region: "Portland, OR, US", selectedIds: ["us-catalog-a"] });
+  const caseId = run("sourcing:create", { token, studyId: study.id, objective: "Confirm delivery before comparing rice" });
+  await context.addInitScript(value => localStorage.setItem("procurement-demo-session-v1", value), token);
+  await page.goto("/?view=overview");
+  const nav = page.getByRole("navigation", { name: "Main navigation" });
+  await expect(nav.getByRole("button", { name: "Follow-ups", exact: true })).toHaveCount(0);
+  for (const destination of ["Explore suppliers", "My study", "Messages"]) {
+    await page.locator("#overview-work").getByRole("button", { name: "Rice", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`view=followup.*from=overview.*case=${caseId}`));
+    await expect(page.getByRole("button", { name: "Back to overview", exact: true })).toBeVisible();
+    await nav.getByRole("button", { name: destination, exact: true }).click();
+    await expect(page).not.toHaveURL(/from=|case=|message=/);
+    await expect(page.getByRole("button", { name: "Back to overview", exact: true })).toBeHidden();
+    await page.reload();
+    await expect(page.getByRole("button", { name: "Back to overview", exact: true })).toBeHidden();
+    await page.goBack();
+    await expect(page).toHaveURL(new RegExp(`view=followup.*case=${caseId}`));
+    await expect(page.getByRole("heading", { name: "Confirm delivery before comparing rice", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Back to overview", exact: true }).click();
+  }
+  await page.goto("/?view=followup");
+  await expect(page).toHaveURL(/view=overview$/);
+  await expect(page.getByRole("heading", { name: "Your sourcing workspace", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Research a question", exact: true })).toHaveCount(0);
+  expect(run("sourcing:list", { token })).toHaveLength(1);
+  expect(run("research:list", { token })).toHaveLength(0);
 });

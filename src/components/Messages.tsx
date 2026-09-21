@@ -166,7 +166,7 @@ function ConnectedMessages({ token, ...props }: Props & { token: string }) {
       prospectId={selected.request.prospectId}
       resultId={selected.request.resultId}
       conversationContext={<div className="message-context"><strong>{selected.supplier}</strong><span>{[selected.ingredient, selected.region].filter(Boolean).join(" · ")}</span></div>}
-      conversationActions={<div className="message-context-actions">{selected.comparison && <Button variant="text" onClick={() => openComparison(selected.comparison!, selected.linkedCase?.id)}>Open linked comparison</Button>}{selected.linkedCase && <Button variant="text" onClick={() => props.onOpenFollowup(selected.linkedCase!.id, selected.request.id)}>Open supplier follow-up</Button>}</div>}
+      conversationActions={<div className="message-context-actions">{selected.comparison && <Button variant="text" onClick={() => openComparison(selected.comparison!, selected.linkedCase?.id)}>Open linked comparison</Button>}{selected.linkedCase && <Button variant="text" onClick={() => props.onOpenFollowup(selected.linkedCase!.id, selected.request.id)}>Open research question</Button>}</div>}
       onCloseConversation={() => props.onSelect()}
       offers={[]}
       onEditOffer={() => { if (selected.comparison) openComparison(selected.comparison, selected.linkedCase?.id); }}

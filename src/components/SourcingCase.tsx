@@ -246,15 +246,15 @@ function ConnectedCase({ token, ...props }: Props & { token: string }) {
         <Button variant="text" onClick={props.onBack}><ArrowLeft size={16} />{props.backLabel ?? "Back to workspace"}</Button>
       </div>
       <header className="followup-heading">
-        <h1 tabIndex={-1}>{activeId ? current?.ingredient ?? (cases === undefined ? "Opening your follow-up…" : "Follow-up unavailable") : "Research a question"}</h1>
-        <p>{activeId ? current ? `${current.region} · Supplier follow-up` : cases === undefined ? "Restoring your saved messages and findings." : "Return to your workspace to continue another item." : "Find the details you need before choosing a supplier."}</p>
+        <h1 tabIndex={-1}>{activeId ? current?.ingredient ?? (cases === undefined ? "Opening your research…" : "Research unavailable") : "Research a question"}</h1>
+        <p>{activeId ? current ? `${current.region} · Saved research question` : cases === undefined ? "Restoring your saved messages and findings." : "Return to your workspace to continue another item." : "Find the details you need before choosing a supplier."}</p>
       </header>
-      <section className="sourcing-case is-expanded" aria-label="Supplier follow-up">
+      <section className="sourcing-case is-expanded" aria-label="Saved research question">
         {!connected && <p className="notice info" role="status">Reconnecting. Saved results remain visible; actions will be available when connected.</p>}
         {activeId ? (
-          cases === undefined ? <p role="status">Loading your follow-up…</p>
+          cases === undefined ? <p role="status">Loading your research…</p>
           : current ? <CaseDetail key={current.id} {...props} token={token} caseId={current.id} connected={connected} liveEnabled={Boolean(status?.enabled)} watchEnabled={Boolean(status?.watchEnabled)} />
-          : <div className="followup-unavailable"><h2>This follow-up isn’t available.</h2><p>Saved work belongs to the browser where it was created. Open another item from Continue your work.</p></div>
+          : <div className="followup-unavailable"><h2>This research question isn’t available.</h2><p>Saved work belongs to the browser where it was created. Open another item from Overview.</p></div>
         ) : (
           questionForm
         )}
@@ -352,7 +352,7 @@ function CaseDetail({
       setPending(null);
     }
   }
-  if (detail === undefined) return <p role="status">Loading your follow-up…</p>;
+  if (detail === undefined) return <p role="status">Loading your research…</p>;
   if (detail === null) return <p>This follow-up is no longer available.</p>;
   const item = detail.case;
   if (!item)
@@ -567,7 +567,7 @@ function CaseDetail({
         </span>
       </div>
       <SegmentedControl
-        label="Follow-up sections"
+        label="Research sections"
         value={section}
         onValueChange={value => { setSection(value); if (value === "sources") setReviewOpen(true); }}
         options={[{ value: "overview", label: "Overview" }, { value: "messages", label: "Messages" }, { value: "sources", label: "Sources" }, { value: "activity", label: "Activity" }]}
