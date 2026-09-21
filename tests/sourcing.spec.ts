@@ -56,7 +56,7 @@ test("research case works without selected offers, persists on reload and isolat
   await isolated.goto("/?view=overview");
   await expect(isolated.getByRole("heading", { name: "Start with what your kitchen needs." })).toBeVisible();
   await isolated.goto(followupUrl);
-  await expect(isolated.getByRole("heading", { name: "This follow-up isn’t available." })).toBeVisible();
+  await expect(isolated.getByRole("heading", { name: "This research question isn’t available." })).toBeVisible();
   await expect(isolated.getByRole("heading", { name: "Compare pack sizes before requesting delivery terms", exact: true })).toHaveCount(0);
   await other.close();
 });
@@ -81,7 +81,7 @@ test("case layout remains readable and actions stop while offline", async ({
     }),
   ).toBeVisible();
   await expect(page).toHaveURL(/view=followup.*case=/);
-  await expect(page.getByRole("group", { name: "Follow-up sections" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Research sections" })).toBeVisible();
   await expect(page.locator("#market-main")).toBeHidden();
   for (const width of [390, 320, 1920]) {
     await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
@@ -228,7 +228,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
     .getByRole("button", { name: "Arroz", exact: true }).click();
   await expect(page).toHaveURL(/view=followup.*case=/);
   await expect(page.getByRole("region", { name: "Next step for this case" })).toContainText("Comparison needs confirmation");
-  await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Sources", exact: true }).click();
+  await page.getByRole("group", { name: "Research sections" }).getByRole("button", { name: "Sources", exact: true }).click();
   const [caseRow] = run("sourcing:list", { token });
   const caseRuns = run("sourcing:research", { token, caseId: caseRow.id });
   const latestIndex = caseRuns.findIndex((item: { id: string }) => item.id === secondId);
@@ -366,13 +366,13 @@ test("a waiting case reacts to a later supplier reply and opens that conversatio
       "Delivery terms inquiry",
     );
     await page.keyboard.press("Escape");
-    await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Overview", exact: true }).click();
+    await page.getByRole("group", { name: "Research sections" }).getByRole("button", { name: "Overview", exact: true }).click();
     await next.getByRole("button", { name: "View sent message" }).click();
     await expect(page.getByRole("dialog")).toContainText(
       "Delivery terms inquiry",
     );
     await page.keyboard.press("Escape");
-    await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Overview", exact: true }).click();
+    await page.getByRole("group", { name: "Research sections" }).getByRole("button", { name: "Overview", exact: true }).click();
     seed("quotationReplies", {
       requestId: request.id,
       eventId: crypto.randomUUID(),

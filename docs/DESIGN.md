@@ -24,7 +24,8 @@ Keep evidence rows aligned and readable. Separate a search header, its coverage 
 
 - Exploration starts with ingredient/category and area. A quantity, document or recipe is optional.
 - Selected options belong to My study. Saving, adding a selection and choosing an offer are distinct actions with distinct feedback.
-- Persistent follow-ups have their own workspace with Overview, Messages, Sources and Activity. Avoid placing the entire research lifecycle beneath unrelated results.
+- Global navigation has Overview, Explore suppliers, My study and Messages; all four remain accessible on mobile. Research a question is a contextual dialog from an ingredient or study. Saving opens a persistent research workspace with Overview, Messages, Sources and Activity; saved questions reopen from the study or Overview. Global section changes clear contextual return links, while browser Back restores the originating detail.
+- Overview separates next steps, all sourcing work and recent decision updates. Empty decision history explicitly says no updates exist and explains which reviewed terms create an outcome. Do not display placeholder results.
 - The global Messages entry exposes requests/replies directly. New replies do not silently change prices.
 - Source review and short research questions fit focused dialogs. Keep the dialog header/close control available while the body scrolls.
 - In comparisons, lead with cash required, received quantity, excess and unresolved conditions. Put detailed evidence and reasoning behind accessible disclosures, without hiding the main blocker.

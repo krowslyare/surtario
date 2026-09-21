@@ -98,7 +98,7 @@ export default function MarketStudy({
   active: boolean;
   followup: FollowupLocation | null;
   onOpenFollowup: (id: string | null, requestId?: string, sourceRunId?: string) => void;
-  onExitFollowup: () => void;
+  onExitFollowup: (fromOverview?: boolean) => void;
   onBackFollowup: () => void;
   followupBackLabel?: string;
   messages: { requestId?: string; visit: number } | null;
@@ -281,7 +281,7 @@ export default function MarketStudy({
         }
       }}><PenLine size={16} />{searchOpen ? "Close search" : "Change search"}</Button>
       {persistenceEnabled && <Button variant="text" onClick={() => linkedCase ? onOpenFollowup(linkedCase) : openQuestion(currentContext)}>
-        {linkedCase ? "Open supplier follow-up" : "Research a question"}
+        {linkedCase ? "Open research question" : "Research a question"}
       </Button>}
     </div>;
   }
@@ -375,7 +375,7 @@ export default function MarketStudy({
     setShowStudy(false);
     setFilter("all");
     setError("");
-    if (overview || followup || messages) onExitFollowup();
+    if (overview || followup || messages) onExitFollowup(overview || fromOverview);
   }
 
   function validateSearchIngredient() {
@@ -586,9 +586,10 @@ export default function MarketStudy({
           <Button
             variant="text"
             className="brand-explore"
+            aria-label="Explore suppliers"
             aria-current={!overview && !followup && !messages && !showStudy ? "page" : undefined}
             onClick={() => {
-              if (overview || followup || messages) onExitFollowup();
+              if (overview || followup || messages || fromOverview) onExitFollowup();
               setShowStudy(false);
               setFilter("all");
               setSearchOpen(true);
@@ -600,13 +601,13 @@ export default function MarketStudy({
               });
             }}
           >
-            Explore suppliers
+            Explore<span className="brand-explore-detail"> suppliers</span>
           </Button>
           <Button
             variant="text"
             aria-current={!overview && !followup && !messages && showStudy ? "page" : undefined}
             onClick={() => {
-              if (overview || followup || messages) onExitFollowup();
+              if (overview || followup || messages || fromOverview) onExitFollowup();
               setShowStudy(true);
               setFilter("all");
             }}
@@ -617,7 +618,6 @@ export default function MarketStudy({
               <span className="selection-count">{optionCount}</span>
             )}
           </Button>
-          {persistenceEnabled && <Button variant="text" aria-current={followup ? "page" : undefined} onClick={() => onOpenFollowup(null)}>Follow-ups</Button>}
           {persistenceEnabled && <MessagesLink active={Boolean(messages)} onClick={() => onOpenMessages()} />}
 
         </nav>
@@ -627,7 +627,7 @@ export default function MarketStudy({
         else if (saved?.comparison) onPrepare({ ...saved.comparison, resumeComparison: { id: saved.comparison.id, revision: saved.comparison.revision, selectedOfferId: saved.comparison.selectedOfferId, unchanged: true } });
         else if (item.caseId) onOpenFollowup(item.caseId, undefined, target === "evidence" || target === "research" ? runId : undefined);
         else if (runId && (target !== "work" || item.kind === "search")) resumeSavedResearch(runId, item.ingredient, item.region, saved?.study);
-        else { if (saved?.study) openStudy(saved.study); onExitFollowup(); }
+        else { if (saved?.study) openStudy(saved.study); onExitFollowup(true); }
       }} /> : <main id="overview-main"><h1>Overview is unavailable</h1><p>Connect saved storage to recover your sourcing work.</p></main>)}
       {marketMounted.current && <div hidden={Boolean(overview || followup || messages)}>
       {fromOverview && <Button variant="text" onClick={onOpenOverview}><ArrowLeft size={16} />Back to overview</Button>}
@@ -1173,10 +1173,10 @@ export default function MarketStudy({
         </footer>
       </main>
       </div>}
-          {messages && (persistenceEnabled ? <Messages {...messages} backLabel={fromOverview ? "Back to overview" : undefined} onExplore={onExitFollowup} onSelect={onSelectMessage} onBack={fromOverview ? onOpenOverview : onExitFollowup} onPrepare={onPrepare} onOpenFollowup={onOpenFollowup} /> : <main id="messages-main" className="messages-main"><h1>Messages are unavailable</h1><p>Storage is disconnected.</p><Button onClick={onExitFollowup}>Back to workspace</Button></main>)}
+          {messages && (persistenceEnabled ? <Messages {...messages} backLabel={fromOverview ? "Back to overview" : undefined} onExplore={() => onExitFollowup()} onSelect={onSelectMessage} onBack={() => fromOverview ? onOpenOverview() : onExitFollowup()} onPrepare={onPrepare} onOpenFollowup={onOpenFollowup} /> : <main id="messages-main" className="messages-main"><h1>Messages are unavailable</h1><p>Storage is disconnected.</p><Button onClick={() => onExitFollowup()}>Back to workspace</Button></main>)}
           {!persistenceEnabled && followup && <main id="followup-main" className="followup-main">
-            <Button variant="text" onClick={onExitFollowup}><ArrowLeft size={16} />Back to workspace</Button>
-            <h1>Saved follow-ups are unavailable</h1>
+            <Button variant="text" onClick={() => onExitFollowup()}><ArrowLeft size={16} />Back to workspace</Button>
+            <h1>Saved research is unavailable</h1>
             <p>Storage is disconnected. Return to your workspace to keep exploring.</p>
           </main>}
           {persistenceEnabled && !overview && (
@@ -1187,7 +1187,7 @@ export default function MarketStudy({
               onOpen={(id, requestId) => { setQuestionOpen(false); onOpenFollowup(id, requestId); }}
               onBack={onBackFollowup}
               backLabel={followupBackLabel}
-              onOpenStudy={saved => { openStudy(saved); onExitFollowup(); }}
+              onOpenStudy={saved => { openStudy(saved); onExitFollowup(fromOverview); }}
               ingredient={followupContext.ingredient}
               region={followupContext.region}
               studyId={study.savedContext && sameStudyContext(

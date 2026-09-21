@@ -16,11 +16,19 @@ export default function Workspace({
   type Route = { view: "market" | "overview" | "comparison" | "brand" | "followup" | "messages"; caseId: string | null; requestId?: string; comparisonId: string | null; fromCase: string | null; fromMessage?: string; fromOverview?: boolean; section?: "sources"; runId?: string };
   function readRoute(): Route {
     const params = new URLSearchParams(window.location.search);
-    const requested = params.get("view");
+    // Old intake bookmarks now lead to saved work; questions start in context.
+    const requested = params.get("view") === "followup" && !params.get("case") ? "overview" : params.get("view");
     const view = requested === "overview" || requested === "comparison" || requested === "followup" || requested === "messages" || (import.meta.env.DEV && requested === "brand") ? requested : "market";
     return { view, caseId: params.get("case"), requestId: params.get("message") ?? undefined, comparisonId: params.get("comparison"), fromCase: params.get("fromCase"), fromMessage: params.get("fromMessage") ?? undefined, fromOverview: params.get("from") === "overview", section: params.get("section") === "sources" ? "sources" : undefined, runId: params.get("run") ?? undefined };
   }
   const [route, setRoute] = useState<Route>(readRoute);
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("view") !== "followup" || url.searchParams.get("case")) return;
+    url.searchParams.set("view", "overview");
+    for (const key of ["from", "fromCase", "fromMessage", "message", "comparison", "section", "run"]) url.searchParams.delete(key);
+    window.history.replaceState(window.history.state, "", url);
+  }, [route]);
   const view = route.view;
   const initialDraft = view === "comparison" ? readComparisonDraft() : undefined;
   const [restoredDraft, setRestoredDraft] = useState(initialDraft);
@@ -44,6 +52,9 @@ export default function Workspace({
       setRoute(next);
     }
     window.addEventListener("popstate", restore);
+    // Back can occur while the lazy workspace is mounting after a reload.
+    // Reconcile any navigation that happened before this listener was ready.
+    if (JSON.stringify(readRoute()) !== JSON.stringify(route)) restore();
     return () => window.removeEventListener("popstate", restore);
   }, []);
   useEffect(() => {
@@ -80,21 +91,25 @@ export default function Workspace({
   function openFollowup(id: string | null, requestId?: string, sourceRunId?: string) {
     navigate({ view: "followup", caseId: id, requestId, section: sourceRunId ? "sources" : undefined, runId: sourceRunId, fromOverview: view === "overview" || route.fromOverview, comparisonId: null, fromCase: null, fromMessage: view === "messages" ? route.requestId : undefined });
   }
-  function openMessages(requestId?: string, replace = false) {
-    navigate({ view: "messages", caseId: null, requestId, fromOverview: view === "overview" || route.fromOverview, comparisonId: null, fromCase: null }, replace);
+  function openMessages(requestId?: string, replace = false, fromOverview = Boolean(requestId) && Boolean(view === "overview" || route.fromOverview)) {
+    navigate({ view: "messages", caseId: null, requestId, fromOverview, comparisonId: null, fromCase: null }, replace);
   }
   function openComparison(nextSeed?: PurchaseSeed) {
     setResumeId(null);
     setSeed(nextSeed);
     setRestoredDraft(undefined);
     setComparisonKey(key => key + 1);
-    navigate({ view: "comparison", caseId: null, fromOverview: view === "overview" || (view === "followup" && route.fromOverview), comparisonId: nextSeed?.resumeComparison?.id ?? null, fromCase: view === "followup" ? route.caseId : null, fromMessage: view === "messages" ? route.requestId : undefined });
+    navigate({ view: "comparison", caseId: null, fromOverview: view === "overview" || route.fromOverview, comparisonId: nextSeed?.resumeComparison?.id ?? null, fromCase: view === "followup" ? route.caseId : null, fromMessage: view === "messages" ? route.requestId : undefined });
   }
   function openOverview() { navigate({ view: "overview", caseId: null, comparisonId: null, fromCase: null }); }
+  function openMarket(fromOverview = false) {
+    setResumeId(null);
+    navigate({ view: "market", caseId: null, comparisonId: null, fromCase: null, fromOverview }, view === "market");
+  }
   function backToMarket() {
     setResumeId(null);
     if ((view === "followup" || view === "comparison") && window.history.state?.previous?.view === "market") { window.history.back(); return; }
-    navigate({ view: "market", caseId: null, comparisonId: null, fromCase: null, fromOverview: view === "overview" || route.fromOverview });
+    openMarket();
   }
   function backFromComparison() {
     if (route.fromMessage) openMessages(route.fromMessage);
@@ -133,12 +148,12 @@ export default function Workspace({
           fromOverview={route.fromOverview}
           followup={view === "followup" ? { id: route.caseId, requestId: route.requestId, section: route.section, runId: route.runId, visit } : null}
           onOpenFollowup={openFollowup}
-          onExitFollowup={backToMarket}
+          onExitFollowup={openMarket}
           onBackFollowup={() => route.fromMessage ? openMessages(route.fromMessage) : route.fromOverview ? openOverview() : backToMarket()}
           followupBackLabel={route.fromMessage ? "Back to messages" : route.fromOverview ? "Back to overview" : undefined}
           messages={view === "messages" ? { requestId: route.requestId, visit } : null}
-          onOpenMessages={id => { if (view !== "messages" || id) openMessages(id); }}
-          onSelectMessage={id => openMessages(id, true)}
+          onOpenMessages={id => openMessages(id, view === "messages")}
+          onSelectMessage={id => openMessages(id, true, route.fromOverview)}
           active={view === "market"}
           onPrepare={openComparison}
           onManualExample={() => openComparison()}
@@ -157,7 +172,7 @@ export default function Workspace({
           persistenceEnabled={persistenceEnabled}
           onBack={backFromComparison}
           onOpenMessages={() => openMessages()}
-          backLabel={route.fromMessage ? "Back to messages" : route.fromCase ? "Back to follow-up" : route.fromOverview ? "Back to overview" : "Back to market study"}
+          backLabel={route.fromMessage ? "Back to messages" : route.fromCase ? "Back to research" : route.fromOverview ? "Back to overview" : "Back to market study"}
         />
       ))}
     </>

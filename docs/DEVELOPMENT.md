@@ -13,7 +13,7 @@ npm run dev
 
 For isolated development, choose an anonymous local Convex backend. Confirm the selected project/deployment before reusing existing configuration. `.env.local` holds the CLI selector and the public `VITE_CONVEX_URL`; restart Vite after changing that URL. Without a backend, fixture exploration and calculations remain available, but persistence is unavailable.
 
-The entrance is `/`; `/?view=market` opens the workspace. Messages, follow-ups and comparisons use their own `view` routes. `/?example=pe` preserves the separate Peru fixture and its original PEN/metric evidence. The development-only brand guide is `/?view=brand`.
+The entrance is `/`; `/?view=overview` opens saved work and `/?view=market` opens exploration. Messages, saved research questions and comparisons use their own `view` routes. The legacy `/?view=followup` without a case redirects to Overview; new questions start from the contextual research dialog. `/?example=pe` preserves the separate Peru fixture and its original PEN/metric evidence. The development-only brand guide is `/?view=brand`.
 
 ## Provider configuration
 

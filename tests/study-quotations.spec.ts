@@ -43,7 +43,7 @@ test("consulta de estudio se prepara y recupera sin crear una comparación ni en
   );
   await expect(dialog.getByRole("checkbox")).not.toBeChecked();
   await page.keyboard.press("Escape");
-  await page.getByRole("group", { name: "Follow-up sections" }).getByRole("button", { name: "Overview", exact: true }).click();
+  await page.getByRole("group", { name: "Research sections" }).getByRole("button", { name: "Overview", exact: true }).click();
   const nextStep = page.getByRole("region", {
     name: "Next step for this case",
   });

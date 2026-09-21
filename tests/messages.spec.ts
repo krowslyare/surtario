@@ -131,7 +131,7 @@ test("Messages receives replies reactively and changes a linked comparison only 
   await mail.getByRole("button", { name: "Request history", exact: true }).click();
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.setViewportSize({ width: 1280, height: 720 });
-  await mail.getByRole("button", { name: "Open supplier follow-up", exact: true }).click();
+  await mail.getByRole("button", { name: "Open research question", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`view=followup&case=${caseId}`));
   await expect(page.getByRole("dialog", { name: "Supplier conversation", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");

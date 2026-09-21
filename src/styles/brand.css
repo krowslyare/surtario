@@ -377,9 +377,6 @@ main {
     width: 34px;
     height: 34px;
   }
-  .brand-explore {
-    display: none;
-  }
   .brand-nav .button {
     padding-inline: 8px;
     font-size: 13px;

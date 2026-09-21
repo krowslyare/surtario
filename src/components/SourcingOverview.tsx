@@ -2,7 +2,7 @@ import { Component, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAction, useConvex, useConvexConnectionState, useQueries, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { ConvexError } from "convex/values";
-import { ArrowRight, Check, RefreshCw, Search } from "lucide-react";
+import { ArrowRight, Check, ClipboardCheck, RefreshCw, Search } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import { useDemoSession } from "./useDemoSession";
 import { hasObservedChanges, workStatus } from "../domain/workStatus";
@@ -46,7 +46,7 @@ function useOverview(token: string) {
     if (status.target === "work") {
       if (item.kind === "search") status.action = "Review sources";
       else if (item.kind === "study") status.action = "Open study";
-      else if (item.kind === "case") status.action = "Open follow-up";
+      else if (item.kind === "case") status.action = "Open research question";
     }
     return { ...item, next: status, latest, active, pendingRun, refresh, newSources, changedSources,
       suppliers: [...new Set([...item.suppliers, ...related.flatMap(run => run.sources.flatMap(source => source.supplier ? [source.supplier] : []))])],
@@ -131,9 +131,9 @@ function Connected({ token, ...props }: Props & { token: string }) {
     <p className="overview-scope">{data.limited ? "Recent work only: this session exceeds the overview’s supported record limit." : "Work in this browser session."} A work item can need attention while research continues.</p>
     {!items.length ? <section className="overview-empty"><img src="/brand/surtario-symbol.svg" alt="" width="64" height="64" /><h2>Start with what your kitchen needs.</h2><p>Research an ingredient and delivery area. Your saved studies, supplier conversations and decisions will come together here.</p><Button variant="secondary" onClick={props.onResearch}>Explore suppliers<ArrowRight size={16} /></Button></section> : <>
       <div className={`overview-priorities ${researching.length ? "has-research" : ""}`}>
-        <section aria-labelledby="attention-title"><div className="overview-section-title"><h2 id="attention-title">Needs your attention</h2>{attention.length > 3 && <Button variant="text" onClick={() => chooseFilter("attention")}>See all {attention.length}</Button>}</div>
+        <section aria-labelledby="attention-title"><div className="overview-section-title"><div><h2 id="attention-title">Needs your attention</h2><p>Review what’s holding up your next step.</p></div>{attention.length > 3 && <Button variant="text" onClick={() => chooseFilter("attention")}>See all {attention.length}</Button>}</div>
           {attention.length ? <ul className="overview-attention">{ordered.filter(item => item.next.attention).slice(0, 3).map(item => <li key={item.id}>
-            <p className="overview-ingredient">{item.ingredient}<span>{item.region}</span></p><h3>{item.next.title}</h3><p>{item.next.description}</p>{action(item)}
+            <p className="overview-ingredient">{item.ingredient}<span>{item.region}</span></p><div className="overview-attention-detail"><h3>{item.next.title}</h3><p>{item.next.description}</p></div>{action(item)}
           </li>)}</ul> : <p className="overview-clear"><Check size={20} />No reviews are waiting. Continue any saved work below.</p>}
         </section>
         {researching.length > 0 && <section className="overview-research" aria-labelledby="research-title"><h2 id="research-title">Research in progress</h2>
@@ -141,18 +141,19 @@ function Connected({ token, ...props }: Props & { token: string }) {
             {item.status === "running" && item.caseId && <p>Round {Math.min(item.steps + 1, 6)} of up to 6</p>}<p>{item.active?.retained ?? item.retained} sources retained · {item.active?.interpreted ?? item.interpreted} interpretations</p><Button variant="text" onClick={() => void open(item, "research")}>Open research<ArrowRight size={16} /></Button></article>)}
         </section>}
       </div>
-      <section id="overview-work" aria-labelledby="work-title"><div className="overview-section-title"><h2 id="work-title">All sourcing work</h2>{changed && <Button variant="text" onClick={() => { order.current = desired; rerender(value => value + 1); }}>New activity · update order</Button>}</div>
+      <section id="overview-work" aria-labelledby="work-title"><div className="overview-section-title"><div><h2 id="work-title">All sourcing work</h2><p>Your research, saved studies and supplier conversations.</p></div>{changed && <Button variant="text" onClick={() => { order.current = desired; rerender(value => value + 1); }}>New activity · update order</Button>}</div>
         <div className="overview-toolbar"><label>Find work<input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Ingredient, supplier or location" /></label>
           <label>Sort by<Select aria-label="Sort by" value={sort} onValueChange={value => { setSort(value); order.current = []; }} options={[{ value: "priority", label: "Priority" }, { value: "recent", label: "Recent activity" }]} /></label></div>
         <div className="overview-filters" role="group" aria-label="Work status">{([["all", "All"], ["attention", "Needs attention"], ["researching", "Researching"], ["waiting", "Waiting"]] as const).map(([value, label]) => <Button key={value} variant="text" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</Button>)}</div>
         {!visible.length ? <p>No work matches these filters.</p> : <ul className="overview-work-list">{visible.map(item => <li key={item.id}>
-          <div><button className="overview-work-name" onClick={() => void open(item, "work")}>{item.ingredient}</button><p>{item.region}</p>{item.objective && <p>{item.objective}</p>}<small>{item.kind === "case" ? "Follow-up" : item.kind === "search" ? "Search" : item.kind === "inquiry" ? "Conversation" : item.kind === "comparison" ? "Comparison" : "Study"} · {date(item.updatedAt)}</small></div>
-          <div><strong>{item.next.title}</strong><p>{item.next.description}</p>{item.refresh && <small>Research {item.refresh.status === "running" ? "started" : item.refresh.status === "failed" ? "interrupted" : "updated"} {date(item.refresh.createdAt)} · {item.newSources} new sources · {item.changedSources} {item.changedSources === 1 ? "source" : "sources"} with different interpreted details. Review against the saved evidence.</small>}{item.activeWatches > 0 && <small>{item.activeWatches} active source {item.activeWatches === 1 ? "watch" : "watches"}</small>}</div>
+          <div><button className="overview-work-name" onClick={() => void open(item, "work")}>{item.ingredient}</button><p>{item.region}</p>{item.objective && <p>{item.objective}</p>}<small>{item.kind === "case" ? "Research question" : item.kind === "search" ? "Search" : item.kind === "inquiry" ? "Conversation" : item.kind === "comparison" ? "Comparison" : "Study"} · {date(item.updatedAt)}</small></div>
+          <div><strong>{item.next.title}</strong><p>{item.next.description}</p>{item.refresh && <div className="overview-refresh"><small>Research {item.refresh.status === "running" ? "started" : item.refresh.status === "failed" ? "interrupted" : "updated"} {date(item.refresh.createdAt)}</small><p>{item.refresh.status === "running" ? "Checking for new sources and updated details…" : item.refresh.status === "failed" ? "Research is incomplete. Review the available sources before trying again." : !item.newSources && !item.changedSources ? "No new sources or changed details found." : `${item.newSources} new sources · ${item.changedSources} with different interpreted details. Review against your saved evidence.`}</p></div>}{item.activeWatches > 0 && <small>{item.activeWatches} active source {item.activeWatches === 1 ? "watch" : "watches"}</small>}</div>
           <div className="overview-work-actions">{action(item)}{item.studyId && <Button variant="text" disabled={!connected || !availability?.searchEnabled || item.next.researching || refreshing === item.id} onClick={() => setRefreshItem(item)}><RefreshCw size={15} />{refreshing === item.id ? "Updating research…" : "Update market research"}</Button>}</div>
         </li>)}</ul>}
       </section>
-      <section className="overview-decisions" aria-labelledby="decisions-title"><div className="overview-section-title"><h2 id="decisions-title">Recent decision updates</h2><span>From reviewed supplier replies</span></div>
-        {!outcomes.length ? <p>Confirmed terms and their saved before/after results will appear here.</p> : <div className="overview-outcomes">{outcomes.map(outcome => <article key={outcome.id}>
+    </>}
+      <section className="overview-decisions" aria-labelledby="decisions-title"><div className="overview-section-title"><div><h2 id="decisions-title">Recent decision updates</h2><p>What changed after you confirmed supplier terms.</p></div></div>
+        {!outcomes.length ? <div className="overview-decision-empty"><span className="overview-empty-icon"><ClipboardCheck size={28} aria-hidden="true" /></span><div><h3>No decision updates yet</h3><p>After you review a supplier reply and confirm delivery or minimum order terms, the saved before-and-after comparison will appear here.</p></div></div> : <div className="overview-outcomes">{outcomes.map(outcome => <article key={outcome.id}>
           <p className="eyebrow">{outcome.ingredient} · {outcome.term}</p><h3>{outcome.supplier}</h3>
           <p>{outcome.term === "Minimum confirmed" ? `Minimum: ${outcome.beforeMinimum === null ? "pending" : outcome.beforeMinimum} → ${outcome.value} packs` : `Reviewed delivery fee: ${amount(outcome.value, outcome.currency)}`}</p>
           <p className="overview-order-total">Order total <strong>{amount(outcome.beforeTotal, outcome.currency)} → {amount(outcome.afterTotal, outcome.currency)}</strong></p>
@@ -162,7 +163,6 @@ function Connected({ token, ...props }: Props & { token: string }) {
           <Button variant="text" onClick={() => { const item = items.find(item => item.comparisonId === outcome.comparisonId); if (item) void open(item, "comparison"); }}>Open updated comparison<ArrowRight size={16} /></Button>
         </article>)}</div>}
       </section>
-    </>}
     {refreshItem && <Dialog title="Update market research" onClose={() => setRefreshItem(null)}>
       <p>Search again for <strong>{refreshItem.ingredient}</strong> in <strong>{refreshItem.region}</strong>, including newly listed suppliers and current public details.</p>
       <p>This runs one live search and, when enabled, interprets up to three product pages. New findings are saved for review; your confirmed study and comparison stay as they are.</p>
