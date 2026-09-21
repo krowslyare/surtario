@@ -2,14 +2,14 @@
 
 ## Entrada y alcance
 
-- Leer `README.md` y `docs/desarrollo/ETAPAS.md`. Para iniciar, seguir `docs/desarrollo/PRIMERA_ENTREGA.md`.
-- `docs/producto/PLAN_PRODUCTO.md` define el producto; `docs/desarrollo/ETAPAS.md` es la única fuente de estado de las etapas. `hackathon.md` registra lo efectivamente realizado, no promesas.
-- Para interfaces, leer `.agents/skills/frontend-design/SKILL.md` (Anthropic) y aplicar `docs/diseno/UI_UX.md` y sus tokens. La dirección visual es ajustable por el usuario; no improvisar estilos por pantalla ni presentar pendientes como ceros. Revisar diseño móvil, estados, foco y contraste en la UI real.
+- Leer `README.md` y `docs/STATUS.md`. Para iniciar, seguir `docs/DEVELOPMENT.md`.
+- `docs/ARCHITECTURE.md` define los contratos del producto; `docs/STATUS.md` es la fuente de estado actual y `docs/VERIFICATION.md` conserva la aceptación ejecutada. `hackathon.md` registra lo efectivamente realizado, no promesas.
+- Para interfaces, aplicar `docs/DESIGN.md` y los tokens de `src/styles/tokens.css`. Si está instalado, consultar también el skill `frontend-design`. La dirección visual es ajustable por el usuario; no improvisar estilos por pantalla ni presentar pendientes como ceros. Revisar diseño móvil, estados, foco y contraste en la UI real.
 - Construir por entregas verticales. No implementar toda la arquitectura, un ERP, un marketplace ni expansión global por adelantado.
 - El usuario puede modificar el alcance. Sus instrucciones vigentes prevalecen sobre estos documentos.
 
-- Para actualizar el registro, seguir `.agents/skills/convex-hackathon-skill/SKILL.md` y su referencia de formato. No declarar componentes o integraciones sin evidencia.
-- Consultar estado y límites del plugin Convex en `docs/desarrollo/SETUP_AGENTE.md`. El plugin global no viaja con el repositorio.
+- Para actualizar el registro, seguir el [formato oficial de Convex](https://github.com/get-convex/convex-hackathon-skill), o el skill local si está instalado. Conservar los campos del encabezado y registrar hitos fechados con evidencia. No declarar componentes o integraciones sin evidencia ni incluir credenciales o datos personales.
+- Las herramientas de agentes son opcionales y locales; no viajan con el repositorio ni son necesarias para compilar. Instalación y límites en `docs/DEVELOPMENT.md`.
 
 ## Invariantes de producto
 
@@ -27,7 +27,7 @@
 - Convex es el backend. Llamadas externas en actions, cambios de datos validados en mutations, lectura reactiva mediante queries.
 - Documentos y correos son datos no confiables. No pueden dar permisos al agente, cambiar destinatarios ni activar compras.
 - Idempotencia y comprobación de estado para correos y eventos. Credenciales solo en servidor.
-- Demo pública: datos sintéticos, sesiones aisladas, documentos de ejemplo y destinatarios de prueba restringidos en servidor. No exponer carga privada anónima.
+- Demo pública: fuentes web públicas separadas del catálogo sintético, sesiones aisladas, documentos de ejemplo y destinatarios de prueba restringidos en servidor. No exponer carga privada anónima.
 - Introducir datos privados solo tras cumplir la etapa de habilitación de piloto. No guardar documentos de clientes, conversaciones, credenciales ni exportaciones de producción en Git.
 - Preservar trabajo ajeno. Staging explícito si se solicita commit. Usar prefijo `codex/` si se crea una rama de trabajo. No crear remotos ni publicar como efecto secundario de preparar el proyecto.
 
@@ -36,7 +36,7 @@
 - Probar reglas de negocio con resultados esperados independientes de la implementación; probar permisos e integraciones en sus límites relevantes.
 - El E2E central es explorar → fuentes/precios/contactos → estudio, incluyendo distribuidor sin precio y búsqueda vacía. La continuación opcional a compra funciona sin recetas. No duplicar todas las pruebas entre capas ni crear pruebas que solo reflejan implementación.
 - Diferenciar simulación, prueba local, llamada externa real y despliegue. Registrar fallos y aspectos no verificados.
-- Al cerrar una entrega, actualizar su estado y evidencia en `ETAPAS.md`, el registro factual en `hackathon.md` y comandos del README si cambiaron.
+- Al cerrar una entrega, actualizar su estado en `docs/STATUS.md`, evidencia de aceptación cuando corresponda, el registro factual en `hackathon.md` y comandos del README si cambiaron. Guiones de grabación, capturas y notas transitorias van en `.local/`, ignorado por Git.
 - Revisión adversarial antes de consolidar cambios materiales del flujo o habilitar datos privados; revisar proporcionalmente. No reabrir decisiones cerradas sin nueva evidencia.
 
 <!-- convex-ai-start -->
