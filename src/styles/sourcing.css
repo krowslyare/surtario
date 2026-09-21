@@ -575,9 +575,22 @@
 }
 
 .sourcing-coverage { margin-block: var(--space-4); border-block: 1px solid var(--color-border); padding: var(--space-3) 0; }
-.sourcing-coverage > summary { cursor: pointer; min-height: var(--control-min-height); font-weight: 650; font-size: var(--text-label); }
-.sourcing-coverage > summary:focus-visible { outline: var(--focus-width) solid var(--color-focus); outline-offset: var(--focus-offset); }
+.sourcing-coverage > .disclosure-trigger { font-weight: 650; font-size: var(--text-label); }
 .sourcing-coverage a { color: var(--color-primary); overflow-wrap: anywhere; }
+.sourcing-shortlist { list-style: none; padding: 0; margin-block: var(--space-4); }
+.sourcing-shortlist > li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: var(--space-4); padding-block: var(--space-4); border-top: 1px solid var(--color-border); }
+.sourcing-shortlist-copy > a { font-weight: 650; text-decoration: none; }
+.sourcing-shortlist-copy > a:hover { text-decoration: underline; }
+.sourcing-shortlist-copy > p { max-width: 80ch; margin-block: var(--space-2); }
+.sourcing-shortlist-copy > details { font-size: var(--text-label); color: var(--color-text-muted); }
+.sourcing-reviews .research-source { scroll-margin-top: 120px; }
+@media (max-width: 800px) {
+  .sourcing-reviews .research-source { scroll-margin-top: 196px; }
+}
+@media (max-width: 640px) {
+  .sourcing-shortlist > li { grid-template-columns: minmax(0, 1fr); }
+  .sourcing-shortlist > li > .button { justify-self: start; }
+}
 
 .sourcing-detail-heading > div > p {
   margin: var(--space-2) 0 0;

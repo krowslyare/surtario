@@ -2,659 +2,114 @@
 
 - **Project:** Surtario
 - **Event:** Convex All Gas Hackathon
-- **What it does:** Maintains persistent ingredient-sourcing cases, preserving supplier evidence, reviewed comparisons and decision follow-up from research through confirmed delivery terms.
+- **What it does:** Helps kitchens find suppliers, preserve source evidence, request missing terms and compare complete orders before choosing an offer.
 - **Live app:** https://incredible-wolverine-122.convex.site
 - **Repo:** private
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://incredible-wolverine-122.convex.cloud
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting, @convex-dev/workflow
 - **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, crons, realtime queries
-- **Auth:** Other (capacidad anónima de demo; sin cuentas)
-- **AI models:** gpt-5.6-luna (local Codex CLI rehearsal and bounded direct OpenAI API acceptance; low reasoning)
+- **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
+- **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-20T20:46:38Z
+- **Last updated:** 2026-09-21T01:05:34Z
+
+## Current delivery
+
+The development app has exercised real Firecrawl discovery, direct OpenAI extraction/advice and an AgentMail test-inbox round trip with reactive Convex updates. People review evidence and commercial terms; neither a reply nor a selected offer places a purchase. [Executed acceptance and limits](docs/VERIFICATION.md).
+
+The deployed baseline is PR #38 (`e25a058`). PR #39 contains the acceptance-driven source-navigation refinement and repository cleanup; these changes are not yet claimed deployed. The final narrated video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
 
 ## Log
 
-### 2026-09-07 - working tree
-Se prepararon el plan, revisión adversarial, etapas y primera entrega (`docs/`). La revisión independiente corresponde al plan v1.0; la entrada por insumos y proveedores de v1.1 tuvo revisión de coherencia local. Recetas quedan como extensión opcional.
-Se definieron UI/UX y tokens, se comprobaron contrastes y ejemplos aritméticos del plan. No hay pantallas ni pruebas de aplicación. Demo prevista con datos sintéticos; validación con restaurante pendiente.
-Se contrastaron requisitos y documentación de integraciones; fuentes en el plan. La demo se plantea sin tarifas del SaaS ni paywall. Branding comercial aplazado, conservando colores, tipografía y reglas funcionales.
+Entries below consolidate related build milestones. Commits identify the corresponding implementation or integration; checks are attributed to their actual local, simulated or hosted environment. The [complete pre-consolidation log](https://github.com/krowslyare/restaurant-procurement/blob/cf8e3012599a51426db83b115f447e485c8f7987/hackathon.md) remains in Git history, including individual review corrections and failed attempts.
 
-### 2026-09-07 - b8a2071 · preparación del entorno
-Se copiaron los skills oficiales de diseño y registro en `.agents/skills/`, con licencias y revisiones de origen. Se adaptó este archivo al formato del concurso leyendo directamente el skill; el alias aún no se verificó en una sesión nueva.
-Plugin global oficial Convex 1.10.0 instalado y habilitado, con skills y configuración MCP inspeccionados. Herramientas no disponibles en la sesión actual: reinicio y comprobación de carga pendientes (`docs/desarrollo/SETUP_AGENTE.md`).
-Se conectó el remoto privado y se revisaron los documentos para excluir contexto personal. Hosting seleccionado: `convex.site`, sin aplicación ni componente de hosting configurados. El primer commit registra esta base documental; Started usa su fecha UTC. El registro inicial anterior al commit se basó en evidencia local.
-No se ejecutaron APIs del producto, contactaron proveedores ni desplegó o envió la aplicación al concurso. Próximo hito: verificar la carga de herramientas y comenzar la primera entrega.
+### 2026-09-07 - b8a2071 · Scope and setup
 
+Defined ingredient-first research, optional purchase comparison, deterministic arithmetic and explicit unknown terms. Recipes and restaurant-private data were outside the initial delivery. Prepared design rules and an evidence-based build log; connected a private remote. This was planning and local setup, not a running or deployed application.
 
-### 2026-09-07 - working tree · primera comparación
-Implementada UI React/Vite en español: necesidad editable, hasta cuatro ofertas manuales, origen, estados incompletos y resumen móvil. Cálculos compartidos en `src/domain/procurement.ts`, ejemplo sintético en `fixtures/`; no se guardan compras ni datos entre recargas.
-Revisión adversarial con subagente Sol: corregidos parser de mínimos, precisión de importes y referencia de diferencias. Pruebas de navegador llevaron a corregir foco y nombres accesibles. Tokens trasladados a `src/styles/tokens.css`.
-Instalados AI files del proyecto y creado backend Convex local sin cuenta. `convex/comparison.ts` expone consultas validadas de ejemplo y cálculo; no usa tablas ni servicios externos. Verificados resultados por HTTP local; MCP invocable, pero status aún solicita autenticación.
-Pasaron 27 pruebas de dominio/entrada, 7 de navegador, build/tipos y prueba de consultas locales para 10/18/20 kg, dato faltante y límite de ofertas. Revisión visual de escritorio y móvil; sin validación con restaurantes ni auditoría completa de accesibilidad.
-Persistencia, sincronización entre vistas, extracción, correo y hosting pendientes. No hay despliegue cloud ni entrega al concurso de esta implementación.
+### 2026-09-09 - 846a01d · First comparison and saved studies
 
-Preparación para Git: formato consistente en código y pruebas, licencias de skills administrados conservadas en `third_party/`, configuración de desarrollo separada en el commit `bad7b76`. Se repitieron las 27 pruebas de dominio/entrada y build/tipos después del formato, con resultado satisfactorio.
+Integrated the initial React/Vite workspace, synthetic market exploration, no-price distributors, editable purchase needs and whole-pack calculations developed September 7–8. Added Convex schema/indexes and owner-scoped study queries/mutations, revision checks and idempotent saves. Local browser checks covered reload, multiple tabs and separate sessions; fixtures were not real supplier offers.
 
+### 2026-09-09 - b785ca5 · Research, extraction and reviewed comparisons
 
-### 2026-09-07 - working tree · exploración autónoma
-La entrada permite investigar un insumo/categoría y zona sin documentos ni cantidad, revisar precios de catálogo y distribuidores sin precio y conservar selección temporal. `src/MarketStudy.tsx` y `fixtures/market.ts` filtran exclusivamente datos ficticios; no hay scraping real.
-La continuación a compra exige equivalencia, comienza sin cantidad y conserva condiciones desconocidas y fuente original. Borrador de consulta editable y copiable, sin envío; captura manual como alternativa secundaria. Persistencia y APIs siguen pendientes.
-Plan v1.2 y guía de desarrollo alineados tras revisión adversarial independiente; una segunda pasada estática no detectó nuevos errores materiales dentro de este alcance. Pasaron 32 pruebas de dominio/entrada, 15 de navegador y build/tipos; se revisaron escritorio y móvil. Evidencia en `docs/desarrollo/EXPLORACION_MERCADO.md`.
-Se corrigió Frontend a `not deployed`: Convex static hosting es la elección futura y aún no está configurado. Este bloque no se ha comprometido en Git, publicado ni desplegado; la primera comparación anterior sí quedó en el remoto privado en `9b420f6`. Próximo bloque: estudios persistentes con sesiones aisladas.
+Integrated PRs #2–#5: source evidence, editable AI proposals, saved comparison conditions and Firecrawl/OpenAI action adapters. Convex reconstructs the original source and reviewed values from owned records. Local tests used simulated providers and checked missing credentials, ownership, concurrent edits and preserved provenance; direct API acceptance was still pending.
 
+### 2026-09-09 - 17bcc24 · Guarded mail, documents and CI
 
-### 2026-09-08 - working tree · estudios persistentes
-Implementado guardado y recuperación de estudios sintéticos en Convex local: tabla e índices en `convex/schema.ts`, funciones validadas en `convex/studies.ts` y lista reactiva en `src/components/SavedStudies.tsx`. Precios, contactos y fuentes proceden de fixtures del servidor; no se admiten documentos privados.
-Sesión anónima por capacidad aleatoria, almacenada como hash en servidor; límite de 10 estudios por sesión y 500 en esta demo local. Otra sesión no lista ni modifica estudios ajenos. Revisión requerida para actualizar; reintento idéntico de creación no duplica registros. Esto no implementa cuentas de restaurantes ni prepara por sí solo una publicación pública.
-Pasaron 36 pruebas de dominio/backend, 18 de navegador y build/tipos. E2E contra Convex local comprobó recarga, dos pestañas, otra sesión, conflicto y desconexión. Revisión visual de escritorio y móvil. El proceso existente de desarrollo confirmó funciones e índices; el arranque adicional fue rechazado por puerto ocupado y no se cambió de destino.
-Revisión adversarial independiente cerró dos P2 con regresiones: reintento de contenido distinto y pérdida de selección al volver al ejemplo. La sección de guardado contiene errores para conservar la exploración. Evidencia, comandos y límites actualizados en README y `docs/desarrollo/PERSISTENCIA_ESTUDIOS.md`.
-Sin APIs externas, envío de mensajes, carga privada, despliegue cloud, commit ni push de este bloque. Autenticación comercial, controles públicos completos y fuentes reales permanecen pendientes.
+Integrated PRs #6–#9: approved quotation drafts, server-restricted test recipients, signed/correlated reply handling and bundled synthetic PNG/PDF review. Stored document reviews retain their source and corrections. GitHub Actions runs tests and builds without deploying PRs. Local checks exercised idempotency, uncertain delivery and reply boundaries; no real model or mail call was established by those tests.
 
+### 2026-09-09 - a7aebce · Research without an order and reply follow-through
 
-### 2026-09-08 - working tree · pulido visual
-Nueva dirección visual aplicada a portada, resultados, guardados, comparación y diálogos: tokens índigo/lavanda, tipografía Manrope variable empaquetada localmente e ilustración SVG decorativa de despensa. La portada se compacta al explorar; no se alteraron cálculos, persistencia ni integraciones.
-Se revisaron escritorio y móvil, nombres accesibles y contrastes principales; 15 pruebas de exploración/comparación y build/tipos satisfactorios. Las pruebas de reflujo verifican portada y resultados a 320/390/768/1280 px. Movimiento reducido respetado; sin nuevas solicitudes a servicios externos de fuentes.
-Guía visual y etapas actualizadas. Se corrigió la ruta de importación de la fuente durante el build y un nombre accesible de ayuda en móvil. No hay premio de diseño, auditoría integral de accesibilidad, commit/push ni despliegue de este bloque.
+Integrated PRs #10–#13: request missing terms from a saved study, preserve web distributors without prices, review a linked reply into an offer and compare it alongside existing alternatives. No quantity, recipe or purchase intent is required to start. Incoming mail remains untrusted evidence; explicit review/save is required before changing a comparison.
 
+### 2026-09-09 - df25ef5 · Advisor, recovery and ingredient lists
 
-### 2026-09-08 - working tree · verificación antes de Git
-Se ejecutaron las 36 pruebas de dominio/backend, build/tipos, 18 E2E existentes y smoke de cálculo contra Convex local. Se añadió y ejecutó un ensayo E2E continuo en `tests/studies.spec.ts`: explorar, revisar fuentes/contacto, guardar/recuperar, preparar consulta sin envío, confirmar equivalencia y completar condiciones sintéticas para verificar 10 y 20 kg. Total: 19 recorridos de navegador verificados.
-`npm run test:demo` reproduce el ensayo. Guion objetivo y brechas registrados en `docs/desarrollo/ENSAYO_DEMO.md`; no se grabó video ni se ejecutaron sponsors externos. Reglas oficiales consultadas de nuevo: siguen pendientes integraciones reales, demo pública y materiales de entrega.
-Se prepara commit y push de exploración, persistencia y pulido en la rama de desarrollo. Remoto y visibilidad privada comprobados; el push no cambia visibilidad ni despliega la app.
+Integrated PRs #14–#16: Agent-based advice uses deterministic calculation/evidence tools; operator mail recovery reconciles verified provider receipts without resending. Reviewed ingredient lists preserve selected names/provenance while file bytes remain local. Ownership, stale revisions, ambiguous correspondence and recovery were tested locally with synthetic inputs.
 
-### 2026-09-08 - working tree · revisión de composición
-La exploración ahora abre con el buscador y un ejemplo concreto, sin eslóganes ni ilustración grande. `src/MarketStudy.tsx` destaca el precio normalizado junto al importe y contenido del empaque; conserva fuentes, fechas y datos pendientes. `src/styles/app.css` reúne los resultados en una lista compacta y mantiene accesible el estudio al desplazarse. Se actualizaron la guía visual, README y etapas.
-Build/tipos y 19 pruebas E2E satisfactorios, incluido el ensayo completo de demo. Revisión visual en escritorio y móvil; reflujo automatizado de 320 a 1280 px. Solo cambios locales de presentación: sin cambios de backend, llamadas a sponsors, commit, push ni despliegue en este bloque.
+### 2026-09-09 - 18a3d5f · First real provider checks and development hosting
 
-### 2026-09-08 - working tree · entrada local de insumos
-Se implementó `IngredientIntake` con listas manuales, XLSX/CSV, selección de hoja/columna y revisión editable. Fotos/PDF permiten transcripción manual con origen local; OpenAI sigue pendiente. El parser de `src/intake/` corre en Worker cancelable. Se conservan archivo, hoja, columna y fila; no se suben archivos ni se convierten celdas en ofertas. Cambiar de insumo desde una selección existente exige iniciar otro estudio para evitar mezclas.
-41 pruebas de dominio/backend, 24 E2E y build satisfactorios. Pruebas nuevas con XLSX sintético de dos hojas, CSV, foto manual, cancelación, archivo inválido y separación de estudio. Revisión visual en escritorio/móvil y adversarial de procedencia y cambio de insumo. Los fallos iniciales de selectores accesibles se corrigieron sin relajar aserciones. Lista y documento permanecen transitorios en navegador; sin nuevas funciones Convex, sponsors reales, commit, push ni despliegue. Alcance en `docs/desarrollo/ENTRADA_INSUMOS.md`.
+Published the first development frontend through the registered Static Hosting component. Real Firecrawl returned three public sources. One approved synthetic AgentMail request and reply passed through owned test inboxes and the signed webhook; replay did not duplicate the reply. Manual review/save/reload preserved PEN 4.80/kg and PEN 96 for 20 kg.
 
-### 2026-09-08 - working tree · preparación interna de descubrimiento
-El bloque de entrada/UI fue subido en `6402ef5` y se abrió el PR 1 en borrador, sin merge ni cambio de visibilidad. Se implementaron `convex/discovery.ts` y el adaptador Firecrawl en `convex/lib/`: búsqueda de hasta tres fuentes con texto acotado, validación de respuesta, timeout y sin reintentos automáticos. La action es interna, no persiste resultados ni se expone a visitantes.
-47 tests y build satisfactorios. Convex local cargó la action; una invocación sin clave se detuvo antes de llamar al proveedor, y el cliente público no pudo invocarla. No hay llamada real Firecrawl ni claves configuradas. La UI y persistencia siguen usando ejemplos. Configuración del backend y pasos para OpenAI/AgentMail documentados en `docs/desarrollo/INTEGRACIONES.md`; estos dos conectores siguen pendientes. Sin despliegue público.
+Served assets, SPA fallback, missing-asset 404 and unsigned-webhook rejection passed. OpenAI extraction/advice remained unavailable; this was partial integration acceptance, not the complete hosted journey. Repository visibility and production were unchanged.
 
-### 2026-09-08 - working tree · extracción y revisión separadas
-En `codex/extraction-review`, se agregó una prueba interna OpenAI usando Agent con dos textos sintéticos, sin herramientas, threads ni mensajes guardados. Clave y modelo se leen del entorno tipado de Convex; no hay modelo configurado ni llamada real. El esquema cerrado requiere evidencia literal y conserva datos ausentes. Convex local cargó el componente/action, rechazó la prueba sin credenciales y negó su invocación por cliente público.
-La UI muestra una revisión simulada: texto original, propuesta, evidencia, correcciones y confirmación. Permite continuar a comparación con cantidad vacía y condiciones pendientes. Se separaron propuesta extraída y baseline confirmado tras revisión adversarial; prueba de corrección 80 a 85 y etiquetas específicas evitan presentar la corrección como original del documento. No conecta archivos reales ni implementa OCR.
-53 tests de dominio/backend, 26 E2E y build satisfactorios. Revisión visual de escritorio/móvil; se corrigió el ancho de diálogo y se añadió comprobación de reflujo. Alcance y comandos en `docs/desarrollo/EXTRACCION_REVISION.md`. Se prepara un PR dependiente del PR 1, sin sumar este corte a su rama ni fusionarlo. Sin despliegue público; persistencia de decisiones y correo permanecen para entregas posteriores.
+### 2026-09-09 - d95fe30 · Local Luna rehearsal
 
-### 2026-09-08 - working tree · comparaciones y elección
-Implementados guardado/recuperación de comparaciones sintéticas, condiciones y opción elegida en Convex local (`convex/comparisons.ts`, `src/components/SavedComparisons.tsx`). Elegir no registra compra. Se conserva evidencia original, aislamiento por capacidad y revisión optimista; carga privada continúa deshabilitada.
-Revisión adversarial independiente detectó y verificó correcciones de conservación de fuentes y validación contra snapshots históricos. UI conserva el borrador ante confirmación tardía y exige nueva elección al cambiar condiciones.
-Pasaron 58 pruebas de dominio/backend, 30 E2E del conjunto completo y una regresión adicional de confirmación tardía; build correcto. Query local ejecutada y revisión visual de escritorio/móvil realizada. Entrega en rama independiente sobre extracción/revisión; sin APIs externas reales, publicación ni despliegue remoto.
+Reorganized the sourcing workspace and added an isolated Codex CLI bridge. Six real Luna CLI calls exercised structured extraction and advice while web/mail transports were simulated. The rehearsal exposed missing Agent context and stale evidence overriding confirmed terms; both were corrected. PNG/PDF review, saved studies and reply-to-comparison were traversed in Chrome.
 
-### 2026-09-08 - working tree · investigación web conectada
-Conectados búsqueda Firecrawl y extracción explícita OpenAI con revisión UI; fuentes y propuestas guardadas en `researchRuns`, con URL/fecha, aislamiento por capacidad, reservas idempotentes y límites de consumo (`convex/research.ts`, `src/components/LiveResearch.tsx`). Habilitación de servidor separada de claves; sin llamadas externas ejecutadas.
-Las ofertas revisadas pasan a comparación tras validar equivalencia; originales y correcciones quedan diferenciados. Las correcciones web siguen transitorias y no se habilitan documentos privados ni correo. Revisión adversarial independiente llevó a corregir guardado incierto del modelo y estados reactivos atrasados.
-65 pruebas de dominio/backend, 33 E2E y build satisfactorios; flujo positivo con respuestas simuladas, consulta de estado real en Convex local y revisión visual móvil. Sin publicación ni despliegue remoto.
+138 domain/backend tests and 51 browser journeys passed. A PDF renderer failure was resolved through local font configuration and an explicit retry. This was local CLI rehearsal, not direct OpenAI API acceptance or externally delivered mail.
 
-### 2026-09-08 - working tree · persistencia de revisión web
-Extendido el guardado de comparaciones a revisiones vinculadas a investigaciones de la sesión (`convex/comparisons.ts`). El servidor reconstruye texto, URL, propuesta original y revisión desde referencias verificadas. Condiciones y elección se recuperan sin registrar compra; archivos privados siguen excluidos.
-Corregidas igualdad de evidencia en reintentos y validación de condiciones editables. Revisión adversarial independiente completada sin hallazgos materiales pendientes. 68 pruebas de dominio/backend, 34 E2E y build correctos; recorrido de corrección, guardado y recarga ejecutado en Convex local con fuente sintética. Sin llamadas externas ni despliegue público.
+### 2026-09-10 - 4991570 · Source quality and integrated publication
 
+Integrated PRs #21–#26: improved Firecrawl product/catalog discrimination, bounded page reading, retained distributor candidates and linked-reply extraction. Cross-page metadata no longer supplies another product's evidence; reactive reply suggestions preserve manual edits. Local verification reached 175 domain/backend tests, with focused browser checks and earlier full-suite coverage.
 
-### 2026-09-08 - working tree · cotizaciones de prueba
-Solicitud persistente desde comparación guardada, revisión de texto/destino, copia manual para WhatsApp y envío AgentMail restringido por servidor (`convex/quotationMail.ts`, `src/components/QuotationMail.tsx`). Las respuestas requieren firma válida y correlación por buzón, hilo y remitente; duplicados y eventos sin correspondencia quedan separados. Recibir no modifica precios ni registra compras.
-Revisión adversarial de aislamiento e idempotencia; corregidos límites de respuesta, estados inciertos, hilos ambiguos y campos incompatibles en persistencia. 77 pruebas de dominio/backend, 35 E2E y build correctos. Envíos y webhooks probados con transporte/payloads sintéticos; borrador, recarga, portapapeles y móvil probados contra Convex local.
-Estado local confirmó correo deshabilitado. Sin credenciales, envíos reales, registro externo de webhook ni despliegue público. Configuración y reconciliación pendiente documentadas en `docs/desarrollo/AGENTMAIL.md`. Se prepara PR separado sobre persistencia de revisión web.
+Published reviewed main to development and verified all eight served files against build hashes, SPA routing and webhook rejection. A hosted synthetic study with a priced offer and no-price distributor survived reload. Direct OpenAI and the combined live journey remained pending.
 
+### 2026-09-13 - 40af5ac · Surtario identity and decision flow
 
-### 2026-09-08 - working tree · verificación de PR y entrega de integraciones
-Añadido workflow GitHub Actions de instalación reproducible, 77 tests de dominio/backend y build/tipos, sin secretos ni despliegue. Las actions quedan fijadas por SHA y el token solo tiene lectura. E2E con Convex local siguen separados del check automatizado.
-Actualizadas las guías de integraciones, README, etapas y guion del video para reflejar búsqueda, revisión persistente y correo ya implementados. Las llamadas reales, hosting y grabación siguen pendientes. Tests y build comprobados localmente; ejecución remota del workflow se verifica en el PR.
+Integrated English-first US workflows with explicit USD/lb context, conversion only between supported physical units, a separate preserved Peru fixture, and finding-to-decision follow-through. Added the product landing and sourcing walkthrough. The Surtario identity and shared controls replaced earlier visual experiments; prices, saved findings and completed purchases remained separate facts.
 
+### 2026-09-14 - 5ca161e · Persistent sourcing follow-ups
 
-### 2026-09-08 - working tree · lectura multimodal de ejemplos
-Añadida lectura de imagen/PDF sintéticos mediante Agent/OpenAI en `convex/documents.ts` y `convex/lib/documentExtraction.ts`. El servidor envía los bytes del archivo, clasifica el documento y conserva transcripción/propuesta por sesión. Revisión con original visible, correcciones y confirmación antes de comparar; una compra/lista no se convierte en oferta.
-Revisión adversarial local de acceso, consumo y procedencia: API limitada a archivos sintéticos del servidor, reservas idempotentes, cuotas y errores sin reintento automático. Las citas contra transcripción generada no se presentan como verificación visual. 84 tests y build correctos; 36 E2E completos más un caso positivo adicional de lectura simulada. Original y revisión móvil inspeccionados.
-Sin llamadas reales a OpenAI ni carga privada. Resultado del modelo persistente; correcciones y comparación derivada de documentos todavía transitorias. Alcance y límites en `docs/desarrollo/LECTURA_DOCUMENTOS.md`. Sin despliegue público.
+Added owned sourcing cases and durable Workflow research with saved questions, rounds, source evidence and activity. Optional selected-source watches produce review proposals rather than silently changing prices. Local tests covered bounded work, cancellation, ownership and state recovery. Implementation of monitoring did not prove a seven-day live watch.
 
+### 2026-09-15 - 07ca592 · Reply-confirmed delivery and cloud acceptance
 
-### 2026-09-08 - working tree · persistencia de revisión documental
-Conectado el guardado de comparaciones derivadas de foto/PDF sintéticos. Convex reconstruye fuente y propuesta desde una lectura completa de la sesión y conserva revisión confirmada, condiciones posteriores y elección. Referencias ajenas, tipos distintos de cotización y correcciones inválidas se rechazan; las actualizaciones preservan procedencia y revisión optimista.
-87 tests de dominio/backend, 38 E2E y build satisfactorios. Recorrido local comprobó corrección 80 a 85, flete 15, total 100, elección, recarga y enlace al PDF. Revisión adversarial local de propiedad, procedencia y reintentos; sin llamadas a OpenAI ni carga privada. La CLI rechazó el selector local explícito para el backend anónimo; la importación sintética acotada funcionó con el destino existente verificado, sin reemplazar registros.
+A linked reply can confirm a specific freight term through an ownership/revision-checked mutation, retaining the excerpt and before/after deterministic reports. Hosted acceptance used real Firecrawl plus two approved AgentMail test requests and three signed replies. A manually reviewed 40 lb order changed from unknown freight to USD 40 total and recovered its selection after reload.
 
+OpenAI was still unavailable. The acceptance exposed lost candidate/comparison continuity and excessive email text; focused UI fixes and seven browser journeys addressed them. The integrated branch passed 233 domain/backend tests and added guarded main-only development publication; no private pilot or production release was claimed.
 
-### 2026-09-09 - working tree · consulta desde estudio sin precio
-Las solicitudes de catálogo pueden partir de un distribuidor de un estudio guardado, sin comparación, precio ni cantidad. Convex valida propiedad y pertenencia y conserva la referencia al estudio; destinatario fijado en servidor y confirmación explícita previos al envío. La copia manual queda diferenciada del borrador de correo.
-88 tests y build satisfactorios. En 39 E2E, 37 pasaron inicialmente y dos avisos antiguos fallaron tras cambiar el texto; actualizadas esas expectativas, pasaron las 13 pruebas afectadas de mercado/estudios, incluido el nuevo recorrido de creación y recarga. Revisión adversarial local de referencias, compatibilidad con solicitudes anteriores y autorización; sin envíos reales ni despliegue.
-Alcance: distribuidores de estudios sintéticos persistidos. La búsqueda web libre aún no admite este contrato de distribuidor. Detalles en `docs/desarrollo/AGENTMAIL.md`.
+### 2026-09-16 - c417f56 · Branded workspace arrival
 
+Added the restrained Surtario entrance and brand-consistent controls with keyboard and reduced-motion behavior. The brand guide stayed development-only. Later reload testing refined when this entrance should run; it was not intended to replace normal loading on every navigation.
 
-### 2026-09-09 - working tree · candidatos web y consulta
-Una fuente de investigación web completada puede conservarse como distribuidor candidato sin precio ni extracción. `convex/prospects.ts` reconstruye enlace, fecha e insumo desde la fuente de la sesión; nombre y contacto son anotaciones revisadas. Biblioteca reactiva y consulta vinculada al candidato, sin transformar el contacto en destinatario autorizado.
-90 tests, 40 E2E y build satisfactorios. Recorrido local con respuesta web sintética: guardar candidato sin markdown, recargar, preparar consulta y recuperar borrador; revisión móvil realizada. Revisión adversarial local de propiedad, referencias, idempotencia y separación de contacto/envío. Sin llamadas externas ni despliegue; pertinencia de fuentes reales pendiente de credenciales.
+### 2026-09-19 - 71c3fd2 · Adaptive evidence and saved-case decisions
 
+Integrated broader Firecrawl discovery and adaptive research from PR #35, followed by PR #36's saved comparison, missing-condition and decision continuity. Source budgets, independent price domains and explicit coverage gaps guide bounded research; they do not prove exhaustive coverage or local delivery. Review corrections addressed evidence provenance, stale state and follow-up navigation.
 
-### 2026-09-09 - working tree · respuesta a oferta revisada
-Una respuesta vinculada permite preparar una oferta mediante revisión manual explícita, abrir una comparación nueva y guardarla en Convex. El servidor reconstruye el correo por solicitud/mensaje de la sesión y conserva campos confirmados, condiciones y elección sin sobrescribir la comparación anterior ni registrar compra.
-92 tests, 41 E2E y build satisfactorios. Recorrido con correo sintético en Convex local: abrir respuesta, transcribir, confirmar, guardar y recargar con texto original y corrección separados. Corregida etiqueta accesible del selector y revisión móvil completada. Revisión adversarial local de propiedad, procedencia, respuestas no vinculadas y reintentos.
-Sin lectura automática del correo por OpenAI ni envíos reales. No combina automáticamente la nueva oferta con otras comparaciones. Alcance en `docs/desarrollo/RESPUESTA_A_OFERTA.md`; sin despliegue público.
+### 2026-09-19 - 637e9ca · Direct API and complete local integration
 
+Direct Luna low acceptance through local Convex actions exercised clear/ambiguous text, a synthetic image and a real Firecrawl product page. Four initial calls recorded 6,896 input and 1,228 output tokens; those counts are not the total cost of later testing. An AgentMail inbox-read 403 was diagnosed separately from send/receive capability, and a local receiver subsequently completed an approved real test-mail round trip.
 
-### 2026-09-09 - working tree · comparar respuesta con ofertas existentes
-La revisión de una respuesta permite añadirla a la comparación guardada actual con confirmación explícita de equivalencia. Se conservan cantidad y fuentes anteriores, se elimina la elección y se exige guardar los cambios. El servidor reconstruye el correo de la sesión y comprueba identidad, moneda, duplicados, límite de cuatro fuentes y revisión vigente.
-94 tests de dominio/backend, 42 E2E y build satisfactorios. Recorridos locales con correo sintético prueban ambas opciones: comparación nueva e incorporación a la existente, guardado y recarga con procedencia. Revisión adversarial local de propiedad, validación de equivalencia, historial y elección; revisión móvil sin desbordamiento horizontal.
-La lectura del correo sigue siendo manual. No hubo envíos ni llamadas externas, despliegue o habilitación de documentos privados. Contrato actualizado en `docs/desarrollo/RESPUESTA_A_OFERTA.md`.
+Integrated live search checkpoints, reviewed reply recovery, branded email and broader discovery. Quick search retains up to 30 sources and initially interprets up to three; advanced research allows six rounds with six interpretations per round. Actual useful coverage varies. Commercial test terms remained synthetic; no real supplier was contacted or purchase recorded.
 
-### 2026-09-09 - working tree · correcciones de revisión del PR 1
-Corregidos tres hallazgos de Codex: unidad de empaque desconocida conservada como pendiente, mínimo sin valor supuesto al crear una oferta y resumen por grupos completos de la misma moneda. Una oferta incompleta o en otra moneda no oculta la comparación válida de las demás.
-47 tests y build aprobados en el checkout del PR 1; 8 E2E de comparación aprobados en un servidor frontal aislado, incluida regresión de campos pendientes y tercera oferta. Sin cambios de backend ni llamadas externas. Nueva ronda de revisión solicitada tras publicar el commit; merge todavía pendiente.
+### 2026-09-20 - e25a058 · Coherent navigation, messages and recovery
 
+PR #38 separated persistent follow-ups from the main results, added a discoverable Messages inbox, grouped source review and animated disclosures, and improved search history, loading/completion and mobile layouts. F5 recovers workspace context without replaying the landing arrival or restarting provider work. Comparison recovery preserves raw inputs, preferences and the original selection.
 
-### 2026-09-09 - working tree · segunda ronda del PR 1
-Corregido el cierre accidental al pulsar el espacio interior del diálogo; el fondo exterior sigue cerrándolo. La fecha de una oferta manual usa el calendario local del navegador, evitando avanzar de día por UTC durante la noche peruana.
-47 tests, build y 9 E2E de comparación aprobados. Regresión con reloj fijo a las 21:30 de Lima comprueba fecha, conservación del formulario y cierre exterior. La primera expectativa de mes usó una abreviatura distinta de es-PE; corregida a set. manteniendo día y año. Sin cambios de backend ni llamadas externas. Nueva revisión pendiente antes del merge.
+Both Codex recovery findings were reproduced and corrected. Verification passed 320 domain/backend tests in 49 files, focused browser journeys, TypeScript/build and 35-file hosting checks, with desktop/mobile inspection. PR #38 merged and its development publication succeeded; frontend tests themselves did not establish live-provider acceptance.
 
+### 2026-09-20 - cf8e301 · Hosted direct-API acceptance
 
-### 2026-09-09 - working tree · PR 2 review preparation
-Merged main into the extraction review branch to retain the five reviewed PR 1 fixes. Resolved documentation conflicts by preserving both delivery records. Integrated revision passed 53 domain/backend tests, build, and 11 comparison/extraction E2E tests on an isolated frontend. No external calls or deployment. PR 2 will be reviewed against main; subsequent PRs remain drafts.
+Configured the authorized development deployment for Luna low and completed a fresh Firecrawl search: 21 candidates, 16 readable and three initial interpretations. Saved/reopened two distinct reviewed offers plus a no-price candidate. A separate six-round workflow retained 21 unique sources, interpreted 15 and found prices on seven independent domains in 210.288 seconds; its budget stop and specification differences stayed explicit.
 
+One approved AgentMail inquiry and actual test-inbox reply reached the signed webhook and updated Messages without reload. One AI reply extraction was reviewed/saved. Synthetic terms for 60 lb produced three 25 lb packs, 15 lb excess and USD 66 including delivery; unconfirmed timing correctly blocked selection. One advisor call used both `evaluateScenarios` and `readEvidence`; changing quantity made it stale, and restoring inputs recovered the matching analysis without another call.
 
-### 2026-09-09 - working tree · PR 3 local review
-Integrated the reviewed main branch into comparison persistence. An independent Sol 5.6 review, adjudicated by Astra, identified stale save notices after restoring a draft. Save success and error notices now clear when the draft identity changes, while late responses retain their existing handling.
-58 domain/backend tests and build passed. Eleven comparison/extraction browser checks passed before the notice fix; five persistence browser checks passed after it, including restored-draft notice and delayed-response coverage. Persistence UI checks used the existing local backend, which contains later implementation code; the PR-specific backend was exercised with convex-test.
-No GitHub bot review was requested. Local review found no confirmed ownership or persistence blocker. No external provider call, private-data enablement, or deployment was performed.
+Read-only fresh-session checks denied access to owned records. Source watches stayed disabled and exact dollar spend was not measured. The acceptance exposed hidden accumulated findings: the frontend now opens the all-round summary and jumps to each finding's original review. Local 1920/390/320 px checks, all 320 tests and hosting validation passed; this PR #39 refinement is separate from the deployed baseline. [Detailed evidence](docs/VERIFICATION.md).
 
+### 2026-09-21 - f37df58 · Repository handoff
 
-### 2026-09-09 - working tree · PR 4 local review
-Integrated reviewed main into bounded web research. Independent Sol 5.6 review and Astra adjudication found no material actionable defects in reservation/idempotency, ownership, uncertain extraction persistence or reactive UI reconciliation. A speculative transient double-click notice was not treated as a blocker.
-65 domain/backend tests, build and all 35 E2E checks passed on the integrated revision. Provider responses and the research UI transport were simulated; persistence browser tests used the existing local backend, which includes later implementation code. The PR-specific backend was tested in memory with convex-test.
-No GitHub review bot was invoked, no real provider requests were made, and no private uploads or public deployment were enabled. Reviewed web corrections remain transient in this delivery.
+Consolidated public documentation into five guides and a shorter README with a workflow diagram. Recording drafts, older plans and audit output were preserved locally before removal from the tracked tree; installed agent tools remain local and ignored. The full earlier log remains available in Git history. Updated contributor/setup links and corrected the outdated research-limit example without changing runtime behavior.
 
-
-### 2026-09-09 - working tree · PR 5 local review
-Integrated reviewed main into persisted web-offer reviews. Independent Sol 5.6 review and Astra adjudication found no material findings in ownership, server source reconstruction, immutable evidence, idempotency, revisions or frontend serialization.
-68 domain/backend tests and build passed. Thirty-five E2E checks passed in the full run; the web-persistence case initially failed before setup because the isolated checkout could not locate the anonymous backend. It passed after a temporary CLI working-directory adjustment using the original local checkout configuration; the adjustment was removed. The 36 browser cases therefore passed across those runs.
-The new browser case verified correction, delivery, total, choice and original evidence after reload against the existing local backend with later implementation code. PR-specific backend tests ran in memory. No real provider calls, GitHub bot review or deployment.
-
-
-### 2026-09-09 - working tree · PR 6 local review
-Integrated reviewed main into quotation requests. Independent Sol 5.6 review and Astra adjudication identified valid signed long replies failing the persistence text limit. The webhook now retains bounded text with an explicit truncation notice instead of returning a repeatable server error.
-78 domain/backend tests and build passed, including a signed long-reply regression. Six focused browser checks passed for quotation drafting, reload, clipboard, mobile layout and comparison persistence; the browser used the existing local backend with later implementation code. Exact PR backend behavior was tested in memory with simulated mail transport.
-No GitHub review bot, actual mail send, external webhook registration or deployment was performed. Real AgentMail round-trip validation remains pending.
-
-
-### 2026-09-09 - working tree · PR 7 review preparation
-Integrated reviewed main into CI and integration handoff documentation, preserving the quotation webhook fix. The workflow runs dependency installation, in-memory tests and build with read-only permissions and pinned actions; no provider secrets or deployment steps.
-78 domain/backend tests and build passed locally. Removed a stale browser-test count from the new README guidance. CI for the integrated head remains to be verified; local tests do not establish hosted or external-provider behavior.
-
-
-### 2026-09-09 - working tree · PR 8 local review
-Integrated reviewed main into synthetic image/PDF extraction. Sol review and parent adjudication corrected comparison labels that misrepresented documents as public web pages; labels now refer to their recorded source. The PNG preview represents the same PDF content, verified against the fixture. Human review and server-owned file limits remain enforced.
-85 domain/backend tests and build passed. 2 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
-
-
-### 2026-09-09 - working tree · PR 9 local review
-Integrated reviewed document extraction into persisted document comparisons. Sol review and parent adjudication found no additional material issues. The browser seed command temporarily used the original local checkout configuration; that test-only adjustment was removed.
-88 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
-
-
-### 2026-09-09 - working tree · PR 10 local review
-Integrated reviewed main into catalog requests from saved studies. Sol review and parent adjudication found no material issues in ownership, origin-bound retries, fixed test recipients or explicit send approval.
-89 domain/backend tests and build passed. 2 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
-
-
-### 2026-09-09 - working tree · PR 11 local review
-Integrated reviewed main into web distributor candidates and linked inquiries. Sol review and parent adjudication found no material issues. Sources are reconstructed from owned research, and found contacts never authorize email delivery. The temporary local CLI working-directory adjustment for browser setup was removed.
-91 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
-
-
-### 2026-09-09 - working tree · PR 12 local review
-Integrated reviewed main into manually reviewed reply offers. Sol review identified misleading source labels and malformed reply dates; inherited neutral provenance labels and pending-date handling now preserve unknown dates without crashing or substituting request dates. Regression covers persisted malformed reply dates and browser recovery. Temporary browser CLI setup adjustment removed.
-94 domain/backend tests and build passed. 1 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
-
-
-### 2026-09-09 - working tree · PR 13 local review
-Integrated reviewed main into adding reply offers to existing comparisons. Sol review found a stale-query save bug; the client now tracks confirmed server revisions so a second save does not append an already persisted reply. Parent adjudicated and tested the fix. Final browser suite passed 43 cases initially; the remaining web-source link selector was updated for the corrected provenance label and then passed. All 44 cases passed across those runs, including the demo rehearsal. Temporary CLI setup adjustments were removed.
-97 domain/backend tests and build passed. 44 focused browser checks passed using synthetic data and the existing local backend where needed; that backend includes later implementation code. Exact PR backend tests ran in memory. No real provider calls or deployment.
-
-
-### 2026-09-09 - working tree · purchasing advisor
-Added cash/coverage scenarios, optional decision context, executive advice and a copyable negotiation draft. Owned Convex snapshots retain inputs, revision and evidence; the interface marks changed analyses stale.
-The registered Agent component now has bounded read-only scenario/evidence tools. Its provider action remains disabled without explicit server configuration; no model call, purchase or message was executed.
-Independent Sol review found removed-source and mixed-currency issues, corrected with regressions. 110 domain/backend tests, build and eight focused browser checks passed locally, including snapshot recovery and mobile/desktop layouts. External provider E2E and public deployment remain pending.
-
-
-### 2026-09-09 - working tree · operator mail recovery
-Added internal recovery inspection, verified sent-receipt reconciliation and quarantined-reply linking. Frozen-route validation and idempotency preserve request ownership; no recovery path calls a provider or resends mail.
-Independent review found unreachable old queue entries and duplicate receipt assignment; both now have regression coverage. 116 combined domain/backend tests, frontend/backend typechecks and build passed. Live delivery and webhook verification with AgentMail remain pending.
-
-
-### 2026-09-09 - working tree · saved ingredient lists
-Added session-owned storage of reviewed manual/XLSX/CSV ingredient names and recovery after reload. File bytes, other columns and document transcriptions are not part of the stored contract.
-Parent review caught a late-save confirmation affecting a replacement queue; a browser regression now verifies the correction. 121 combined domain/backend tests, build and ten focused browser cases passed against an isolated local Convex backend. No external provider calls or deployment.
-
-
-### 2026-09-09 - working tree · hosting preparation
-Registered the official static-hosting component while preserving the exact AgentMail webhook route. The local readiness command builds Vite, resolves referenced assets and checks for backend secret variable names in the bundle; a router test verifies the disabled webhook response alongside the static GET fallback.
-Preparation only: no cloud deployment or asset upload occurred. Provider capabilities remain disabled by default. Hosting and provider execution procedures are documented separately.
-
-
-### 2026-09-09 - working tree · complete local demo verification
-Integrated the advisor, mail recovery, saved lists and hosting preparation. Fixed an initial-save race that reset purchasing context, with a browser regression covering context entered before the comparison is saved. Local E2E configuration now pins the selected anonymous backend and permits the separate Vite socket; shared snapshot imports run sequentially.
-122 domain/backend tests, frontend/backend typechecks, the hosting build/asset check and all 49 browser journeys passed. The full flow includes source review, stored comparisons, synthetic documents/replies, purchasing scenarios, session isolation and the demo rehearsal.
-README and provider acceptance instructions were refreshed in English. No real provider request, email delivery, cloud deployment, public repository change or video submission occurred. Those checks remain the next stage after credentials are configured.
-
-
-### 2026-09-09 - working tree · PR 14 local review
-Preserved decision context during the first comparison save and added scheduled recovery for interrupted advisor executions. Expiry keeps deterministic results and prevents a late model completion from replacing a failed state; it never retries a provider.
-Independent Sol review was adjudicated and corrected. 112 domain/backend tests, frontend/backend typechecks, build and three advisor browser journeys passed. Browser checks used the existing synthetic local backend; changed backend behavior was verified in memory. No real provider calls or public deployment.
-
-
-### 2026-09-09 - working tree · final local PR reviews
-Completed independent Sol reviews with parent adjudication for advisor, mail recovery, saved lists and hosting. Corrected interrupted advisor execution and moved the first-save context fix into the advisor delivery. Recovery and list reviews found no further material issues.
-Hardened browser tests against an already-running frontend connected to another local backend; all persistence socket guards now enforce the selected origin, including delayed-response tests. The occupied-port check and socket rejection tests passed.
-126 unit/backend tests, frontend/backend typechecks, hosting checks and all 49 browser journeys passed on the combined code. Updated functions were accepted by the anonymous local backend. External providers remained simulated or disabled; no cloud deployment, real email, public visibility change or submission.
-
-
-### 2026-09-09 - working tree · real provider checks and development preview
-Configured a dedicated Convex cloud development deployment and server-only provider secrets through the authorized Chrome consoles. A real Firecrawl probe returned three Peruvian catalog sources; OpenAI extraction and price/coverage validation remain pending.
-An approved synthetic AgentMail request reached an owned test inbox. Its reply linked through the signed webhook (`200 Accepted`); replaying the same event succeeded without duplicating the reply. Manual offer review, save and recovery preserved PEN 4.80/kg and PEN 96 for 20 kg. No purchase was recorded.
-Published the development frontend through the registered static hosting component. Build-matching root/assets, SPA fallback, missing-asset 404 and unsigned-webhook rejection passed. Chrome recovered a hosted study in a fresh page; the hosted session stayed separate from the localhost study. Corrected the footer's fixed unsent-message claim and added an explicit development upload command.
-OpenAI account/model configuration, document extraction, advisor tool execution and the complete hosted provider journey remain unverified. Provider latency was not instrumented. Repository visibility, production and contest submission were unchanged. Evidence: `docs/desarrollo/CREDENTIALS_AND_E2E.md`, `HOSTING.md` and stage status in `ETAPAS.md`.
-
-
-### 2026-09-09 - working tree · procurement workspace experience
-Reorganized research around the search and supplier evidence, with study tools alongside on desktop and after results on mobile. Comparison quantity now precedes saving; document tools use a disclosure that preserves the review draft.
-Applied forest/sage tokens, a shared SVG mark, native reduced-motion-aware transitions and persistent dialog headers. An image-generation reference guided composition without introducing fabricated supplier photos or features.
-Chrome computer use reviewed desktop and mobile flows. 126 domain/backend tests, all 51 browser journeys, typecheck/build and hosting-asset validation passed locally, including the demo rehearsal and keyboard/reduced-motion checks.
-The final run followed a local fixture-CLI setup correction; calculations, ownership, saved revisions and mail permissions remain intact. No cloud deployment or provider/model call occurred in this UI delivery. Full real-provider acceptance and restaurant validation remain pending. Evidence: `docs/diseno/PULIDO_EXPERIENCIA.md`.
-
-
-### 2026-09-09 - working tree · Luna CLI end-to-end rehearsal
-A local-only provider bridge now runs real Luna CLI structured generation through the existing Agent/AI SDK boundary while simulating web discovery and mail transport. Chrome computer use exercised reviewed offers, a no-price distributor, explicit email approval, duplicate signed webhook delivery, reply-to-comparison, PNG/PDF reading, XLSX/manual lists and saved decision recovery. Six substantive Luna calls completed; actual Convex tools produced the scenarios and evidence supplied to the advisor. No external email or provider API call was made by this rehearsal.
-The first live model attempt exposed a missing Agent context scope; all stateless calls now use isolated server-generated scopes without history or message storage. A subsequent advice error revealed old pending source text overriding reviewed conditions; the tool now passes current confirmations explicitly. Regression tests retain the actual Agent/SDK. Research errors no longer expose Convex stacks, missing-number copy is legible and unchanged saved verdicts are not duplicated.
-138 unit/backend tests, typechecks, hosting checks and 51 browser journeys passed. The test checkout's shared-dependency font warning was corrected and 12 focused visual/keyboard checks passed on repeat. The original PDF renderer failure remained visible until an explicit retry after local font configuration was fixed. Desktop and 390px computer-use evidence and reproduction steps are documented in `docs/desarrollo/LUNA_REHEARSAL.md`. Direct OpenAI API and full hosted acceptance, production, public visibility and contest submission remain pending.
-
-
-### 2026-09-10 - 51fdbcd · review corrections and integration
-GitHub Codex reviewed the provider, UI and rehearsal PRs. PRs #18 and #19 were merged; independent local review caught stale example results after changing to a live query. The fix preserves saved research and study selections, with a browser regression and a second clean Codex review.
-Rehearsal configuration now enforces its visible notice before enabling simulated providers and uses shared warning colors. Research runs and mail send reservations retain server-derived synthetic provenance through review, comparison and advisor tools; legacy records remain unchanged. Computer use also corrected review copy that confused synthetic source content with whether extraction used a model.
-147 unit/backend/configuration tests, frontend/backend typechecks and hosting checks passed. All 51 browser journeys were verified across the full run and the two corrected fixture cases. In-app browser computer use confirmed the search transition, retained selection and one fresh Luna extraction; Chrome control timed out. No cloud deployment, external email, public repository change or contest submission occurred. The final GitHub review identified the same provenance issue in bundled PNG/PDF sources; both paths now mark them synthetic, with persistence assertions and focused document checks. The last small follow-up was reviewed locally before integration.
-
-
-### 2026-09-10 - working tree · real Firecrawl source validation
-Ran seven real discovery attempts through the existing internal Convex action on the development deployment. The initial five returned 15 sources, including unreadable social pages, a site error, ambiguous catalog prices and irrelevant negative-control results. One published rice presentation/price pair matched a separate page inspection.
-A targeted rice query returned no sources and a targeted oil query reached the existing timeout without a retry. Recorded sanitized measurements and source-quality follow-ups in `docs/desarrollo/FIRECRAWL_VALIDATION.md`; raw page bodies and contact details are excluded from Git. No model extraction, email, study write or deployment occurred. Real-source extraction and hosted acceptance remain pending.
-
-
-### 2026-09-10 - working tree · source analysis and product evidence
-Added server source inspection, persisted Agent classification with numbered literal evidence, and an explicit bounded Firecrawl product-page read. Catalogs and unusable sources cannot become comparable offers; selected child pages retain their URL, observation time and parent. Reviewed values still require confirmation, with purchase conditions kept separate.
-A real scrape recovered the selected rice page with PEN 208 for 50 kg. Real Luna CLI replay separated catalogs from that product and retained missing prices; initial quotation-validation failures led to server-reconstructed evidence references. Replaying the original 15 sources identified four unreadable pages, one site error and all three irrelevant controls. Full provider acceptance remains open.
-155 unit/backend/configuration tests and three focused browser journeys passed. In-app browser computer use verified mobile/desktop research, explicit child reading, one real Luna extraction, review and local Convex save. Independent adversarial review closed after fixing legacy quality bypass, validation order, redirects and multiline title provenance. Evidence: `docs/desarrollo/FIRECRAWL_SOURCE_ANALYSIS.md`. No cloud deployment, external email, direct OpenAI API call, public visibility change or contest submission occurred.
-
-
-### 2026-09-10 - working tree · unified study and final provider pass
-Connected reviewed web offers and no-price candidates to one saved market study, with server-owned source reconstruction, ingredient/location bounds and consistent recovery/counts. Added explicit AI suggestions for linked replies while preserving manual review, late edits and the exact reviewed extraction attempt. The prominent advisor now saves comparison/context and prepares the scenario through one action; positive quantity, semantic reuse and full draft guards prevent invalid or duplicate calls.
-Rechecked current Firecrawl scrape documentation, target-page status and freshness behavior, and vendored its official scrape skill with license and pinned provenance. Two real Firecrawl calls returned three discovery sources and the selected product at PEN 208 per 50 kg. Five real Luna CLI generations ran through local Convex/Agent: two recorded-page analyses, one synthetic web source, one linked synthetic reply and one advisor explanation using actual calculation/evidence tools. The first numeric price proposal was corrected by a clarified prompt and explicit rerun.
-Computer use saved and recovered the combined study, approved a locally simulated test email, observed one reply after duplicate signed events, reviewed PEN 47 per 10 kg and confirmed PEN 94 for a 20 kg scenario. Advice correctly requested another offer instead of inventing savings; reload recovered it without another model call. 173 unit/backend/configuration tests, all 54 browser journeys, frontend/backend typechecks and hosting checks passed. Independent adversarial review closed without remaining material findings after fixes. Evidence: `docs/desarrollo/DEMO_FLOW_VALIDATION.md` and `FIRECRAWL_SOURCE_ANALYSIS.md`.
-The 170-second video plan remains unmeasured. Direct OpenAI API configuration and combined hosted acceptance remain pending. This pass did not send external email, deploy to cloud, change repository visibility or submit the project.
-
-
-### 2026-09-10 - working tree · PR 21–26 review corrections
-PRs #21–#25 are merged after independent Sol 5.6 review, with PR #23 reviewed by Luna, and parent adjudication. PR #24 keeps Firecrawl discovery candidates while suppressing markdown whose source or final metadata URL points to another page, with canonical same-page normalization and unchanged behavior when metadata is absent. PR #25 synchronizes open linked-reply reviews with reactive extraction state, preserves manual edits as pending suggestions and ignores stale responses. PR #26 now fingerprints only active offers while retaining historical source records; its review and fix verification are complete.
-The current integrated pass records 175 unit/backend/configuration tests and 10 focused browser journeys (four reply/research checks and six advisor checks), plus frontend/backend typechecks and hosting build/asset checks. The preceding full-suite delivery covered all 54 browser journeys. This is local verification only; no new cloud deployment, provider call, repository visibility change or contest submission is recorded. Stages 2–5 and 7 retain their provider and hosted-acceptance requirements, separate from PR review completion.
-
-
-### 2026-09-10 - 6ed1dd1 · reviewed main development deployment
-Published the merged PR #21–#26 backend and frontend to the existing Convex development preview. Backend deployment, frontend typecheck/build and hosting checks passed. All eight served files matched the local build by SHA-256; SPA fallback, asset 404 and unsigned webhook rejection passed.
-In-app browser verification saved a synthetic study containing one priced offer and one distributor without a price, then recovered both after reload. Evidence: `docs/desarrollo/HOSTING.md`. The application remains at the reviewed main revision; this entry records deployment evidence.
-Provider settings, production and private repository visibility were unchanged; no external provider call or email was sent. Work stops here for the separate branding pass. Direct OpenAI API, combined hosted provider acceptance, recording and contest submission remain pending.
-
-
-### 2026-09-12 - working tree · Surtario UI integration
-Integrated the bundled Surtario identity, tokens, typography, motion and shared controls with the reviewed application state. Unified studies, saved lists, source freshness, linked-reply extraction, purchasing advice and hosting/rehearsal guards remain in the combined code.
-The 175 unit/backend/configuration tests and frontend production build passed locally. Headless checks at 1920 × 1080 and 390 × 844 confirmed the Surtario identity and no horizontal overflow. Focused persistence/advisor browser coverage was not completed because the available anonymous backend lacked the current advisor function; no previous E2E evidence is presented as a fresh run.
-No deployment, provider call, email, environment copy, push, visibility change or submission occurred.
-
-
-### 2026-09-12 - df02b03 · English-first US workflows and freight insight
-Integrated the Surtario visual work with research, saved studies/lists, quotation/reply review and the purchasing advisor. The application uses English with a fictional USD/lb Portland example; Peru fixtures remain for PEN/metric coverage. Source text is preserved. A missing-freight insight calculates the same-currency decision boundary and separates hypothetical cost exploration from confirmed offer edits.
-Independent Sol review and GitHub review produced scoped corrections to study market boundaries, unit selectors, currency defaults, hypothetical state and conditional labels. A real Luna rehearsal exposed an evidence reconstruction mismatch that hid new advisor output after persistence; shared reviewed-evidence construction and a backend round-trip regression correct it. Keyboard search and saved distributor inquiry scope were corrected during browser verification.
-197 unit/backend/configuration tests, all 63 browser journeys, frontend/backend typechecks and hosting checks passed locally. Three real Luna CLI calls exercised one extraction and two advisor generations with actual Convex Agent calculation/evidence tools; recovered advice required no extra generation. Web discovery/page data and mail transport were synthetic, and the bridge prescribed tool sequencing. No direct OpenAI API acceptance, external email, cloud deployment, visibility change or submission is claimed. Detailed evidence and remaining pilot/provider gates: `docs/desarrollo/ENGLISH_PRODUCT_VALIDATION.md`.
-
-
-### 2026-09-12 - d26b14c · US unit PR review corrections
-Addressed all three GitHub review findings in PR #27: added lb/oz review selectors to the prerequisite itself, retained coherent Spanish UI/model guidance in that intermediate PR, and documented the authorized US example scope. 182 tests, frontend/backend typechecks, production build and GitHub CI passed. The dependent English product integration changes UI and model language together.
-
-
-### 2026-09-12 - d2a70d1 · final Luna review correction
-Independent Luna max review found that saved source snapshots include unselected distributors, which could expose an unrelated catalog inquiry. Inquiry controls now use saved selected IDs, and the server rejects draft creation for distributors absent from that selection. US and Peru regression tests failed before the fix and passed afterward; browser checks cover US priced-only recovery and web-only studies. 199 unit/backend/configuration tests, three targeted browser checks, the full 64-journey browser suite, both typechecks and hosting checks passed. No external message or deployment occurred.
-
-
-### 2026-09-13 - working tree · finding-to-decision follow-through
-Connected the missing-freight finding to a complete supplier question, an amount preview using the existing deterministic DSS context, explicit operator confirmation and a visible before/after recommendation. Confirmation changes only freight and preserves source evidence. The result can save through existing comparison persistence; the confirmed amount survives reload, while the recap belongs to the current view. No message, selection or purchase is triggered.
-205 unit/backend/configuration tests, 13 focused browser journeys, frontend/backend TypeScript and hosting checks passed locally. Cases cover boundary amounts, real advisor priorities, budget constraints, stale input, confirmation reset, focus and mobile layout. Independent Luna max review found a misleading save action under blocked site storage; saving now follows persistence readiness, with a passing browser regression. No schema change, external model call, provider configuration or cloud deployment was performed. Evidence and limits: `docs/desarrollo/DECISION_FOLLOWTHROUGH.md`.
-
-### 2026-09-13 - working tree · compact product landing
-Added an English product entrance at the root route, using the existing Surtario identity and ingredient photograph. A fictional supplier reply demonstrates the deterministic delivery calculation; the workspace loads on entry and explicit market, comparison, brand and Peru links remain available.
-205 unit/backend/configuration tests and hosting checks passed. All 67 browser journeys passed across the full run and targeted rechecks after correcting local CLI configuration and old other-tab workspace URLs; later timeouts passed without changing assertions. Desktop/mobile captures, keyboard, reduced motion and back/reload are covered. No new model call, backend change, deployment or visibility change.
-
-Independent Sol review returned `ship` with no material fixes after inspecting all four captures, the established design contract and routing/product truth. Luna could not complete the initial review because of a usage limit; Sol performed the replacement review.
-
-### 2026-09-13 - working tree · pre-merge Sol correction
-Fresh Sol pre-merge review found a contradictory save status for reviewed web studies outside sample markets. Status now uses the same eligibility as the save button. The Arequipa prospect regression failed before the fix and passed afterward, including save/recovery; all six affected browser journeys passed across the focused run and corrected message expectation. 199 unit/backend tests and hosting checks passed. The English UI contract now explicitly preserves original Spanish Peru data/citations without promising bilingual controls. Sol rechecked and closed the finding. No deployment or external provider call.
-
-
-### 2026-09-14 - working tree · persistent sourcing cases
-Persistent sourcing cases now connect an optional saved study, bounded research self-loop, reviewed comparison updates and versioned supplier messages. Explicit source watches run daily for seven days and preserve changed/unverified observations for human review. AI can propose research steps, evidence and inquiry text; it cannot approve an email, select its recipient or record a purchase. The UI recovers cases, highlights the next action and exposes dated history and supporting details on demand.
-
-Local verification covers capability ownership, canceled/late work, duplicate events, immutable mail approval, stale comparison revisions, saved-study context, offline recovery and responsive layouts. Provider calls in these tests are mocked or synthetic. The workflow component is registered; no cloud deployment or provider flags were changed. Real OpenAI API behavior, the combined hosted flow and a seven-day live watch remain unverified. See [the architecture and configuration contract](docs/desarrollo/CASOS_ABASTECIMIENTO.md).
-
-Independent pre-PR review found and closed two continuation defects: unchanged case comparisons now retain their selected offer, and replies opened directly from a study update the existing case comparison instead of creating an unlinked one. Added focused browser regressions for both. Fresh verification passed 222 unit/backend tests, frontend/backend TypeScript and hosting checks. The full browser run passed 71/72; the remaining failure was an incomplete research-module test stub, corrected without removing assertions. The new direct-study reply test and both workspace tests then passed; selection recovery was checked separately. This is local synthetic evidence; CI and hosted acceptance are separate checks.
-
-
-### 2026-09-15 - working tree · supplier reply delivery confirmation
-A supplier reply can now resolve an unknown delivery charge in its linked comparison. The operator chooses the offer, enters the amount and confirms an exact excerpt. One mutation checks ownership, linkage and revision, updates freight only, clears the old selection and stores the before/after deterministic reports and original reply reference in `deliveryConfirmations`. Repeated confirmation is idempotent; the history identifies the confirmation date and comparison revision.
-225 unit/backend tests, both TypeScript checks, hosting checks and seven affected browser journeys passed locally, including mobile/reduced motion, saved evidence recovery and a delayed response that preserves a newer draft. Independent review found and closed late-response draft replacement and misleading historical “Now” labels. Test replies were synthetic; no external email, model call or cloud deployment occurred.
-
-
-### 2026-09-15 - working tree · cloud acceptance and supplier-dialog readability
-
-Development deployment `incredible-wolverine-122` was updated from main at `dfd3e02612fc930b544e4d0af2df6e34ba2789f4`, then received the frontend changes from `codex/cloud-demo-acceptance-0915` (uncommitted). Real Firecrawl search returned public rice sources; an unpriced candidate and its study survived reload. `LIVE_RESEARCH_ENABLED` is enabled. OpenAI remains unavailable and explicitly deferred by the user.
-
-Two synthetic requests were delivered through AgentMail to the configured test inbox; three replies returned through the signed webhook. Manual review created a 40 lb comparison: two 20 lb bags at USD 18, freight initially pending. A linked reply supplied USD 4 delivery, giving USD 40 total. Confirmation preserved the exact quote, updated the existing comparison and enabled selection. Reload recovered revision 4 with the selected offer and USD 40 total. No purchase or real supplier commitment was made. Browser sessions showed separate saved-study lists; this is UI isolation evidence, not a new adversarial authorization audit.
-
-The live walkthrough exposed excessive email/history text, mixed interface language, a zero count for one selected web candidate and lost comparison continuity when reviewing that candidate's reply. Dialogs now use a bounded literal email preview, expandable original/history, clearer form spacing and explicit delivery/total amounts. Candidate replies retain the sourcing-case comparison and can confirm freight without a second request. Historical cloud data created before this correction was completed through its already-linked test request.
-
-Verification: 225 unit/backend tests passed; build/hosting checks passed. Seven affected browser journeys passed across the focused run and targeted recheck, including direct-candidate freight, original evidence, stale/delayed responses and extraction updates preserving edits. Desktop/mobile captures were inspected, then the hosted real-email dialog was inspected and refined. Cloud publication matched 30 build files and checked SPA fallback/missing assets. These frontend changes have no commit, PR or CI result yet. Automatic deployment remains separate pending work. Live OpenAI extraction/advice and a seven-day watch remain unverified.
-
-
-### 2026-09-15 - working tree · development publication PR preparation
-
-Consolidated the cloud-tested supplier-dialog changes with the prepared main-only deployment job so automatic publication retains the tested UI. The workflow tests before publishing, rejects missing/non-dev/wrong-target keys, serializes deployments and compares all published files plus SPA/missing-asset behavior. `CONVEX_DEV_DEPLOY_KEY` exists in GitHub; its value was not read. Pull requests do not deploy or receive that credential. First Actions deployment and live credential acceptance remain pending until merge.
-
-Pre-PR review checked candidate/case linkage, retained full email evidence, pending freight and deployment target/secret boundaries. Fresh verification passed 233 tests (including eight credential guard cases), TypeScript/build/hosting checks and workflow YAML parsing. The seven focused UI journeys and real hosted acceptance above remain the behavioral evidence. No additional provider call or deployment was needed for this consolidation.
-
-
-### September 15, 2026 — direct comparison example and select focus
-The direct comparison entry now defaults to a separate English synthetic rice comparison (USD/lb, Supplier A/B); explicit `example=pe` retains the original Peru fixtures. Initial source evidence and reset use the same active example. Saved/reviewed offers retain their original terms. Select options use an inset aubergine focus ring instead of the clipped blue global ring; keyboard navigation and Escape/focus return remain supported.
-
-
-### 2026-09-16 — branded workspace entrance
-Replaced the plain loading message with a rose brand screen, a short logo drop and restrained bounce, and a readable tagline. The screen stays at least 1.7 seconds and exits only once the workspace mounts; reduced motion disables animation. Failed module downloads offer a retry. The brand-guide link is removed from the product and its route is development-only. Focus indicators retain their visibility using the brand aubergine.
-Build and seven of eight landing/interaction browser tests passed locally. The remaining mobile-summary test also fails on clean pre-change HEAD 9fb09a3; it was not weakened. Desktop/mobile loading states were inspected. This verifies local UI behavior, not hosted acceptance or provider integrations. No deployment was performed in this round.
-
-PR review fixes: covered workspace remains inert and hidden from assistive technology until the arrival screen finishes; all focus halos derive from the shared focus token. Build and six landing/arrival E2E pass, including keyboard isolation with and without reduced motion.
-
-
-### 2026-09-17 - working tree · isolated Firecrawl research PR
-Separated adaptive research, discovery/reading budgets, canonical deduplication and cited-field validation from visual and example changes. Retained minimal coverage UI and cross-round selection. Historical real Firecrawl/Luna records document source limitations and incomplete results; no new paid provider request in this separation.
-Fresh research-only tree: 263 tests, TypeScript/build/hosting checks and two research browser journeys passed. External Codex review and CI are not yet complete. UI refinement and source-dialog presentation remain in a separate worktree. Main merge triggers development publication, which needs an active-workflow check.
-
-Codex Review of PR #35 identified three issues: Spanish adaptive rounds ignored refinements/exclusions, decimal-comma citations could lose supported values, and catalog children could repeat a previously read URL. Corrected all three. Eleven additional cases cover Spanish/English localized refinement, exclusion of prior catalog links, decimal/grouping formats and rejection of concatenated fabricated numbers. Eight regression cases failed on the reviewed commit; all 274 tests pass after the fixes. Frontend/backend types and hosting build checks passed. Remote CI of the final commit remains the merge gate.
-
-
-### 2026-09-17 - working tree · case decision consolidation after PR #35
-
-Isolated the current main baseline (`3483f8a`) and preserved the original dirty worktrees. Shared direct US/Peru example authorization, consistent eighteen-artifact retention, separate ten-search quick quota and web-transport watch provenance are fixed (`bf5317f`). Added versioned freight/minimum action context, deterministic proposals, stale-action/send guards, partial human-confirmed terms and before/after decisions (`909440c`). Existing UI work now presents concise source facts, progressive raw evidence, a case decision brief and a bounded case-priority list (`910c327`, `58b3cac`). Review also caught and corrected draft retry comparison by JSON key order and competitor quotation exposure to the optional inquiry writer.
-
-Local verification: 288 tests passed, frontend/backend typechecks and the 30-file hosting build passed. The full browser pass passed 84 of 85 journeys; the remaining test caught a lost synthetic source label. Restoring the label passed its focused rerun, covering all 85 journeys across the pass and correction. `test:demo` passed separately. Controlled watch tests cover unchanged/change/error, lease expiry, cancellation and late/duplicate observations; no seven-day real monitoring claim.
-
-The dedicated anonymous local rehearsal completed two adaptive runs, then a quick search, reviewed two synthetic product pages, saved a same-case comparison and ran real Luna CLI extraction, advisor explanation, inquiry drafting and partial reply interpretation. The advisor executed its calculation/evidence tools; mail and signed linked duplicate inbound events used the simulated bridge. Preparation took 118.924 seconds in this session. Twelve Luna CLI calls, eight simulated searches, two simulated page reads and one simulated send were recorded. No new real Firecrawl request, real email or cloud deployment occurred. The previous flour measurement remains historical evidence, not this rehearsal's latency. Direct OpenAI API and final hosted acceptance remain pending by scope.
-
-The timed rehearsal first exposed an additional continuity defect: opening a saved comparison from its case marked it unsaved and blocked reply confirmation. The correction distinguishes unchanged saved snapshots from reviewed merges; four affected browser journeys, fresh hosting/build and backend types passed. The same prepared case and reply were reused without another provider call or send.
-
-The result audit then caught default preferences replacing the saved question context on reopening. Reply confirmation now displays and enforces the immutable action preferences; the regression changes current form preferences and checks the original budget is used. The synthetic case was explicitly returned to freight-pending via a normal revisioned save for another take, preserving prior conversations and confirmation history. One additional, distinct synthetic request was approved; no real mail, model retry or new web research was used.
-
-The verified main walkthrough took **114.971 seconds**. A separately timed closing segment saved and explicitly restored the updated cash-priority scenario in **13.640 seconds**. Combined screen time is **128.611 seconds (2:09 rounded)**, with an explicit edit between segments of the same case. These are automated browser rehearsals with reading holds, not a narrated/exported video. The final result check confirmed the saved USD 50 budget, USD 45/39 totals, original evidence, one reply/confirmation for the current request, and recovered selection. The final scene shows the current saved scenario rather than stale AI advice. Desktop and mobile views were inspected. Final direct OpenAI API, hosted acceptance and narrated/exported recording remain separate.
-
-Final visual review corrected synthetic mail labels in the saved-request list and conversation: the local bridge is explicitly marked simulated instead of inheriting the real-provider acceptance label.
-
-
-### 2026-09-17 — working tree: PR #36 review corrections
-Comparison questions now originate only from their saved comparison; study distributors and web candidates explicitly open that comparison instead of attaching an incompatible origin or suggesting another supplier's action inside a distributor card. The case brief and library share invalid-input, compatibility/delivery and missing-term blockers. Reply confirmation displays the confirmed minimum/freight, order-total and budget/eligibility effect, including unchanged winners and unchanged minimums. Email styling uses a stable class. No server validation was relaxed; these corrections do not alter the workflow or enable an integration.
-
-Final review verification: 290 unit/backend tests in 44 files, frontend/backend typechecks and the 30-file hosting check passed. The final uninterrupted E2E run passed all 87 journeys in 8.5 minutes; `test:demo` passed separately in 15.8 seconds. Earlier review attempts exposed test-fixture/expectation mistakes (eligibility, cooldown and the one-comparable-offer verdict), corrected without weakening product guards. Desktop/320/390 source and confirmation captures were inspected; keyboard, reduced motion and reload paths passed. Automated providers were disabled. No new Luna/Firecrawl/OpenAI API call, real mail, merge or deployment was performed; prior Luna timing remains historical, and direct API/hosted acceptance remains separate. See `CONSOLIDACION_DECISION.md` for exact scope and observed non-failing dev-console notifications.
-
-### 2026-09-17 — working tree: live provider readiness
-Added a reproducible configuration check and explicit live probes with redacted reports. A real deployed Firecrawl probe returned 13 sources, 11 with text, in 128.459 seconds with a partial-coverage warning. AgentMail inbox inspection returned a confirmed missing read permission; send permission and delivery were not tested. OpenAI credentials/models and AI feature gates are absent on the development target, so integrated API acceptance remains blocked. Three focused runner tests and TypeScript passed. No project creation, deployment, credential changes or mail sends occurred. See `docs/desarrollo/LIVE_PROVIDER_CHECKS.md`.
-
-### 2026-09-19 — 77a1dfe + working tree: UI refinement and review corrections
-Grouped local UI commits add English US quote samples, direct quote/list shortcuts, a saved-research empty state, clearer case and comparison layouts, and a reverse logo exit. Final review corrected broken PDF originals by displaying the matching sample PNG while retaining the PDF source link, and restored 44 px select controls/options using the shared token.
-Three regression cases failed before the corrections. The final 15-test browser run passed, covering loaded PE/US previews, retained source links, review-to-comparison, keyboard/reduced motion and 1920/1440/390/320 px layouts. Preview captures were inspected; TypeScript/build and the 32-file hosting check passed. The preceding review passed 294 unit/backend tests. Existing non-failing development ResizeObserver notifications remain; this is not a claim of a warning-free console or a new full-system E2E run.
-The expanded pre-merge check also found an ambiguous advisor test locator after the priority badge was added. The test now targets the priority combobox without weakening assertions. Fresh verification passed all 27 focused browser journeys, 294 unit/backend tests, frontend/backend types and the 32-file hosting check. This entry records pre-publication evidence; no external provider request or email send occurred. API and inbox acceptance remain separate.
-
-
-### 2026-09-19 — working tree: contextual funnel after PR #36
-Unpriced supplier cards now save evidence, reuse the linked case and prepare a recoverable quotation draft in one Convex mutation (`convex/sourcingEntry.ts`). Reviewed public candidates can instead open a prefilled research question. The Home continuity hub groups explicit links without merging independent records by name, opens pending inquiries/replies directly, and retains access to original searches. One primary search action states live versus sample mode, errors require an explicit choice to open the sample, and direct purchase calculation preserves unknown terms and existing case comparisons. No schema or provider setting changed.
-
-299 unit/backend/configuration tests, frontend/backend types and the 32-file hosting check passed locally. The complete browser run passed 97/99; two obsolete expectations were corrected and passed in a focused recheck. Nineteen affected journeys passed in that recheck; a new error-path test required a region-selector correction. The final six funnel journeys then passed, including persistent inquiry/reply review, exact package arithmetic, public-source continuation and explicit failure recovery. Together the full run and focused checks cover 102 distinct journeys, rather than one uninterrupted final-tree run. Five mutation tests also passed after verifying duplicate-event prevention. An earlier unconstrained concurrent unit run timed out in three existing tests; all 299 passed with two workers and unchanged time limits. Desktop/320/390 px inspection caught and corrected a mobile navigation overlap.
-
-Review checked atomic rollback, ownership, stale revisions, repeat preparation, independent work in the same market, retained source access and PR #36 comparison/selection continuity. Only an isolated local backend and synthetic records were used. No provider call, outbound email, cloud deployment, commit, push or PR publication occurred. Real API and hosted acceptance remain separate.
-
-### 2026-09-19 — working tree: continuity empty state and bounded list
-Refined `ContinueWork.tsx` and shared workspace styles with a structured empty card, saved-item count and a bordered scrollable list capped at 360 px or 55% viewport height. Existing record links and actions remain intact; the scroll area supports keyboard focus and navigation.
-
-Frontend TypeScript and the 32-file hosting build check passed. Five funnel journeys passed initially; the extended continuity journey passed after fixing a test selector that confused “Rice” with “prices”. Eight synthetic entries stayed independent, the last could be opened by keyboard, and 1920/390/320 px layouts had no page overflow. Empty and populated captures were visually inspected. This adjustment is local and uncommitted; no provider request, outbound email, cloud deployment or push occurred.
-
-
-### 2026-09-19 — working tree: offer-review scroll
-`Review offer details` now scrolls smoothly to the comparison and moves keyboard focus without an initial jump. Reduced-motion preference uses immediate scrolling; modified link clicks retain native behavior. The existing four-offer limit and two-column desktop/single-column mobile layout are unchanged.
-
-Two focused browser tests verified intermediate scroll positions, reduced motion and keyboard continuation. A third verified four offers, the disabled add button at the limit and no page overflow at 1920/390/320 px; its initial geometry check ran during the existing hover transform, so the test now moves the pointer away and awaits active transitions before measuring. The recheck passed and screenshots were inspected. TypeScript/build and the 32-file hosting check passed. Local synthetic inputs only; no provider request, commit, push or deployment.
-
-
-### 2026-09-19 — working tree: recent-work dialog hierarchy
-The recent-work dialog uses its own title without repeating the hub heading visually. Its empty state has a smaller heading and hint, muted icon and no nested card border. The Home hub retains its existing presentation, and the dialog retains its accessible region label and saved-item count.
-
-Frontend TypeScript passed. Browser inspection at 1920/390/320 px verified the text hierarchy, no horizontal overflow, retained Home heading and accessible dialog region, plus Escape and focus return. Captures are local under `.local/pr37-hierarchy/`. No backend logic, provider request, commit, push or deployment changed.
-
-
-The related “How saving works” disclosure now uses smaller, lighter text and one 8 px content gap, removing the stacked panel padding and paragraph margin. Changes are scoped to the saving help. TypeScript and browser checks passed at 1920/390/320 px, including keyboard opening/closing, retained focus and no overflow. Captures were inspected under `.local/pr37-saving-help/`. No persistence behavior or remote state changed.
-
-
-Main navigation now uses the same current-page semantics and underline for Explore suppliers and My study, removing the pressed-button fill from My study. Continue your work remains a modal action. TypeScript passed. Browser checks and captures at 1920/390/320 px verified transparent resting backgrounds, one current view, no horizontal overflow and preserved selection/focus after closing the modal. The first mobile check expected Explore suppliers to be visible; the corrected check respects its existing compact-navigation breakpoint. No remote state changed.
-
-
-### 2026-09-19 — working tree: product landing and sourcing walkthrough
-Expanded `/` inside the existing Surtario identity. The ingredient photograph and interactive sample-cost slip now lead into a four-step walkthrough: find priced and unpriced suppliers, save source evidence, prepare a reviewed question and compare whole-order costs. Semantic HTML product illustrations and SVG icons show each step; keyboard-operable tabs expose the sequence without autoplay. Closing content explains human control, optional purchase intent, browser-session recovery and demo limits, with working workspace entry links and expandable answers.
-
-The suppliers and prices are explicitly illustrative. The existing deterministic delivery scenario supplies the displayed USD 40.00 alternative, USD 35.00 goods, USD 3.00 delivery and USD 38.00 total. No customer, savings-performance, live-provider or automatic-purchase claim was added. Existing brand imagery was reused; no new provider, dependency or image service was called.
-
-All six landing/arrival browser journeys passed, covering sample reveal/replay, flow panels, keyboard, reduced motion, responsive layouts, workspace navigation, loading failure and focus isolation. Frontend TypeScript/build and the 32-file hosting check passed. Desktop 1920/1440 and mobile 390/320 captures were inspected; the changed-target design detector returned no findings. Evidence is local under `.local/pr37-landing/`; no commit, push or deployment.
-
-Independent finish review returned `ship` with no material fixes after inspecting all 17 supplied captures and checking product truth, typography, responsive composition and interaction code. This verdict covers the landing extension, not provider or production acceptance.
-
-
-### 2026-09-19 — working tree: hackathon demo invitation and walkthrough continuity
-Reframed the landing close around the working hackathon prototype, replacing the oversized commercial invitation with an ingredient/demo composition. A newly generated transparent rice-bowl asset uses Surtario's aubergine and lime palette; WebP preserves alpha at about 203 KB, with prompt/origin recorded alongside it. The illustration is not a supplier product photograph. Sample context and prototype limitations remain explicit.
-
-Independent design diagnosis found differing number/title line heights and hover styling that resembled a second selected step. Walkthrough tabs now share fixed columns and matched first-line heights, a neutral connecting line, and distinct selected/hover states. Inactive panels retain layout space but are hidden from interaction and accessibility; the panel height stays constant across steps at each viewport. A 180 ms entry transition runs only after a step change and is disabled for reduced motion.
-
-All six landing browser journeys passed, including alignment and stable panel heights at 1920/1440/390/320 px, keyboard navigation and reduced-motion behavior. A separate browser frame probe observed seven intermediate opacity frames before settling, confirming visible motion. Desktop/mobile screenshots of the demo invitation and the selected-step/hover combination were inspected. Frontend TypeScript/build and 35-file hosting check passed; changed-target design detector returned no findings. No backend/provider setting, outbound message, commit, push or deployment changed.
-
-A fresh independent review returned `ship` with no material fixes after inspecting all 21 supplied captures, including the user-reported selected/hover combination and the prototype card at four widths. The review confirmed alpha edges, step alignment, prototype framing and mobile comparison legibility; motion execution is supported by the separate browser frame probe.
-
-User feedback rejected the closing card despite the earlier review. Corrected its hierarchy: one pale pink panel, invitation and action first, smaller rice context, no repeated checklist, and FAQ below. Four viewport captures and independent visual review found no material defects; TypeScript, two focused existing browser journeys and layout detector passed. Evidence: `.local/pr37-landing-closing-correction/`. Local only; no new asset generation, push or deployment.
-
-Removed the redundant walkthrough caption at the user’s request and vertically centered its timeline against the adjacent panel. Browser geometry verified matching vertical centers for every step at 1920/1440/800 px and no overflow through 390/320 px; desktop/mobile screenshots and TypeScript passed. Local evidence: `.local/pr37-flow-centered/`. No push or deployment.
-
-Replaced the rejected isolated rice image with a newly generated panoramic ingredient-receiving scene behind the CTA text. Removed the figure/caption and two-column gap. An aubergine overlay preserves white-copy contrast; the lime action stays prominent, with a stronger mobile overlay. The abandoned rice asset and its dedicated provenance were removed. New provenance: `public/brand/SOURCING_CTA_PROMPT.txt` and `sourcing-cta.webp.json`. TypeScript/build/hosting validation and two focused landing/keyboard browser journeys passed; four viewport captures and the design detector were checked. Evidence: `.local/pr37-cta-background/`. No push, deployment or product provider call.
-
-Updated landing CTA and FAQ to present Surtario as a product per the user’s latest direction: ingredient sourcing, comparable pack/order costs, control over sending and browser-bound recovery. Removed prototype/hackathon framing from the CTA and demo-focused FAQ, while keeping sample-price labels with the illustrative examples. No API configuration or provider capability changed. TypeScript and two focused existing browser journeys passed. Local only, no push or deployment.
-
-Unified click-driven scrolling across the landing and workspace. The walkthrough link preserves fragment history and transfers focus without an initial jump. Search, study summary, sourcing follow-ups, offer review and comparison/page-start actions now use the same reduced-motion-aware native scroll helpers. Search navigation no longer competes with the results effect. Native skip links and dialog/select focus handling are unchanged. TypeScript and 15 existing landing/funnel/offer journeys passed; six targeted scroll tests passed after correcting the new mobile test to use its actual Change search control instead of the desktop-only navigation button. Tests observe intermediate scroll positions in both motion preferences; an additional pointer probe recorded 30 positions. No push, deployment or product provider call.
-
-Applied the user-approved closing hierarchy: porcelain explanatory section with smaller heading, a more compact photographic CTA with one-sentence copy, and a porcelain button. Fixed the timeline connector to end at the final circle rather than a fixed inset from the whole list. TypeScript passed; the full explanatory section and CTA were captured together at 1920/1440/390/320 px without overflow. Timeline endpoint geometry matched the last-circle center at five widths, including 800 px. Visual inspection and changed-target detector found no outstanding issues. Evidence: `.local/pr37-cta-hierarchy/` and `.local/pr37-timeline-end/`. Local only; no push or deployment.
-
-Corrected the explanatory-section scope after user feedback: an added rice-review specimen was rejected because the request was presentation-only. Removed it and restored the original three headings and complete paragraphs verbatim. The title now spans the section above three aligned text columns on one quiet outlined surface, stacking on mobile; the adjacent photographic CTA is unchanged. A generated concept remains only as local rejected design evidence, not a product asset or accepted direction. TypeScript and two existing landing/keyboard journeys passed; five viewport captures verify responsive fit and desktop paragraph alignment. Evidence: `.local/pr37-control-redesign/restored-content-*.png`. No push or deployment.
-
-Integrated the explanatory content into the page as a section, removing the floating-card frame and excess header space. The original heading now wraps naturally beside the existing minimal Surtario symbol; all three original messages and the photographic CTA remain intact. TypeScript passed; captures at 1920/1440/800/390/320 px confirm no horizontal overflow and preserved desktop column alignment, with desktop/mobile visual inspection. Evidence: `.local/pr37-control-section/`. Local only; no push or deployment.
-
-### 2026-09-19 — working tree: consolidated review checkpoint
-
-Prepared the contextual funnel, landing, visual refinements and shared scroll behavior together for pull-request review. Fresh verification passed all 299 unit/backend/configuration tests, frontend/backend TypeScript, the production build and 35-file hosting check, plus all 21 focused browser journeys in one run. Review found no blocking issue in session ownership, stale revisions, preparation rollback, linked comparisons or confirmation boundaries. This checkpoint does not establish live-provider or hosted acceptance; no merge or deployment is included.
-
-
-### 2026-09-19 — working tree: bounded direct OpenAI API acceptance
-
-Verified four real Luna low calls through local Convex actions: clear/ambiguous text, a bundled synthetic image and a real Firecrawl product source. Browser review, study/comparison persistence and an unsent delivery inquiry survived reload and explicit reopen. Local token-only telemetry measured 6,896 input and 1,228 output tokens, approximately USD 0.0029 at standard uncached rates; all 300 tests and both TypeScript checks passed.
-
-Live discovery took 125.88 seconds and returned 14 candidates, 10 readable, with partial coverage. AgentMail inbox reading returned a missing-permission 403; no mail was sent. Multi-round research, API advice/reply extraction, combined mail acceptance and cloud publication remain pending. Identified the static long-search state and comparison reload returning to the example as recording-readiness gaps. No Git push or cloud deployment.
-
-
-### 2026-09-20 — working tree: reactive search progress and saved comparison recovery
-Added real search/read checkpoints to the existing owner-scoped Convex subscription, with Surtario’s symbol, typography and restrained stage motion. Counts represent checked searches/pages, not invented completion percentages or confirmed supplier availability. Continue your work reopens running searches. Saved comparison URLs restore the correct owner-scoped record on reload; unavailable records show an explicit recovery state.
-
-Verified 35 focused backend tests and 10 browser journeys, including live localhost subscriptions driven by synthetic checkpoints, reload, cross-session denial, failure/completion and reduced motion. Inspected desktop/mobile renders and reopened the previously saved real-source comparison with its quantity and unsent inquiry intact. Frontend/backend TypeScript and production build passed. No additional paid provider calls, outbound messages, commit/push or cloud deployment; the AgentMail permission blocker remains.
-
-
-### 2026-09-20 — working tree: useful real-source study and offer hierarchy
-
-Improved catalog traversal to recognize product links containing thumbnails, line breaks and alphanumeric HTML SKUs, while requiring the requested ingredient terms. Trade-supplier metadata now ranks above equivalent retail matches without increasing the existing provider budget. Reopening a saved web study restores its original search instead of showing empty example results.
-
-Reused the existing real search: one additional Firecrawl page read and two Luna low extractions. Food To Live correctly remained a multi-variant catalog; WebstaurantStore yielded a reviewed 50 lb offer at USD 37.49. Saved that offer alongside the existing Della offer and a reviewed F. Garcia distributor contact. All three survived reload; delivery, tax, minimum order and specification equivalence remain unconfirmed. No messages were sent.
-
-Offer cards now distinguish supplier, package price, size, derived unit price, pending terms and compact source/action metadata. Browser inspection at 1280/1440 desktop and 390/320 mobile caught and corrected narrow-screen price wrapping and contact overflow. Verification: 56 focused discovery/source-quality tests, seven funnel/persistence browser journeys, frontend/backend TypeScript and production build passed. New traversal was verified with fixtures and the actual catalog link; no new full paid search was run. Local backend only, no commit/push or cloud deployment.
-
-
-### 2026-09-20 — working tree: local AgentMail setup and readiness correction
-
-The earlier AgentMail permission diagnosis was too broad: the inbox-scoped key can read messages (real HTTP 200) but cannot read administrative inbox metadata. Corrected the readiness probe and verified a real subscription for inbound events. Existing cloud webhook and key permissions were preserved.
-
-Configured the anonymous local backend and added a development-only outbound WebSocket receiver that passes allowed test-inbox replies to the existing internal Convex mutation, preserving thread matching, deduplication and review. Browser inspection verified the configured recipient on a new unsent draft. 22 focused tests and frontend TypeScript passed. No new email sent or OpenAI call, no push or cloud deployment; full local send/reply acceptance remains pending. Receiver must stay running; disconnected events are not replayed automatically.
-
-
-### 2026-09-20 — working tree: fresh sourcing and local mail roundtrip
-
-Sources now arrive through Convex subscriptions during bounded Firecrawl reading, followed by up to three optional Luna reviews. Improved trade/currency prioritization, compact source evidence and recoverable search state. Fixed a hot-reload duplicate-request bug found during live testing; three fresh searches and eleven Luna low calls were counted, including that extra run.
-
-The final real search produced 15 candidates with 11 readable sources. Saved two reviewed published offers and an unpriced distributor; inconsistent product evidence stayed unconfirmed. An authorized real AgentMail roundtrip between test inboxes appeared reactively in the app, followed by Luna extraction, human review and deterministic calculation. Commercial email terms were explicitly synthetic; no real supplier was contacted and no order was placed. Study, conversation and calculation survived reload.
-
-317 unit/backend tests and 16 distinct browser journeys passed, including a rerun under the disabled-provider conditions required by three older tests; real local settings were restored. TypeScript/build and desktop/mobile visual checks passed. Only anonymous localhost was updated; no Git push or cloud deployment. The development mail receiver needs to remain connected and has no offline replay. Automatic multi-round research was not exercised in this bounded acceptance.
-
-
-### 2026-09-20 — working tree: branded supplier correspondence
-
-Added a deterministic Surtario HTML email with a plain-text alternative and the same escaped template in the reviewed preview. New drafts separate context, commercial questions and purchase boundaries. Persisted an optional presentation version so historical plain-text messages retain their original format. Approval, frozen revision, recipient restrictions and idempotency remain unchanged.
-
-Verified one authorized real email between the existing test inboxes: AgentMail accepted it and rendered the branded HTML in the recipient inbox. The message explicitly described a layout test; it was not supplier outreach or a purchase. Reopened the saved study after reload and recovered the sent conversation. Inspected the preview on desktop and at 390/320 px with no horizontal overflow. No OpenAI or Firecrawl calls in this pass.
-
-Clarified that automatic analysis covers up to three product pages, not the whole result set. Reopened the previous live search and expanded all 15 candidate sources (11 with recovered text); these are not 15 confirmed offers. Improved source title hierarchy and separated incomplete-content notices from source links. Source actions still merit a focused hierarchy pass for recording. Verification: 320 tests across 49 files, frontend/backend TypeScript and build passed. Only localhost changed; no Git push or cloud deployment. The received HTML was inspected in AgentMail, not across Gmail/Outlook clients.
-
-
-### 2026-09-20 — working tree: expanded bounded discovery
-
-Raised the English discovery ceiling to 30 sources, three search queries of up to 20 hits each, and a separate 30-page reading budget. Preserved two concurrent reads, bounded rate-limit retries, host diversity, URL deduplication, relevance checks and the three-source automatic AI analysis limit. Completed searches show twelve sources initially with explicit expansion; expanding never makes another provider call. No pricing tier was implemented.
-
-One fresh direct Firecrawl search for long grain white rice in Portland returned 21 sources from 21 distinct domains, 16 with recovered text and five unreadable. These counts are candidate evidence, not verified suppliers or comparable offers. The final automatic analysis finished roughly 137 seconds after the server search began, with source arrivals visible while waiting. Local usage logs recorded exactly three gpt-5.6-luna low calls: 14,834 input and 897 output tokens. No dollar-cost or Firecrawl credit charge is inferred from request counts.
-
-Verification: 42 focused discovery/backend tests, frontend/backend TypeScript, build and three browser tests passed. The 30-source synthetic browser case verified twelve initial cards, expansion and collapse without another search; the real 21-source result was inspected on desktop and 390 px mobile with no overflow or browser errors. Existing saved study remained intact. Updated only the anonymous local backend; no cloud deployment, Git push, extra mail or additional live search.
-
-
-### 2026-09-20 — working tree: action hierarchy and pre-push acceptance
-
-Prioritized the next action on each source card and grouped secondary actions under More options. Fixed both earlier Codex review findings: comparison recovery closes the continuity dialog, and resuming another ingredient clears incompatible working selections while preserving saved studies. Added browser regressions.
-
-One fresh real Firecrawl search returned 21 candidates, 16 readable; up to three Luna low analyses remained subject to review. A reviewed offer was saved, and one branded AgentMail test request/reply appeared reactively in the app. One Luna reply extraction plus human confirmation updated the existing compatible comparison. Explicitly synthetic terms produced three 25 lb bags for a 60 lb need, 15 lb excess and USD 66 including freight; delivery timing stayed pending. Study, source, conversation and calculation survived reload.
-
-320 unit/backend/configuration tests, frontend/backend TypeScript, build and 20 focused browser journeys passed. Desktop and 390/320 px source-action checks showed no overflow or browser errors. Prepared the accumulated changes for PR #37 and another Codex review; no cloud deployment or merge. No actual supplier was contacted and no order was placed.
-
-
-### 2026-09-20 — a5cb3f5 and working tree review follow-up
-
-Pushed the integrated sourcing and mail progress to PR #37; GitHub test/build passed. Codex found a recovery bug for saved distributor names/contacts. Source actions now recover the existing owner-scoped candidate before continuing; two browser regressions verify corrected fields and reuse after reload. Build passed. No new provider calls, cloud deployment or merge.
-
-
-### 2026-09-20 — 4301edd and search identity follow-up
-
-The saved-candidate recovery fix passed GitHub test/build. A second Codex review found cached search promises being reused after opening a saved study reset the numeric request counter. Keying attempts by the unique client request ID fixes the stale-ingredient result while retaining duplicate-call protection.
-
-Production build and two focused browser tests passed, including the real search UI with provider calls intercepted and Convex progress across reload. This brings the acceptance to 21 distinct browser journeys without further provider spending. No cloud deployment or merge.
-
-
-### 2026-09-20 — e9702d1 and progressive price context
-
-Codex review identified a priced source without complete package size/unit appearing as a bare price during analysis. Progress cards now explicitly show "Package size pending" unless both values are available. Extended the existing desktop/mobile progress checks with missing-size, missing-unit and complete-package cases; both browser tests and production build passed. No new provider calls, cloud deployment or merge.
-
-
-### 2026-09-20 — local supplier follow-up layout
-
-Grouped saved catalog correspondence into a bounded follow-up section with supplier heading, concise purpose, preparation action and saved requests. Removed the unstyled duplicate "Ask" heading. Market results now retain a complete border while unselected and on hover, including contextual references.
-
-Production build and the existing priced-offer/no-unselected-inquiry browser check passed. Manual browser checks covered a prepared, unsent draft and recovery after reload, desktop and 390/320 px layouts without overflow or console errors. No paid provider calls, sends, commit, push or deployment; changes remain local on `codex/study-followup-polish`.
-
-
-### 2026-09-20 — local buying recommendation layout
-
-Replaced the recommendation's left accent and shadow with a uniform outline and a plain sentence-case label. Desktop uses the right side for the recommended offer's order total and excess quantity; mobile stacks the figures below the explanation, with compact rows at 320 px. Figures use the existing deterministic report, matching offer currency and current or saved request unit, and appear only for an eligible buy recommendation.
-
-Production build and two existing comparison browser journeys passed, extended to check USD/lb, PEN/kg, zero excess and removal of figures when quantity is incomplete. Manual desktop and 390/320 px inspection showed no overflow or console errors. No provider calls, sends, commit, push or deployment; included in the ongoing local UI polish.
-
-
-### 2026-09-20 — working tree · follow-up navigation and UX audit
-
-The saved case is now a dedicated follow-up destination with Overview, Messages, Sources and Activity. Opening it preserves the market draft; route identity supports reload and browser Back/Forward. The summary separates evidence and pending terms from one next action, using Surtario typography and a uniform outline. Sources, message history and optional price tracking no longer compete in the market screen. The earlier ImageGen reference informed spacing only; the flow audit determined the structure. Removed Quantity / Terms / Choice from comparison.
-
-Preserved case-local source review and revision-checked saving, previously saved candidates, prospect-linked conversations, reply-to-offer merging and delivery confirmation into the same comparison. Each history entry keeps its own comparison draft within the browser session. Repeated message visits reopen correctly, dialog focus does not jump to hidden controls, and correspondence is shown once. Independent reviews found the navigation and draft-preservation defects; fixes are documented in `docs/diseno/AUDITORIA_SEGUIMIENTO.md`.
-
-Verification: 320 unit/backend/configuration tests, production build (including TypeScript), and 23 distinct focused browser journeys passed across the targeted runs. These cover inquiry/reply recovery, source review/save/reload, existing comparison updates, delivery and minimum terms, reactive incoming replies, session isolation, keyboard disclosures, offline behavior, and browser history with different drafts. Manual inspection of the original saved case covered all four sections, desktop and 390/320 px with no horizontal overflow; a fresh browser load produced no runtime errors. Initial test failures from changed destinations and disclosure visibility semantics were corrected without dropping the underlying behavior assertions. No new Firecrawl/OpenAI calls, email sends, commits, pushes or deployments. This does not constitute new live-provider acceptance or a usability study with external users.
-
-Result-header refinement: removed the duplicate search summary and standalone research row. Change search and Research a question share the results heading; the latter opens a bounded dialog and navigates only after saving. Closing preserves its draft and the market selection. Questions use the active web result or My study context, including after searching a different ingredient. Existing follow-ups remain directly accessible. Eleven distinct focused browser journeys passed across this refinement's runs, including the two new modal/context regressions; production build and desktop/390/320 px inspection passed. The existing search-boundary test was updated to validate the request UUID and render the new header slot. No provider calls, sends or remote changes.
-
-Offer-review refinement: replaced the source card's left accent with a uniform outline and separated the source link from its observation date. Related fields share four desktop rows, with individually named evidence disclosures below their controls; narrow mobile layouts stack them. The original file/text, manual corrections, pending terms and explicit confirmation remain available. The modal header stays outside the scrolling body; clipping prevents focus on a lower field from scrolling the header out of view.
-
-Verification: production build (including TypeScript) and 10 distinct focused browser journeys passed across targeted runs, covering web/document review, saved recovery, manual corrections, keyboard evidence disclosure, draft retention and mobile controls. Exact field-name selectors distinguish inputs from the new evidence controls; assertions were retained. Manual checks on an existing saved web source covered 1920 px and 390/320 px, with no horizontal overflow or runtime errors. No new provider calls, sends, commits, pushes or deployment.
-
-
-### 2026-09-20 — local Messages inbox and reply continuity
-
-Added a global Messages destination in the workspace and comparison navigation. Owner-scoped conversations show supplier context, actual recipient, subject, latest activity and separate draft, awaiting-reply, unconfirmed-send and reply-review states. Filters cover all conversations, replies, waiting and drafts; the navigation count means replies whose details have not been saved, not unread mail. Exact stored references recover the related follow-up/comparison, including a standalone comparison created from a study reply.
-
-The latest reply and its review action now precede sent-request controls and history. Opening a conversation does not update prices. Manual review (with optional AI extraction) and saving remain required; already-saved replies open their existing offer instead of attempting a duplicate merge. Successful review preserves the destination and originating message; cancellation closes the conversation.
-
-Verification: production build (including TypeScript), clean diff check, and 12 distinct focused browser journeys passed across targeted runs: Messages (3), reply review (3), study-reply comparison (2), and follow-up navigation (4). Coverage includes reactive reply arrival without extraction or price changes, explicit review/save, existing and new comparisons, reload/deep links, return navigation, unsaved drafts and session isolation. Inbox overflow assertions cover 1920/390/320 px; manual Chrome captures cover the inbox and conversation at 1920/390 px with no runtime errors. Independent review findings about successful handoff, saved-offer access and reply prominence were resolved.
-
-Initial regressions exposed an environment-specific assertion that AI was unavailable and the local demo request capacity accumulated by repeated test imports. The test now asserts manual editability and empty price fields regardless of credentials. Only request/reply fixtures created during this execution were removed from the anonymous local backend; its request count returned to the pre-test 89. A temporary, internal, localhost-guarded cleanup function was removed after use; no backend source changes remain. No new provider calls, email sends, commit, push or cloud deployment. This is local UI/workflow validation, not new live-provider acceptance.
-
-
-Conversation polish: grouped recipient and reply status, kept the newest reply open, and moved WhatsApp copying alongside the sent message. Reply, full-email, sent-request, suggestion and history disclosures now reuse the animated control with keyboard and reduced-motion support. The modal stays anchored with a fixed header and a scrolling body; secondary navigation scrolls with the content on mobile. Nested chevrons now follow their own disclosure state. Requests without a confirmed send are labeled “Request message”.
-
-Verification: production build and two focused browser journeys passed (reactive reply → review → save/reload; draft edit → save → recovery). The reply test checks intermediate collapse heights, stable modal position, keyboard reopening, hidden controls and reduced-motion/mobile operation. Its first run sampled the still-running dialog entrance; it now waits for that animation before measuring disclosure motion. Manual Chrome inspection covered 1920 × 1080 and 390 × 844, expanded content and fixed close control, plus a 320 px overflow check; no runtime errors. Seven disposable requests and two replies created by these runs were backed up locally and removed from the anonymous local backend, restoring its previous count of 89 requests. The temporary cleanup function was removed; no backend source changes, provider calls, sends or remote publication.
-
-### 2026-09-20 — working tree · research results hierarchy
-
-Collapsed saved-search history into an animated, bounded list with selected state, date/time when available and keyboard focus recovery. Selecting a saved search closes the list before scrolling its results into view; existing selections and source expansion stay available without another provider call. Search coverage, automatic-analysis limits and discarded counts remain in Search details; partial-content warnings and errors remain visible. Source evidence uses a uniform border. Saved distributor cards now group identity/contact, actions and source/date using existing Surtario tokens.
-
-Validation: production build including TypeScript, four focused browser journeys (progress success/failure, thirty-source expansion/history switching, and source review through comparison), desktop/390 px visual inspection and a clean diff check passed. Manual mobile verification confirmed the collapsed history clears the fixed header. No provider calls, mail sends, backend changes, commit, push or deployment for this refinement.
-
-
-Search-validation refinement: the empty-ingredient message now belongs to the search form instead of the global workspace error. It focuses the ingredient field, clears while typing or changing views, and applies consistently to catalog and live-search submission. Other workspace errors retain their own state and now have spacing below them. The existing empty-search browser journey passed with assertions for focus, field semantics, navigation and correction; production build and manual desktop/390 px inspection passed. Empty submissions did not start provider searches. Local changes only, with no sends, push or deployment.
-
-
-### 2026-09-20 — working tree · search waiting and completion feedback
-
-Added a restrained leaf motion to the existing Surtario symbol, checkpoint age and a contextual message after 30 seconds without an update. Motion pauses when disconnected, hidden or offscreen, and respects reduced motion. Real counters stay unchanged between checkpoints. A terminal search checkpoint ends loading even before the action promise resolves; completion draws a check beside the actual source count, preserving partial-content and empty-result explanations. Failed searches never show completion, and opening another saved search clears the confirmation. Both market search and follow-up research receive connection state.
-
-Validation: production build including TypeScript and five focused browser journeys passed, covering long waits without retries, disconnect/reconnect, completed/empty/failed searches, reduced motion, thirty-source expansion/history and source review through comparison. Manual inspection used the actual components with a disposable frontend-only harness at 1920/390 px, plus a 320 px overflow check. The first normal-motion test advanced the animation clock along with the wait; it now changes wall-clock time only. No new provider calls, messages, backend mutations, commits, push or deployment.
-
-
-Research hierarchy refinement: the active query, location, observation date, source count and partial-content warning now share a flat tinted context band. The workspace heading and candidate titles use distinct type scales; a list header separates the candidate sources and expansion control. Existing source content, review actions, history and search details remain available.
-
-Validation: TypeScript/production build and two focused browser journeys passed (thirty-source expansion/history and source review through comparison). Manual Chrome inspection covered actual saved results at 1920, 390 and 320 px, including expanded search details with no horizontal overflow. Layout scan and diff checks were clean. No new searches, provider calls, backend changes, commit, push or deployment.
-
-
-Visual follow-up: replaced the square rose search band with a white surface, uniform outline and the existing rounded panel token. The product-page disclosure now reads “Product pages on this site”, uses the same 14 px secondary scale as More options and retains a 44 px target and visible keyboard focus. Verified actual saved results on desktop and 390 px mobile, including the open picker without overflow. Production build and the existing catalog → selected product-page → review browser test passed. No provider calls or remote changes.
-
-
-Study-rail spacing: the desktop sticky offset now leaves 24 px below the 100 px navigation header. Browser measurements confirmed the gap after scrolling at 1920 and 1024 px; the 390 px rail remains in normal document flow without horizontal overflow. Production build passed. The existing Messages inbox was inspected read-only: it exposes replies, awaiting replies and drafts; no messages were sent or data changed. Local CSS change only, no push or deployment.
-
-### 2026-09-20 — working tree · workspace reload continuity
-
-The branded entrance now runs only after entering from the landing. Reload and direct workspace links use normal loading feedback. Tab-scoped history checkpoints restore market context, selections, filters, the active research run and expanded source list; Messages retains its filter and follow-ups retain their section. Reload also recovers scroll after the content becomes available. This recovery is separate from explicitly saving a study and does not restart research actions or resend messages.
-
-Validation: production build/TypeScript and 11 focused browser checks passed, including landing entrance/accessibility, delayed workspace loading, study selection/filter/scroll recovery, cleared-session isolation, running/completed research recovery without provider calls, and existing offer navigation/responsive behavior. Four existing progress journeys also passed. Manual Chrome checks recovered a real saved search at scroll 896 px on desktop and 844 px at 390 px mobile, plus the Waiting message filter and Activity follow-up section. Initial checks exposed a pagehide/history timing issue in scroll recovery, fixed with tab session storage. No new provider calls, emails, backend changes, commit, push or deployment.
-
-Consolidation check for PR #38: all 320 domain/Convex tests across 49 files passed with simulated providers. The pending files remain frontend, browser regressions and documentation; the diff and credential-pattern scan were clean. No new backend or deployment work is included.
-
-
-### 2026-09-20 — working tree · PR #38 recovery review corrections
-
-Comparison recovery now restores the advisor's preferences and raw field input, including invalid values, instead of overwriting them with defaults. The original selection is stored separately from the edited draft, so restoring a direct example or study selection removes edits after browser Back and reload. Explicit reset and opening another saved comparison keep their existing preference-reset behavior.
-
-Both Codex P2 findings were reproduced before correction. Three new browser regressions and seven existing focused journeys passed, including session isolation, different history entries and desktop/mobile controls. All 320 tests across 49 files, TypeScript/build and the 35-file hosting check passed; advisor screenshots were inspected at 1280 and 390 px. No new external provider calls or emails; merge and development publication are verified separately.
+Verification passed 320 tests in 49 files and the 35-file hosting build from a snapshot containing only tracked files, with a fresh offline dependency installation. Local documentation links/code references and all 60 archive hashes checked clean. An initial shared-dependency snapshot failed two workflow tests; isolated installation resolved the test harness issue without changing code or assertions. Repository visibility, deployment, provider configuration and contest submission are unchanged; no new provider calls were made.

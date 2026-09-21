@@ -18,7 +18,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { PurchaseSeed } from "../domain/market";
 import type { StudyProspect, WebSelection } from "../domain/study";
-import { ResearchWorkspace } from "./LiveResearch";
+import { ResearchWorkspace, type ResearchResumeRequest } from "./LiveResearch";
 import { SaveWebProspect } from "./WebProspects";
 import { Button } from "./ui/Button";
 import { Dialog } from "./Dialog";
@@ -299,6 +299,7 @@ function CaseDetail({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [reviewOpen, setReviewOpen] = useState(true);
+  const [sourceResume, setSourceResume] = useState<ResearchResumeRequest | null>(null);
   type CaseSection = "overview" | "sources" | "messages" | "activity";
   const [section, setSection] = useState<CaseSection>(() => readWorkspaceCheckpoint<CaseSection>(`followup:${caseId}`) ?? "overview");
   useEffect(() => writeWorkspaceCheckpoint(`followup:${caseId}`, section), [caseId, section]);
@@ -693,8 +694,7 @@ function CaseDetail({
       </div>
       <div hidden={section !== "sources"}>
       {(running || coverage.total > 0 || item.stopReason) && (
-        <details className="sourcing-coverage" aria-label="Research coverage">
-          <summary>{coverage.total} sources · {coverage.priceDomains} domains with prices — {item.stopReason === "budget" || item.stopReason === "diminishing_returns" ? "coverage incomplete" : "research details"}</summary>
+        <Disclosure className="sourcing-coverage" aria-label="Research coverage" defaultOpen title={<>All research findings · {coverage.total} sources · {coverage.priceDomains} domains with prices</>}>
           <div>
             <h3>
               {running
@@ -720,9 +720,10 @@ function CaseDetail({
                   Prioritized by product evidence and completeness, with one
                   source per domain. This is not a lowest-price ranking.
                 </p>
-                <ol>
+                <ul className="sourcing-shortlist">
                   {coverage.shortlist.map((source) => (
                     <li key={source.url}>
+                      <div className="sourcing-shortlist-copy">
                       <a
                         href={source.url}
                         target="_blank"
@@ -744,9 +745,15 @@ function CaseDetail({
                           </ul>
                         </details>
                       ) : null}
+                      </div>
+                      <Button variant="secondary" onClick={() => {
+                        const run = runs?.find(run => run.sources.includes(source));
+                        if (!run) return;
+                        setSourceResume(previous => ({ id: run.id, sourceIndex: run.sources.indexOf(source), showAllSources: true, sequence: (previous?.sequence ?? 0) + 1 }));
+                      }}>Review this source</Button>
                     </li>
                   ))}
-                </ol>
+                </ul>
 
               </>
             )}
@@ -759,7 +766,7 @@ function CaseDetail({
               </ul>
             </details>
           </div>
-        </details>
+        </Disclosure>
       )}
       {runsExhausted && (
         <p className="field-hint">
@@ -1060,6 +1067,7 @@ function CaseDetail({
               connected={connected}
               reviewDestination="followup"
               autoSelectLatest
+              resumeRequest={sourceResume}
               status={researchStatus}
               runs={runs}
               request={null}

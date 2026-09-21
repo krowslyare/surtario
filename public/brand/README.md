@@ -30,4 +30,4 @@ Símbolo y composición SVG creados en código para esta propuesta. Logotipo bas
 
 Fotografía creada con la herramienta integrada `imagegen` el 10 de septiembre de 2026. Modelo no seleccionado manualmente. Conversión a WebP con cwebp, calidad 86, sin recortar ni cambiar el contenido. Imagen generada; no representa una foto documental de un negocio real. Prompt exacto incluido, con el nombre de trabajo Ronda usado al generar la imagen. La fotografía se conserva en Surtario sin editar ni volver a generar. El original PNG permanece en el almacenamiento de generación del equipo; esta copia optimizada viaja con el proyecto.
 
-La guía de uso completa y la evidencia de validación se encuentran en `docs/diseno/MARCA.md` y `docs/diseno/UI_UX.md` del repositorio. La página interactiva está en `/?view=brand`.
+Las reglas actuales de diseño e interacción están en [docs/DESIGN.md](../../docs/DESIGN.md). Las auditorías anteriores permanecen en el historial de Git. La página interactiva `/?view=brand` está disponible solo en desarrollo.
