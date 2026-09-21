@@ -1,6 +1,6 @@
 # Development and operations
 
-Requires Node.js 22.12+ and npm. The lockfile is authoritative. Product boundaries are in [ARCHITECTURE](ARCHITECTURE.md); executed acceptance is in [VERIFICATION](VERIFICATION.md).
+Requires Node.js 22.13+ and npm. The lockfile is authoritative. Product boundaries are in [ARCHITECTURE](ARCHITECTURE.md); executed acceptance is in [VERIFICATION](VERIFICATION.md).
 
 ## Local application
 
@@ -24,7 +24,7 @@ Use the Convex dashboard or interactive CLI to configure the **server** environm
 | Web search and review | `FIRECRAWL_API_KEY`, `OPENAI_API_KEY`, `OPENAI_EXTRACTION_MODEL` | `LIVE_RESEARCH_ENABLED=true` |
 | Initial web interpretations | Same as web review | `SEARCH_AUTO_REVIEW_ENABLED=true` |
 | Multiround research | Same as web review, live research enabled | `SOURCING_ENABLED=true` |
-| Bundled image/PDF extraction | OpenAI key and compatible extraction model | `DOCUMENT_EXTRACTION_ENABLED=true` |
+| Bundled quote and ingredient-list reading | OpenAI key and compatible extraction model | `DOCUMENT_EXTRACTION_ENABLED=true` |
 | Reply field suggestions | OpenAI key and extraction model | `REPLY_EXTRACTION_ENABLED=true` |
 | Inquiry drafting | OpenAI key and extraction model | `QUOTATION_DRAFT_ENABLED=true` |
 | Purchasing advisor | OpenAI key, `OPENAI_ADVISOR_MODEL` | `ADVISOR_ENABLED=true` |
@@ -34,6 +34,12 @@ Use the Convex dashboard or interactive CLI to configure the **server** environm
 September 20 acceptance used `gpt-5.6-luna` with low reasoning for extraction and advice. Source watches remain disabled in the hosted development configuration. Watch enablement is a separate decision because it schedules recurring provider work.
 
 Quick search retains at most 30 candidates and initially interprets up to three product sources. Each case allows at most three research runs. Each run allows six rounds with up to six interpretations per round; the actual result may stop earlier or retain fewer relevant sources. Reopening saved work does not rerun providers. See `src/domain/researchCoverage.ts` and `convex/lib/firecrawl.ts` for the implemented budgets.
+
+### Ingredient-list reading and batches
+
+`DOCUMENT_EXTRACTION_ENABLED` also gates `/ingredient-list/read` on the deployment's `.convex.site` origin. Its POST uses the browser session capability as Bearer authorization and a stable `X-Request-Id`; OPTIONS supports the separate frontend origin. Files are limited to PNG/JPEG/WebP/PDF and 3 MB. Do not add a credential to the frontend or replace explicit reading with automatic upload. The demo retains at most ten readings per session and 100 globally during the 24-hour retention window, with one active reading and a 30-second cooldown per session. Interrupted reads expire after two minutes; no automatic paid retry occurs.
+
+Ingredient research uses the existing live research, model and sourcing gates. Two Workflow lanes coordinate complete individual investigations. Tests must use a disposable anonymous backend with provider gates off or simulated providers; real acceptance belongs on a separate dataset. The new browser tests exercise human review, saved provenance, navigation continuity, PDF canvas preview and mobile reflow. PDF.js is pinned and loaded on demand; its bundled worker needs no CDN. Node 22.13+ satisfies its runtime requirement.
 
 ### Hosted email
 
@@ -100,7 +106,7 @@ The checked target is `dev:incredible-wolverine-122` in this repository's Convex
 
 For an explicitly authorized manual development publication, first confirm the CLI's development target, deploy its backend with `npx convex dev --once`, then run `npm run deploy:hosting:dev`. That command builds/checks and uploads the frontend only. **`npm run deploy:hosting` selects production; do not use it for development checks.**
 
-`convex/http.ts` registers the exact AgentMail webhook before the static fallback. Extensionless routes serve the SPA shell; missing assets return 404. Verify the actual public app after publishing, not just a successful upload command.
+`convex/http.ts` registers the exact AgentMail webhook and ingredient-list POST/OPTIONS routes before the static fallback. Extensionless routes serve the SPA shell; missing assets return 404. Verify the actual public app after publishing, not just a successful upload command.
 
 ## Agent tooling and local notes
 

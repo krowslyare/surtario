@@ -676,3 +676,20 @@ for (const liveWeb of [false, true]) test(`watch provenance follows web transpor
  await t.mutation(internal.sourcingWatch.finish,{watchId,revision:2,source:{...source,extraction:{...offer,price:field("24")}}});
  expect((await t.query(api.sourcing.research,{token,caseId:id}))[0].simulated).toBe(!liveWeb);
 });
+
+
+test("progress deduplicates long source URLs and retains interpretation without copying URLs into the case", async () => {
+  const t = instance(), id = await create(t);
+  await t.run(ctx => ctx.db.patch(id, { status: "running", revision: 2 }));
+  const url = `https://example.com/rice?context=${"a".repeat(20000)}`;
+  const unread = { ...source, url, extractionStatus: "idle" as const, extraction: null };
+  await t.mutation(internal.sourcing.recordStep, { caseId: id, revision: 2, step: 0, reason: "Find rice", query: "rice", sources: [unread, unread] });
+  let saved = await t.run(ctx => ctx.db.get(id));
+  expect(saved?.sourceProgress).toHaveLength(1);
+  expect(JSON.stringify(saved?.sourceProgress).length).toBeLessThan(150);
+  await t.mutation(internal.sourcing.recordAnalysis, { caseId: id, revision: 2, runId: saved!.researchRunIds[0], sourceIndex: 0, source: { ...source, url } });
+  await t.mutation(internal.sourcing.recordStep, { caseId: id, revision: 2, step: 1, reason: "Check rice again", query: "rice", sources: [unread] });
+  saved = await t.run(ctx => ctx.db.get(id));
+  expect(saved?.sourceProgress).toHaveLength(1);
+  expect(saved?.sourceProgress?.[0].interpreted).toBe(true);
+});

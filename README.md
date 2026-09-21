@@ -4,7 +4,7 @@
 
 [Try Surtario](https://incredible-wolverine-122.convex.site) · [Hackathon build log](hackathon.md) · [Setup and configuration](docs/DEVELOPMENT.md)
 
-Start with an ingredient and delivery area. You do not need recipes, purchase history, documents or an order quantity to research the market.
+Start with an ingredient and delivery area, or import a kitchen list and select the ingredients to research. You do not need recipes, purchase history, documents or an order quantity to research the market.
 
 ## How it works
 
@@ -22,6 +22,7 @@ flowchart LR
 Convex keeps the research, messages and saved decisions connected. AI proposes information; you review the evidence before it becomes an offer. An incoming email does not silently change a price, and choosing an offer does not place an order.
 
 - **Overview:** resume related studies, follow-ups and conversations, review pending evidence and see saved decision changes. Update a saved study with one explicit live search; findings await review before changing confirmed offers.
+- **Ingredient lists:** review names from photo/PDF AI reading, Excel, CSV or text, then research one or several. Overview tracks each ingredient independently and opens findings while the rest continue. This branch has local real-provider acceptance; see delivery status before assuming it is hosted.
 - **Research:** public prices, supplier contacts and sources without published prices, with visible progress and saved follow-ups.
 - **Keep the useful options:** original source, observation date, product specification and unresolved terms stay attached to your study.
 - **Ask and review:** approve a supplier inquiry, receive replies in Messages, then review proposed fields before saving them.
@@ -41,7 +42,7 @@ The app registers the Convex Agent, Workflow and Static Hosting components. [Arc
 
 ## Run locally
 
-Requires **Node.js 22.12+** and npm.
+Requires **Node.js 22.13+** and npm.
 
 ```sh
 npm ci

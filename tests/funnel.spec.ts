@@ -204,7 +204,7 @@ test("continuity keeps independent work separate and its bounded list keyboard a
   await hub.getByLabel("Find work").fill("Rice");
   await expect(scroll.getByRole("listitem")).toHaveCount(2);
   await hub.getByLabel("Find work").fill("");
-  const resume = hub.getByRole("listitem").filter({ hasText: "Find smaller packs" }).getByRole("button", { name: "Open follow-up", exact: true });
+  const resume = hub.getByRole("listitem").filter({ hasText: "Find smaller packs" }).getByRole("button", { name: "Open research question", exact: true });
   await resume.focus();
   await expect(resume).toBeInViewport();
   await resume.press("Enter");

@@ -7,7 +7,7 @@ test("document examples are inspectable but no extraction runs without configura
 }) => {
   await connectOnlyToLocalBackend(context);
   await page.goto("/?example=pe");
-  await page.getByText("Quotes and documents", { exact: true }).click();
+  await page.getByText("Supplier quotes", { exact: true }).click();
   const section = page.getByRole("region", { name: "Photo and PDF extraction" });
   await expect(
     section.getByRole("button", { name: "Read quote with AI" }),

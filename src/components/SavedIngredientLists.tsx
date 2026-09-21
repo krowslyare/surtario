@@ -86,14 +86,10 @@ function ConnectedIngredientLists({
     setError("");
   }, [clientId]);
   const connected = online && connection.isWebSocketConnected;
-  const persistable =
-    batch?.method === "manual" || batch?.method === "spreadsheet";
+  const persistable = !!batch;
 
   async function persist() {
-    const sourceKind =
-      batch?.method === "manual" || batch?.method === "spreadsheet"
-        ? batch.method
-        : null;
+    const sourceKind = batch?.method;
     if (!batch || !sourceKind || savedId || saving || !connected) return;
     setSaving(true);
     setError("");
@@ -105,6 +101,7 @@ function ConnectedIngredientLists({
         clientId: submittedClientId,
         ingredients: batch.rows.map((row) => row.ingredient),
         sourceKind,
+        ...(batch.method === "ai" || batch.method === "transcription" ? { rows: batch.rows.map(r => ({ id: r.id, ingredient: r.ingredient, ...(r.documentHash ? { documentHash: r.documentHash } : {}), original: r.original.join(" | ").slice(0, 2000), reference: r.reference ?? `Row ${r.line}`, needsReview: !!r.needsReview })) } : {}),
       });
       const stillCurrent = onSaved(saved.id, submittedClientId);
       setMessage(
@@ -133,19 +130,17 @@ function ConnectedIngredientLists({
         >
           Saved lists {lists ? `(${lists.length})` : ""}
         </button>
-        <button
+        {batch && <button
           className="button secondary"
           onClick={persist}
           disabled={!persistable || !!savedId || saving || !connected}
         >
           {saving ? "Saving…" : savedId ? "List saved" : "Save list"}
-        </button>
+        </button>}
       </div>
-      <p className="field-hint">
-        Public demo: only reviewed synthetic names are saved. Files, other
-        columns, prices, and original rows are not saved. Photo and PDF
-        transcripts remain in this tab.
-      </p>
+      {batch && <p className="field-hint">
+        Saved lists keep reviewed ingredient names. Document readings also keep the interpreted source text; original files stay in this tab.
+      </p>}
       {!connected && (
         <p role="status">Saving is offline; the local list did not change.</p>
       )}

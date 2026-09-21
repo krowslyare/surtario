@@ -1,3 +1,4 @@
+import { listRow } from "./ingredientResearchValidators";
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
@@ -12,7 +13,9 @@ const MAX_INGREDIENT_LENGTH = 120;
 const MAX_PER_SESSION = 10;
 const MAX_GLOBAL = 100;
 
-function sourceLabel(sourceKind: "manual" | "spreadsheet") {
+function sourceLabel(sourceKind: "manual" | "spreadsheet" | "ai" | "transcription") {
+  if (sourceKind === "ai") return "Reviewed AI list reading";
+  if (sourceKind === "transcription") return "Reviewed document transcript";
   return sourceKind === "manual"
     ? "Reviewed manual input"
     : "Reviewed XLSX or CSV";
@@ -22,6 +25,7 @@ function publicList(list: Doc<"ingredientLists">) {
   return {
     id: list._id,
     ingredients: list.ingredients,
+    ...(list.rows ? { rows: list.rows } : {}),
     sourceKind: list.sourceKind,
     sourceLabel: sourceLabel(list.sourceKind),
     updatedAt: list.updatedAt,
@@ -61,6 +65,7 @@ export const save = mutation({
     clientId: v.string(),
     ingredients: v.array(v.string()),
     sourceKind: ingredientListSourceKind,
+    rows: v.optional(v.array(listRow)),
   },
   returns: savedIngredientListValidator,
   handler: async (ctx, args) => {
@@ -68,6 +73,7 @@ export const save = mutation({
     if (!/^[a-f0-9-]{36}$/.test(args.clientId))
       throw new ConvexError("Invalid request.");
     const ingredients = reviewedIngredients(args.ingredients);
+    if (args.rows && (args.rows.length !== ingredients.length || args.rows.some((r, i) => r.ingredient !== ingredients[i] || r.needsReview || r.original.length > 2000 || r.reference.length > 200 || (r.documentHash !== undefined && !/^[a-f0-9]{64}$/.test(r.documentHash)) || r.id.length > 80))) throw new ConvexError("Review the source rows before saving.");
     const existing = await ctx.db
       .query("ingredientLists")
       .withIndex("by_ownerHash_and_clientId", (q) =>
@@ -76,6 +82,7 @@ export const save = mutation({
       .unique();
     if (existing) {
       if (
+        JSON.stringify(existing.rows) !== JSON.stringify(args.rows) ||
         existing.sourceKind !== args.sourceKind ||
         existing.ingredients.length !== ingredients.length ||
         ingredients.some(
@@ -104,6 +111,7 @@ export const save = mutation({
       ownerHash: hash,
       clientId: args.clientId,
       ingredients,
+      ...(args.rows ? { rows: args.rows } : {}),
       sourceKind: args.sourceKind,
       updatedAt: Date.now(),
     });

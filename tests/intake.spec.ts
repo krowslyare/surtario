@@ -10,9 +10,9 @@ test("CSV revisable conserva fila y origen sin subir documentos", async ({
   });
   await page.goto("/?example=pe");
   await page
-    .getByText("Ingredient list", { exact: true })
+    .getByText("Ingredient lists", { exact: true })
     .click();
-  await page.getByRole("button", { name: "Add list or file" }).click();
+  await page.getByLabel("Ingredient intake").getByRole("button", { name: "Import ingredient list", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Ingredient file").setInputFiles({
     name: "lista.csv",
@@ -26,11 +26,9 @@ test("CSV revisable conserva fila y origen sin subir documentos", async ({
   await expect(dialog.getByRole("alert")).toContainText("Complete or remove");
   await dialog.getByRole("button", { name: "Remove ingredient 2" }).click();
   await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
-  await page.getByRole("button", { name: "Arroz", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Arroz in Lima" }),
-  ).toBeVisible();
-  await expect(page.getByRole("article")).toHaveCount(4);
+  await expect(page.getByRole("checkbox", { name: /Arroz/ })).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: /Aceite/ })).toBeChecked();
+  await expect(page.getByRole("heading", { name: "Arroz in Lima" })).toHaveCount(0);
   await page.getByRole("button", { name: "View list source" }).click();
   await expect(dialog).toContainText("Row 2: Arroz | 4,50");
   await expect(dialog).toContainText("Row 4: Aceite");
@@ -42,9 +40,9 @@ test("XLSX elige segunda hoja y columna, conserva valor almacenado", async ({
 }) => {
   await page.goto("/?example=pe");
   await page
-    .getByText("Ingredient list", { exact: true })
+    .getByText("Ingredient lists", { exact: true })
     .click();
-  await page.getByRole("button", { name: "Add list or file" }).click();
+  await page.getByLabel("Ingredient intake").getByRole("button", { name: "Import ingredient list", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog
     .getByLabel("Ingredient file")
@@ -73,9 +71,9 @@ test("foto sin OCR permite transcripción y cancelar reemplazo conserva lista", 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/?example=pe");
   await page
-    .getByText("Ingredient list", { exact: true })
+    .getByText("Ingredient lists", { exact: true })
     .click();
-  await page.getByRole("button", { name: "Add list or file" }).click();
+  await page.getByLabel("Ingredient intake").getByRole("button", { name: "Import ingredient list", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Ingredient file").setInputFiles({
     name: "ejemplo.png",
@@ -85,7 +83,7 @@ test("foto sin OCR permite transcripción y cancelar reemplazo conserva lista", 
       "base64",
     ),
   });
-  await expect(dialog).toContainText("AI extraction is not configured in this demo.");
+  await expect(dialog).toContainText("AI list reading is not enabled on this server.");
   await dialog.getByLabel("Transcribe ingredients").fill("Arroz\nCebolla");
   await dialog.getByRole("button", { name: "Review ingredients" }).click();
   await dialog
@@ -96,13 +94,13 @@ test("foto sin OCR permite transcripción y cancelar reemplazo conserva lista", 
   await dialog.getByLabel("Type or paste ingredients").fill("Aceite");
   await page.keyboard.press("Escape");
   await expect(
-    page.getByRole("button", { name: "Cebolla roja", exact: true }),
+    page.getByRole("checkbox", { name: /Cebolla roja/ }),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Aceite", exact: true }),
+    page.getByRole("checkbox", { name: /Aceite/ }),
   ).toHaveCount(0);
   await page.getByRole("button", { name: "View list source" }).click();
-  await expect(dialog).toContainText("Manual transcript");
+  await expect(dialog).toContainText("Manually transcribed");
   expect(await dialog.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(
     true,
   );
@@ -118,9 +116,9 @@ test("manual sin archivo y archivo inválido permiten recuperación", async ({
 }) => {
   await page.goto("/?example=pe");
   await page
-    .getByText("Ingredient list", { exact: true })
+    .getByText("Ingredient lists", { exact: true })
     .click();
-  await page.getByRole("button", { name: "Add list or file" }).click();
+  await page.getByLabel("Ingredient intake").getByRole("button", { name: "Import ingredient list", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Ingredient file").setInputFiles({
     name: "roto.xlsx",
@@ -133,47 +131,24 @@ test("manual sin archivo y archivo inválido permiten recuperación", async ({
   await dialog.getByRole("button", { name: "Review ingredients" }).click();
   await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
   await expect(
-    page.getByRole("button", { name: "Arroz", exact: true }),
+    page.getByRole("checkbox", { name: /Arroz/ }),
   ).toHaveCount(2);
 });
 
-test("otro insumo exige separar el estudio y no arrastra su selección", async ({
-  page,
-}) => {
+test("a reviewed list never replaces an existing ingredient study or carries its supplier selection into another ingredient", async ({ page }) => {
   await page.goto("/?example=pe");
-  await page
-    .getByText("Ingredient list", { exact: true })
-    .click();
-  await page.getByRole("button", { name: "Add list or file" }).click();
+  await page.getByRole("button", { name: "Explore rice example", exact: true }).click();
+  await page.getByRole("article").first().getByRole("button", { name: "Add to study" }).click();
+  await page.getByText("Ingredient lists", { exact: true }).click();
+  await page.getByLabel("Ingredient intake").getByRole("button", { name: "Import ingredient list", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Type or paste ingredients").fill("Arroz\nAceite");
   await dialog.getByRole("button", { name: "Review ingredients" }).click();
   await dialog.getByRole("button", { name: "Confirm 2 ingredients" }).click();
-  await page.getByRole("button", { name: "Arroz", exact: true }).click();
-  await page
-    .getByRole("article")
-    .first()
-    .getByRole("button", { name: "Add to study" })
-    .click();
-  await page.getByRole("button", { name: "Aceite", exact: true }).click();
-  await dialog
-    .getByRole("button", { name: "Back to study", exact: true })
-    .click();
-  await expect(
-    page.getByRole("button", { name: "Arroz", exact: true }),
-  ).toHaveAttribute("aria-pressed", "true");
-  await expect(
-    page.getByRole("button", { name: "In my study", exact: true }),
-  ).toHaveCount(1);
-  await page.getByRole("button", { name: "Aceite", exact: true }).click();
-  await dialog.getByRole("button", { name: "Start another study" }).click();
-  await expect(
-    page.getByRole("heading", { name: "Aceite in Lima" }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole("button", { name: "In my study", exact: true }),
-  ).toHaveCount(0);
-  await expect(
-    page.getByRole("button", { name: "Save study", exact: true }),
-  ).toBeDisabled();
+  await page.getByRole("checkbox", { name: /Arroz/ }).uncheck();
+  await expect(page.getByRole("checkbox", { name: /Aceite/ })).toBeChecked();
+  await expect(page.getByRole("button", { name: "In my study", exact: true })).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "Arroz in Lima" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Research selected · 1", exact: true })).toBeDisabled();
+  await expect(page.getByText("Supplier research is not enabled on this server.", { exact: false })).toBeVisible();
 });

@@ -15,12 +15,12 @@ test("mobile document tools remain reachable by keyboard and preserve the review
       .evaluate((element) => getComputedStyle(element).animationName),
   ).toBe("none");
 
-  const listTools = page.getByRole("button", { name: "Ingredient list", exact: true });
+  const listTools = page.getByRole("button", { name: "Import ingredient list", exact: true });
   await listTools.focus();
   await page.keyboard.press("Enter");
-  await page.getByRole("button", { name: "Add list or file" }).focus();
-  await expect(page.getByRole("button", { name: "Add list or file" })).toBeInViewport();
-  const disclosure = page.getByRole("button", { name: "Quotes and documents", exact: true });
+  await page.getByLabel("Ingredient intake").getByRole("button", { name: "Import ingredient list", exact: true }).focus();
+  await expect(page.getByLabel("Ingredient intake").getByRole("button", { name: "Import ingredient list", exact: true })).toBeInViewport();
+  const disclosure = page.getByRole("button", { name: "Supplier quotes", exact: true });
   await disclosure.focus();
   await page.keyboard.press("Enter");
   const trigger = page.getByRole("button", {

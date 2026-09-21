@@ -135,6 +135,8 @@ export default function MarketStudy({
   const [entry, setEntry] = useState<SourcingEntryRequest | null>(null);
   const [resumeResearch, setResumeResearch] = useState<ResearchResumeRequest | null>(() => restored?.researchCursor ? { ...restored.researchCursor, sequence: 0 } : null);
   // Mount the market on first use, then keep its drafts when returning to Overview.
+  const overviewMounted = useRef(overview);
+  if (overview) overviewMounted.current = true;
   const marketMounted = useRef(active);
   if (active) marketMounted.current = true;
   const [questionOpen, setQuestionOpen] = useState(false);
@@ -622,13 +624,13 @@ export default function MarketStudy({
 
         </nav>
       </header>
-      {overview && (persistenceEnabled ? <SourcingOverview onResearch={() => { onExitFollowup(); setShowStudy(false); setSearchOpen(true); }} onOpen={(item, target, requestId, runId, saved) => {
+      {overviewMounted.current && <div hidden={!overview}>{persistenceEnabled ? <SourcingOverview onOpenCase={(id, runId) => onOpenFollowup(id, undefined, runId)} onResearch={() => { onExitFollowup(); setShowStudy(false); setSearchOpen(true); }} onOpen={(item, target, requestId, runId, saved) => {
         if (target === "mail") { if (item.caseId) onOpenFollowup(item.caseId, requestId); else onOpenMessages(requestId); }
         else if (saved?.comparison) onPrepare({ ...saved.comparison, resumeComparison: { id: saved.comparison.id, revision: saved.comparison.revision, selectedOfferId: saved.comparison.selectedOfferId, unchanged: true } });
         else if (item.caseId) onOpenFollowup(item.caseId, undefined, target === "evidence" || target === "research" ? runId : undefined);
         else if (runId && (target !== "work" || item.kind === "search")) resumeSavedResearch(runId, item.ingredient, item.region, saved?.study);
         else { if (saved?.study) openStudy(saved.study); onExitFollowup(true); }
-      }} /> : <main id="overview-main"><h1>Overview is unavailable</h1><p>Connect saved storage to recover your sourcing work.</p></main>)}
+      }} /> : <main id="overview-main"><h1>Overview is unavailable</h1><p>Connect saved storage to recover your sourcing work.</p></main>}</div>}
       {marketMounted.current && <div hidden={Boolean(overview || followup || messages)}>
       {fromOverview && <Button variant="text" onClick={onOpenOverview}><ArrowLeft size={16} />Back to overview</Button>}
       <main
@@ -1093,13 +1095,14 @@ export default function MarketStudy({
           <div className="extras-grid">
             <Disclosure
               id="disclosure-ingredients"
-              title="Ingredient list"
-              description="Research the ingredients on your list, one at a time."
+              title="Ingredient lists"
+              description="Read a kitchen list, review its ingredients and research your selection."
               open={extrasIngredientOpen}
               onOpenChange={setExtrasIngredientOpen}
             >
               <IngredientIntake
                 persistenceEnabled={persistenceEnabled}
+                onStarted={onOpenOverview}
                 activeIngredient={search?.term ?? null}
                 onExplore={(ingredient) => {
                   if (ingredient === search?.term) return;
@@ -1111,8 +1114,8 @@ export default function MarketStudy({
             </Disclosure>
             <Disclosure
               id="disclosure-quotes"
-              title="Quotes and documents"
-              description="Review a quote or enter its details."
+              title="Supplier quotes"
+              description="Extract supplier terms from a sample quote or explore a manual comparison."
               open={extrasQuotesOpen}
               onOpenChange={setExtrasQuotesOpen}
             >
@@ -1126,7 +1129,7 @@ export default function MarketStudy({
                       onClick={onManualExample}
                     >
                       <PenLine size={17} />
-                      Enter quote manually
+                      Explore sample comparison
                     </button>
                   </div>
                   <span>Synthetic sample quote or manual price entry</span>

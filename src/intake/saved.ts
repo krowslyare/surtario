@@ -3,7 +3,7 @@ import type { IntakeBatch } from "./model";
 
 export function batchFromSavedList(list: SavedIngredientList): IntakeBatch {
   return {
-    rows: list.ingredients.map((ingredient, index) => ({
+    rows: list.rows ? list.rows.map((row, index) => ({ ...row, original: [row.original], line: index + 1 })) : list.ingredients.map((ingredient, index) => ({
       id: String(index),
       ingredient,
       original: [ingredient],
@@ -14,6 +14,6 @@ export function batchFromSavedList(list: SavedIngredientList): IntakeBatch {
     column: null,
     hasHeader: false,
     method: list.sourceKind,
-    sourceLabel: `Lista guardada · ${list.sourceLabel}`,
+    sourceLabel: `Saved list · ${list.sourceLabel}`,
   };
 }

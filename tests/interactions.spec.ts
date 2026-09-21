@@ -54,7 +54,7 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
 }) => {
   await page.goto("/?example=pe");
   const tools = page.getByRole("button", {
-    name: "Quotes and documents",
+    name: "Supplier quotes",
     exact: true,
   });
   const review = page.getByRole("button", {
@@ -82,7 +82,7 @@ test("contraer herramientas retira controles del teclado y conserva correcciones
   await expect(review).toHaveCount(0);
   await tools.press("Shift+Tab");
   await expect(
-    page.getByRole("button", { name: "Ingredient list", exact: true }),
+    page.getByRole("button", { name: "Ingredient lists", exact: true }),
   ).toBeFocused();
   await tools.click();
   await review.click();

@@ -12,13 +12,13 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-21T19:22:34Z
+- **Last updated:** 2026-09-21T22:26:56Z
 
 ## Current delivery
 
 The development app has exercised real Firecrawl discovery, direct OpenAI extraction/advice and an AgentMail test-inbox round trip with reactive Convex updates. People review evidence and commercial terms; neither a reply nor a selected offer places a purchase. [Executed acceptance and limits](docs/VERIFICATION.md).
 
-The deployed baseline is PR #41 (`f053dc6`), including sourcing overview and manual study refresh: CI passed and development publication verified 35 files, SPA fallback and missing-asset behavior. A separate presentation/navigation follow-up passed local checks and remains on its own PR branch. The final narrated video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
+The deployed baseline is PR #42 (`32f080e`), including the overview presentation/navigation follow-up; [Verify run 35653681215](https://github.com/krowslyare/restaurant-procurement/actions/runs/35653681215) completed development publication and hosted-file verification. Ingredient-list reading and batch research are implemented on a separate, unpublished PR branch with local real-provider acceptance. Final video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
 
 ## Log
 
@@ -144,3 +144,15 @@ Merged the authorized PR #41 into main as `f053dc6`. [Verify run 35643296196](ht
 On a separate branch, clarified the decision-history empty state and separated next steps, work and outcomes. Removed the global Follow-ups intake; Research a question stays contextual and saved research stays accessible from its study and Overview. Global navigation clears obsolete return links, and early browser Back after reload reconciles the visible route. The four top-level destinations remain visible at 390 and 320 px. No source values or commercial terms are fabricated for the recording.
 
 Validation passed 334 domain/backend tests, 38/38 focused browser tests in the final run, frontend TypeScript and the 35-file hosting build. Desktop/mobile review used existing real-source data; automated fixtures stayed on a separate local backend. Initial local selector setup and an early-Back route failure were corrected and rechecked without retries or relaxed assertions. The new presentation change is not merged or deployed; no new provider or mail calls were made.
+
+
+### 2026-09-21 - Ingredient lists and independent research, separate PR
+
+Implemented explicit photo/PDF reading with OpenAI, editable original/corrected rows, ambiguity review, source fingerprints and one/many selection. Excel/CSV/text remain available. Two durable Workflow lanes coordinate existing individual sourcing cases, with atomic capacity checks, idempotent starts, owner isolation, independent stop/retry and incremental Overview findings. PDF originals render locally; the interface uses the established visual system and preserves list selection during navigation.
+
+On an isolated local backend, direct OpenAI read the synthetic kitchen list from both PNG and PDF into four correct ingredients. A real Firecrawl/OpenAI batch completed one run per ingredient: 17/15/15/25 sources and 12/10/12/12 interpretations respectively, all ending at the six-round budget. Observed two active/two queued, reloaded without duplicate cases, and opened rice evidence while other research continued. No files in Convex Storage, no mail requests and no purchases were created. This is local external acceptance, not hosted publication or private-customer enablement. Automated checks and the complete acceptance boundary are recorded in [VERIFICATION](docs/VERIFICATION.md).
+
+
+### 2026-09-21 - PR #43 review corrections
+
+Confirmed and fixed replacement-versus-retry request identity and incomplete metadata validation on batch replay. Removed repeated batch attention cards while retaining the shared priority actions inside each ingredient row. Regression checks cover identical replacement, unconfirmed retries, changed title/provenance and exact evidence/comparison/reply destinations. Desktop/mobile inspection used preserved local results; no additional provider calls, mail, merge or publication were made. Final validation is recorded in [VERIFICATION](docs/VERIFICATION.md).

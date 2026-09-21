@@ -1,9 +1,13 @@
 import { v } from "convex/values";
 import {
+  researchProgressValidator,
   extractedOfferValidator,
   sourceAnalysisValidator,
 } from "./researchValidators";
 export const caseFields = {
+  batchId: v.optional(v.id("ingredientBatches")),
+  phase: v.optional(v.string()),
+  discoveryProgress: v.optional(researchProgressValidator),
   studyId: v.optional(v.id("studies")),
   comparisonId: v.optional(v.id("comparisons")),
   ingredient: v.string(),

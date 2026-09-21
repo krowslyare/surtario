@@ -20,7 +20,7 @@
     "dev:mail": "node scripts/local-agentmail.mjs"
   },
   "engines": {
-    "node": ">=22.12.0"
+    "node": ">=22.13.0"
   },
   "dependencies": {
     "@ai-sdk/openai": "^4.0.60",
@@ -35,6 +35,7 @@
     "lucide-react": "^1.42.0",
     "motion": "^13.2.0",
     "papaparse": "^5.7.0",
+    "pdfjs-dist": "6.3.289",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "read-excel-file": "^9.3.10",

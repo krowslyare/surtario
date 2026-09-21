@@ -1,3 +1,5 @@
+import IngredientIntake from "./IngredientIntake";
+import { IngredientBatchProgress } from "./IngredientResearch";
 import { Component, useMemo, useRef, useState, type ReactNode } from "react";
 import { useAction, useConvex, useConvexConnectionState, useQueries, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -15,7 +17,7 @@ export type OverviewItem = FunctionReturnType<typeof api.overview.list>["items"]
 type Run = FunctionReturnType<typeof api.overview.research>;
 type Target = "work" | "mail" | "comparison" | "evidence" | "research";
 type OpenData = { study?: import("./SavedStudies").SavedStudy; comparison?: import("./SavedComparisons").SavedComparison };
-type Props = { onResearch: () => void; onOpen: (item: OverviewItem, target: Target, requestId?: string, runId?: string, saved?: OpenData) => Promise<void> | void };
+type Props = { onOpenCase: (id: string, runId?: string) => void; onResearch: () => void; onOpen: (item: OverviewItem, target: Target, requestId?: string, runId?: string, saved?: OpenData) => Promise<void> | void };
 
 function useOverview(token: string) {
   const data = useQuery(api.overview.list, { token });
@@ -67,7 +69,8 @@ export default function SourcingOverview(props: Props) {
     <div className="overview-heading"><div><p className="eyebrow">Sourcing overview</p><h1 tabIndex={-1}>Your sourcing workspace</h1></div>
       <Button variant="primary" onClick={props.onResearch}><Search size={18} />Research an ingredient</Button></div>
     {error ? <p role="alert">Site storage is unavailable. Saved work cannot be recovered.</p> : !token ? <p role="status">Loading your work…</p> :
-      <OverviewBoundary><Connected {...props} token={token} /></OverviewBoundary>}
+      <div className="overview-list-entry"><IngredientIntake persistenceEnabled activeIngredient={null} onExplore={props.onResearch} /></div> }
+    {!error && token && <OverviewBoundary><Connected {...props} token={token} /></OverviewBoundary>}
   </main>;
 }
 
@@ -100,8 +103,11 @@ function Connected({ token, ...props }: Props & { token: string }) {
   const changed = desired.join() !== orderedIds.join();
   const matches = (item: Work) => (filter === "all" || (filter === "attention" ? item.next.attention : filter === "researching" ? item.next.researching : item.next.waiting)) &&
     `${item.ingredient} ${item.region} ${item.suppliers.join(" ")}`.toLowerCase().includes(search.trim().toLowerCase());
-  const visible = ordered.filter(matches);
-  const chooseFilter = (value: Filter) => { setFilter(value); document.getElementById("overview-work")?.scrollIntoView({ behavior: "instant", block: "start" }); };
+  const matching = ordered.filter(matches);
+  const visible = matching.filter(item => !item.batchId);
+  const standalone = ordered.filter(item => !item.batchId);
+  const standaloneAttention = standalone.filter(item => item.next.attention);
+  const chooseFilter = (value: Filter) => { setFilter(value); (document.getElementById("overview-work") ?? document.getElementById("ingredient-batches"))?.scrollIntoView({ behavior: "instant", block: "start" }); };
   async function open(item: Work, target: Target = item.next.target, requestId?: string) {
     if (opening) return;
     setOpening(item.id); setError("");
@@ -128,20 +134,22 @@ function Connected({ token, ...props }: Props & { token: string }) {
       {([["attention", "Needs your attention", attention.length], ["researching", "Research in progress", researching.length], ["waiting", "Waiting for suppliers", waiting.length]] as const).map(([value, label, count]) =>
         <button key={value} aria-pressed={filter === value} onClick={() => chooseFilter(value)}><strong>{count}</strong><span>{label}</span><ArrowRight size={18} /></button>)}
     </div>
+    {filter !== "all" && <Button variant="text" onClick={() => setFilter("all")}>Show all work</Button>}
+    <IngredientBatchProgress nextSteps={Object.fromEntries(items.filter(item => item.batchId && item.caseId).map(item => [item.caseId!, { title: item.next.title, action: action(item) }]))} onOpen={props.onOpenCase} visibleCaseIds={filter === "all" && !search ? undefined : matching.flatMap(item => item.caseId ? [item.caseId] : [])} />
     <p className="overview-scope">{data.limited ? "Recent work only: this session exceeds the overview’s supported record limit." : "Work in this browser session."} A work item can need attention while research continues.</p>
     {!items.length ? <section className="overview-empty"><img src="/brand/surtario-symbol.svg" alt="" width="64" height="64" /><h2>Start with what your kitchen needs.</h2><p>Research an ingredient and delivery area. Your saved studies, supplier conversations and decisions will come together here.</p><Button variant="secondary" onClick={props.onResearch}>Explore suppliers<ArrowRight size={16} /></Button></section> : <>
-      <div className={`overview-priorities ${researching.length ? "has-research" : ""}`}>
-        <section aria-labelledby="attention-title"><div className="overview-section-title"><div><h2 id="attention-title">Needs your attention</h2><p>Review what’s holding up your next step.</p></div>{attention.length > 3 && <Button variant="text" onClick={() => chooseFilter("attention")}>See all {attention.length}</Button>}</div>
-          {attention.length ? <ul className="overview-attention">{ordered.filter(item => item.next.attention).slice(0, 3).map(item => <li key={item.id}>
+      {standalone.length > 0 && <div className={`overview-priorities ${standalone.some(item => item.next.researching) ? "has-research" : ""}`}>
+        <section aria-labelledby="attention-title"><div className="overview-section-title"><div><h2 id="attention-title">Needs your attention</h2><p>Review what’s holding up your next step.</p></div>{standaloneAttention.length > 3 && <Button variant="text" onClick={() => chooseFilter("attention")}>See all {standaloneAttention.length}</Button>}</div>
+          {standaloneAttention.length ? <ul className="overview-attention">{standaloneAttention.slice(0, 3).map(item => <li key={item.id}>
             <p className="overview-ingredient">{item.ingredient}<span>{item.region}</span></p><div className="overview-attention-detail"><h3>{item.next.title}</h3><p>{item.next.description}</p></div>{action(item)}
-          </li>)}</ul> : <p className="overview-clear"><Check size={20} />No reviews are waiting. Continue any saved work below.</p>}
+          </li>)}</ul> : <p className="overview-clear"><Check size={20} />{attention.length ? "List ingredients needing attention are shown above." : "No reviews are waiting. Continue any saved work below."}</p>}
         </section>
-        {researching.length > 0 && <section className="overview-research" aria-labelledby="research-title"><h2 id="research-title">Research in progress</h2>
-          {researching.map(item => <article key={item.id}><h3>{item.ingredient}</h3><p>{item.region}</p><p>{item.active ? ({ searching: "Finding public sources", reading: "Reading product pages", reviewing: "Interpreting source evidence" }[item.active.stage] ?? "Research in progress") : "Investigating this question"}</p>
+        {researching.some(item => !item.batchId) && <section className="overview-research" aria-labelledby="research-title"><h2 id="research-title">Research in progress</h2>
+          {researching.filter(item => !item.batchId).map(item => <article key={item.id}><h3>{item.ingredient}</h3><p>{item.region}</p><p>{item.active ? ({ searching: "Finding public sources", reading: "Reading product pages", reviewing: "Interpreting source evidence" }[item.active.stage] ?? "Research in progress") : "Investigating this question"}</p>
             {item.status === "running" && item.caseId && <p>Round {Math.min(item.steps + 1, 6)} of up to 6</p>}<p>{item.active?.retained ?? item.retained} sources retained · {item.active?.interpreted ?? item.interpreted} interpretations</p><Button variant="text" onClick={() => void open(item, "research")}>Open research<ArrowRight size={16} /></Button></article>)}
         </section>}
-      </div>
-      <section id="overview-work" aria-labelledby="work-title"><div className="overview-section-title"><div><h2 id="work-title">All sourcing work</h2><p>Your research, saved studies and supplier conversations.</p></div>{changed && <Button variant="text" onClick={() => { order.current = desired; rerender(value => value + 1); }}>New activity · update order</Button>}</div>
+      </div>}
+      {items.some(item => !item.batchId) && <section id="overview-work" aria-labelledby="work-title"><div className="overview-section-title"><div><h2 id="work-title">All sourcing work</h2><p>Your research, saved studies and supplier conversations.</p></div>{changed && <Button variant="text" onClick={() => { order.current = desired; rerender(value => value + 1); }}>New activity · update order</Button>}</div>
         <div className="overview-toolbar"><label>Find work<input type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Ingredient, supplier or location" /></label>
           <label>Sort by<Select aria-label="Sort by" value={sort} onValueChange={value => { setSort(value); order.current = []; }} options={[{ value: "priority", label: "Priority" }, { value: "recent", label: "Recent activity" }]} /></label></div>
         <div className="overview-filters" role="group" aria-label="Work status">{([["all", "All"], ["attention", "Needs attention"], ["researching", "Researching"], ["waiting", "Waiting"]] as const).map(([value, label]) => <Button key={value} variant="text" aria-pressed={filter === value} onClick={() => setFilter(value)}>{label}</Button>)}</div>
@@ -150,7 +158,7 @@ function Connected({ token, ...props }: Props & { token: string }) {
           <div><strong>{item.next.title}</strong><p>{item.next.description}</p>{item.refresh && <div className="overview-refresh"><small>Research {item.refresh.status === "running" ? "started" : item.refresh.status === "failed" ? "interrupted" : "updated"} {date(item.refresh.createdAt)}</small><p>{item.refresh.status === "running" ? "Checking for new sources and updated details…" : item.refresh.status === "failed" ? "Research is incomplete. Review the available sources before trying again." : !item.newSources && !item.changedSources ? "No new sources or changed details found." : `${item.newSources} new sources · ${item.changedSources} with different interpreted details. Review against your saved evidence.`}</p></div>}{item.activeWatches > 0 && <small>{item.activeWatches} active source {item.activeWatches === 1 ? "watch" : "watches"}</small>}</div>
           <div className="overview-work-actions">{action(item)}{item.studyId && <Button variant="text" disabled={!connected || !availability?.searchEnabled || item.next.researching || refreshing === item.id} onClick={() => setRefreshItem(item)}><RefreshCw size={15} />{refreshing === item.id ? "Updating research…" : "Update market research"}</Button>}</div>
         </li>)}</ul>}
-      </section>
+      </section>}
     </>}
       <section className="overview-decisions" aria-labelledby="decisions-title"><div className="overview-section-title"><div><h2 id="decisions-title">Recent decision updates</h2><p>What changed after you confirmed supplier terms.</p></div></div>
         {!outcomes.length ? <div className="overview-decision-empty"><span className="overview-empty-icon"><ClipboardCheck size={28} aria-hidden="true" /></span><div><h3>No decision updates yet</h3><p>After you review a supplier reply and confirm delivery or minimum order terms, the saved before-and-after comparison will appear here.</p></div></div> : <div className="overview-outcomes">{outcomes.map(outcome => <article key={outcome.id}>
