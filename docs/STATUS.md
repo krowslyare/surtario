@@ -9,7 +9,7 @@ Updated September 21, 2026. This is the current status source; `hackathon.md` re
 | Study and follow-up | Implemented and exercised | Reviewed offers/no-price candidates, sources, messages and recoverable comparisons |
 | Decision | Implemented | Missing terms block selection; local five-offer flow reaches selection after synthetic terms are confirmed; hosted acceptance retained its delivery blocker |
 | Hosted app | Development published | PR #39, `0eee328`; GitHub Actions verified 35 published files, SPA fallback and missing-asset behavior |
-| Recording UX follow-up | Branch `codex/live-recording-fixes` | Bulk analysis/review, explicit saved states, 12 study options, six-offer comparison, compact layout and shared terms; pending PR review and deployment |
+| Recording UX follow-up | [PR #40](https://github.com/krowslyare/restaurant-procurement/pull/40) | Bulk analysis/review, explicit saved states, 12 study options, six-offer comparison, compact layout and shared terms. Both Codex findings corrected and verified locally; integration/publication tracked on the PR |
 | Repository cleanup | Verified locally | Five public guides, README workflow diagram, working notes/tooling excluded; 320 tests and hosting build passed from a tracked-file snapshot with a fresh offline dependency installation |
 | Recipes / private pilot | Outside release | No customer-data enablement or validated restaurant pilot |
 | Submission | Pending | Final video, public GitHub release, social post and entry confirmation remain outstanding |

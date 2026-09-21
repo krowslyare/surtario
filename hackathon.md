@@ -12,7 +12,7 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-21T11:15:52Z
+- **Last updated:** 2026-09-21T11:50:13Z
 
 ## Current delivery
 
@@ -121,3 +121,7 @@ Added visible extraction/saved states, sequential source analysis and an explici
 Pre-PR review corrected saved-review recovery, currency audit parity, invalid bulk fields and re-saving normalized comparisons. Local checks use simulated providers and an isolated anonymous Convex deployment; no paid API calls, outbound emails, recurring watches, repository-visibility changes or contest submission were performed. The existing live rehearsal session remains available. This change is not merged or deployed.
 
 Verification passed 325 domain/backend tests in 49 files, frontend/backend TypeScript, the production build and the 35-file hosting check. All 136 browser cases were verified across the full run and targeted reruns: the first run exposed 16 outdated selectors/fixtures or expectations, which were corrected and rechecked without increasing timeouts or removing behavioral checks. The added bulk-unmount check also passed. Desktop/mobile computer-use inspection covered compact comparison and shared terms; six offers reflowed at 1920, 390 and 320 px. An initial concurrent unit run timed out in two tests; a two-worker rerun passed all 325.
+
+### 2026-09-21 - working tree · PR #40 review corrections
+
+Validated and corrected both Codex review findings: normalized equivalent web offers can be saved and reopened, and filtered study comparisons only use visible offers. Source wording is preserved; incompatible manual identity edits still block saving. Three focused browser tests passed against isolated local Convex, including F5, re-save, filtered selection and existing selected-offer recovery. TypeScript/build and all 35 hosting files passed checks. No provider calls or mail were repeated. Integration and development publication remain separate outcomes tracked on PR #40.

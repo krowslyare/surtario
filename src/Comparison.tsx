@@ -541,8 +541,11 @@ export default function Comparison({
           entry.replyReview !== undefined) &&
         entry.label !== "Manual entry" &&
         offer.supplier === entry.original.supplier &&
-        offer.ingredient === entry.original.ingredient &&
-        offer.specification === entry.original.specification
+        (entry.webReview?.confirmed === true
+          ? offer.ingredient === baselineRequest.ingredient &&
+            offer.specification === baselineRequest.specification
+          : offer.ingredient === entry.original.ingredient &&
+            offer.specification === entry.original.specification)
       );
     });
   const pendingQuantity = quantity.trim() === "";

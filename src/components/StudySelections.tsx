@@ -38,31 +38,31 @@ export default function StudySelections({
     string | null
   >(null);
   const [error, setError] = useState("");
-  const [comparisonIds, setComparisonIds] = useState<string[]>(() =>
-    selections.slice(0, MAX_COMPARISON_OFFERS).map((item) => item.sourceId),
-  );
-  const selectionIdsFingerprint = selections.map((item) => item.sourceId).join("|");
-  useEffect(() => {
-    setComparisonIds((current) => {
-      const valid = current.filter((id) =>
-        selections.some((item) => item.sourceId === id),
-      ).slice(0, MAX_COMPARISON_OFFERS);
-      return valid.length
-        ? valid
-        : selections.slice(0, MAX_COMPARISON_OFFERS).map((item) => item.sourceId);
-    });
-  }, [selectionIdsFingerprint]);
-  const comparisonSelections = selections.length <= MAX_COMPARISON_OFFERS
-    ? selections
-    : selections.filter((item) => comparisonIds.includes(item.sourceId));
-  const fingerprint = JSON.stringify(comparisonSelections);
-  const confirmed = confirmedFingerprint === fingerprint;
   const visibleSelections = selections.filter(
     ({ seed }) =>
       filter === "all" ||
       (filter === "catalog" && seed.offers[0].priceCents !== null) ||
       (filter === "distributor" && seed.offers[0].priceCents === null),
   );
+  const [comparisonIds, setComparisonIds] = useState<string[]>(() =>
+    visibleSelections.slice(0, MAX_COMPARISON_OFFERS).map((item) => item.sourceId),
+  );
+  const visibleIdsFingerprint = visibleSelections.map((item) => item.sourceId).join("|");
+  useEffect(() => {
+    setComparisonIds((current) => {
+      const valid = current.filter((id) =>
+        visibleSelections.some((item) => item.sourceId === id),
+      ).slice(0, MAX_COMPARISON_OFFERS);
+      return valid.length
+        ? valid
+        : visibleSelections.slice(0, MAX_COMPARISON_OFFERS).map((item) => item.sourceId);
+    });
+  }, [visibleIdsFingerprint]);
+  const comparisonSelections = visibleSelections.length <= MAX_COMPARISON_OFFERS
+    ? visibleSelections
+    : visibleSelections.filter((item) => comparisonIds.includes(item.sourceId));
+  const fingerprint = JSON.stringify(comparisonSelections);
+  const confirmed = confirmedFingerprint === fingerprint;
   const prospectsVisible = filter === "all" || filter === "distributor";
   return (
     <div className="study-selections">
@@ -129,14 +129,14 @@ export default function StudySelections({
                 {source && <small>Observed {new Date(source.observedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</small>}
               </div>
               <div className="study-selection-actions">
-                {selections.length > MAX_COMPARISON_OFFERS && (
+                {visibleSelections.length > MAX_COMPARISON_OFFERS && (
                   <label className="checkbox study-compare-pick">
                     <input
                       type="checkbox"
                       checked={comparisonIds.includes(sourceId)}
                       disabled={
                         !comparisonIds.includes(sourceId) &&
-                        comparisonIds.length >= MAX_COMPARISON_OFFERS
+                        comparisonSelections.length >= MAX_COMPARISON_OFFERS
                       }
                       onChange={(event) => {
                         setComparisonIds((current) =>
@@ -195,7 +195,7 @@ export default function StudySelections({
             Compare {comparisonSelections.length} reviewed {comparisonSelections.length === 1 ? "offer" : "offers"} <ArrowRight size={16} />
           </button>
           <p className="field-hint">
-            {selections.length > MAX_COMPARISON_OFFERS
+            {visibleSelections.length > MAX_COMPARISON_OFFERS
               ? `Choose up to ${MAX_COMPARISON_OFFERS} offers above, then enter the amount you need and review the total cost.`
               : "Optional: enter the amount you need next and review the total cost."}
             {" "}Catalog examples are compared separately.

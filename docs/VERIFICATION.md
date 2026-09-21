@@ -47,3 +47,9 @@ The branch `codex/live-recording-fixes` adds sequential bulk analysis, explicit 
 Verification passed 325 domain/backend tests in 49 files, frontend/backend TypeScript, the production build and the 35-file hosting check. All 136 browser cases were verified across the full run and targeted reruns: the first run exposed 16 outdated selectors/fixtures or expectations, which were corrected and rechecked without increasing timeouts or removing behavioral checks. The added bulk-unmount check also passed. Desktop/mobile computer-use inspection covered compact comparison and shared terms; six offers reflowed at 1920, 390 and 320 px. An initial concurrent unit run timed out in two tests; a two-worker rerun passed all 325.
 
 PR #39 is already deployed: [Verify run 35572549527](https://github.com/krowslyare/restaurant-procurement/actions/runs/35572549527) passed 320 tests and verified 35 hosted files. This local follow-up has not been merged or deployed.
+
+### PR #40 review corrections
+
+Both Codex findings on `21ac376` were confirmed. Frontend save eligibility now uses the confirmed comparison identity for web reviews while retaining original source text; later incompatible edits remain unsaveable. Study filters now constrain comparison membership, slot counts and confirmation to visible offers.
+
+Three focused local browser tests passed: differently worded offers save/reload/re-save with original evidence intact, eight-offer filtering frees hidden slots and excludes hidden offers, and the existing reviewed-offer recovery/selection flow remains intact. Responsive checks covered 1920 and 390 px. TypeScript/build and the 35-file hosting check passed. These are local checks with synthetic data, not new external-provider acceptance; merge and publication are tracked by PR #40 and its main workflow.
