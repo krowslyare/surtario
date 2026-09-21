@@ -4,6 +4,8 @@ import type { savedProspect } from "../../convex/prospectValidators";
 
 export type WebSelection = Infer<typeof webSelectionValidator>;
 export type StudyProspect = Infer<typeof savedProspect>;
+export const MAX_STUDY_OPTIONS = 12;
+export const MAX_COMPARISON_OFFERS = 6;
 export function studyOptionCount(study: {
   selectedIds: string[];
   webSelections?: WebSelection[];

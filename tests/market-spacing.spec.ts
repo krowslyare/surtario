@@ -74,7 +74,7 @@ test("market-start buttons have generous hover breathing room and rounded corner
   await startSection.screenshot({ path: "/tmp/market-start-hover-ingredient-list.png" });
 });
 
-test("search results and strip have generous hover padding", async ({ page }) => {
+test("search results and actions retain hover spacing", async ({ page }) => {
   await page.setViewportSize({ width: 1200, height: 800 });
   await page.goto("/?view=market");
   await page.locator(".workspace-arrival").waitFor({ state: "detached", timeout: 5000 }).catch(() => {});
@@ -82,9 +82,9 @@ test("search results and strip have generous hover padding", async ({ page }) =>
   const exploreExample = page.getByRole("button", { name: "Explore rice example" });
   await exploreExample.click();
 
-  const changeBtn = page.getByRole("button", { name: "Change" });
+  const changeBtn = page.getByRole("button", { name: "Change search", exact: true });
   await changeBtn.hover();
-  await page.locator(".search-strip").screenshot({ path: "/tmp/search-strip-hover.png" });
+  await page.getByRole("group", { name: "Search actions", exact: true }).screenshot({ path: "/tmp/search-strip-hover.png" });
 
   const firstSource = page.locator(".source-button").first();
   if (await firstSource.isVisible()) {

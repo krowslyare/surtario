@@ -30,7 +30,7 @@ The advanced case retained explicit differences between standard, enriched, orga
 
 The final advanced round contained only one source, and the collapsed all-round summary made the research appear much smaller than it was. The follow-up now opens its accumulated findings, distinguishes the current search from all research, and provides **Review this source** on prioritized findings. That action opens the matching search, expands the source list and moves focus to the exact source with the shared smooth/reduced-motion behavior. It neither fetches the page again nor calls OpenAI. The quick-search three-page explanation is no longer incorrectly shown for multiround research.
 
-Local manual checks covered 1920 × 1080, 390 px and 320 px layouts, the source jump, focus and sticky-header clearance, with no horizontal overflow or captured runtime errors. The final hosting build passed, as did 320 domain/Convex tests in 49 files with simulated providers. This frontend refinement is separate from the already deployed PR #38 and requires its own PR integration/publication.
+Local manual checks covered 1920 × 1080, 390 px and 320 px layouts, the source jump, focus and sticky-header clearance, with no horizontal overflow or captured runtime errors. The final hosting build passed, as did 320 domain/Convex tests in 49 files with simulated providers. This frontend refinement was subsequently merged and published in PR #39; the September 21 follow-up below is a separate, unpublished change.
 
 ## Evidence and remaining scope
 
@@ -39,3 +39,11 @@ Redacted count/acceptance records and screenshots are retained under ignored `.l
 The earlier local text/image API acceptance and positive selection/partial-confirmation journeys remain dated evidence in `hackathon.md` and Git history. Image extraction and positive selection were not repeated in this hosted pass.
 
 The core integrations are exercised. Remaining delivery work is the final narrated recording, authorized public-repository release, public post and contest submission. Recording and submission drafts are preserved in ignored local notes; neither is evidence that a video was exported or an entry submitted. See [delivery status](STATUS.md).
+
+## September 21: recording UX follow-up (local)
+
+The branch `codex/live-recording-fixes` adds sequential bulk analysis, explicit quick review, visible saved states and compact six-offer comparison. Unit/backend regression checks cover invalid bulk fields, six-offer save/reopen/remove/restore, immutable source wording, search-market currency audit, and the twelve-option study boundary. Browser verification uses an isolated anonymous local deployment with synthetic providers; the live rehearsal session is left intact. No paid provider calls or emails are required for these checks.
+
+Verification passed 325 domain/backend tests in 49 files, frontend/backend TypeScript, the production build and the 35-file hosting check. All 136 browser cases were verified across the full run and targeted reruns: the first run exposed 16 outdated selectors/fixtures or expectations, which were corrected and rechecked without increasing timeouts or removing behavioral checks. The added bulk-unmount check also passed. Desktop/mobile computer-use inspection covered compact comparison and shared terms; six offers reflowed at 1920, 390 and 320 px. An initial concurrent unit run timed out in two tests; a two-worker rerun passed all 325.
+
+PR #39 is already deployed: [Verify run 35572549527](https://github.com/krowslyare/restaurant-procurement/actions/runs/35572549527) passed 320 tests and verified 35 hosted files. This local follow-up has not been merged or deployed.

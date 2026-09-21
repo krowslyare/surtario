@@ -12,13 +12,13 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-21T01:05:34Z
+- **Last updated:** 2026-09-21T11:15:52Z
 
 ## Current delivery
 
 The development app has exercised real Firecrawl discovery, direct OpenAI extraction/advice and an AgentMail test-inbox round trip with reactive Convex updates. People review evidence and commercial terms; neither a reply nor a selected offer places a purchase. [Executed acceptance and limits](docs/VERIFICATION.md).
 
-The deployed baseline is PR #38 (`e25a058`). PR #39 contains the acceptance-driven source-navigation refinement and repository cleanup; these changes are not yet claimed deployed. The final narrated video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
+The deployed baseline is PR #39 (`0eee328`): CI passed and development publication verified 35 files, SPA fallback and missing-asset behavior. The recording UX follow-up is a separate change awaiting PR review and deployment. The final narrated video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
 
 ## Log
 
@@ -113,3 +113,11 @@ Read-only fresh-session checks denied access to owned records. Source watches st
 Consolidated public documentation into five guides and a shorter README with a workflow diagram. Recording drafts, older plans and audit output were preserved locally before removal from the tracked tree; installed agent tools remain local and ignored. The full earlier log remains available in Git history. Updated contributor/setup links and corrected the outdated research-limit example without changing runtime behavior.
 
 Verification passed 320 tests in 49 files and the 35-file hosting build from a snapshot containing only tracked files, with a fresh offline dependency installation. Local documentation links/code references and all 60 archive hashes checked clean. An initial shared-dependency snapshot failed two workflow tests; isolated installation resolved the test harness issue without changing code or assertions. Repository visibility, deployment, provider configuration and contest submission are unchanged; no new provider calls were made.
+
+### 2026-09-21 - working tree · Recording flow and comparison review
+
+Added visible extraction/saved states, sequential source analysis and an explicit quick-review queue. Studies hold twelve options and comparisons up to six offers. US search defaults missing currency to USD without rewriting source evidence. Compact comparison cards expose removal and shared terms; unknown costs still save as pending and block final selection. Confirmed equivalence can reconcile source wording while preserving originals.
+
+Pre-PR review corrected saved-review recovery, currency audit parity, invalid bulk fields and re-saving normalized comparisons. Local checks use simulated providers and an isolated anonymous Convex deployment; no paid API calls, outbound emails, recurring watches, repository-visibility changes or contest submission were performed. The existing live rehearsal session remains available. This change is not merged or deployed.
+
+Verification passed 325 domain/backend tests in 49 files, frontend/backend TypeScript, the production build and the 35-file hosting check. All 136 browser cases were verified across the full run and targeted reruns: the first run exposed 16 outdated selectors/fixtures or expectations, which were corrected and rechecked without increasing timeouts or removing behavioral checks. The added bulk-unmount check also passed. Desktop/mobile computer-use inspection covered compact comparison and shared terms; six offers reflowed at 1920, 390 and 320 px. An initial concurrent unit run timed out in two tests; a two-worker rerun passed all 325.

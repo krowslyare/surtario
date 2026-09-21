@@ -114,26 +114,28 @@ async function webStudy() {
     simulated: true,
     discarded: 0,
     warning: false,
-    sources: [
-      {
-        url: "https://supplier.test/rice",
-        title: "Arroz de prueba",
+    sources: Array.from({ length: 4 }, (_, index) =>
+      ({
+        url: `https://supplier.test/rice-${index}`,
+        title: `Arroz de prueba ${index + 1}`,
         description: "Prueba sintética",
         markdown: extractionSource.text,
         contentTruncated: false,
-      },
-    ],
+      }),
+    ),
   });
-  await t.mutation(internal.research.reserveExtraction, {
-    token: tokenA,
-    runId,
-    sourceIndex: 0,
-  });
-  await t.mutation(internal.research.finishExtraction, {
-    runId,
-    sourceIndex: 0,
-    offer: extractionExample,
-  });
+  for (let sourceIndex = 0; sourceIndex < 4; sourceIndex += 1) {
+    await t.mutation(internal.research.reserveExtraction, {
+      token: tokenA,
+      runId,
+      sourceIndex,
+    });
+    await t.mutation(internal.research.finishExtraction, {
+      runId,
+      sourceIndex,
+      offer: extractionExample,
+    });
+  }
   const prospect = await t.mutation(api.prospects.save, {
     token: tokenA,
     runId,
@@ -153,8 +155,34 @@ async function webStudy() {
       price: "85",
     },
   };
-  return { t, review, prospect, ref: `${runId}:0` };
+  const reviews = Array.from({ length: 4 }, (_, sourceIndex) => ({
+    ...review,
+    sourceIndex,
+  }));
+  return { t, review, reviews, prospect, ref: `${runId}:0` };
 }
+test("study keeps twelve options and rejects a thirteenth across option types", async () => {
+  const { t, review, prospect } = await webStudy();
+  await t.run(async ctx => {
+    const row = (await ctx.db.get(review.runId))!;
+    await ctx.db.patch(row._id, { sources: Array.from({ length: 13 }, (_, index) => ({
+      ...row.sources[0], url: `https://supplier.test/rice-${index}`,
+    })) });
+  });
+  const reviews = Array.from({ length: 13 }, (_, sourceIndex) => ({ ...review, sourceIndex }));
+  const saved = await t.mutation(api.studies.save, {
+    ...draft,
+    selectedIds: [],
+    webReviews: reviews.slice(0, 12),
+  });
+  expect(saved.webSelections).toHaveLength(12);
+  for (const additions of [
+    { webReviews: reviews },
+    { webReviews: reviews.slice(0, 12), prospectIds: [prospect.id] },
+  ]) await expect(t.mutation(api.studies.save, {
+    ...draft, selectedIds: [], ...additions,
+  })).rejects.toThrow(/12/);
+});
 test("study restores reviewed web evidence, no-price candidates and examples without requiring quantity", async () => {
   const { t, review, prospect, ref } = await webStudy();
   const args = { ...draft, webReviews: [review], prospectIds: [prospect.id] };

@@ -105,12 +105,12 @@ test("removing an offer before the first save keeps the new scenario current", a
   await page.goto("/?view=comparison&example=pe");
   const advisor = page.getByRole("region", { name: "Purchasing advisor" });
   await page
-    .getByRole("button", { name: "Remove offer", exact: true })
+    .getByRole("button", { name: /^Remove / })
     .first()
     .click();
   await page
     .getByRole("dialog")
-    .getByRole("button", { name: "Remove offer", exact: true })
+    .getByRole("button", { name: /^Remove / })
     .click();
 
   await advisor

@@ -35,6 +35,7 @@ import {
   extractionToPurchase,
   type ReviewedValues,
 } from "../src/domain/extraction";
+import { MAX_COMPARISON_OFFERS } from "../src/domain/study";
 import {
   evaluateOffer,
   type SupplierOffer,
@@ -70,8 +71,8 @@ async function reconstructWebReviews(
   owner: string,
   reviews: WebReview[],
 ): Promise<PurchaseSeed> {
-  if (!reviews.length || reviews.length > 3)
-    throw new ConvexError("Select between one and three reviewed web sources.");
+  if (!reviews.length || reviews.length > MAX_COMPARISON_OFFERS)
+    throw new ConvexError(`Select between one and ${MAX_COMPARISON_OFFERS} reviewed web sources.`);
   if (
     new Set(reviews.map((review) => `${review.runId}:${review.sourceIndex}`))
       .size !== reviews.length
@@ -224,11 +225,11 @@ function validateScenario(
 ) {
   if (
     !offers.length ||
-    offers.length > 4 ||
+    offers.length > MAX_COMPARISON_OFFERS ||
     new Set(offers.map((o) => o.id)).size !== offers.length
   )
     throw new ConvexError(
-      "Select between one and four distinct sample offers.",
+      `Select between one and ${MAX_COMPARISON_OFFERS} distinct offers.`,
     );
   const exampleContext = findMarketExampleContextByIds(
     offers.map((offer) => offer.id),
@@ -255,8 +256,12 @@ function validateScenario(
   const baseline: PurchaseSeed = previous
     ? {
         request: previous.request,
-        offers: Object.values(previous.sources).map(
-          (source) => source.original,
+        // Web offers were explicitly confirmed as equivalent when combined.
+        // Restore that comparison identity, while retaining original evidence.
+        offers: Object.values(previous.sources).map((source) =>
+          source.webReview
+            ? { ...source.original, ingredient: previous.request.ingredient, specification: previous.request.specification }
+            : source.original,
         ),
         sources: previous.sources,
       }
@@ -465,7 +470,7 @@ export const save = mutation({
         args.documentReview ||
         args.replyReview ||
         args.appendReplies.length < 1 ||
-        args.appendReplies.length > 3
+        args.appendReplies.length > MAX_COMPARISON_OFFERS
       )
         throw new ConvexError("Add replies only to a saved comparison.");
       let baseline: PurchaseSeed = {
@@ -499,7 +504,7 @@ export const save = mutation({
         args.replyReview ||
         args.appendReplies ||
         args.appendWeb.length < 1 ||
-        args.appendWeb.length > 3
+        args.appendWeb.length > MAX_COMPARISON_OFFERS
       )
         throw new ConvexError(
           "Add reviewed web evidence only to a saved comparison.",
@@ -527,9 +532,9 @@ export const save = mutation({
           );
         Object.assign(additions, incoming.sources);
       }
-      if (Object.keys(additions).length > 4)
+      if (Object.keys(additions).length > MAX_COMPARISON_OFFERS)
         throw new ConvexError(
-          "This comparison supports four sources, including historical sources.",
+          `This comparison supports ${MAX_COMPARISON_OFFERS} sources, including historical sources.`,
         );
       if (args.selectedOfferId !== null)
         throw new ConvexError(

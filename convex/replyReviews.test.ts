@@ -456,8 +456,10 @@ test("append rejects incompatible identity and currency, unchecked equivalence a
       ...original.sources,
       retired1: original.sources[riceOffers[0].id],
       retired2: original.sources[riceOffers[1].id],
+      retired3: original.sources[riceOffers[0].id],
+      retired4: original.sources[riceOffers[1].id],
     },
   };
-  expect(() => mergeReplyOffer(full, incoming, true)).toThrow(/four sources/);
+  expect(() => mergeReplyOffer(full, incoming, true)).toThrow(/6 sources/);
   expect((await t.query(api.comparisons.list, { token }))[0].revision).toBe(1);
 });

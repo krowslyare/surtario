@@ -12,21 +12,31 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Check, ExternalLink, FileSearch, History, Info, Search } from "lucide-react";
+import { Check, ExternalLink, FileSearch, History, Info, LoaderCircle, Search } from "lucide-react";
 import { useAction, useQuery, useConvexConnectionState } from "convex/react";
 import { ConvexError } from "convex/values";
 import type { Id } from "../../convex/_generated/dataModel";
 import { api } from "../../convex/_generated/api";
 import {
   combineReviewedOffers,
+  draftValues,
+  extractionToPurchase,
+  quickReviewIssues,
+  searchMarketCurrency,
   type ExtractedOffer,
   type ExtractionSource,
 } from "../domain/extraction";
-import { sameStudyContext, type WebSelection, type StudyProspect } from "../domain/study";
+import { MAX_COMPARISON_OFFERS, MAX_STUDY_OPTIONS, sameStudyContext, type WebSelection, type StudyProspect } from "../domain/study";
 import type { PurchaseSeed } from "../domain/market";
 import { Button } from "./ui/Button";
+import { Dialog } from "./Dialog";
 import { Disclosure } from "./ui/Disclosure";
 import ExtractionReview from "./ExtractionReview";
+import { money, parseCents, parseDecimal } from "../numbers";
+import {
+  pricePerComparisonUnit,
+  type PackageUnit,
+} from "../domain/procurement";
 import {
   ProductLinkReader,
   SourceQualitySummary,
@@ -35,6 +45,26 @@ import {
 } from "./SourceQuality";
 
 const SESSION_KEY = "procurement-demo-session-v1";
+const PACKAGE_UNITS = new Set<PackageUnit>([
+  "kg", "g", "lb", "oz", "L", "ml", "unit",
+]);
+
+function extractedComparablePrice(proposal: ExtractedOffer) {
+  const price = proposal.price.value ? parseCents(proposal.price.value) : null;
+  const content = proposal.packageContent.value
+    ? parseDecimal(proposal.packageContent.value)
+    : null;
+  const unit = proposal.packageUnit.value;
+  if (
+    price === null ||
+    !Number.isFinite(price) ||
+    content === null ||
+    !Number.isFinite(content) ||
+    !unit ||
+    !PACKAGE_UNITS.has(unit as PackageUnit)
+  ) return null;
+  return pricePerComparisonUnit(price, content, unit as PackageUnit);
+}
 
 export type ResearchStatus = {
   autoReviewEnabled?: boolean;
@@ -113,6 +143,14 @@ function observedLabel(value: string, includeTime = false) {
       }).format(date);
 }
 
+function currencyReviewLabel(value: string | null, region: string) {
+  if (value) return value;
+  const marketCurrency = searchMarketCurrency(region);
+  return marketCurrency
+    ? `(defaults to ${marketCurrency} for this search market)`
+    : "(currency unconfirmed)";
+}
+
 export function ResearchWorkspace({
   status,
   runs,
@@ -124,6 +162,7 @@ export function ResearchWorkspace({
   onPrepare,
   renderProspect,
   selections,
+  availableStudySlots,
   onReview,
   reviewDestination = "study",
   renderHeaderActions,
@@ -149,7 +188,8 @@ export function ResearchWorkspace({
   onExploreDemo?: () => void;
   reviewDestination?: "study" | "followup";
   selections?: WebSelection[];
-  onReview?: (selection: WebSelection) => void;
+  availableStudySlots?: number;
+  onReview?: (selection: WebSelection) => boolean | void;
   onOpenStudy?: () => void;
   onBackToOverview?: () => void;
   renderProspect?: (run: SavedResearch, sourceIndex: number, primaryInquiry: boolean) => ReactNode;
@@ -179,6 +219,17 @@ export function ResearchWorkspace({
   const runningVisit = useRef<{ id: string | null; requestKey: string | number | undefined } | null>(null);
   const [finishedRunId, setFinishedRunId] = useState<string | null>(null);
   const [extracting, setExtracting] = useState<string[]>([]);
+  const [bulkExtraction, setBulkExtraction] = useState<{
+    completed: number;
+    total: number;
+  } | null>(null);
+  const [bulkNotice, setBulkNotice] = useState("");
+  const bulkVisit = useRef(0);
+  const bulkRunning = useRef(false);
+  const [quickReviewOpen, setQuickReviewOpen] = useState(false);
+  const [quickReviewSelection, setQuickReviewSelection] = useState<string[]>([]);
+  const [quickReviewConfirmed, setQuickReviewConfirmed] = useState(false);
+  const [quickReviewError, setQuickReviewError] = useState("");
   const [reading, setReading] = useState<string[]>([]);
   const [readFailures, setReadFailures] = useState<Record<string, string>>({});
   const [selectedLinks, setSelectedLinks] = useState<Record<string, string>>(
@@ -192,6 +243,10 @@ export function ResearchWorkspace({
     { sourceId: string; seed: PurchaseSeed }[]
   >([]);
   const reviewed = selections ?? localReviewed;
+  const selectionLimit = selections
+    ? reviewed.length + (availableStudySlots ?? Math.max(0, MAX_STUDY_OPTIONS - reviewed.length))
+    : MAX_COMPARISON_OFFERS;
+  const remainingSelectionSlots = Math.max(0, selectionLimit - reviewed.length);
   useEffect(() => setShowAllSources(!request && activeId === resumeRequest?.id && Boolean(resumeRequest?.showAllSources)), [request?.id, request?.clientId, activeId]);
   const [equivalent, setEquivalent] = useState(false);
   const [error, setError] = useState("");
@@ -264,6 +319,14 @@ export function ResearchWorkspace({
   }, [activeId, localRun, runs, searching, pendingRun, request, resumeRequest]);
 
   useEffect(() => {
+    setBulkExtraction(null);
+    setBulkNotice("");
+    setQuickReviewOpen(false);
+    bulkRunning.current = false;
+    return () => { bulkVisit.current += 1; };
+  }, [active?.id]);
+
+  useEffect(() => {
     if (active) onActiveRun?.({ id: active.id, showAllSources });
   }, [active?.id, showAllSources, onActiveRun]);
 
@@ -293,22 +356,176 @@ export function ResearchWorkspace({
     }
   }, [busy, active?.id, active?.status, error, requestKey]);
 
-  async function extract(run: SavedResearch, sourceIndex: number) {
+  async function extract(
+    run: SavedResearch,
+    sourceIndex: number,
+    quiet = false,
+  ) {
     const sourceId = `${run.id}:${sourceIndex}`;
-    setExtracting((current) => [...current, sourceId]);
-    setError("");
+    setExtracting((current) =>
+      current.includes(sourceId) ? current : [...current, sourceId],
+    );
+    if (!quiet) setError("");
     try {
       const proposal = await onExtract(run.id, sourceIndex);
       setLocalExtractions((current) => ({ ...current, [sourceId]: proposal }));
+      return true;
     } catch (cause) {
-      setError(
-        cause instanceof ConvexError && typeof cause.data === "string"
-          ? cause.data
-          : "Could not extract this source. You can try again.",
-      );
+      if (!quiet)
+        setError(
+          cause instanceof ConvexError && typeof cause.data === "string"
+            ? cause.data
+            : "Could not extract this source. You can try again.",
+        );
+      return false;
     } finally {
       setExtracting((current) => current.filter((id) => id !== sourceId));
     }
+  }
+
+  const extractableIndexes = active
+    ? active.sources.flatMap((source, index) => {
+        const sourceId = `${active.id}:${index}`;
+        const readable =
+          !source.inspection || source.inspection.state === "readable";
+        const canAnalyze =
+          !source.analysis || source.analysis.kind === "product";
+        return source.markdown &&
+          readable &&
+          canAnalyze &&
+          !source.extraction &&
+          !localExtractions[sourceId] &&
+          !extracting.includes(sourceId) &&
+          source.extractionStatus !== "running"
+          ? [index]
+          : [];
+      })
+    : [];
+
+  const reviewCandidateOffers = active && reviewDestination === "study"
+    ? active.sources.flatMap((source, index) => {
+        const sourceId = `${active.id}:${index}`;
+        const proposal = localExtractions[sourceId] ?? source.extraction;
+        const values = proposal ? draftValues(proposal) : null;
+        if (
+          source.analysis?.kind !== "product" ||
+          !proposal ||
+          !values ||
+          reviewed.some((item) => item.sourceId === sourceId)
+        ) return [];
+        const reviewedValues = {
+          ...values,
+          currency: values.currency || searchMarketCurrency(active.region) || "",
+        };
+        const missing = quickReviewIssues(reviewedValues);
+        return [{ source, index, sourceId, proposal, values: reviewedValues, missing }];
+      })
+    : [];
+  const quickReviewOffers = reviewCandidateOffers.filter(
+    (offer) => offer.missing.length === 0,
+  );
+  const productOfferCount = active
+    ? active.sources.filter((source, index) =>
+        source.analysis?.kind === "product" &&
+        Boolean(localExtractions[`${active.id}:${index}`] ?? source.extraction),
+      ).length
+    : 0;
+  const quickReviewCount = Math.min(
+    quickReviewOffers.length,
+    remainingSelectionSlots,
+  );
+  const individualReviewCount = reviewCandidateOffers.length - quickReviewOffers.length;
+  const reviewedProductCount = Math.max(
+    0,
+    productOfferCount - reviewCandidateOffers.length,
+  );
+
+  function openQuickReview() {
+    const available = remainingSelectionSlots;
+    setQuickReviewSelection(
+      quickReviewOffers.slice(0, available).map((offer) => offer.sourceId),
+    );
+    setQuickReviewConfirmed(false);
+    setQuickReviewError("");
+    setQuickReviewOpen(true);
+  }
+
+  function addQuickReviewOffers() {
+    if (!active || !quickReviewConfirmed) return;
+    try {
+      const selected = quickReviewOffers.filter((offer) =>
+        quickReviewSelection.includes(offer.sourceId),
+      ).slice(0, remainingSelectionSlots);
+      if (!selected.length) throw new Error("Select at least one offer to add.");
+      let added = 0;
+      for (const { source, index, sourceId, proposal, values } of selected) {
+        const url = safeUrl(source.url);
+        const extractionSource: ExtractionSource = {
+          id: sourceId,
+          title: source.title,
+          text: reviewedWebEvidence(source),
+          observedAt: source.observedAt ?? active.observedAt,
+          simulated: active.simulated,
+          ...(url ? { url } : {}),
+        };
+        const seed = extractionToPurchase(
+          extractionSource,
+          proposal,
+          values,
+          true,
+          !proposal.currency.value && values.currency
+            ? { currency: values.currency }
+            : {},
+        );
+        const entry = seed.sources[sourceId];
+        if (entry.extraction)
+          entry.webReview = {
+            runId: active.id,
+            sourceIndex: index,
+            values: { ...entry.extraction.reviewed },
+            confirmed: true,
+          };
+        if (saveReview(sourceId, seed)) added += 1;
+      }
+      if (!added)
+        throw new Error("These offers do not match the current study context.");
+      setBulkNotice(
+        `${added} ${added === 1 ? "offer" : "offers"} added to My study. You can edit any offer before comparing.`,
+      );
+      setQuickReviewOpen(false);
+      setQuickReviewError("");
+    } catch (cause) {
+      setQuickReviewError(
+        cause instanceof Error ? cause.message : "Could not add the selected offers.",
+      );
+    }
+  }
+
+  async function extractRemaining(run: SavedResearch) {
+    const targets = [...extractableIndexes];
+    if (!targets.length || bulkRunning.current) return;
+    bulkRunning.current = true;
+    const visit = bulkVisit.current;
+    setBulkNotice("");
+    setError("");
+    setBulkExtraction({ completed: 0, total: targets.length });
+    let completed = 0;
+    let failed = 0;
+    for (const sourceIndex of targets) {
+      if (bulkVisit.current !== visit) return;
+      const ok = await extract(run, sourceIndex, true);
+      if (bulkVisit.current !== visit) return;
+      completed += 1;
+      if (!ok) failed += 1;
+      setBulkExtraction({ completed, total: targets.length });
+    }
+    setBulkExtraction(null);
+    bulkRunning.current = false;
+    setBulkNotice(
+      failed
+        ? `${completed - failed} sources analyzed; ${failed} could not be analyzed. You can retry those sources individually.`
+        : `${completed} ${completed === 1 ? "source" : "sources"} analyzed. Review the product offers before adding them to your study.`,
+    );
   }
 
   async function readProduct(
@@ -351,14 +568,14 @@ export function ResearchWorkspace({
 
   function saveReview(sourceId: string, seed: PurchaseSeed) {
     if (onReview) {
-      onReview({
+      const accepted = onReview({
         sourceId,
         seed,
         ingredient: active!.ingredient,
         region: active!.region,
       });
       setEquivalent(false);
-      return;
+      return accepted !== false;
     }
     setReviewed((current) => {
       const existing = current.findIndex((item) => item.sourceId === sourceId);
@@ -366,9 +583,10 @@ export function ResearchWorkspace({
         return current.map((item, index) =>
           index === existing ? { sourceId, seed } : item,
         );
-      return current.length < 3 ? [...current, { sourceId, seed }] : current;
+      return current.length < selectionLimit ? [...current, { sourceId, seed }] : current;
     });
     setEquivalent(false);
+    return true;
   }
 
   function compareReviewed() {
@@ -593,20 +811,96 @@ export function ResearchWorkspace({
               <strong>{reviewDestination === "followup" ? "Sources in this search" : "Candidate sources"}</strong>
               <span>{active.sources.length > 12 && !showAllSources ? `Showing 12 of ${active.sources.length} sources` : `Showing all ${active.sources.length} sources`}</span>
             </div>
-            {active.sources.length > 12 && <button className="button text-button research-show-sources" aria-expanded={showAllSources} onClick={() => setShowAllSources(value => !value)}>
-              {showAllSources ? "Show first 12 sources" : `Show all ${active.sources.length} sources`}
-            </button>}
+            <div className="research-source-toolbar-actions">
+              {quickReviewOffers.length > 0 && remainingSelectionSlots > 0 && (
+                <Button variant="primary" onClick={openQuickReview}>
+                  <Check size={16} aria-hidden="true" />
+                  Review {quickReviewCount} remaining complete {quickReviewCount === 1 ? "offer" : "offers"}
+                </Button>
+              )}
+              {reviewDestination === "study" &&
+                productOfferCount > 0 &&
+                quickReviewOffers.length === 0 &&
+                reviewedProductCount > 0 && (
+                  <span className="research-source-toolbar-status" role="status">
+                    <Check size={16} aria-hidden="true" />
+                    All complete offers reviewed
+                  </span>
+                )}
+              {reviewDestination === "study" && remainingSelectionSlots === 0 && onOpenStudy && (
+                <Button variant="secondary" onClick={onOpenStudy}>
+                  <Check size={16} aria-hidden="true" />
+                  View full study ({selectionLimit})
+                </Button>
+              )}
+              {status.extractionEnabled && (extractableIndexes.length > 1 || bulkExtraction) && (
+                <button
+                  className="button secondary"
+                  disabled={Boolean(bulkExtraction)}
+                  onClick={() => void extractRemaining(active)}
+                >
+                  {bulkExtraction ? (
+                    <LoaderCircle className="research-reading-icon" size={16} aria-hidden="true" />
+                  ) : (
+                    <FileSearch size={16} aria-hidden="true" />
+                  )}
+                  {bulkExtraction
+                    ? `Analyzing ${bulkExtraction.completed} of ${bulkExtraction.total}`
+                    : `Analyze remaining sources (${extractableIndexes.length})`}
+                </button>
+              )}
+              {active.sources.length > 12 && <button className="button text-button research-show-sources" aria-expanded={showAllSources} onClick={() => setShowAllSources(value => !value)}>
+                {showAllSources ? "Show first 12 sources" : `Show all ${active.sources.length} sources`}
+              </button>}
+            </div>
           </div>}
+          {(bulkExtraction || bulkNotice) && (
+            <p className="research-bulk-status" role="status" aria-live="polite">
+              {bulkExtraction
+                ? `Analyzing source ${Math.min(bulkExtraction.completed + 1, bulkExtraction.total)} of ${bulkExtraction.total}. Each source is handled once, in sequence.`
+                : bulkNotice}
+            </p>
+          )}
+          {!bulkExtraction && reviewDestination === "study" && productOfferCount > 0 && (
+            <p className="research-bulk-breakdown">
+              {productOfferCount} {productOfferCount === 1 ? "product offer" : "product offers"} analyzed · {quickReviewOffers.length} ready for quick review
+              {individualReviewCount > 0 && <> · {individualReviewCount} {individualReviewCount === 1 ? "needs" : "need"} individual review</>}
+              {reviewedProductCount > 0 && <> · {reviewedProductCount} already in My study</>}.
+            </p>
+          )}
+          {active.sources.length > 1 && (
+            <p className="research-priority-note">
+              Prioritized for review: product pages with an extracted price and package size appear first. Placement reflects data completeness, not supplier quality.
+            </p>
+          )}
+          {!bulkExtraction &&
+            !bulkNotice &&
+            status.extractionEnabled &&
+            extractableIndexes.length > 1 && (
+              <p className="research-bulk-hint">
+                Analyze readable sources together, then review the product offers. Keep this view open while analysis runs; completed sources are saved.
+              </p>
+            )}
           <div className="research-sources" ref={sourcesRef}>
             {active.sources.map((source, index) => ({ source, index }))
               .sort((a, b) => {
-                const rank = (s: ResearchSource) => s.analysis?.kind === "product" && s.extraction?.price.value ? s.extraction.currency.value && s.extraction.packageContent.value ? 4 : 3 : s.inspection?.state === "readable" ? 2 : s.inspection?.state === "unreadable" ? 1 : 0;
-                return rank(b.source) - rank(a.source);
+                const rank = ({ source, index }: { source: ResearchSource; index: number }) => {
+                  const proposal = localExtractions[`${active.id}:${index}`] ?? source.extraction;
+                  return source.analysis?.kind === "product" && proposal?.price.value
+                    ? proposal.packageContent.value && proposal.packageUnit.value ? 4 : 3
+                    : source.analysis?.kind === "product" ? 2.5
+                    : source.inspection?.state === "readable" ? 2
+                    : source.inspection?.state === "unreadable" ? 1 : 0;
+                };
+                return rank(b) - rank(a);
               }).slice(0, showAllSources ? undefined : 12).map(({ source, index }) => {
               const sourceId = `${active.id}:${index}`;
               const url = safeUrl(source.url);
               const localProposal = localExtractions[sourceId];
               const proposal = localProposal ?? source.extraction;
+              const comparablePrice = proposal
+                ? extractedComparablePrice(proposal)
+                : null;
               const awaitingAnalysis = Boolean(
                 localProposal && !source.extraction && !source.analysis,
               );
@@ -650,7 +944,7 @@ export function ResearchWorkspace({
               };
               return (
                 <article
-                  className={`research-source${isChild ? " research-source-child" : ""}`}
+                  className={`research-source${isChild ? " research-source-child" : ""}${wasReviewed ? " is-reviewed" : ""}`}
                   key={sourceId}
                   data-source-index={index}
                   tabIndex={-1}
@@ -662,20 +956,34 @@ export function ResearchWorkspace({
                         : "Candidate web source"}
                     </span>
                     <h3>{source.title}</h3>
-                    {!source.analysis && <p>{source.description}</p>}
+                    {!source.analysis && <p className="research-source-description">{source.description}</p>}
                     {source.analysis && (
                       <SourceQualitySummary analysis={source.analysis} compact />
                     )}
                     {analysisIsProduct && proposal?.price.value && (
-                      <p className="field-hint">
-                        Extracted price: {proposal.price.value}{" "}
-                        {proposal.currency.value ?? "(currency unconfirmed)"}
-                        {proposal.packageContent.value &&
-                        proposal.packageUnit.value
-                          ? ` · ${proposal.packageContent.value} ${proposal.packageUnit.value} per package`
-                          : " · package contents need review"}
-                        {" · Review before comparing."}
-                      </p>
+                      <div className="research-extracted-price">
+                        <p className="field-hint">
+                          Extracted price: {proposal.price.value}{" "}
+                          {currencyReviewLabel(
+                            proposal.currency.value,
+                            active.region,
+                          )}
+                          {proposal.packageContent.value &&
+                          proposal.packageUnit.value
+                            ? ` · ${proposal.packageContent.value} ${proposal.packageUnit.value} per package`
+                            : " · package contents need review"}
+                          {" · Review before comparing."}
+                        </p>
+                        {comparablePrice && (
+                          <p className="research-comparable-price">
+                            Comparable unit price: {money(
+                              comparablePrice.priceCents,
+                              proposal.currency.value || searchMarketCurrency(active.region) || "",
+                            )} / {comparablePrice.unit}
+                            <small>Calculated from the extracted package terms.</small>
+                          </p>
+                        )}
+                      </div>
                     )}
                     {source.contentTruncated && (
                       <small>The retrieved content is incomplete.</small>
@@ -691,6 +999,12 @@ export function ResearchWorkspace({
                     )}
                   </div>
                   <div className="research-source-action">
+                    {wasReviewed && (
+                      <div className="research-source-state" role="status">
+                        <Check size={15} aria-hidden="true" />
+                        In My study
+                      </div>
+                    )}
                     {source.readStatus === "running" && (
                       <p
                         className="field-hint"
@@ -735,36 +1049,52 @@ export function ResearchWorkspace({
                     ) : !status.extractionEnabled && !proposal ? (
                       <p>Extraction is not configured on the server.</p>
                     ) : proposal ? (
-                      <ExtractionReview
-                        source={extractionSource}
-                        proposal={proposal}
-                        triggerLabel={
-                          wasReviewed ? "Edit review" : "Review offer"
-                        }
-                        triggerVariant="primary"
-                        confirmLabel={reviewDestination === "followup" ? "Keep reviewed offer" : "Add to study"}
-                        confirmationNote={reviewDestination === "followup" ? "Review this offer, then save your findings to keep it with this follow-up. No purchase is recorded." : "Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."}
-                        onPrepare={(seed) => {
-                          const entry = seed.sources[sourceId];
-                          if (entry.extraction)
-                            entry.webReview = {
-                              runId: active.id,
-                              sourceIndex: index,
-                              values: { ...entry.extraction.reviewed },
-                              confirmed: true,
-                            };
-                          saveReview(sourceId, seed);
-                        }}
-                      />
+                      <div className="research-source-primary-actions">
+                        {!wasReviewed && remainingSelectionSlots === 0 ? (
+                          <Button disabled>Study full ({selectionLimit} of {selectionLimit})</Button>
+                        ) : (
+                          <ExtractionReview
+                            source={extractionSource}
+                            proposal={proposal}
+                            triggerLabel={
+                              wasReviewed ? "Edit review" : "Review offer"
+                            }
+                            triggerVariant="primary"
+                            confirmLabel={reviewDestination === "followup" ? "Keep reviewed offer" : "Add to study"}
+                            confirmationNote={reviewDestination === "followup" ? "Review this offer, then save your findings to keep it with this follow-up. No purchase is recorded." : "Add this reviewed offer to My study. Save the study to recover it later; you are not preparing a purchase yet."}
+                            defaultCurrency={searchMarketCurrency(active.region)}
+                            savedValues={reviewed.find((item) => item.sourceId === sourceId)?.seed.sources[sourceId]?.extraction?.reviewed}
+                            onPrepare={(seed) => {
+                              const entry = seed.sources[sourceId];
+                              if (entry.extraction)
+                                entry.webReview = {
+                                  runId: active.id,
+                                  sourceIndex: index,
+                                  values: { ...entry.extraction.reviewed },
+                                  confirmed: true,
+                                };
+                              saveReview(sourceId, seed);
+                            }}
+                          />
+                        )}
+                        {wasReviewed && onCalculate && <Button variant="secondary" onClick={() => {
+                          const selection = reviewed.find(r => r.sourceId === sourceId);
+                          if (selection) onCalculate(selection.seed, active);
+                        }}>{caseComparisonContext && sameStudyContext(caseComparisonContext, active) ? "Open case comparison" : "Calculate this offer"}</Button>}
+                      </div>
                     ) : (
                       <>
                         <button
                           type="button"
                           className="button primary"
-                          disabled={isExtracting}
+                          disabled={isExtracting || Boolean(bulkExtraction)}
                           onClick={() => void extract(active, index)}
                         >
-                          <FileSearch size={16} />
+                          {isExtracting ? (
+                            <LoaderCircle className="research-reading-icon" size={16} aria-hidden="true" />
+                          ) : (
+                            <FileSearch size={16} aria-hidden="true" />
+                          )}
                           {isExtracting ? "Analyzing source…" : "Extract data"}
                         </button>
                         {!isExtracting && (
@@ -831,16 +1161,11 @@ export function ResearchWorkspace({
                       </p>
                     )}
                     {wasReviewed && (
-                      <div><small>Reviewed offer added to this selection.</small>
-                        {onCalculate && <Button variant="secondary" onClick={() => {
-                          const selection = reviewed.find(r => r.sourceId === sourceId);
-                          if (selection) onCalculate(selection.seed, active);
-                        }}>{caseComparisonContext && sameStudyContext(caseComparisonContext, active) ? "Open case comparison" : "Calculate purchase"}</Button>}
-                      </div>
+                      <small className="research-source-review-note">Reviewed offer added to this selection.</small>
                     )}
-                    {!wasReviewed && reviewed.length >= 3 && proposal && (
+                    {!wasReviewed && remainingSelectionSlots === 0 && proposal && analysisIsProduct && (
                       <small>
-                        You already selected the maximum of 3 offers.
+                        My study already has {selectionLimit} options. Remove one before adding another.
                       </small>
                     )}
                   </div>
@@ -895,13 +1220,82 @@ export function ResearchWorkspace({
             disabled={reviewed.length > 1 && !equivalent}
             onClick={compareReviewed}
           >
-            Compare reviewed offers
+            Compare {reviewed.length} reviewed {reviewed.length === 1 ? "offer" : "offers"}
           </button>
           <small>
             Enter quantity when preparing the purchase; totals are not shown
             yet.
           </small>
         </div>
+      )}
+      {quickReviewOpen && active && (
+        <Dialog
+          title="Review product offers"
+          wide
+          className="quick-review-dialog"
+          onClose={() => setQuickReviewOpen(false)}
+        >
+          <div className="quick-review-body">
+            <p className="quick-review-intro">
+              {reviewCandidateOffers.length} product {reviewCandidateOffers.length === 1 ? "offer was" : "offers were"} found. {quickReviewOffers.length} {quickReviewOffers.length === 1 ? "is" : "are"} complete enough for quick review. Check the source summaries, choose up to {Math.min(remainingSelectionSlots, quickReviewOffers.length)}, and add them together.
+            </p>
+            <div className="quick-review-list" role="group" aria-label="Ready offers">
+              {reviewCandidateOffers.map(({ source, sourceId, values, missing }) => {
+                const checked = quickReviewSelection.includes(sourceId);
+                const atLimit = quickReviewSelection.length >= remainingSelectionSlots;
+                const ready = missing.length === 0;
+                return (
+                  <label className={`quick-review-offer${ready ? "" : " is-incomplete"}`} key={sourceId}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={!ready || (!checked && atLimit)}
+                      onChange={(event) => {
+                        setQuickReviewSelection((current) =>
+                          event.target.checked
+                            ? [...current, sourceId]
+                            : current.filter((id) => id !== sourceId),
+                        );
+                        setQuickReviewConfirmed(false);
+                      }}
+                    />
+                    <span>
+                      <strong>{values.supplier}</strong>
+                      <span>{source.title}</span>
+                      <small>{source.analysis?.summary}</small>
+                      <small>{values.price} {values.currency} · {values.packageContent} {values.packageUnit} · {values.specification}</small>
+                      {source.analysis?.warnings.map((warning, index) => (
+                        <small className="quick-review-warning" key={index}>{warning}</small>
+                      ))}
+                      {!ready && (
+                        <small className="quick-review-incomplete">Needs individual review: {missing.join(", ")}.</small>
+                      )}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+            <label className="checkbox quick-review-confirmation">
+              <input
+                type="checkbox"
+                checked={quickReviewConfirmed}
+                onChange={(event) => setQuickReviewConfirmed(event.target.checked)}
+              />
+              I reviewed these source summaries and confirm the selected offer data.
+            </label>
+            {quickReviewError && <p className="notice error" role="alert">{quickReviewError}</p>}
+            <div className="dialog-actions">
+              <Button onClick={() => setQuickReviewOpen(false)}>Cancel</Button>
+              <Button
+                variant="primary"
+                disabled={!quickReviewConfirmed || quickReviewSelection.length === 0}
+                onClick={addQuickReviewOffers}
+              >
+                Add {quickReviewSelection.length} {quickReviewSelection.length === 1 ? "offer" : "offers"} to study
+              </Button>
+            </div>
+          </div>
+        </Dialog>
       )}
     </section>
   );
@@ -919,7 +1313,8 @@ type LiveResearchProps = {
   onStatus: (status: ResearchStatus | undefined) => void;
   onPrepare: (seed: PurchaseSeed) => void;
   selections?: WebSelection[];
-  onReview?: (selection: WebSelection) => void;
+  availableStudySlots?: number;
+  onReview?: (selection: WebSelection) => boolean | void;
   onOpenStudy?: () => void;
   onBackToOverview?: () => void;
   selectedProspectIds?: string[];
@@ -1022,6 +1417,7 @@ function ConnectedResearch({
         onSelect={props.onProspect}
         onContinue={props.onContextualProspect}
         selectedIds={props.selectedProspectIds}
+        availableStudySlots={props.availableStudySlots}
       />
     </>
   );

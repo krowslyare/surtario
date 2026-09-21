@@ -4,6 +4,7 @@ import {
   type ExtractedOffer,
   type ReviewedValues,
 } from "./extraction";
+import { MAX_COMPARISON_OFFERS } from "./study";
 export const emptyReplyProposal = Object.fromEntries(
   extractionFields.map((key) => [key, { value: null, evidence: null }]),
 ) as ExtractedOffer;
@@ -143,9 +144,12 @@ export function mergeReplyOffer(
     );
   if (current.sources[offer.id])
     throw new Error("This reply is already part of the comparison.");
-  if (current.offers.length >= 4 || Object.keys(current.sources).length >= 4)
+  if (
+    current.offers.length >= MAX_COMPARISON_OFFERS ||
+    Object.keys(current.sources).length >= MAX_COMPARISON_OFFERS
+  )
     throw new Error(
-      "The comparison supports up to four sources, including removed sources.",
+      `The comparison supports up to ${MAX_COMPARISON_OFFERS} sources, including removed sources.`,
     );
   return {
     request: { ...current.request },

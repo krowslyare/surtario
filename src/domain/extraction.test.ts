@@ -1,6 +1,14 @@
 import { expect, test } from "vitest";
 import { extractionExample, extractionSource } from "../../fixtures/extraction";
-import { draftValues, extractionToPurchase } from "./extraction";
+import { draftValues, extractionToPurchase, quickReviewIssues } from "./extraction";
+
+test("quick review rejects invalid terms without treating them as ready", () => {
+  const values = { ...draftValues(extractionExample), packageContent: "25", packageUnit: "lb", currency: "USD" };
+  expect(quickReviewIssues(values)).toEqual([]);
+  expect(quickReviewIssues({ ...values, packageContent: "0", price: "1,234.00", currency: "CAD", packageUnit: "bag" }))
+    .toEqual(["package size", "package unit", "price", "currency"]);
+  expect(quickReviewIssues({ ...values, supplier: "", price: "" })).toEqual(["supplier", "price"]);
+});
 
 test("no inventa peso, moneda ni confirmación al preparar documento ambiguo", () => {
   const values = draftValues(extractionExample);
@@ -134,17 +142,44 @@ test("fuentes web distintas conservan URL, fecha y equivalencia explícita", asy
   );
   expect(combined.sources["web-a"].marketSource?.simulated).toBe(false);
   expect(combined.request.quantity).toBe(0);
-  expect(() => combineReviewedOffers([a, a], true)).toThrow(/twice/);
+  const six = Array.from({ length: 6 }, (_, index) => make(`web-${index + 1}`));
+  expect(combineReviewedOffers(six, true).offers).toHaveLength(6);
   expect(() =>
-    combineReviewedOffers(
-      [a, { ...b, request: { ...b.request, specification: "Otra calidad" } }],
-      true,
-    ),
-  ).toThrow(/not comparable/);
+    combineReviewedOffers([...six, make("web-7")], true),
+  ).toThrow(/one to 6/);
+  expect(() => combineReviewedOffers([a, a], true)).toThrow(/twice/);
+  const differentlyWorded = {
+    ...b,
+    request: {
+      ...b.request,
+      ingredient: "Arroz integral",
+      specification: "Otra calidad",
+    },
+    offers: [{
+      ...b.offers[0],
+      ingredient: "Arroz integral",
+      specification: "Otra calidad",
+    }],
+    sources: {
+      ...b.sources,
+      "web-b": {
+        ...b.sources["web-b"],
+        original: {
+          ...b.sources["web-b"].original,
+          ingredient: "Arroz integral",
+          specification: "Otra calidad",
+        },
+      },
+    },
+  };
+  const normalized = combineReviewedOffers([a, differentlyWorded], true);
+  expect(normalized.offers[1].ingredient).toBe(a.request.ingredient);
+  expect(normalized.offers[1].specification).toBe(a.request.specification);
+  expect(normalized.sources["web-b"].original.specification).toBe("Otra calidad");
   expect(() =>
     combineReviewedOffers(
       [a, { ...b, offers: [{ ...b.offers[0], currency: "USD" }] }],
       true,
     ),
-  ).toThrow(/not comparable/);
+  ).toThrow(/same base unit and currency/);
 });

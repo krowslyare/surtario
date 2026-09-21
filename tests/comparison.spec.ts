@@ -53,13 +53,35 @@ test("edición manual distingue dato desconocido, entrega incluida y moneda dife
   await expect(page.getByTestId("total-0")).toHaveText("Pending");
 });
 
+test("guarda delivery desconocido y explica por qué el total sigue pendiente", async ({
+  page,
+}) => {
+  await page.goto("/?view=comparison&example=pe");
+  await page.getByRole("button", { name: "Edit Proveedor A" }).click();
+  await page.getByLabel("Delivery per order", { exact: true }).fill("");
+  await page.getByLabel("Tax on goods and delivery", { exact: true }).click();
+  await page.getByRole("option", { name: "To confirm", exact: true }).click();
+  await page.getByRole("button", { name: "Save offer", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByTestId("total-0")).toHaveText("Pending");
+  await expect(
+    page.getByText("Listed price ready · final terms pending", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      "Offer saved. Delivery cost and tax remain pending, so the final order total is pending.",
+      { exact: true },
+    ),
+  ).toBeVisible();
+});
+
 test("vacío, oferta única y nueva oferta manual se pueden recorrer", async ({
   page,
 }) => {
   await page.goto("/?view=comparison&example=pe");
   for (let i = 0; i < 2; i++) {
     await page
-      .getByRole("button", { name: "Remove offer", exact: true })
+      .getByRole("button", { name: /^Remove / })
       .first()
       .click();
     await page
@@ -104,6 +126,23 @@ for (const width of [320, 390, 768, 1280]) {
     ).toBeFocused();
   });
 }
+
+test("aplica términos compartidos una vez y mantiene retiro visible por oferta", async ({
+  page,
+}) => {
+  await page.goto("/?view=comparison&example=pe");
+  await expect(page.getByRole("button", { name: "Remove Proveedor A" })).toBeVisible();
+  await page.getByRole("button", { name: "Apply shared terms" }).click();
+  const dialog = page.getByRole("dialog", { name: "Apply shared terms to 2 offers" });
+  await dialog.getByLabel("Minimum packs").fill("2");
+  await dialog.getByLabel("Delivery per order").fill("0");
+  await dialog.getByLabel("Shared tax on goods and delivery").click();
+  await dialog.getByRole("option", { name: "Final amounts, including tax" }).click();
+  await dialog.getByLabel("All suppliers can deliver when I need it").check();
+  await dialog.getByRole("button", { name: "Apply to 2 offers" }).click();
+  await expect(page.getByText("Terms confirmed", { exact: true })).toHaveCount(2);
+  await expect(page.getByText("2 packs", { exact: true })).toHaveCount(2);
+});
 
 test("unidad y mínimo desconocidos siguen pendientes y no ocultan ofertas completas", async ({
   page,

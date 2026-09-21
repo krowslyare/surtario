@@ -1,4 +1,5 @@
 import type { PurchaseSeed } from "./market";
+import { MAX_COMPARISON_OFFERS } from "./study";
 
 /** Human-reviewed evidence replaces only the active offer from the exact same URL.
  * Its old source remains in history; unconfirmed commercial terms stay pending. */
@@ -27,9 +28,9 @@ export function mergeCaseEvidence(
   if (incoming.offers.some((offer) => current.sources[offer.id]))
     throw new Error("This evidence is already in the saved comparison.");
   const sources = { ...current.sources, ...incoming.sources };
-  if (Object.keys(sources).length > 4)
+  if (Object.keys(sources).length > MAX_COMPARISON_OFFERS)
     throw new Error(
-      "This comparison already contains four sources including history. Review the existing comparison before adding more.",
+      `This comparison already contains ${MAX_COMPARISON_OFFERS} sources including history. Review the existing comparison before adding more.`,
     );
   const urls = new Set(
     incoming.offers

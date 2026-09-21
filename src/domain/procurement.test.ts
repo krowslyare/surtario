@@ -3,9 +3,23 @@ import { riceOffers, riceRequest } from "../../fixtures/procurement";
 import {
   compareProcurement,
   evaluateOffer,
+  pricePerComparisonUnit,
   type ProcurementRequest,
   type SupplierOffer,
 } from "./procurement";
+
+describe("package price normalization", () => {
+  it("normalizes ounces and pounds to a comparable price per pound", () => {
+    expect(pricePerComparisonUnit(800, 28, "oz")).toEqual({
+      unit: "lb",
+      priceCents: 800 / 1.75,
+    });
+    expect(pricePerComparisonUnit(2000, 25, "lb")).toEqual({
+      unit: "lb",
+      priceCents: 80,
+    });
+  });
+});
 
 const withQuantity = (quantity: number): ProcurementRequest => ({
   ...riceRequest,

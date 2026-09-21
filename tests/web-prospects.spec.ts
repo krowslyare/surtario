@@ -39,7 +39,8 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   await page.goto("/?example=pe");
   await page.getByRole("button", { name: "Continue your work", exact: true }).click();
   await page.getByRole("dialog", { name: "Your recent work", exact: true }).getByRole("button", { name: "Review sources", exact: true }).first().click();
-  await page.getByRole("button", { name: /Arroz · Arequipa/ }).click();
+  await expect(page.getByRole("heading", { name: "Arroz in Arequipa", exact: true })).toBeVisible();
+  await page.getByText("More options", { exact: true }).click();
   await page
     .getByRole("button", { name: "Save potential distributor" })
     .click();
@@ -58,7 +59,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
     .getByRole("button", { name: "Save candidate", exact: true })
     .click();
   await expect(review).not.toBeVisible();
-  await page.getByRole("button", { name: "My study 1", exact: true }).click();
+  await page.getByRole("button", { name: /^My study/ }).click();
   await expect(page.getByRole("region", { name: "Saved studies", exact: true }).getByRole("status")).toHaveText("Not saved");
   await page.getByRole("button", { name: "Save study", exact: true }).click();
   await expect(
@@ -66,7 +67,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   ).toBeVisible();
   await expect(page.getByRole("heading", { name: /Ask Distribuidor C/ })).toHaveCount(0);
   await page.reload();
-  await page.getByRole("region", { name: "Continue your work", exact: true }).getByRole("button", { name: "Resume study", exact: true }).click();
+  await page.getByRole("button", { name: /^My study/ }).click();
   const library = page.getByRole("article", {
     name: "Distributor in study: Distribuidor candidato E2E",
   });
@@ -93,7 +94,7 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   });
   await expect(page.getByRole("heading", { name: /Ask Distribuidor C/ })).toHaveCount(0);
   await expect(candidate).toContainText("Request pricing");
-  await candidate.getByRole("button", { name: "Prepare test request" }).click();
+  await candidate.getByRole("button", { name: "Prepare inquiry", exact: true }).click();
   const mail = page.getByRole("dialog");
   await expect(mail).toContainText("Not configured");
   await expect(mail).toContainText("Quantity is still to be determined");
@@ -104,12 +105,8 @@ test("fuente web sin precio se guarda como candidato y recupera su consulta", as
   ).toBeDisabled();
   await page.keyboard.press("Escape");
   await page.reload();
-  await page.getByRole("region", { name: "Continue your work", exact: true }).getByRole("button", { name: "Resume study", exact: true }).click();
-  await page.getByRole("button", { name: /^My study/ }).click();
-  await page
-    .getByRole("button", { name: "Saved (1)", exact: true })
-    .click();
-  await page.getByRole("button", { name: "Open study", exact: true }).click();
-  await candidate.getByRole("button", { name: "View request" }).click();
+  // The request route restores the existing draft directly after F5.
   await expect(page.getByRole("dialog")).toContainText("Draft");
+  await expect(page.getByRole("dialog")).toContainText("Quantity is still to be determined");
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Send test request" })).toBeDisabled();
 });
