@@ -33,7 +33,7 @@ Use the Convex dashboard or interactive CLI to configure the **server** environm
 
 September 20 acceptance used `gpt-5.6-luna` with low reasoning for extraction and advice. Source watches remain disabled in the hosted development configuration. Watch enablement is a separate decision because it schedules recurring provider work.
 
-Quick search retains at most 30 candidates and initially interprets up to three product sources. The advanced policy allows six rounds with up to six interpretations per round; the actual result may stop earlier or retain fewer relevant sources. Reopening saved work does not rerun providers. See `src/domain/researchCoverage.ts` and `convex/lib/firecrawl.ts` for the implemented budgets.
+Quick search retains at most 30 candidates and initially interprets up to three product sources. Each case allows at most three research runs. Each run allows six rounds with up to six interpretations per round; the actual result may stop earlier or retain fewer relevant sources. Reopening saved work does not rerun providers. See `src/domain/researchCoverage.ts` and `convex/lib/firecrawl.ts` for the implemented budgets.
 
 ### Hosted email
 

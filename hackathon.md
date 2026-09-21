@@ -108,7 +108,7 @@ One approved AgentMail inquiry and actual test-inbox reply reached the signed we
 
 Read-only fresh-session checks denied access to owned records. Source watches stayed disabled and exact dollar spend was not measured. The acceptance exposed hidden accumulated findings: the frontend now opens the all-round summary and jumps to each finding's original review. Local 1920/390/320 px checks, all 320 tests and hosting validation passed; this PR #39 refinement is separate from the deployed baseline. [Detailed evidence](docs/VERIFICATION.md).
 
-### 2026-09-21 - working tree · Repository handoff
+### 2026-09-21 - f37df58 · Repository handoff
 
 Consolidated public documentation into five guides and a shorter README with a workflow diagram. Recording drafts, older plans and audit output were preserved locally before removal from the tracked tree; installed agent tools remain local and ignored. The full earlier log remains available in Git history. Updated contributor/setup links and corrected the outdated research-limit example without changing runtime behavior.
 
