@@ -23,6 +23,6 @@ Updated September 22, 2026. This is the current status source; `hackathon.md` re
 
 The hosted configuration uses `gpt-5.6-luna` with low reasoning. Recurring source watching stays disabled. Test-mail recipients are restricted; no real supplier communication or purchase is implied by the acceptance.
 
-[All Gas](https://www.convex.dev/hackathons/all-gas) requires a public repository with root `hackathon.md`, an accessible accepted-host URL, a video under three minutes and a sponsor-tagged social post. Requirements were checked September 20. The live app is https://incredible-wolverine-122.convex.site; the repository remains private until an authorized release.
+[All Gas](https://www.convex.dev/hackathons/all-gas) requires a public repository with root `hackathon.md`, an accessible accepted-host URL, a video under three minutes and a sponsor-tagged social post. Requirements were checked September 20 and re-verified September 22. The live app is https://scrupulous-mandrill-717.convex.site; the repository remains private until an authorized release.
 
 Recording/submission drafts and older planning notes are kept locally under ignored `.local/repository-notes/`; they are not required to build or evaluate the source. The overview is published. The presentation/navigation follow-up is published in PR #42; ingredient-list research is published in PR #43, with the continuity corrections published in PR #44; final recording and submission remain outstanding.

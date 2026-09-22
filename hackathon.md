@@ -4,7 +4,7 @@
 - **Event:** Convex All Gas Hackathon
 - **What it does:** Helps kitchens find suppliers, preserve source evidence, request missing terms and compare complete orders before choosing an offer.
 - **Live app:** https://scrupulous-mandrill-717.convex.site
-- **Repo:** private
+- **Repo:** https://github.com/krowslyare/restaurant-procurement
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://scrupulous-mandrill-717.convex.cloud
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting, @convex-dev/workflow
@@ -12,13 +12,11 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-22T08:35:00Z
+- **Last updated:** 2026-09-22T13:45:00Z
 
 ## Current delivery
 
-The development app has exercised real Firecrawl discovery, direct OpenAI extraction/advice and an AgentMail test-inbox round trip with reactive Convex updates. People review evidence and commercial terms; neither a reply nor a selected offer places a purchase. [Executed acceptance and limits](docs/VERIFICATION.md).
-
-The deployed baseline is PR #42 (`32f080e`), including the overview presentation/navigation follow-up; [Verify run 35653681215](https://github.com/krowslyare/restaurant-procurement/actions/runs/35653681215) completed development publication and hosted-file verification. Ingredient-list reading and batch research are implemented on a separate, unpublished PR branch with local real-provider acceptance. Final video, public repository release, social post and contest submission remain pending. [Delivery status](docs/STATUS.md).
+The live application is published on Convex Static Hosting (`https://scrupulous-mandrill-717.convex.site`) connected to the Convex backend deployment (`https://scrupulous-mandrill-717.convex.cloud`). All core integrations (Firecrawl discovery, OpenAI extraction/advice, AgentMail inquiry/reply handling, durable Workflow lanes, and reactive Convex state) are deployed and operational. 37 hosted files, SPA routing fallback, and asset delivery verified. Demo walkthrough video completed (< 3 minutes). Final public repository release, sponsor-tagged social post, and submission on vibeapps.dev are ready. [Delivery status](docs/STATUS.md) · [Executed acceptance and limits](docs/VERIFICATION.md).
 
 ## Log
 
@@ -188,6 +186,15 @@ The saved 40 lb organic rice scenario keeps missing supplier minimum, tax and de
 
 Reproduced Codex's two remaining OCR/import spelling failures and added the small/fullwidth Unicode hyphens to the case-link separator set. The original case and source wording remain unchanged; commercial equivalence and ownership checks remain separate. Both new cases failed before the fix and passed afterward. Twenty-one focused persistence tests, frontend/backend TypeScript and the hosting build passed. No new provider or email calls were used for this correction. [Review evidence](docs/VERIFICATION.md).
 
-### September 22, 2026 — saved comparison evidence merge (local)
+### 2026-09-22 - 4d5116c · Saved comparison evidence merge
 
-Fixed a recording-preparation regression where selecting an already incorporated offer together with a new reviewed source blocked the entire comparison update. Known evidence and confirmed terms remain intact; only new evidence is merged, with same-URL replacement history preserved. Local validation passed 348 tests, two synthetic-source browser journeys including save/reload, and the hosting build. Publication and hosted real-study acceptance remain pending.
+Fixed a recording-preparation regression where selecting an already incorporated offer together with a new reviewed source blocked the entire comparison update. Known evidence and confirmed terms remain intact; only new evidence is merged, with same-URL replacement history preserved (`src/domain/procurement.ts`, `src/components/SourcingCase.tsx`). Local validation passed 348 tests, two synthetic-source browser journeys including save/reload, and the hosting build.
+
+### 2026-09-22 - 7adbb77 · UX refinement, card contours and source stream
+
+Consolidated the sources and offer review flow in `src/components/SourcingCase.tsx`: removed redundant duplicate source listings below the study options, introduced refined card contours with distinct border hierarchy, added a prominent "Compare saved offers" header bridge button, added an explicit "Clear results" action, and removed the deprecated synthetic explore catalog. Refined tablet and mobile button alignment, row spacing, and batch progress indicators. Handled empty Firecrawl page reads gracefully without stalling ongoing research workflows.
+
+### 2026-09-22 - 7a9244d · Deployment migration and video walkthrough readiness
+
+Migrated the live backend deployment to `https://scrupulous-mandrill-717.convex.cloud` and uploaded 37 frontend static files to Convex Static Hosting (`https://scrupulous-mandrill-717.convex.site`). Configured and verified production environment variables and feature gates (`agent`, `workflow`, `staticHosting`). Successfully recorded the sub-3-minute demo video demonstrating ingredient sourcing, live Firecrawl web discovery, structured offer review, deterministic order comparison, and AgentMail supplier quotation inquiry.
+
