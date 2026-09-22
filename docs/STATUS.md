@@ -1,6 +1,6 @@
 # Delivery status
 
-Updated September 21, 2026. This is the current status source; `hackathon.md` retains the dated build history. Implementation, local tests, external acceptance and contest submission are separate outcomes.
+Updated September 22, 2026. This is the current status source; `hackathon.md` retains the dated build history. Implementation, local tests, external acceptance and contest submission are separate outcomes.
 
 | Area | State | Evidence / boundary |
 | --- | --- | --- |
@@ -16,6 +16,7 @@ Updated September 21, 2026. This is the current status source; `hackathon.md` re
 | Ingredient-list continuity | Merged and published in PR #44 | Pending rows remain available after a partial launch; uncertain AI readings reuse their request ID; available findings lead the row while the round-limit notice remains explicit. 19 focused browser tests passed, followed by 5/5 after correcting partial-launch navigation from Explore; the hosting build passed. |
 | Hosted list-to-comparison acceptance | Bounded acceptance passed after PR #45 publication | Real PNG reading, four ingredients, two concurrent investigations, partial findings and reload recovery. Rice study and a pending 40 lb single-offer comparison were saved, reloaded and reopened from its batch row. No supplier communication or purchase; commercial terms remain pending. See [VERIFICATION](VERIFICATION.md). |
 | Compatibility-hyphen review | Corrected with regression coverage | The PR #45 review reproduced save failures for U+FF0D/U+FE63 in OCR/imported ingredient names. The case-link separator set now includes both; 21 focused tests, frontend/backend TypeScript and the hosting build passed. Original text and ingredient/specification guards remain intact. |
+| Mixed reviewed evidence | Fixed locally; not published | Existing and new reviewed offers can update one saved comparison without resetting known evidence or terms. 348 tests, two focused browser journeys with synthetic sources, and hosting build passed. |
 | Repository cleanup | Verified locally | Five public guides, README workflow diagram, working notes/tooling excluded; 320 tests and hosting build passed from a tracked-file snapshot with a fresh offline dependency installation |
 | Recipes / private pilot | Outside release | No customer-data enablement or validated restaurant pilot |
 | Submission | Pending | Final video, public GitHub release, social post and entry confirmation remain outstanding |

@@ -104,7 +104,8 @@ test("case layout remains readable and actions stop while offline", async ({
   await context.setOffline(false);
 });
 
-test("reviewed new evidence returns to the same case comparison and preserves its history", async ({
+for (const mixedSelection of [false, true]) {
+test(`reviewed ${mixedSelection ? "mixed old and new" : "new"} evidence returns to the same case comparison and preserves its history`, async ({
   page,
   context,
 }) => {
@@ -126,7 +127,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
     packageUnit: "kg",
     price: "85",
   };
-  function sourceRun() {
+  function sourceRun(url = "https://example.com/rice") {
     const directory = mkdtempSync(join(tmpdir(), "case-research-e2e-"));
     try {
       const path = join(directory, "research.json");
@@ -147,7 +148,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
             simulated: true,
             sources: [
               {
-                url: "https://example.com/rice",
+                url,
                 title: "Synthetic rice source",
                 description: "E2E fixture",
                 markdown: extractionSource.text,
@@ -174,7 +175,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
     }
   }
   const firstId = sourceRun(),
-    secondId = sourceRun();
+    secondId = sourceRun(mixedSelection ? "https://another.example/rice" : undefined);
   const seed = extractionToPurchase(
     { ...extractionSource, id: `${firstId}:0` },
     extractionExample,
@@ -191,6 +192,11 @@ test("reviewed new evidence returns to the same case comparison and preserves it
     selectedOfferId: null,
     webReviews: [{ runId: firstId, sourceIndex: 0, values, confirmed: true }],
   });
+  const study = mixedSelection ? run("studies:save", {
+    token, clientId: crypto.randomUUID(), id: null, expectedRevision: 0,
+    term: "Arroz", region: "Lima", selectedIds: [],
+    webReviews: [{ runId: firstId, sourceIndex: 0, values, confirmed: true }],
+  }) : null;
   const dir = mkdtempSync(join(tmpdir(), "case-e2e-"));
   try {
     const path = join(dir, "case.json");
@@ -203,6 +209,7 @@ test("reviewed new evidence returns to the same case comparison and preserves it
           region: "Lima",
           objective: "Review the latest price",
           comparisonId: saved.id,
+          ...(study ? { studyId: study.id } : {}),
           status: "complete",
           revision: 1,
           steps: 1,
@@ -257,9 +264,10 @@ test("reviewed new evidence returns to the same case comparison and preserves it
   await expect(page.getByRole("status").filter({ hasText: "Findings saved with this follow-up." })).toBeVisible();
   await page.reload();
   await page.getByRole("button", { name: "Sources", exact: true }).click();
+  if (mixedSelection) await page.getByLabel("I confirm they match the same ingredient, specification, base unit, and currency.").check();
   await page
     .locator(".sourcing-reviews")
-    .getByRole("button", { name: "Compare 1 reviewed offer", exact: true })
+    .getByRole("button", { name: mixedSelection ? "Compare 2 reviewed offers" : "Compare 1 reviewed offer", exact: true })
     .click();
   dialog = page.getByRole("dialog");
   await expect(dialog).toContainText("earlier evidence remains in history");
@@ -281,7 +289,12 @@ test("reviewed new evidence returns to the same case comparison and preserves it
   const [updated] = run("comparisons:list", { token });
   expect(updated.id).toBe(saved.id);
   expect(updated.revision).toBe(2);
-  expect(updated.offers[0].priceCents).toBe(9000);
+  expect(updated.offers).toHaveLength(mixedSelection ? 2 : 1);
+  expect(updated.offers.find((offer: { id: string }) => offer.id === `${secondId}:0`).priceCents).toBe(9000);
+  if (mixedSelection) expect(updated.offers.find((offer: { id: string }) => offer.id === `${firstId}:0`)).toEqual(saved.offers[0]);
+  await page.reload();
+  await expect(page.getByLabel("Required quantity", { exact: true })).toHaveValue("10");
+  await expect(page.getByRole("article", { name: /^Offer from / })).toHaveCount(mixedSelection ? 2 : 1);
   expect(updated.sources[`${firstId}:0`]).toEqual(
     saved.sources[`${firstId}:0`],
   );
@@ -291,6 +304,8 @@ test("reviewed new evidence returns to the same case comparison and preserves it
     ),
   ).toBe(true);
 });
+
+}
 
 test("a waiting case reacts to a later supplier reply and opens that conversation", async ({
   page,

@@ -25,15 +25,22 @@ export function mergeCaseEvidence(
     );
   if (incoming.offers.some((offer) => !incoming.sources[offer.id]?.webReview))
     throw new Error("Choose reviewed web evidence.");
-  if (incoming.offers.some((offer) => current.sources[offer.id]))
+  // A saved study may include both previously incorporated and new evidence.
+  // Keep the saved version of known IDs, including reviewed commercial terms
+  // and historical sources; only new IDs can update the comparison.
+  const additions = incoming.offers.filter((offer) => !current.sources[offer.id]);
+  if (!additions.length)
     throw new Error("This evidence is already in the saved comparison.");
-  const sources = { ...current.sources, ...incoming.sources };
+  const sources = {
+    ...current.sources,
+    ...Object.fromEntries(additions.map((offer) => [offer.id, incoming.sources[offer.id]])),
+  };
   if (Object.keys(sources).length > MAX_COMPARISON_OFFERS)
     throw new Error(
       `This comparison already contains ${MAX_COMPARISON_OFFERS} sources including history. Review the existing comparison before adding more.`,
     );
   const urls = new Set(
-    incoming.offers
+    additions
       .map((offer) => incoming.sources[offer.id].marketSource?.url)
       .filter(Boolean),
   );
@@ -42,7 +49,7 @@ export function mergeCaseEvidence(
   );
   return {
     request: { ...current.request },
-    offers: [...retained, ...incoming.offers],
+    offers: [...retained, ...additions],
     sources,
     resumeComparison: { id: current.id, revision: current.revision },
   };

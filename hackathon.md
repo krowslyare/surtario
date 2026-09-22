@@ -187,3 +187,7 @@ The saved 40 lb organic rice scenario keeps missing supplier minimum, tax and de
 ### 2026-09-21 - PR #45 compatibility-hyphen review
 
 Reproduced Codex's two remaining OCR/import spelling failures and added the small/fullwidth Unicode hyphens to the case-link separator set. The original case and source wording remain unchanged; commercial equivalence and ownership checks remain separate. Both new cases failed before the fix and passed afterward. Twenty-one focused persistence tests, frontend/backend TypeScript and the hosting build passed. No new provider or email calls were used for this correction. [Review evidence](docs/VERIFICATION.md).
+
+### September 22, 2026 — saved comparison evidence merge (local)
+
+Fixed a recording-preparation regression where selecting an already incorporated offer together with a new reviewed source blocked the entire comparison update. Known evidence and confirmed terms remain intact; only new evidence is merged, with same-URL replacement history preserved. Local validation passed 348 tests, two synthetic-source browser journeys including save/reload, and the hosting build. Publication and hosted real-study acceptance remain pending.
