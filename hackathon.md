@@ -168,3 +168,10 @@ A separate follow-up preserves unlaunched ingredients after a partial start, ret
 ### 2026-09-21 - PR #44 partial-launch navigation review
 
 Corrected the remaining Explore-origin partial launch: it retains the visible pending list and navigates to Overview only when the full list has been launched. Five focused browser tests cover both entry points plus uncertain-reading recovery; TypeScript and the hosting build passed. The capture script and narration were finalized under ignored `.local/recording/`; no video, new provider call or message was produced by this preparation.
+
+
+### 2026-09-21 - Hosted list research and comparison continuity
+
+PR #44 was merged and development publication verified. A fresh hosted PNG intake read four ingredients through OpenAI and launched two concurrent durable research lanes with real Firecrawl/OpenAI results. Rice findings opened while other ingredients continued, survived reload and were saved with reviewed public prices and an unpriced distributor. The document was a synthetic input list; supplier evidence was live.
+
+Actual use exposed a save failure between the list's hyphenated ingredient and the source's spaced spelling. The bounded correction accepts those word separators only at the case link, preserving reviewed evidence and stricter commercial identity checks. Nineteen focused tests, TypeScript and the hosting build passed locally. Re-saving the hosted comparison awaits publication. No commercial terms, supplier reply or purchase was invented. [Evidence and limits](docs/VERIFICATION.md).

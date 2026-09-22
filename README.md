@@ -22,7 +22,7 @@ flowchart LR
 Convex keeps the research, messages and saved decisions connected. AI proposes information; you review the evidence before it becomes an offer. An incoming email does not silently change a price, and choosing an offer does not place an order.
 
 - **Overview:** resume related studies, follow-ups and conversations, review pending evidence and see saved decision changes. Update a saved study with one explicit live search; findings await review before changing confirmed offers.
-- **Ingredient lists:** review names from photo/PDF AI reading, Excel, CSV or text, then research one or several. Overview tracks each ingredient independently and opens findings while the rest continue. Published in the development demo; provider acceptance for list reading and batch research ran on an isolated local backend. See delivery status for follow-up changes.
+- **Ingredient lists:** review names from photo/PDF AI reading, Excel, CSV or text, then research one or several. Overview tracks each ingredient independently and opens findings while the rest continue. Published in the development demo; local PNG/PDF acceptance and hosted PNG-to-batch research used real providers. See delivery status for the bounded comparison follow-up.
 - **Research:** public prices, supplier contacts and sources without published prices, with visible progress and saved follow-ups.
 - **Keep the useful options:** original source, observation date, product specification and unresolved terms stay attached to your study.
 - **Ask and review:** approve a supplier inquiry, receive replies in Messages, then review proposed fields before saving them.

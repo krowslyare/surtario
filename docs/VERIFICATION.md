@@ -146,3 +146,16 @@ UI inspection covered the pending-row layout at 1920, 390 and 320 px without hor
 Codex identified a remaining origin-specific continuity issue: launching one ingredient from Explore invoked the automatic Overview navigation, whose intake is a separate instance. The callback now runs only after every row of the current list has been launched. A partial launch stays on its originating list. The regression now exercises both Overview and Explore, including navigation recovery, starting the remaining rows and the final automatic Overview destination from Explore.
 
 The focused run passed **5/5 browser tests** after this correction; TypeScript and the 37-file hosting build passed again. The first new Explore test exposed an ambiguous import-button locator, which was scoped to the ingredient-intake region without changing product assertions. This is additional focused verification after the earlier 19-test run, not a new full-suite pass. No provider or email calls were made.
+
+
+## September 21: hosted ingredient-list use and comparison save correction
+
+PR #44 merged as `91002e2`. [Verify run 35678688522](https://github.com/krowslyare/restaurant-procurement/actions/runs/35678688522) passed 340 tests, published the development backend/frontend and verified all 37 files.
+
+A fresh journey on the published app uploaded the synthetic four-line kitchen-list image as an input document, then called direct OpenAI to read it and Firecrawl/OpenAI to research the reviewed ingredients. Supplier results were live, not catalog fixtures. Two ingredients ran while two queued; opening rice findings and reloading retained the same case, and queued work continued. Read-only backend verification found one case/run per ingredient and `simulated: false` on the resulting research records.
+
+Rice stopped at the six-round budget with 17 unique sources and ten interpretations. Two reviewed price references and F. Garcia as an unpriced distributor were saved to its linked study. WebstaurantStore's organic 25 lb bag was listed at USD 42.99; My Patriot Supply's different specification and conflicting availability were retained separately. They were not confirmed as equivalent. A 40 lb calculation scenario for the organic option left minimum order, tax, delivery and final total pending. No email or purchase was made.
+
+The first comparison save failed because the list named “Long-grain white rice” and the reviewed source named “Long grain white rice”. This is a real hosted failure, not a passed acceptance. The follow-up normalizes only case and word separators for the existing case-link check. It does not rewrite source data, infer equivalence or relax the separate confirmed-review identity checks. Different ingredient words and added organic specifications still fail that link check.
+
+Local verification passed 19 tests across comparison persistence and web review, frontend/backend TypeScript, and the 37-file hosting build. Three new regression cases cover ASCII/Unicode hyphens and whitespace, idempotent save, reload/re-save, original source preservation, pending conditions and rejection of materially different ingredients. The attempted local CLI push stopped because its configured backend was already running; no process or dataset was reset. Hosted re-save/reload acceptance remains a publication follow-up.
