@@ -175,3 +175,10 @@ Corrected the remaining Explore-origin partial launch: it retains the visible pe
 PR #44 was merged and development publication verified. A fresh hosted PNG intake read four ingredients through OpenAI and launched two concurrent durable research lanes with real Firecrawl/OpenAI results. Rice findings opened while other ingredients continued, survived reload and were saved with reviewed public prices and an unpriced distributor. The document was a synthetic input list; supplier evidence was live.
 
 Actual use exposed a save failure between the list's hyphenated ingredient and the source's spaced spelling. The bounded correction accepts those word separators only at the case link, preserving reviewed evidence and stricter commercial identity checks. Nineteen focused tests, TypeScript and the hosting build passed locally. Re-saving the hosted comparison awaits publication. No commercial terms, supplier reply or purchase was invented. [Evidence and limits](docs/VERIFICATION.md).
+
+
+### 2026-09-21 - Hosted acceptance completed after PR #45
+
+Merged and published the ingredient spelling correction as `ffbdde8`; CI passed 343 tests and verified 37 hosted files. The exact previously failed real-source comparison then saved successfully, recovered after reload and reopened from the rice row in Overview. The four-ingredient batch completed without duplicate runs, with 17/31/24/36 sources respectively; each retained its explicit research-budget limit.
+
+The saved 40 lb organic rice scenario keeps missing supplier minimum, tax and delivery pending and has no selected offer. Input list artwork was synthetic; its OpenAI reading and all supplier research were live. No synthetic commercial reply, supplier email or purchase was used to finish the journey. [Hosted acceptance evidence](docs/VERIFICATION.md).
