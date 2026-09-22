@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 
-const site = "https://incredible-wolverine-122.convex.site";
+const site = process.env.CONVEX_SITE_URL ?? "https://incredible-wolverine-122.convex.site";
 async function get(path) {
   return fetch(`${site}/${path}`, { signal: AbortSignal.timeout(30_000) });
 }

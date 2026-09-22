@@ -17,6 +17,8 @@
     "check:hosting": "npm run build && node scripts/verify-hosting-build.mjs",
     "deploy:hosting": "npx @convex-dev/static-hosting deploy",
     "deploy:hosting:dev": "npx @convex-dev/static-hosting upload --dev --build-command \"npm run check:hosting\"",
+    "verify:demo": "node scripts/verify-demo-publication.mjs",
+    "verify:submission": "CONVEX_SITE_URL=https://scrupulous-mandrill-717.convex.site node scripts/verify-demo-publication.mjs",
     "dev:mail": "node scripts/local-agentmail.mjs"
   },
   "engines": {

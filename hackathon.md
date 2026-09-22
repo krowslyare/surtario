@@ -16,7 +16,7 @@
 
 ## Current delivery
 
-The live application is published on Convex Static Hosting (`https://scrupulous-mandrill-717.convex.site`) connected to the Convex backend deployment (`https://scrupulous-mandrill-717.convex.cloud`). All core integrations (Firecrawl discovery, OpenAI extraction/advice, AgentMail inquiry/reply handling, durable Workflow lanes, and reactive Convex state) are deployed and operational. 37 hosted files, SPA routing fallback, and asset delivery verified. Demo walkthrough video: https://youtu.be/taAjgRuFpV8 (< 3 minutes). Final public repository release, sponsor-tagged social post, and submission on vibeapps.dev are ready. [Delivery status](docs/STATUS.md) · [Executed acceptance and limits](docs/VERIFICATION.md).
+The submission demo is published on Convex Static Hosting (`https://scrupulous-mandrill-717.convex.site`) backed by the clean Convex deployment (`https://scrupulous-mandrill-717.convex.cloud`). Continuous integration verifies development commits against `dev:incredible-wolverine-122`. Published capabilities include Firecrawl web discovery, OpenAI extraction/advice, AgentMail quotation inquiries, durable Workflow research lanes, and reactive Convex state. Historical end-to-end acceptance with live providers was executed on the development deployment (documented in [VERIFICATION](docs/VERIFICATION.md)), and the submission demo has verified static hosting (33 assets, SPA routing). Demo walkthrough video: https://youtu.be/taAjgRuFpV8 (< 3 minutes). Final public repository release, sponsor-tagged social post, and submission on vibeapps.dev are ready. [Delivery status](docs/STATUS.md).
 
 ## Log
 
