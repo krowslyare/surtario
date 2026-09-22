@@ -156,3 +156,10 @@ On an isolated local backend, direct OpenAI read the synthetic kitchen list from
 ### 2026-09-21 - PR #43 review corrections
 
 Confirmed and fixed replacement-versus-retry request identity and incomplete metadata validation on batch replay. Removed repeated batch attention cards while retaining the shared priority actions inside each ingredient row. Regression checks cover identical replacement, unconfirmed retries, changed title/provenance and exact evidence/comparison/reply destinations. Desktop/mobile inspection used preserved local results; no additional provider calls, mail, merge or publication were made. Final validation is recorded in [VERIFICATION](docs/VERIFICATION.md).
+
+
+### 2026-09-21 - PR #43 publication and ingredient-list continuity
+
+PR #43 merged as `b393f10`; [Verify run 35663996163](https://github.com/krowslyare/restaurant-procurement/actions/runs/35663996163) passed 340 tests and published the development backend/frontend with 37-file verification. Hosted Overview/import-dialog checks passed; the recorded photo/PDF and four-ingredient provider acceptance remains local.
+
+A separate follow-up preserves unlaunched ingredients after a partial start, retains the request identity when recovering an uncertain AI reading, and highlights available findings while keeping the six-round limit explicit. Nineteen focused browser tests and the hosting build passed. Desktop/mobile checks used synthetic continuity fixtures and the preserved real-source workspace. No new provider requests, mail or publication were performed for the follow-up. [Evidence and boundaries](docs/VERIFICATION.md).

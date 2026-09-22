@@ -45,19 +45,22 @@ function Selection({
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const request = useRef({ fingerprint: "", id: crypto.randomUUID() });
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState<Set<string>>(() => new Set());
+  const currentBatch = useRef(batch);
+  currentBatch.current = batch;
   useEffect(() => {
     setSelected(
       new Set(batch.rows.filter((r) => !r.needsReview).map((r) => r.id)),
     );
-    setStarted(false);
+    setStarted(new Set());
+    setBusy(false);
     setError("");
     request.current = { fingerprint: "", id: crypto.randomUUID() };
   }, [batch]);
   async function launch(ids: Set<string>) {
-    if (busy || started) return;
+    if (busy) return;
     const rows = batch.rows
-      .filter((r) => ids.has(r.id))
+      .filter((r) => ids.has(r.id) && !started.has(r.id))
       .map((r) => ({
         id: r.id,
         ingredient: r.ingredient,
@@ -68,6 +71,7 @@ function Selection({
           `Row ${r.line}${batch.sheet ? ` · ${batch.sheet}` : ""}`,
         needsReview: !!r.needsReview,
       }));
+    if (!rows.length) return;
     const fingerprint = JSON.stringify({ rows, region, title });
     if (request.current.fingerprint !== fingerprint)
       request.current = { fingerprint, id: crypto.randomUUID() };
@@ -82,9 +86,13 @@ function Selection({
         title,
         sourceKind: batch.method,
       });
-      setStarted(true);
+      if (currentBatch.current !== batch) return;
+      const launched = new Set(rows.map((row) => row.id));
+      setStarted((current) => new Set([...current, ...launched]));
+      setSelected((current) => new Set([...current].filter((id) => !launched.has(id))));
       onStarted?.();
     } catch (cause) {
+      if (currentBatch.current !== batch) return;
       setError(
         readableError(
           cause,
@@ -92,21 +100,22 @@ function Selection({
         ),
       );
     } finally {
-      setBusy(false);
+      if (currentBatch.current === batch) setBusy(false);
     }
   }
-  if (started)
-    return (
-      <p className="notice success" role="status">
-        <Check size={18} />
-        Your research is saved in Overview. You can leave this page while it
-        continues.
-      </p>
-    );
+  const remainingRows = batch.rows.filter((row) => !started.has(row.id));
   const unavailable = busy || !connected || !data?.enabled || data.busy;
   const overCapacity = !!data && selected.size > data.remaining;
   return (
     <div className="ingredient-selection">
+      {started.size > 0 && (
+        <p className="notice ingredient-started-notice" role="status">
+          <Check size={18} />
+          Your research is saved in Overview. {remainingRows.length
+            ? `${remainingRows.length} ingredients remain in this list. ${data?.busy ? "Start them when the current research finishes." : "Choose which to research next."}`
+            : "You can leave this page while it continues."}
+        </p>
+      )}
       <div className="ingredient-selection-heading">
         <p>
           Select what your kitchen needs. Open findings as soon as they arrive.
@@ -117,10 +126,11 @@ function Selection({
         <label className="checkbox">
           <input
             type="checkbox"
-            checked={selected.size === batch.rows.length}
+            disabled={busy || !remainingRows.length}
+            checked={remainingRows.length > 0 && selected.size === remainingRows.length}
             onChange={(e) =>
               setSelected(
-                new Set(e.target.checked ? batch.rows.map((r) => r.id) : []),
+                new Set(e.target.checked ? remainingRows.map((r) => r.id) : []),
               )
             }
           />
@@ -138,6 +148,7 @@ function Selection({
             <label className="checkbox">
               <input
                 type="checkbox"
+                disabled={busy || started.has(row.id)}
                 checked={selected.has(row.id)}
                 onChange={(e) =>
                   setSelected((current) => {
@@ -153,7 +164,9 @@ function Selection({
               </span>
               <strong>{row.ingredient}</strong>
             </label>
-            <Button
+            {started.has(row.id) ? (
+              <span className="ingredient-research-saved"><Check size={15} /> Research saved in Overview</span>
+            ) : <Button
               variant="text"
               disabled={
                 unavailable ||
@@ -165,7 +178,7 @@ function Selection({
             >
               Research this ingredient
               <ArrowRight size={15} />
-            </Button>
+            </Button>}
           </div>
         ))}
       </div>
@@ -219,7 +232,7 @@ function Selection({
       {data?.busy && (
         <p className="field-hint">
           Your current research is still running. Follow it in Overview before
-          starting another list.
+          starting the remaining ingredients.
         </p>
       )}
       {data && !data.enabled && (
@@ -357,10 +370,10 @@ function Progress({
                             : "Stopped"
                           : c.status === "failed"
                             ? "Needs attention"
-                            : c.stopReason === "budget"
-                              ? "Limit reached"
-                              : c.sources
-                                ? "Findings available"
+                            : c.sources
+                              ? "Findings available"
+                              : c.stopReason === "budget"
+                                ? "Limit reached"
                                 : "No usable sources";
                     return (
                       <div className="batch-progress-row" key={row.id}>
@@ -394,6 +407,9 @@ function Progress({
                                     : "Waiting for the next saved checkpoint"
                                   : c.summary}
                             </span>
+                          )}
+                          {!isQueued && !isRunning && c.stopReason === "budget" && (
+                            <span>Research stopped at the six-round limit. Coverage remains incomplete.</span>
                           )}
                           {!isQueued && (nextStep || c.sources > 0) && (
                             <span>
