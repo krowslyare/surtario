@@ -134,6 +134,49 @@ async function setup(simulated = false) {
   };
   return { t, args, ref };
 }
+test.each(["Long-grain white rice", "Long\u2011grain  white rice", " LONG\u2010GRAIN WHITE RICE "])(
+  "reviewed web offer saves and reopens against list spelling %s without rewriting evidence",
+  async (ingredient) => {
+    const { t, args, ref } = await setup();
+    const { ownerHash } = await import("./lib/demoSession");
+    const sourcingCaseId = await t.run(async (ctx) => ctx.db.insert("sourcingCases", {
+      ownerHash: await ownerHash(token), ingredient, region: "Portland, Oregon",
+      objective: "Research the ingredient list", status: "idle", revision: 1,
+      steps: 0, runs: 0, researchRunIds: [], summary: "", createdAt: 1, updatedAt: 1,
+    }));
+    const values = { ...args.webReviews[0].values, ingredient: "Long grain white rice" };
+    const seed = extractionToPurchase({ ...extractionSource, id: ref }, extractionExample, values, true);
+    const input = {
+      ...args, sourcingCaseId, request: { ...seed.request, quantity: 40 }, offers: seed.offers,
+      selectedOfferId: null, webReviews: [{ ...args.webReviews[0], values }],
+    };
+    const saved = await t.mutation(api.comparisons.save, input);
+    expect(saved.request.ingredient).toBe("Long grain white rice");
+    expect(saved.sources[ref].extraction?.proposed).toEqual(extractionExample);
+    expect(saved.sources[ref].extraction?.reviewed.ingredient).toBe("Long grain white rice");
+    expect(saved.offers[0].freightCents).toBeNull();
+    expect(saved.selectedOfferId).toBeNull();
+    const linked = await t.run(ctx => ctx.db.get(sourcingCaseId));
+    expect(linked?.ingredient).toBe(ingredient);
+    expect(linked?.comparisonId).toBe(saved.id);
+    expect((await t.mutation(api.comparisons.save, input)).id).toBe(saved.id);
+    const reopened = (await t.query(api.comparisons.list, { token }))[0];
+    const updated = await t.mutation(api.comparisons.save, {
+      ...input, id: reopened.id, expectedRevision: reopened.revision, webReviews: undefined,
+    });
+    expect(updated.sources).toEqual(saved.sources);
+    await expect(t.mutation(api.comparisons.save, {
+      ...input, id: updated.id, expectedRevision: updated.revision, selectedOfferId: ref,
+    })).rejects.toThrow(/Complete the quantity and conditions/);
+    for (const other of ["Short grain white rice", "Organic long grain white rice", "Longgrain white rice", "Rice"]) {
+      await t.run(ctx => ctx.db.patch(sourcingCaseId, { ingredient: other }));
+      await expect(t.mutation(api.comparisons.save, {
+        ...input, id: updated.id, expectedRevision: updated.revision,
+      })).rejects.toThrow(/ingredient must match/);
+    }
+  },
+);
+
 test("web review preserves source proposal, correction, conditions and idempotent recovery", async () => {
   const { t, args, ref } = await setup();
   const saved = await t.mutation(api.comparisons.save, args);

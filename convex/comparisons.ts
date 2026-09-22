@@ -46,6 +46,12 @@ function sameFields<T extends object>(a: T, b: T) {
   return (Object.keys(a) as Array<keyof T>).every((key) => a[key] === b[key]);
 }
 
+// A list and a reviewed source can spell the same ingredient with different
+// word separators. This is only a case-link check, not offer equivalence.
+function caseIngredientKey(value: string) {
+  return value.toLowerCase().replace(/[-\u2010\u2011]/g, " ").replace(/\s+/g, " ").trim();
+}
+
 function sameValue(a: unknown, b: unknown): boolean {
   if (a === b) return true;
   if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
@@ -387,8 +393,8 @@ export const save = mutation({
       throw new ConvexError("Sourcing case unavailable in this session.");
     if (
       sourcingCase &&
-      sourcingCase.ingredient.trim().toLowerCase() !==
-        args.request.ingredient.trim().toLowerCase()
+      caseIngredientKey(sourcingCase.ingredient) !==
+        caseIngredientKey(args.request.ingredient)
     )
       throw new ConvexError(
         "The comparison ingredient must match the sourcing case.",
