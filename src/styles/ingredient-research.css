@@ -277,10 +277,12 @@
 @media (max-width: 900px) {
   .batch-progress-row {
     grid-template-columns: 1.5rem 1fr 1fr;
+    gap: var(--space-4);
   }
   .batch-row-actions {
     grid-column: 2 / -1;
-    justify-content: flex-start;
+    justify-content: flex-end;
+    padding-top: var(--space-2);
   }
   .intake-review-layout.has-source {
     grid-template-columns: 1fr;
