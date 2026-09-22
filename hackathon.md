@@ -3,16 +3,16 @@
 - **Project:** Surtario
 - **Event:** Convex All Gas Hackathon
 - **What it does:** Helps kitchens find suppliers, preserve source evidence, request missing terms and compare complete orders before choosing an offer.
-- **Live app:** https://incredible-wolverine-122.convex.site
+- **Live app:** https://scrupulous-mandrill-717.convex.site
 - **Repo:** private
 - **Frontend:** Convex static hosting
-- **Convex deployment:** https://incredible-wolverine-122.convex.cloud
+- **Convex deployment:** https://scrupulous-mandrill-717.convex.cloud
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting, @convex-dev/workflow
 - **Convex features:** schema, indexes, queries, mutations, actions, HTTP actions, scheduled mutations, crons, realtime queries
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-22T02:56:21Z
+- **Last updated:** 2026-09-22T08:35:00Z
 
 ## Current delivery
 
