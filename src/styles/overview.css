@@ -31,6 +31,7 @@
 .overview-filters { display: flex; flex-wrap: wrap; gap: .5rem; }
 .overview-filters [aria-pressed="true"] { background: var(--color-primary); color: var(--color-on-primary); }
 .overview-no-matches { margin: 1.75rem 0 1.25rem; color: var(--color-text-muted); font-size: 0.95rem; padding: 0.5rem 0; }
+.overview-filter-reset { margin: var(--space-4) 0; }
 #overview-work { scroll-margin-top: 8rem; }
 .overview-work-list > li { display: grid; grid-template-columns: minmax(170px, .9fr) minmax(0, 1.4fr) minmax(220px, .8fr); gap: 1.5rem; align-items: center; padding: 1.5rem 0; border-top: 1px solid var(--color-border); }
 .overview-work-list p { margin: .35rem 0; font-size: .9rem; color: var(--color-text-muted); }

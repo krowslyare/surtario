@@ -107,7 +107,7 @@ function Connected({ token, ...props }: Props & { token: string }) {
   const visible = matching.filter(item => !item.batchId);
   const standalone = ordered.filter(item => !item.batchId);
   const standaloneAttention = standalone.filter(item => item.next.attention);
-  const chooseFilter = (value: Filter) => { setFilter(value); (document.getElementById("overview-work") ?? document.getElementById("ingredient-batches"))?.scrollIntoView({ behavior: "instant", block: "start" }); };
+  const chooseFilter = (value: Filter) => { setFilter(current => current === value ? "all" : value); (document.getElementById("overview-work") ?? document.getElementById("ingredient-batches"))?.scrollIntoView({ behavior: "instant", block: "start" }); };
   async function open(item: Work, target: Target = item.next.target, requestId?: string) {
     if (opening) return;
     setOpening(item.id); setError("");
@@ -135,6 +135,7 @@ function Connected({ token, ...props }: Props & { token: string }) {
         <button key={value} aria-pressed={filter === value} onClick={() => chooseFilter(value)}><strong>{count}</strong><span>{label}</span><ArrowRight size={18} /></button>)}
     </div>
     <IngredientBatchProgress nextSteps={Object.fromEntries(items.filter(item => item.batchId && item.caseId).map(item => [item.caseId!, { title: item.next.title, action: action(item) }]))} onOpen={props.onOpenCase} visibleCaseIds={filter === "all" && !search ? undefined : matching.flatMap(item => item.caseId ? [item.caseId] : [])} />
+    {filter !== "all" && !standalone.length && <div className="overview-filter-reset"><Button variant="text" onClick={() => setFilter("all")}>Show all work</Button></div>}
     {data.limited && <p className="notice warning" role="status">Recent work only: this session exceeds the overview’s supported record limit.</p>}
     {!items.length ? <section className="overview-empty"><img src="/brand/surtario-symbol.svg" alt="" width="64" height="64" /><h2>Start with what your kitchen needs.</h2><p>Research an ingredient and delivery area. Your saved studies, supplier conversations and decisions will come together here.</p><Button variant="secondary" onClick={props.onResearch}>Explore suppliers<ArrowRight size={16} /></Button></section> : <>
       {standalone.length > 0 && <div className={`overview-priorities ${standalone.some(item => item.next.researching) ? "has-research" : ""}`}>
