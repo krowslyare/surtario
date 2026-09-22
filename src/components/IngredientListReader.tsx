@@ -39,6 +39,8 @@ function Reader({
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
   const applied = useRef<string | null>(null);
+  const inFlight = useRef(false);
+  const terminal = result?.status === "complete" || result?.status === "failed";
   useEffect(() => {
     if (!result || applied.current === requestId) return;
     if (result.status === "complete") {
@@ -64,8 +66,11 @@ function Reader({
     }
   }, [result, requestId, onRead]);
   async function read() {
-    if (!availability?.enabled || busy) return;
-    const id = crypto.randomUUID();
+    if (!availability?.enabled || busy || inFlight.current) return;
+    inFlight.current = true;
+    // A lost HTTP acknowledgement is not a new paid operation. The server
+    // recovers the same reservation before considering quotas or provider work.
+    const id = requestId && !terminal ? requestId : crypto.randomUUID();
     setRequestId(id);
     setBusy(true);
     setError("");
@@ -96,12 +101,15 @@ function Reader({
         throw new Error(body.error ?? "The file could not be read.");
       }
     } catch (cause) {
+      if (applied.current === id) return;
       setBusy(false);
       setError(
         cause instanceof Error
           ? cause.message
-          : "Connection interrupted. Any completed reading will appear here.",
+          : "Connection interrupted. Recover this reading to check its saved result.",
       );
+    } finally {
+      inFlight.current = false;
     }
   }
   return (
@@ -112,7 +120,7 @@ function Reader({
         onClick={() => void read()}
       >
         <ScanText size={18} />
-        {busy ? "Reading your list…" : "Read list with AI"}
+        {busy ? "Reading your list…" : requestId && !terminal ? "Recover this reading" : terminal ? "Read list again" : "Read list with AI"}
       </button>
       <p className="field-hint">
         This sends the file to OpenAI for reading. Surtario does not store the
@@ -132,9 +140,10 @@ function Reader({
         </p>
       )}
       {error && (
-        <p role="alert" className="notice error">
-          {error}
-        </p>
+        <div role="alert" className="notice error">
+          <p>{error}</p>
+          {requestId && !terminal && <p>Recover this reading to check the same request. A completed reading will appear automatically; recovery does not start a second AI reading.</p>}
+        </div>
       )}
     </div>
   );

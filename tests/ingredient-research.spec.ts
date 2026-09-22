@@ -410,6 +410,7 @@ test("batch attention appears once and keeps exact evidence, comparison and repl
             ...c,
             batchId,
             status: "complete",
+            stopReason: "budget",
             researchRunIds: [reserved.run.id],
             sourceProgress: [
               { url: "https://supplier.test/rice", interpreted: false },
@@ -432,6 +433,8 @@ test("batch attention appears once and keeps exact evidence, comparison and repl
     .locator(".batch-progress-row")
     .filter({ hasText: "Arroz" });
   await expect(group.locator(".batch-progress-row")).toHaveCount(2);
+  await expect(riceRow.locator(".batch-phase")).toHaveText("Findings available");
+  await expect(riceRow).toContainText("Research stopped at the six-round limit. Coverage remains incomplete.");
   await expect(
     overview.getByRole("button", {
       name: "2 Needs your attention",
