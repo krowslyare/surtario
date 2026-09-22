@@ -15,7 +15,7 @@ import {
   useQueries,
 } from "convex/react";
 import { ConvexError } from "convex/values";
-import { ArrowLeft, ChevronRight, Radar } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronRight, Radar } from "lucide-react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { PurchaseSeed } from "../domain/market";
@@ -713,7 +713,12 @@ function CaseDetail({
       </div>
       <div hidden={section !== "sources"}>
       {(running || coverage.total > 0 || item.stopReason) && (
-        <Disclosure className="sourcing-coverage" aria-label="Research coverage" defaultOpen title={<>All research findings · {coverage.total} sources · {coverage.priceDomains} domains with prices</>}>
+        <Disclosure
+          className="sourcing-coverage"
+          aria-label="Research coverage"
+          defaultOpen={false}
+          title={<>Research coverage · {coverage.total} sources · {coverage.priceDomains} domains with prices</>}
+        >
           <div>
             <h3>
               {running
@@ -732,58 +737,16 @@ function CaseDetail({
               Sources are not approved offers. Delivery, equivalence and final
               cost still need review.
             </p>
-            {coverage.shortlist.length > 0 && (
-              <>
-                <h4>Start with these sources</h4>
-                <p className="field-hint">
-                  Prioritized by product evidence and completeness, with one
-                  source per domain. This is not a lowest-price ranking.
-                </p>
-                <ul className="sourcing-shortlist">
-                  {coverage.shortlist.map((source) => (
-                    <li key={source.url}>
-                      <div className="sourcing-shortlist-copy">
-                      <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {source.title}
-                      </a>
-                      <p>{source.analysis?.summary}</p>
-                      {source.analysis?.warnings.length ? (
-                        <details>
-                          <summary>
-                            Conditions to verify (
-                            {source.analysis.warnings.length})
-                          </summary>
-                          <ul>
-                            {source.analysis.warnings.map((warning, index) => (
-                              <li key={index}>{warning}</li>
-                            ))}
-                          </ul>
-                        </details>
-                      ) : null}
-                      </div>
-                      <Button variant="secondary" onClick={() => {
-                        const run = runs?.find(run => run.sources.includes(source));
-                        if (!run) return;
-                        setSourceResume(previous => ({ id: run.id, sourceIndex: run.sources.indexOf(source), showAllSources: true, sequence: (previous?.sequence ?? 0) + 1 }));
-                      }}>Review this source</Button>
-                    </li>
+            {coverage.gaps.length > 0 && (
+              <div className="sourcing-coverage-gaps">
+                <h4>Remaining evidence gaps</h4>
+                <ul>
+                  {coverage.gaps.map((gap) => (
+                    <li key={gap}>{gap}</li>
                   ))}
                 </ul>
-
-              </>
+              </div>
             )}
-            <details>
-              <summary>Remaining evidence gaps</summary>
-              <ul>
-                {coverage.gaps.map((gap) => (
-                  <li key={gap}>{gap}</li>
-                ))}
-              </ul>
-            </details>
           </div>
         </Disclosure>
       )}
@@ -793,7 +756,138 @@ function CaseDetail({
           findings, messages and your comparison.
         </p>
       )}
-      {!runs?.length && <p className="followup-empty">No research sources yet. Start with the next step in Overview. Sources attached to saved offers are available in the comparison.</p>}
+      {!runs?.length && (
+        <p className="followup-empty">
+          No research sources yet. Start with the next step in Overview. Sources attached to saved offers are available in the comparison.
+        </p>
+      )}
+      {Boolean(runs?.length) && (
+        <div className="sourcing-reviews" tabIndex={-1}>
+          {evidenceDraft && (
+            <div className="followup-save-findings">
+              <p>
+                {selectedEvidence.length} reviewed offers and {selectedProspects.length} supplier contacts selected. Save to keep them with this follow-up.
+              </p>
+              <Button
+                variant="primary"
+                disabled={disabled}
+                busy={pending === "save-evidence"}
+                busyLabel="Saving findings…"
+                onClick={() => void act("save-evidence", async () => {
+                  const saved = await saveStudy({
+                    token, clientId: evidenceClientId, id: evidenceDraft.baseStudy?.id ?? null, expectedRevision: evidenceDraft.baseStudy?.revision ?? 0,
+                    term: item.ingredient, region: item.region, selectedIds: evidenceDraft.baseStudy?.selectedIds ?? [],
+                    webReviews: selectedEvidence.map(({ seed, sourceId }) => {
+                      const review = seed.sources[sourceId].webReview!;
+                      return { ...review, runId: review.runId as Id<"researchRuns"> };
+                    }),
+                    prospectIds: selectedProspects.map(prospect => prospect.id),
+                  });
+                  setSavedEvidenceStudy(saved);
+                  try {
+                    if (item.studyId !== saved.id) await attach({ token, caseId, studyId: saved.id });
+                    setEvidenceDraft(current => current === evidenceDraft ? null : current ? { ...current, baseStudy: saved } : null);
+                  } catch (cause) {
+                    setEvidenceDraft(current => current ? { ...current, baseStudy: saved } : null);
+                    throw cause;
+                  }
+                }, "Findings saved with this follow-up.")}
+              >
+                Save findings
+              </Button>
+            </div>
+          )}
+          {reviewOpen && (
+            <ResearchWorkspace
+              renderReviewStatus={runId => <ResearchReviewStatus token={token} runId={runId} />}
+              connected={connected}
+              reviewDestination="followup"
+              autoSelectLatest
+              resumeRequest={sourceResume}
+              status={researchStatus}
+              runs={runs}
+              request={null}
+              onStatus={() => {}}
+              onSearch={async () => {
+                throw new Error("Start research from the case.");
+              }}
+              onExtract={(runId, sourceIndex) =>
+                extract({
+                  token,
+                  runId: runId as Id<"researchRuns">,
+                  sourceIndex,
+                })
+              }
+              onRead={(runId, sourceIndex, url) =>
+                read({
+                  token,
+                  runId: runId as Id<"researchRuns">,
+                  sourceIndex,
+                  url,
+                })
+              }
+              onPrepare={(seed) => {
+                if (item.comparisonId) {
+                  if (!savedComparison) {
+                    setError(
+                      "The saved comparison is unavailable. Restore it before updating this case.",
+                    );
+                    return;
+                  }
+                  setIncoming(seed);
+                  setEquivalent(false);
+                  setError("");
+                } else props.onPrepare({ ...seed, sourcingCaseId: caseId });
+              }}
+              selections={selectedEvidence}
+              onReview={selection => setEvidenceDraft({
+                baseStudy: evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy,
+                selections: selectedEvidence.some(item => item.sourceId === selection.sourceId)
+                  ? selectedEvidence.map(item => item.sourceId === selection.sourceId ? selection : item)
+                  : [...selectedEvidence, selection],
+                prospects: selectedProspects,
+              })}
+              renderHeaderActions={() => (
+                savedComparison ? (
+                  <Button
+                    variant="secondary"
+                    onClick={openComparison}
+                    aria-label="Compare saved offers"
+                  >
+                    Compare saved offers ({savedComparison.offers.length}) <ArrowRight size={15} />
+                  </Button>
+                ) : null
+              )}
+              renderProspect={(run, index) => (
+                <SaveWebProspect
+                  token={token}
+                  runId={run.id as Id<"researchRuns">}
+                  sourceIndex={index}
+                  title={run.sources[index].title}
+                  url={run.sources[index].url}
+                  simulated={run.simulated}
+                  primaryInquiry
+                  onContinue={item.studyId && evidenceStudy ? (prospect, intent) => {
+                    const base = evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy;
+                    setSourceEntry({ supplier: prospect.supplier, intent, target: { prospectId: prospect.id }, draft: {
+                      clientId: evidenceClientId, id: base?.id ?? null, expectedRevision: base?.revision ?? 0,
+                      term: item.ingredient, region: item.region, selectedIds: base?.selectedIds ?? [],
+                      webSelections: selectedEvidence,
+                      prospects: [...selectedProspects.filter(item => item.id !== prospect.id), prospect],
+                    } });
+                  } : undefined}
+                  savedActionLabel="Keep candidate in this follow-up"
+                  onSaved={prospect => setEvidenceDraft({
+                    baseStudy: evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy,
+                    selections: selectedEvidence,
+                    prospects: [...selectedProspects.filter(item => item.id !== prospect.id), prospect],
+                  })}
+                />
+              )}
+            />
+          )}
+        </div>
+      )}
       </div>
       {error && <p className="notice error" role="alert">{error}</p>}
       {notice && <p className="field-hint" role="status">{notice}</p>}
@@ -1053,113 +1147,6 @@ function CaseDetail({
           ))}
         </section>
       </Disclosure>
-      )}
-      </div>
-      <div hidden={section !== "sources"}>
-      {Boolean(runs?.length) && (
-        <div className="sourcing-reviews" tabIndex={-1}>
-          {evidenceDraft && <div className="followup-save-findings">
-            <p>{selectedEvidence.length} reviewed offers and {selectedProspects.length} supplier contacts selected. Save to keep them with this follow-up.</p>
-            <Button variant="primary" disabled={disabled} busy={pending === "save-evidence"} busyLabel="Saving findings…" onClick={() => void act("save-evidence", async () => {
-              const saved = await saveStudy({
-                token, clientId: evidenceClientId, id: evidenceDraft.baseStudy?.id ?? null, expectedRevision: evidenceDraft.baseStudy?.revision ?? 0,
-                term: item.ingredient, region: item.region, selectedIds: evidenceDraft.baseStudy?.selectedIds ?? [],
-                webReviews: selectedEvidence.map(({ seed, sourceId }) => {
-                  const review = seed.sources[sourceId].webReview!;
-                  return { ...review, runId: review.runId as Id<"researchRuns"> };
-                }),
-                prospectIds: selectedProspects.map(prospect => prospect.id),
-              });
-              setSavedEvidenceStudy(saved);
-              try {
-                if (item.studyId !== saved.id) await attach({ token, caseId, studyId: saved.id });
-                setEvidenceDraft(current => current === evidenceDraft ? null : current ? { ...current, baseStudy: saved } : null);
-              } catch (cause) {
-                // The study save succeeded; retain edits and its revision for a safe retry of the link.
-                setEvidenceDraft(current => current ? { ...current, baseStudy: saved } : null);
-                throw cause;
-              }
-            }, "Findings saved with this follow-up.")}>Save findings</Button>
-          </div>}
-          {reviewOpen && (
-            <ResearchWorkspace
-            renderReviewStatus={runId => <ResearchReviewStatus token={token} runId={runId} />}
-              connected={connected}
-              reviewDestination="followup"
-              autoSelectLatest
-              resumeRequest={sourceResume}
-              status={researchStatus}
-              runs={runs}
-              request={null}
-              onStatus={() => {}}
-              onSearch={async () => {
-                throw new Error("Start research from the case.");
-              }}
-              onExtract={(runId, sourceIndex) =>
-                extract({
-                  token,
-                  runId: runId as Id<"researchRuns">,
-                  sourceIndex,
-                })
-              }
-              onRead={(runId, sourceIndex, url) =>
-                read({
-                  token,
-                  runId: runId as Id<"researchRuns">,
-                  sourceIndex,
-                  url,
-                })
-              }
-              onPrepare={(seed) => {
-                if (item.comparisonId) {
-                  if (!savedComparison) {
-                    setError(
-                      "The saved comparison is unavailable. Restore it before updating this case.",
-                    );
-                    return;
-                  }
-                  setIncoming(seed);
-                  setEquivalent(false);
-                  setError("");
-                } else props.onPrepare({ ...seed, sourcingCaseId: caseId });
-              }}
-              selections={selectedEvidence}
-              onReview={selection => setEvidenceDraft({
-                baseStudy: evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy,
-                selections: selectedEvidence.some(item => item.sourceId === selection.sourceId)
-                  ? selectedEvidence.map(item => item.sourceId === selection.sourceId ? selection : item)
-                  : [...selectedEvidence, selection],
-                prospects: selectedProspects,
-              })}
-              renderProspect={(run, index) => (
-                <SaveWebProspect
-                  token={token}
-                  runId={run.id as Id<"researchRuns">}
-                  sourceIndex={index}
-                  title={run.sources[index].title}
-                  url={run.sources[index].url}
-                  simulated={run.simulated}
-                  primaryInquiry
-                  onContinue={item.studyId && evidenceStudy ? (prospect, intent) => {
-                    const base = evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy;
-                    setSourceEntry({ supplier: prospect.supplier, intent, target: { prospectId: prospect.id }, draft: {
-                      clientId: evidenceClientId, id: base?.id ?? null, expectedRevision: base?.revision ?? 0,
-                      term: item.ingredient, region: item.region, selectedIds: base?.selectedIds ?? [],
-                      webSelections: selectedEvidence,
-                      prospects: [...selectedProspects.filter(item => item.id !== prospect.id), prospect],
-                    } });
-                  } : undefined}
-                  savedActionLabel="Keep candidate in this follow-up"
-                  onSaved={prospect => setEvidenceDraft({
-                    baseStudy: evidenceDraft ? evidenceDraft.baseStudy : evidenceStudy,
-                    selections: selectedEvidence,
-                    prospects: [...selectedProspects.filter(item => item.id !== prospect.id), prospect],
-                  })}
-                />
-              )}
-            />
-          )}
-        </div>
       )}
       </div>
     </div>

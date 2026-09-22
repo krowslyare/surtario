@@ -750,7 +750,7 @@ export default function MarketStudy({
                 </label>
                 <Button type="submit" variant="primary" disabled={persistenceEnabled && !webStatus}>
                   <Search size={18} />
-                  {persistenceEnabled && !webStatus ? "Checking search…" : webStatus?.searchEnabled ? "Search suppliers" : "Explore demo catalog"}
+                  {persistenceEnabled && !webStatus ? "Checking search…" : "Search suppliers"}
                 </Button>
                 {searchError && (
                   <p id="market-search-error" className="field-error market-search-error" role="alert">
@@ -758,15 +758,13 @@ export default function MarketStudy({
                   </p>
                 )}
                 <div className="market-search-support">
-                  {webStatus?.searchEnabled && <Button variant="text" type="button" onClick={() => explore()}>Explore demo catalog</Button>}
                   <p className="market-search-note">
                     <Info size={16} />
-                    Sample data is separate from live search.{" "}
                     {webStatus?.searchEnabled
                       ? webStatus?.autoReviewEnabled ? "Live search finds supplier sources. AI analyzes up to 3 product pages first; you can review more from the results." : "Live search checks public supplier sources."
                       : persistenceEnabled && !webStatus
                         ? "Checking live search availability…"
-                        : "Demo catalog · fictional examples in Portland / Lima. Live search is unavailable."}
+                        : "Live search checks public supplier sources."}
                   </p>
                 </div>
               </form>
@@ -774,26 +772,20 @@ export default function MarketStudy({
             {!search && !showStudy && (
               <section
                 className="market-start"
-                aria-label="Sample study"
+                aria-label="Quick actions"
               >
-                <span>Want to try it first?</span>
-                <Button
-                  variant="text"
-                  onClick={startExample}
-                  aria-label="Explore rice example"
-                >
-                  Explore example <ArrowRight size={17} />
-                </Button>
                 {persistenceEnabled && (
-                  <Button
-                    variant="text"
-                    onClick={() => openQuestion({ ingredient: term, region })}
-                    aria-label="Research a question"
-                  >
-                    Research question
-                  </Button>
+                  <>
+                    <Button
+                      variant="text"
+                      onClick={() => openQuestion({ ingredient: term, region })}
+                      aria-label="Research a question"
+                    >
+                      Research question
+                    </Button>
+                    <span className="market-start-divider" aria-hidden="true">·</span>
+                  </>
                 )}
-                <span className="market-start-divider" aria-hidden="true">·</span>
                 <Button
                   variant="text"
                   type="button"
@@ -876,6 +868,17 @@ export default function MarketStudy({
                   </div>
                   <div className="market-heading-controls">
                   {renderResultActions()}
+                  {!showStudy && search && (
+                    <Button
+                      variant="text"
+                      onClick={() => {
+                        setSearch(null);
+                        setResultsView("web");
+                      }}
+                    >
+                      Clear results
+                    </Button>
+                  )}
                   {showStudy && (
                     <Button
                       variant="secondary"
