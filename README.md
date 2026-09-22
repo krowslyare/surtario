@@ -1,10 +1,10 @@
 # Surtario
 
-**Zero-hallucination sourcing for commercial kitchens.** Find distributor options, extract verified prices, request missing commercial terms, and understand the full order before spending a dollar.
+**Evidence-based sourcing for commercial kitchens.** Find distributor options, extract verified prices, request missing commercial terms, and understand the full order before spending a dollar.
 
 [Try Surtario (Live App)](https://scrupulous-mandrill-717.convex.site) · [Video Demo (YouTube)](https://youtu.be/taAjgRuFpV8) · [Hackathon build log](hackathon.md) · [Setup and configuration](docs/DEVELOPMENT.md)
 
-Restaurants survive on 3–5% margins, yet food procurement remains trapped in fragmented distributor catalogs, confusing pack sizes, and unlisted freight fees. Surtario is built on a strict principle: **AI discovers and cites real-world evidence; deterministic arithmetic calculates the order; human chefs review and decide.** Start with an ingredient and delivery area, or import a kitchen list. You do not need recipes, purchase history, documents, or an upfront order quantity to research the market.
+Commercial kitchens operate on razor-thin margins, yet food procurement remains trapped in fragmented distributor catalogs, confusing pack sizes, and unlisted freight fees. Surtario is built on a strict principle: **AI discovers and cites real-world evidence; deterministic arithmetic calculates the order; human chefs review and decide.** Start with an ingredient and delivery area, or import a kitchen list. You do not need recipes, purchase history, documents, or an upfront order quantity to research the market.
 
 ## How it works
 

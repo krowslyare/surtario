@@ -24,6 +24,7 @@ backups/
 # Capturas y resultados de verificación local
 playwright-report/
 test-results/
+screenshots/
 
 # Estado y credenciales del backend local
 .convex
