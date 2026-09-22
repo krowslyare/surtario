@@ -19,7 +19,29 @@ type Target = "work" | "mail" | "comparison" | "evidence" | "research";
 type OpenData = { study?: import("./SavedStudies").SavedStudy; comparison?: import("./SavedComparisons").SavedComparison };
 type Props = { onOpenCase: (id: string, runId?: string) => void; onResearch: () => void; onOpen: (item: OverviewItem, target: Target, requestId?: string, runId?: string, saved?: OpenData) => Promise<void> | void };
 
-function useOverview(token: string) {
+type OverviewData = Omit<NonNullable<FunctionReturnType<typeof api.overview.list>>, "items"> & {
+  items: (OverviewItem & {
+    next: ReturnType<typeof workStatus>;
+    latest?: Run;
+    active?: Run;
+    pendingRun?: Run;
+    refresh?: Run;
+    newSources: number;
+    changedSources: number;
+    suppliers: string[];
+    updatedAt: number;
+    retained: number;
+    interpreted: number;
+  })[];
+};
+
+function useOverview(token: string): OverviewData | undefined {
+  const cached = useRef<OverviewData | undefined>(undefined);
+  const cachedToken = useRef(token);
+  if (cachedToken.current !== token) {
+    cachedToken.current = token;
+    cached.current = undefined;
+  }
   const data = useQuery(api.overview.list, { token });
   const queries = useMemo(() => {
     const known = new Set(data?.quickRuns.map(run => run.id));
@@ -30,7 +52,7 @@ function useOverview(token: string) {
   const values = Object.values(research) as (Run | Error | undefined)[];
   const failed = values.find(value => value instanceof Error);
   if (failed instanceof Error) throw failed;
-  if (!data || values.some(value => !value)) return undefined;
+  if (!data || values.some(value => !value)) return cached.current;
   const runs = [...data.quickRuns, ...values as Run[]];
   const items = data.items.map(item => {
     const related = runs.filter(run => item.runIds.includes(run.id));
@@ -57,7 +79,9 @@ function useOverview(token: string) {
       interpreted: related.reduce((sum, run) => sum + run.interpreted, 0),
     };
   });
-  return { ...data, items };
+  const result: OverviewData = { ...data, items };
+  cached.current = result;
+  return result;
 }
 
 type Work = NonNullable<ReturnType<typeof useOverview>>["items"][number];

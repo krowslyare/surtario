@@ -360,7 +360,9 @@ function Progress({
                     if (!c) return null;
                     const nextStep = nextSteps?.[c.id];
                     const isQueued = row.state === "queued",
-                      isRunning = c.status === "running";
+                      isRunning = c.status === "running",
+                      isAttention = c.status === "failed",
+                      hasFindings = Boolean(c.sources > 0 && !isRunning && !isAttention);
                     const label = isQueued
                       ? "Queued"
                       : isRunning
@@ -376,6 +378,15 @@ function Progress({
                               : c.stopReason === "budget"
                                 ? "Limit reached"
                                 : "No usable sources";
+                    const phaseClass = isAttention
+                      ? "is-attention"
+                      : isRunning
+                        ? "is-running"
+                        : hasFindings
+                          ? "has-findings"
+                          : isQueued
+                            ? "is-queued"
+                            : "";
                     return (
                       <div className="batch-progress-row" key={row.id}>
                         <span className="ingredient-row-number">
@@ -384,7 +395,7 @@ function Progress({
                         <div className="batch-ingredient">
                           <strong>{c.ingredient}</strong>
                           <span
-                            className={`batch-phase ${isRunning ? "is-running" : ""}`}
+                            className={`batch-phase ${phaseClass}`}
                           >
                             <i aria-hidden="true" />
                             {label}
@@ -392,12 +403,10 @@ function Progress({
                         </div>
                         <div className="batch-evidence">
                           {c.sources ? (
-                            <>
-                              <strong>
-                                {c.sources} sources · {c.interpreted}{" "}
-                                interpreted
-                              </strong>
-                            </>
+                            <strong>
+                              {c.sources} sources · {c.interpreted}{" "}
+                              interpreted
+                            </strong>
                           ) : (
                             <span>
                               {isQueued
@@ -409,13 +418,17 @@ function Progress({
                                   : c.summary}
                             </span>
                           )}
-                          {!isQueued && !isRunning && c.stopReason === "budget" && (
-                            <span>Research stopped at the six-round limit. Coverage remains incomplete.</span>
-                          )}
-                          {!isQueued && (nextStep || c.sources > 0) && (
+                          {!isQueued && (
                             <span>
                               {nextStep?.title ??
-                                "Review evidence before confirming offers"}
+                                (c.sources > 0
+                                  ? "Review evidence before confirming offers"
+                                  : c.stopReason === "budget"
+                                    ? "Round limit reached · Coverage incomplete"
+                                    : "")}
+                              {c.sources > 0 && c.stopReason === "budget"
+                                ? " · Round limit reached"
+                                : ""}
                             </span>
                           )}
                           <time dateTime={new Date(c.updatedAt).toISOString()}>
@@ -427,25 +440,6 @@ function Progress({
                           </time>
                         </div>
                         <div className="batch-row-actions">
-                          {!isQueued &&
-                            (nextStep?.action ?? (
-                              <Button
-                                variant="secondary"
-                                onClick={() =>
-                                  onOpen(
-                                    c.id,
-                                    c.sources
-                                      ? c.researchRunIds.at(-1)
-                                      : undefined,
-                                  )
-                                }
-                              >
-                                {c.sources
-                                  ? "Review findings"
-                                  : "View progress"}
-                                <ArrowRight size={15} />
-                              </Button>
-                            ))}
                           {isQueued ? (
                             <Button
                               variant="text"
@@ -495,6 +489,25 @@ function Progress({
                               Retry ingredient
                             </Button>
                           ) : null}
+                          {!isQueued &&
+                            (nextStep?.action ?? (
+                              <Button
+                                variant="secondary"
+                                onClick={() =>
+                                  onOpen(
+                                    c.id,
+                                    c.sources
+                                      ? c.researchRunIds.at(-1)
+                                      : undefined,
+                                  )
+                                }
+                              >
+                                {c.sources
+                                  ? "Review findings"
+                                  : "View progress"}
+                                <ArrowRight size={15} />
+                              </Button>
+                            ))}
                         </div>
                       </div>
                     );
