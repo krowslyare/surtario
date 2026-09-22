@@ -215,17 +215,24 @@ export default function MarketStudy({
     } else {
       setExtrasQuotesOpen(true);
     }
-    const scrollToTarget = () => {
-      const el = document.getElementById(
-        target === "ingredients"
-          ? "disclosure-ingredients"
-          : "disclosure-quotes",
-      );
+    const targetId =
+      target === "ingredients"
+        ? "disclosure-ingredients"
+        : "disclosure-quotes";
+    setTimeout(() => {
+      const el = document.getElementById(targetId);
       const trigger = el?.querySelector<HTMLElement>(".disclosure-trigger");
       scrollToContent(el, trigger ?? el);
-    };
-    setTimeout(scrollToTarget, 50);
-    setTimeout(scrollToTarget, 220);
+    }, 50);
+    setTimeout(() => {
+      const el = document.getElementById(targetId);
+      el?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+        block: "start",
+      });
+    }, 220);
   }
   const results = search
     ? filterMarketExamples(catalog, search.term, search.region)
