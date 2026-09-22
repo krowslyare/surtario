@@ -90,7 +90,8 @@ function Selection({
       const launched = new Set(rows.map((row) => row.id));
       setStarted((current) => new Set([...current, ...launched]));
       setSelected((current) => new Set([...current].filter((id) => !launched.has(id))));
-      onStarted?.();
+      if (batch.rows.every((row) => started.has(row.id) || launched.has(row.id)))
+        onStarted?.();
     } catch (cause) {
       if (currentBatch.current !== batch) return;
       setError(

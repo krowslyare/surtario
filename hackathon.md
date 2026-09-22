@@ -163,3 +163,8 @@ Confirmed and fixed replacement-versus-retry request identity and incomplete met
 PR #43 merged as `b393f10`; [Verify run 35663996163](https://github.com/krowslyare/restaurant-procurement/actions/runs/35663996163) passed 340 tests and published the development backend/frontend with 37-file verification. Hosted Overview/import-dialog checks passed; the recorded photo/PDF and four-ingredient provider acceptance remains local.
 
 A separate follow-up preserves unlaunched ingredients after a partial start, retains the request identity when recovering an uncertain AI reading, and highlights available findings while keeping the six-round limit explicit. Nineteen focused browser tests and the hosting build passed. Desktop/mobile checks used synthetic continuity fixtures and the preserved real-source workspace. No new provider requests, mail or publication were performed for the follow-up. [Evidence and boundaries](docs/VERIFICATION.md).
+
+
+### 2026-09-21 - PR #44 partial-launch navigation review
+
+Corrected the remaining Explore-origin partial launch: it retains the visible pending list and navigates to Overview only when the full list has been launched. Five focused browser tests cover both entry points plus uncertain-reading recovery; TypeScript and the hosting build passed. The capture script and narration were finalized under ignored `.local/recording/`; no video, new provider call or message was produced by this preparation.

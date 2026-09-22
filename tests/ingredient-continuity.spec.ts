@@ -47,7 +47,8 @@ async function simulate(page: Page, values: Record<string, unknown>, launch?: (a
   return () => publishers.forEach((publish) => publish());
 }
 
-test("launching one ingredient keeps the other three available after research finishes", async ({ page }, info) => {
+for (const origin of ["overview", "market"] as const) {
+test(`launching one ingredient from ${origin} keeps the other three available after research finishes`, async ({ page }, info) => {
   const state = { enabled: true, remaining: 10, busy: false, batches: [] };
   const requests: Array<{ clientId: string; rows: { id: string; ingredient: string }[] }> = [];
   const publish = await simulate(page, { "ingredientBatches:list": state }, (request) => {
@@ -55,20 +56,22 @@ test("launching one ingredient keeps the other three available after research fi
     state.busy = true;
     state.remaining -= request.rows.length;
   });
-  await page.goto("/?view=overview");
-  await page.getByRole("button", { name: "Import ingredient list", exact: true }).click();
+  await page.goto(`/?view=${origin}`);
+  if (origin === "market") await page.getByRole("button", { name: /^Ingredient lists/ }).click();
+  await page.getByRole("region", { name: "Ingredient intake", exact: true }).getByRole("button", { name: "Import ingredient list", exact: true }).click();
   const dialog = page.getByRole("dialog");
   await dialog.getByLabel("Type or paste ingredients").fill("Rice\nFlour\nVegetable oil\nRed onions");
   await dialog.getByRole("button", { name: "Review ingredients", exact: true }).click();
   await dialog.getByRole("button", { name: "Confirm 4 ingredients", exact: true }).click();
   const rows = page.locator(".ingredient-selection-row");
   await rows.filter({ hasText: "Rice" }).getByRole("button").click();
+  await expect(page).toHaveURL(new RegExp(`view=${origin}`));
   await expect(rows).toHaveCount(4);
   await expect(rows.filter({ hasText: "Rice" })).toContainText("Research saved in Overview");
   await expect(rows.filter({ hasText: "Rice" }).getByRole("checkbox")).toBeDisabled();
   await expect(page.getByRole("button", { name: "Research selected · 3" })).toBeDisabled();
   await page.getByRole("navigation").getByRole("button", { name: "Messages", exact: true }).click();
-  await page.getByRole("navigation").getByRole("button", { name: "Overview", exact: true }).click();
+  await page.getByRole("navigation").getByRole("button", { name: origin === "market" ? "Explore suppliers" : "Overview", exact: true }).click();
   await expect(rows.filter({ hasText: "Rice" })).toContainText("Research saved in Overview");
   state.busy = false;
   publish();
@@ -83,10 +86,16 @@ test("launching one ingredient keeps the other three available after research fi
     await page.screenshot({ path: info.outputPath(`remaining-${width}.png`), fullPage: true });
   }
   await remaining.click();
+  if (origin === "market") {
+    await expect(page).toHaveURL(/view=overview/);
+    await page.getByRole("navigation").getByRole("button", { name: "Explore suppliers", exact: true }).click();
+  }
   await expect(page.getByText("Research saved in Overview", { exact: true })).toHaveCount(4);
   expect(requests.map((r) => r.rows.map((row) => row.ingredient))).toEqual([["Rice"], ["Flour", "Vegetable oil", "Red onions"]]);
   expect(requests[0].clientId).not.toBe(requests[1].clientId);
 });
+
+}
 
 const image = { name: "kitchen.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=", "base64") };
 
