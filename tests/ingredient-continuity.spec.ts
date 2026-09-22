@@ -71,7 +71,7 @@ test(`launching one ingredient from ${origin} keeps the other three available af
   await expect(rows.filter({ hasText: "Rice" }).getByRole("checkbox")).toBeDisabled();
   await expect(page.getByRole("button", { name: "Research selected · 3" })).toBeDisabled();
   await page.getByRole("navigation").getByRole("button", { name: "Messages", exact: true }).click();
-  await page.getByRole("navigation").getByRole("button", { name: origin === "market" ? "Explore suppliers" : "Overview", exact: true }).click();
+  await page.getByRole("navigation").getByRole("button", { name: origin === "market" ? "Suppliers" : "Overview", exact: true }).click();
   await expect(rows.filter({ hasText: "Rice" })).toContainText("Research saved in Overview");
   state.busy = false;
   publish();
@@ -88,7 +88,7 @@ test(`launching one ingredient from ${origin} keeps the other three available af
   await remaining.click();
   if (origin === "market") {
     await expect(page).toHaveURL(/view=overview/);
-    await page.getByRole("navigation").getByRole("button", { name: "Explore suppliers", exact: true }).click();
+    await page.getByRole("navigation").getByRole("button", { name: "Suppliers", exact: true }).click();
   }
   await expect(page.getByText("Research saved in Overview", { exact: true })).toHaveCount(4);
   expect(requests.map((r) => r.rows.map((row) => row.ingredient))).toEqual([["Rice"], ["Flour", "Vegetable oil", "Red onions"]]);

@@ -10,9 +10,11 @@ import {
   FileText,
   FolderOpen,
   Info,
+  LayoutDashboard,
   ListPlus,
   PenLine,
   Search,
+  Store,
 } from "lucide-react";
 import {
   marketExamples,
@@ -29,7 +31,6 @@ import {
 } from "./domain/market";
 import { money, numberLabel } from "./numbers";
 import Brand from "./components/Brand";
-import ContinueWork from "./components/ContinueWork";
 import SourcingOverview from "./components/SourcingOverview";
 import Messages, { MessagesLink } from "./components/Messages";
 import SourcingEntry, { type SourcingEntryRequest } from "./components/SourcingEntry";
@@ -214,15 +215,24 @@ export default function MarketStudy({
     } else {
       setExtrasQuotesOpen(true);
     }
-    requestAnimationFrame(() => {
-      const el = document.getElementById(
-        target === "ingredients"
-          ? "disclosure-ingredients"
-          : "disclosure-quotes",
-      );
+    const targetId =
+      target === "ingredients"
+        ? "disclosure-ingredients"
+        : "disclosure-quotes";
+    setTimeout(() => {
+      const el = document.getElementById(targetId);
       const trigger = el?.querySelector<HTMLElement>(".disclosure-trigger");
       scrollToContent(el, trigger ?? el);
-    });
+    }, 50);
+    setTimeout(() => {
+      const el = document.getElementById(targetId);
+      el?.scrollIntoView({
+        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "instant"
+          : "smooth",
+        block: "start",
+      });
+    }, 220);
   }
   const results = search
     ? filterMarketExamples(catalog, search.term, search.region)
@@ -584,11 +594,20 @@ export default function MarketStudy({
       <header className="topbar market-topbar">
         <Brand />
         <nav className="brand-nav" aria-label="Main navigation">
-          {persistenceEnabled && <Button variant="text" aria-current={overview ? "page" : undefined} onClick={onOpenOverview}>Overview</Button>}
+          {persistenceEnabled && (
+            <Button
+              variant="text"
+              aria-current={overview ? "page" : undefined}
+              onClick={onOpenOverview}
+            >
+              <LayoutDashboard size={18} />
+              Overview
+            </Button>
+          )}
           <Button
             variant="text"
             className="brand-explore"
-            aria-label="Explore suppliers"
+            aria-label="Suppliers"
             aria-current={!overview && !followup && !messages && !showStudy ? "page" : undefined}
             onClick={() => {
               if (overview || followup || messages || fromOverview) onExitFollowup();
@@ -603,10 +622,12 @@ export default function MarketStudy({
               });
             }}
           >
-            Explore<span className="brand-explore-detail"> suppliers</span>
+            <Store size={18} />
+            Suppliers
           </Button>
           <Button
             variant="text"
+            aria-label={optionCount > 0 ? `My study ${optionCount}` : "My study"}
             aria-current={!overview && !followup && !messages && showStudy ? "page" : undefined}
             onClick={() => {
               if (overview || followup || messages || fromOverview) onExitFollowup();
@@ -615,13 +636,12 @@ export default function MarketStudy({
             }}
           >
             <Bookmark size={18} />
-            My study
+            My Study
             {optionCount > 0 && (
               <span className="selection-count">{optionCount}</span>
             )}
           </Button>
           {persistenceEnabled && <MessagesLink active={Boolean(messages)} onClick={() => onOpenMessages()} />}
-
         </nav>
       </header>
       {overviewMounted.current && <div hidden={!overview}>{persistenceEnabled ? <SourcingOverview onOpenCase={(id, runId) => onOpenFollowup(id, undefined, runId)} onResearch={() => { onExitFollowup(); setShowStudy(false); setSearchOpen(true); }} onOpen={(item, target, requestId, runId, saved) => {
@@ -632,16 +652,22 @@ export default function MarketStudy({
         else { if (saved?.study) openStudy(saved.study); onExitFollowup(true); }
       }} /> : <main id="overview-main"><h1>Overview is unavailable</h1><p>Connect saved storage to recover your sourcing work.</p></main>}</div>}
       {marketMounted.current && <div hidden={Boolean(overview || followup || messages)}>
-      {fromOverview && <Button variant="text" onClick={onOpenOverview}><ArrowLeft size={16} />Back to overview</Button>}
       <main
         id="market-main"
         className={`market-main ${search || showStudy ? "has-results" : "is-intro"} ${showStudy ? "is-study" : ""} ${resultsView === "web" ? "is-live-research" : ""}`}
       >
         <div className="workspace-nav">
-          <span>
-            <Search size={16} />
-            Explore suppliers
-          </span>
+          {fromOverview ? (
+            <Button variant="text" onClick={onOpenOverview}>
+              <ArrowLeft size={16} />
+              Back to overview
+            </Button>
+          ) : (
+            <span>
+              <Search size={16} />
+              Suppliers
+            </span>
+          )}
         </div>
         <div className="market-hero" hidden={Boolean(search || showStudy || resultsView === "web") && !searchOpen}>
           <div className="hero-workspace">
@@ -751,27 +777,41 @@ export default function MarketStudy({
                 aria-label="Sample study"
               >
                 <span>Want to try it first?</span>
-                <Button variant="text" onClick={startExample}>
-                  Explore rice example <ArrowRight size={17} />
+                <Button
+                  variant="text"
+                  onClick={startExample}
+                  aria-label="Explore rice example"
+                >
+                  Explore example <ArrowRight size={17} />
                 </Button>
-                {persistenceEnabled && <Button variant="text" onClick={() => openQuestion({ ingredient: term, region })}>Research a question</Button>}
+                {persistenceEnabled && (
+                  <Button
+                    variant="text"
+                    onClick={() => openQuestion({ ingredient: term, region })}
+                    aria-label="Research a question"
+                  >
+                    Research question
+                  </Button>
+                )}
                 <span className="market-start-divider" aria-hidden="true">·</span>
                 <Button
                   variant="text"
                   type="button"
                   onClick={() => openExtras("quotes")}
+                  aria-label="Read a quote"
                 >
                   <FileText size={16} />
-                  Read a quote
+                  Read quote
                 </Button>
                 <span className="market-start-divider" aria-hidden="true">·</span>
                 <Button
                   variant="text"
                   type="button"
                   onClick={() => openExtras("ingredients")}
+                  aria-label="Import ingredient list"
                 >
                   <ListPlus size={16} />
-                  Import ingredient list
+                  Import ingredients
                 </Button>
               </section>
             )}
@@ -783,7 +823,6 @@ export default function MarketStudy({
             {error}
           </p>
         )}
-        {persistenceEnabled && !search && !showStudy && resultsView !== "web" && <ContinueWork onOverview={onOpenOverview} />}
         <div className="market-support">
           <div className="market-workspace">
           <div className="market-content">

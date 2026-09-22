@@ -95,7 +95,9 @@ type Props = {
 export default function Messages(props: Props) {
   const { token, error } = useDemoSession();
   return <main id="messages-main" className="messages-main" tabIndex={-1}>
-    <Button variant="text" onClick={props.onBack}><ArrowLeft size={16} />{props.backLabel ?? "Back to workspace"}</Button>
+    <div className="workspace-nav">
+      <Button variant="text" onClick={props.onBack}><ArrowLeft size={16} />{props.backLabel ?? "Back to workspace"}</Button>
+    </div>
     <header className="messages-heading">
       <h1 tabIndex={-1}>Messages</h1>
       <p>Your supplier inquiries and replies, across all your saved work.</p>

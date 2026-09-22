@@ -672,10 +672,20 @@
 
 /* Follow-ups are a destination, not an expandable block in market results. */
 .followup-main {
-  width: min(100% - 64px, 1200px);
+  max-width: calc(var(--content-max-width) + 64px);
   margin: 0 auto;
-  padding: var(--space-6) 0 var(--space-8);
+  padding: 24px 32px var(--space-8);
   animation: followup-arrive 180ms ease-out;
+}
+@media (max-width: 800px) {
+  .followup-main {
+    padding: 20px 24px var(--space-8);
+  }
+}
+@media (max-width: 600px) {
+  .followup-main {
+    padding: 16px 16px var(--space-8);
+  }
 }
 .followup-heading {
   padding-block: var(--space-5) var(--space-6);
@@ -737,7 +747,6 @@
 .followup-empty, .followup-unavailable { max-width: 65ch; margin-block: var(--space-6); color: var(--color-text-muted); }
 @keyframes followup-arrive { from { opacity: 0.65; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 @media (max-width: 760px) {
-  .followup-main { width: calc(100% - 32px); padding-top: var(--space-4); }
   .followup-main .workspace-nav { align-items: flex-start; }
   .followup-context-fields { grid-template-columns: 1fr; }
   .followup-main .segmented-control { display: flex; width: 100%; }

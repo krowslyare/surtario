@@ -118,7 +118,7 @@ test("búsqueda vacía y falta de cobertura del ejemplo se explican", async ({
   await page.getByRole("button", { name: "My study", exact: true }).click();
   await expect(page.getByRole("heading", { name: "My market study" })).toBeVisible();
   await expect(page.getByRole("alert")).toHaveCount(0);
-  await page.getByRole("button", { name: "Explore suppliers", exact: true }).click();
+  await page.getByRole("button", { name: "Suppliers", exact: true }).click();
   await expect(ingredient).toHaveAttribute("aria-invalid", "false");
   await page.getByRole("button", { name: "Explore demo catalog", exact: true }).click();
   await expect(page.getByRole("alert")).toBeVisible();
