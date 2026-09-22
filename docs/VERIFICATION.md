@@ -175,3 +175,13 @@ This closes the bounded **hosted image → reviewed list → independent researc
 [Codex's P2 finding](https://github.com/krowslyare/restaurant-procurement/pull/45#discussion_r4068044170) was reproduced: U+FF0D (fullwidth hyphen-minus) and U+FE63 (small hyphen-minus) both failed the case-link check while the three existing spelling variants passed. Added those two characters to the bounded word-separator set. No general Unicode folding or offer-identity rewrite is performed.
 
 The same regression now covers five separator variants through initial save, unchanged retry, persisted recovery and re-save, while retaining the source proposal, reviewed text and original case label. It also checks that missing commercial conditions still block selection and different ingredient words/specifications still fail. After the correction, **21/21 focused tests** passed across web reviews and comparison persistence; frontend/backend TypeScript and the 37-file hosting build passed. No additional provider calls, email or purchases were made for this correction.
+
+## September 22 — mixed old/new reviewed evidence regression
+
+The hosted recording preparation reproduced a blocked update: a study held an already incorporated offer plus a newly reviewed source, and the update dialog rejected the entire selection as existing evidence. The hosted comparison was not changed by the failed action.
+
+The local merge now ignores known source IDs and adds only new reviewed evidence. Known active offers retain their confirmed commercial terms; historical IDs cannot reactivate an old offer or overwrite its evidence. A new review from the same URL still replaces its active offer and retains history. Ingredient/specification/unit/currency agreement, explicit equivalence and source-count limits remain enforced. An entirely incorporated selection still reports that it is already saved.
+
+Validation: `npm test` passed 348 tests across 53 files; `npm run check:hosting` passed. `E2E_LOCAL_FRONTEND_URL=http://127.0.0.1:5507 npx playwright test tests/sourcing.spec.ts --grep 'reviewed .* evidence returns'` passed both browser journeys on the anonymous local backend. The new journey retained the original offer, added a distinct source to the same comparison ID, saved revision 2, and recovered both offers and quantity after reload. These browser sources were synthetic, with no live-provider calls or outgoing messages.
+
+The fix has not been published or accepted against the hosted real study. Missing commercial terms still block final order totals and selection; this change does not fill unknown data.
