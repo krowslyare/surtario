@@ -4,7 +4,7 @@
 - **Event:** Convex All Gas Hackathon
 - **What it does:** Helps kitchens find suppliers, preserve source evidence, request missing terms and compare complete orders before choosing an offer.
 - **Live app:** https://scrupulous-mandrill-717.convex.site
-- **Repo:** https://github.com/krowslyare/restaurant-procurement
+- **Repo:** https://github.com/krowslyare/surtario
 - **Frontend:** Convex static hosting
 - **Convex deployment:** https://scrupulous-mandrill-717.convex.cloud
 - **Components:** @convex-dev/agent, @convex-dev/static-hosting, @convex-dev/workflow
@@ -12,7 +12,7 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-22T13:45:00Z
+- **Last updated:** 2026-09-22T14:15:00Z
 
 ## Current delivery
 
@@ -20,7 +20,7 @@ The submission demo is published on Convex Static Hosting (`https://scrupulous-m
 
 ## Log
 
-Entries below consolidate related build milestones. Commits identify the corresponding implementation or integration; checks are attributed to their actual local, simulated or hosted environment. The [complete pre-consolidation log](https://github.com/krowslyare/restaurant-procurement/blob/cf8e3012599a51426db83b115f447e485c8f7987/hackathon.md) remains in Git history, including individual review corrections and failed attempts.
+Entries below consolidate related build milestones. Commits identify the corresponding implementation or integration; checks are attributed to their actual local, simulated or hosted environment. The [complete pre-consolidation log](https://github.com/krowslyare/surtario/blob/cf8e3012599a51426db83b115f447e485c8f7987/hackathon.md) remains in Git history, including individual review corrections and failed attempts.
 
 ### 2026-09-07 - b8a2071 · Scope and setup
 
