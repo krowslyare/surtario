@@ -168,3 +168,10 @@ PR #45 merged as `ffbdde8`. [Verify run 35680145456](https://github.com/krowslya
 The completed batch retained one case and one investigation per ingredient, with no queued or running work. Final source/interpretation counts were rice **17/10**, flour **31/19**, vegetable oil **24/15** and red onions **36/17**. All four stopped at the six-round research budget, so coverage remains explicitly incomplete. Read-only backend verification found the correct rice-to-study-to-comparison links, revision 1, no selected offer and `simulated: false` on every research record in this batch.
 
 This closes the bounded **hosted image → reviewed list → independent research → study → saved comparison → reload → Overview recovery** acceptance. The uploaded image was a synthetic input list, while extraction and supplier research were actual provider calls. The comparison contains one organic offer; the other rice specification was not silently treated as equivalent. No new supplier reply, email send, order, final delivered total or purchasing decision was exercised or claimed. Existing unrelated session history was preserved.
+
+
+### September 21: PR #45 compatibility-hyphen review
+
+[Codex's P2 finding](https://github.com/krowslyare/restaurant-procurement/pull/45#discussion_r4068044170) was reproduced: U+FF0D (fullwidth hyphen-minus) and U+FE63 (small hyphen-minus) both failed the case-link check while the three existing spelling variants passed. Added those two characters to the bounded word-separator set. No general Unicode folding or offer-identity rewrite is performed.
+
+The same regression now covers five separator variants through initial save, unchanged retry, persisted recovery and re-save, while retaining the source proposal, reviewed text and original case label. It also checks that missing commercial conditions still block selection and different ingredient words/specifications still fail. After the correction, **21/21 focused tests** passed across web reviews and comparison persistence; frontend/backend TypeScript and the 37-file hosting build passed. No additional provider calls, email or purchases were made for this correction.

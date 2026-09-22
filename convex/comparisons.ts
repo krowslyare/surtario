@@ -49,7 +49,12 @@ function sameFields<T extends object>(a: T, b: T) {
 // A list and a reviewed source can spell the same ingredient with different
 // word separators. This is only a case-link check, not offer equivalence.
 function caseIngredientKey(value: string) {
-  return value.toLowerCase().replace(/[-\u2010\u2011]/g, " ").replace(/\s+/g, " ").trim();
+  return value
+    .toLowerCase()
+    // Include small and fullwidth compatibility hyphens from imported text.
+    .replace(/[-\u2010\u2011\ufe63\uff0d]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function sameValue(a: unknown, b: unknown): boolean {

@@ -12,7 +12,7 @@
 - **Auth:** Other (isolated anonymous capabilities; no restaurant accounts)
 - **AI models:** gpt-5.6-luna (low reasoning; direct OpenAI API acceptance, with earlier local Codex CLI rehearsal recorded separately)
 - **Started:** 2026-09-07T18:47:16Z
-- **Last updated:** 2026-09-21T22:26:56Z
+- **Last updated:** 2026-09-22T02:56:21Z
 
 ## Current delivery
 
@@ -182,3 +182,8 @@ Actual use exposed a save failure between the list's hyphenated ingredient and t
 Merged and published the ingredient spelling correction as `ffbdde8`; CI passed 343 tests and verified 37 hosted files. The exact previously failed real-source comparison then saved successfully, recovered after reload and reopened from the rice row in Overview. The four-ingredient batch completed without duplicate runs, with 17/31/24/36 sources respectively; each retained its explicit research-budget limit.
 
 The saved 40 lb organic rice scenario keeps missing supplier minimum, tax and delivery pending and has no selected offer. Input list artwork was synthetic; its OpenAI reading and all supplier research were live. No synthetic commercial reply, supplier email or purchase was used to finish the journey. [Hosted acceptance evidence](docs/VERIFICATION.md).
+
+
+### 2026-09-21 - PR #45 compatibility-hyphen review
+
+Reproduced Codex's two remaining OCR/import spelling failures and added the small/fullwidth Unicode hyphens to the case-link separator set. The original case and source wording remain unchanged; commercial equivalence and ownership checks remain separate. Both new cases failed before the fix and passed afterward. Twenty-one focused persistence tests, frontend/backend TypeScript and the hosting build passed. No new provider or email calls were used for this correction. [Review evidence](docs/VERIFICATION.md).

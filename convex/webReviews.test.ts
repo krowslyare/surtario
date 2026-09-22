@@ -134,7 +134,13 @@ async function setup(simulated = false) {
   };
   return { t, args, ref };
 }
-test.each(["Long-grain white rice", "Long\u2011grain  white rice", " LONG\u2010GRAIN WHITE RICE "])(
+test.each([
+  "Long-grain white rice",
+  "Long\u2011grain  white rice",
+  " LONG\u2010GRAIN WHITE RICE ",
+  "Long\uff0dgrain white rice",
+  "Long\ufe63grain white rice",
+])(
   "reviewed web offer saves and reopens against list spelling %s without rewriting evidence",
   async (ingredient) => {
     const { t, args, ref } = await setup();
