@@ -2,7 +2,7 @@
 
 **Sourcing for your kitchen.** Find supplier options, keep the evidence and understand the full order before choosing an offer.
 
-[Try Surtario](https://scrupulous-mandrill-717.convex.site) · [Hackathon build log](hackathon.md) · [Setup and configuration](docs/DEVELOPMENT.md)
+[Try Surtario](https://scrupulous-mandrill-717.convex.site) · [Video Demo](https://youtu.be/taAjgRuFpV8) · [Hackathon build log](hackathon.md) · [Setup and configuration](docs/DEVELOPMENT.md)
 
 Start with an ingredient and delivery area, or import a kitchen list and select the ingredients to research. You do not need recipes, purchase history, documents or an order quantity to research the market.
 

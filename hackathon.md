@@ -16,7 +16,7 @@
 
 ## Current delivery
 
-The live application is published on Convex Static Hosting (`https://scrupulous-mandrill-717.convex.site`) connected to the Convex backend deployment (`https://scrupulous-mandrill-717.convex.cloud`). All core integrations (Firecrawl discovery, OpenAI extraction/advice, AgentMail inquiry/reply handling, durable Workflow lanes, and reactive Convex state) are deployed and operational. 37 hosted files, SPA routing fallback, and asset delivery verified. Demo walkthrough video completed (< 3 minutes). Final public repository release, sponsor-tagged social post, and submission on vibeapps.dev are ready. [Delivery status](docs/STATUS.md) · [Executed acceptance and limits](docs/VERIFICATION.md).
+The live application is published on Convex Static Hosting (`https://scrupulous-mandrill-717.convex.site`) connected to the Convex backend deployment (`https://scrupulous-mandrill-717.convex.cloud`). All core integrations (Firecrawl discovery, OpenAI extraction/advice, AgentMail inquiry/reply handling, durable Workflow lanes, and reactive Convex state) are deployed and operational. 37 hosted files, SPA routing fallback, and asset delivery verified. Demo walkthrough video: https://youtu.be/taAjgRuFpV8 (< 3 minutes). Final public repository release, sponsor-tagged social post, and submission on vibeapps.dev are ready. [Delivery status](docs/STATUS.md) · [Executed acceptance and limits](docs/VERIFICATION.md).
 
 ## Log
 
@@ -196,5 +196,5 @@ Consolidated the sources and offer review flow in `src/components/SourcingCase.t
 
 ### 2026-09-22 - 7a9244d · Deployment migration and video walkthrough readiness
 
-Migrated the live backend deployment to `https://scrupulous-mandrill-717.convex.cloud` and uploaded 37 frontend static files to Convex Static Hosting (`https://scrupulous-mandrill-717.convex.site`). Configured and verified production environment variables and feature gates (`agent`, `workflow`, `staticHosting`). Successfully recorded the sub-3-minute demo video demonstrating ingredient sourcing, live Firecrawl web discovery, structured offer review, deterministic order comparison, and AgentMail supplier quotation inquiry.
+Migrated the live backend deployment to `https://scrupulous-mandrill-717.convex.cloud` and uploaded 37 frontend static files to Convex Static Hosting (`https://scrupulous-mandrill-717.convex.site`). Configured and verified production environment variables and feature gates (`agent`, `workflow`, `staticHosting`). Successfully recorded the sub-3-minute demo video (https://youtu.be/taAjgRuFpV8) demonstrating ingredient sourcing, live Firecrawl web discovery, structured offer review, deterministic order comparison, and AgentMail supplier quotation inquiry.
 
