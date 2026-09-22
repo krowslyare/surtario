@@ -234,10 +234,9 @@ export const investigate = internalAction({
       if (
         (!existing && !linked) ||
         (existing && existing.extractionStatus !== "idle")
-      )
-        throw new Error(
-          "That page is unavailable or has already been analyzed.",
-        );
+      ) {
+        return { sources: [], warning: true, discarded: 0 };
+      }
       try {
         sources = existing?.markdown
           ? [existing]
