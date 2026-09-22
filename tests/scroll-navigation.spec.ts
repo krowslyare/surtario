@@ -53,7 +53,7 @@ for (const reducedMotion of ["no-preference", "reduce"] as const) {
       await page.getByRole("button", { name: "Explore rice example", exact: true }).click();
       await expect(page.getByRole("article", { name: /Result: Cascade Pantry/ })).toBeVisible();
       await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: "instant" }));
-      const explore = page.getByRole("button", { name: width === 390 ? "Change search" : "Explore suppliers", exact: true });
+      const explore = page.getByRole("button", { name: width === 390 ? "Change search" : "Suppliers", exact: true });
       await explore.evaluate(el => (el as HTMLElement).focus({ preventScroll: true }));
       const start = await observeScroll(page);
       await explore.press("Enter");

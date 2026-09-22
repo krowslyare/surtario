@@ -1,4 +1,4 @@
-.overview-main { max-width: var(--content-max-width); margin: auto; padding: 3rem 3rem 5rem; }
+.overview-main { max-width: calc(var(--content-max-width) + 64px); margin: auto; padding: 24px 32px 5rem; }
 .overview-heading, .overview-section-title { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
 .overview-heading h1 { font-size: clamp(2.2rem, 3.2vw, 3.6rem); max-width: 22ch; margin: .25rem 0; }
 .overview-summary { font-size: 1.1rem; margin: 1.25rem 0 2rem; color: var(--color-text-muted); }
@@ -30,6 +30,7 @@
 .overview-toolbar input, .overview-toolbar select { min-height: var(--control-min-height); background: var(--color-surface); border: 1px solid var(--color-control-border); border-radius: var(--radius-control); padding: .65rem .8rem; font: inherit; color: var(--color-text); width: 100%; }
 .overview-filters { display: flex; flex-wrap: wrap; gap: .5rem; }
 .overview-filters [aria-pressed="true"] { background: var(--color-primary); color: var(--color-on-primary); }
+.overview-no-matches { margin: 1.75rem 0 1.25rem; color: var(--color-text-muted); font-size: 0.95rem; padding: 0.5rem 0; }
 #overview-work { scroll-margin-top: 8rem; }
 .overview-work-list > li { display: grid; grid-template-columns: minmax(170px, .9fr) minmax(0, 1.4fr) minmax(220px, .8fr); gap: 1.5rem; align-items: center; padding: 1.5rem 0; border-top: 1px solid var(--color-border); }
 .overview-work-list p { margin: .35rem 0; font-size: .9rem; color: var(--color-text-muted); }
@@ -48,8 +49,8 @@
 .overview-empty p { color: var(--color-text-muted); margin-bottom: 1.5rem; }
 .overview-main button:focus-visible, .overview-main input:focus-visible, .overview-main select:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
 .research-reviewed { margin: 1.5rem 0; border-top: 1px solid var(--color-border); padding-top: 1rem; }
-@media (max-width: 1000px) { .overview-main { padding: 2rem 1.5rem 4rem; } .overview-priorities.has-research { grid-template-columns: 1fr; gap: 1.5rem; } .overview-work-list > li { grid-template-columns: 1fr 1.5fr; } .overview-work-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; } }
-@media (max-width: 600px) { .overview-main { padding: 1.5rem 1rem 3rem; } .overview-heading { align-items: start; flex-direction: column; } .overview-counts { grid-template-columns: 1fr; } .overview-counts button { min-height: 76px; padding: .75rem; } .overview-counts button + button { border-left: 0; border-top: 1px solid var(--color-border); } .overview-counts button strong { min-width: 2ch; font-size: 2.2rem; } .overview-section-title { align-items: start; flex-wrap: wrap; gap: .5rem; } .overview-toolbar { flex-direction: column; align-items: stretch; } .overview-work-list > li { grid-template-columns: 1fr; gap: .65rem; } .overview-attention li, .overview-outcomes article { padding: 1.15rem; } .overview-summary { font-size: 1rem; } }
+@media (max-width: 1000px) { .overview-main { padding: 20px 24px 4rem; } .overview-priorities.has-research { grid-template-columns: 1fr; gap: 1.5rem; } .overview-work-list > li { grid-template-columns: 1fr 1.5fr; } .overview-work-actions { grid-column: 1 / -1; display: flex; flex-wrap: wrap; } }
+@media (max-width: 600px) { .overview-main { padding: 16px 16px 3rem; } .overview-heading { align-items: start; flex-direction: column; } .overview-counts { grid-template-columns: 1fr; } .overview-counts button { min-height: 76px; padding: .75rem; } .overview-counts button + button { border-left: 0; border-top: 1px solid var(--color-border); } .overview-counts button strong { min-width: 2ch; font-size: 2.2rem; } .overview-section-title { align-items: start; flex-wrap: wrap; gap: .5rem; } .overview-toolbar { flex-direction: column; align-items: stretch; } .overview-work-list > li { grid-template-columns: 1fr; gap: .65rem; } .overview-attention li, .overview-outcomes article { padding: 1.15rem; } .overview-summary { font-size: 1rem; } }
 
 /* Separate the immediate action, work library and saved outcomes. */
 .overview-section-title h2 { margin: 0; }

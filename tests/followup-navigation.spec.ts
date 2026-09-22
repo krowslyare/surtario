@@ -27,7 +27,7 @@ test("follow-up is a recoverable destination and preserves the market draft", as
   await page.getByRole("button", { name: "Back to research", exact: true }).click();
   await expect(followup).toBeVisible();
   await page.getByRole("button", { name: "Back to overview", exact: true }).click();
-  await page.getByRole("navigation").getByRole("button", { name: "Explore suppliers", exact: true }).click();
+  await page.getByRole("navigation").getByRole("button", { name: "Suppliers", exact: true }).click();
   await expect(page.locator("#market-main")).toBeVisible();
   await expect(page.getByRole("article").filter({ hasText: "Cascade Pantry Supply" }).getByRole("button", { name: "In my study", exact: true })).toBeVisible();
   await page.goBack();

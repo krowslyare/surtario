@@ -42,7 +42,7 @@ test("overview reacts to a reply, opens its exact conversation, records the deci
   for (const width of [1920, 390, 320]) {
     await page.setViewportSize({ width, height: width === 1920 ? 1080 : 844 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-    await expect(page.getByRole("navigation").getByRole("button", { name: "Explore suppliers", exact: true })).toBeInViewport();
+    await expect(page.getByRole("navigation").getByRole("button", { name: "Suppliers", exact: true })).toBeInViewport();
     await expect(page.getByRole("navigation").getByRole("button", { name: /^Messages/ })).toBeInViewport();
     await page.screenshot({ path: info.outputPath(`overview-${width}.png`), fullPage: true });
   }
@@ -134,7 +134,7 @@ test("global navigation leaves research context while browser Back restores the 
   await page.goto("/?view=overview");
   const nav = page.getByRole("navigation", { name: "Main navigation" });
   await expect(nav.getByRole("button", { name: "Follow-ups", exact: true })).toHaveCount(0);
-  for (const destination of ["Explore suppliers", "My study", "Messages"]) {
+  for (const destination of ["Suppliers", "My study", "Messages"]) {
     await page.locator("#overview-work").getByRole("button", { name: "Rice", exact: true }).click();
     await expect(page).toHaveURL(new RegExp(`view=followup.*from=overview.*case=${caseId}`));
     await expect(page.getByRole("button", { name: "Back to overview", exact: true })).toBeVisible();
