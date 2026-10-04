@@ -3,12 +3,12 @@
 ## Entrada y alcance
 
 - Leer `README.md` y `docs/STATUS.md`. Para iniciar, seguir `docs/DEVELOPMENT.md`.
-- `docs/ARCHITECTURE.md` define los contratos del producto; `docs/STATUS.md` es la fuente de estado actual y `docs/VERIFICATION.md` conserva la aceptación ejecutada. `hackathon.md` registra lo efectivamente realizado, no promesas.
+- Este repositorio es un experimento personal. `docs/ARCHITECTURE.md` define los contratos del prototipo; `docs/STATUS.md` es la fuente de estado actual y `docs/VERIFICATION.md` conserva la aceptación ejecutada.
 - Para interfaces, aplicar `docs/DESIGN.md` y los tokens de `src/styles/tokens.css`. Si está instalado, consultar también el skill `frontend-design`. La dirección visual es ajustable por el usuario; no improvisar estilos por pantalla ni presentar pendientes como ceros. Revisar diseño móvil, estados, foco y contraste en la UI real.
 - Construir por entregas verticales. No implementar toda la arquitectura, un ERP, un marketplace ni expansión global por adelantado.
 - El usuario puede modificar el alcance. Sus instrucciones vigentes prevalecen sobre estos documentos.
 
-- Para actualizar el registro, seguir el [formato oficial de Convex](https://github.com/get-convex/convex-hackathon-skill), o el skill local si está instalado. Conservar los campos del encabezado y registrar hitos fechados con evidencia. No declarar componentes o integraciones sin evidencia ni incluir credenciales o datos personales.
+- Registrar hitos fechados con evidencia en `docs/VERIFICATION.md`. No declarar componentes o integraciones sin evidencia ni incluir credenciales o datos personales.
 - Las herramientas de agentes son opcionales y locales; no viajan con el repositorio ni son necesarias para compilar. Instalación y límites en `docs/DEVELOPMENT.md`.
 
 ## Invariantes de producto
@@ -36,7 +36,7 @@
 - Probar reglas de negocio con resultados esperados independientes de la implementación; probar permisos e integraciones en sus límites relevantes.
 - El E2E central es explorar → fuentes/precios/contactos → estudio, incluyendo distribuidor sin precio y búsqueda vacía. La continuación opcional a compra funciona sin recetas. No duplicar todas las pruebas entre capas ni crear pruebas que solo reflejan implementación.
 - Diferenciar simulación, prueba local, llamada externa real y despliegue. Registrar fallos y aspectos no verificados.
-- Al cerrar una entrega, actualizar su estado en `docs/STATUS.md`, evidencia de aceptación cuando corresponda, el registro factual en `hackathon.md` y comandos del README si cambiaron. Guiones de grabación, capturas y notas transitorias van en `.local/`, ignorado por Git.
+- Al cerrar una entrega, actualizar su estado en `docs/STATUS.md`, evidencia de aceptación en `docs/VERIFICATION.md` cuando corresponda y comandos del README si cambiaron. Guiones de grabación, capturas y notas transitorias van en `.local/`, ignorado por Git.
 - Revisión adversarial antes de consolidar cambios materiales del flujo o habilitar datos privados; revisar proporcionalmente. No reabrir decisiones cerradas sin nueva evidencia.
 
 <!-- convex-ai-start -->

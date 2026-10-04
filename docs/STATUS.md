@@ -1,28 +1,19 @@
-# Delivery status
+# Experiment status
 
-Updated September 22, 2026. This is the current status source; `hackathon.md` retains the dated build history. Implementation, local tests, external acceptance and contest submission are separate outcomes.
+Updated October 4, 2026.
 
-| Area | State | Evidence / boundary |
-| --- | --- | --- |
-| Product and calculations | Implemented | Ingredient-first study; deterministic order comparison; 343 domain/backend tests in CI; 320 at the September 20 hosted acceptance |
-| Provider integration | Bounded acceptance passed | Firecrawl, direct Luna API, AgentMail round trip and Convex reactive updates; see [VERIFICATION](VERIFICATION.md) |
-| Study and follow-up | Implemented and exercised | Reviewed offers/no-price candidates, sources, messages and recoverable comparisons |
-| Decision | Implemented | Missing terms block selection; local five-offer flow reaches selection after synthetic terms are confirmed; hosted acceptance retained its delivery blocker |
-| Hosted app | Submission demo deployed | Deployed to https://scrupulous-mandrill-717.convex.site; 33 published static files, SPA fallback and asset integrity verified. Automated CI continues to verify development on dev:incredible-wolverine-122. |
-| Recording UX follow-up | Merged and published in PR #40 | Bulk analysis/review, explicit saved states, 12 study options, six-offer comparison, compact layout and shared terms |
-| Sourcing overview and manual refresh | Merged and published in PR #41 | Reactive work priorities, exact destinations, persisted research review, historical reply outcomes and an explicit live study refresh. Real Firecrawl/OpenAI acceptance ran on an isolated local backend; see [VERIFICATION](VERIFICATION.md) |
-| Overview presentation and navigation | Merged and published in PR #42 | Explicit decision empty states, separated sections, contextual research questions, four mobile navigation entries and corrected return destinations. Local verification is recorded in [VERIFICATION](VERIFICATION.md) |
-| Ingredient-list research | Merged and published in PR #43 | Photo/PDF AI reading, reviewed provenance, one/many selection, durable two-lane research and independent Overview results. PR #43 review corrections distinguish replacement from retry, validate replay metadata and show each batch case once. Local real PNG/PDF + four-ingredient Firecrawl/OpenAI acceptance; details in [VERIFICATION](VERIFICATION.md) |
-| Ingredient-list continuity | Merged and published in PR #44 | Pending rows remain available after a partial launch; uncertain AI readings reuse their request ID; available findings lead the row while the round-limit notice remains explicit. 19 focused browser tests passed, followed by 5/5 after correcting partial-launch navigation from Explore; the hosting build passed. |
-| Hosted list-to-comparison acceptance | Bounded acceptance passed after PR #45 publication | Real PNG reading, four ingredients, two concurrent investigations, partial findings and reload recovery. Rice study and a pending 40 lb single-offer comparison were saved, reloaded and reopened from its batch row. No supplier communication or purchase; commercial terms remain pending. See [VERIFICATION](VERIFICATION.md). |
-| Compatibility-hyphen review | Corrected with regression coverage | The PR #45 review reproduced save failures for U+FF0D/U+FE63 in OCR/imported ingredient names. The case-link separator set now includes both; 21 focused tests, frontend/backend TypeScript and the hosting build passed. Original text and ingredient/specification guards remain intact. |
-| Mixed reviewed evidence | Merged in PR #48 (4d5116c) | Existing and new reviewed offers update saved comparisons without resetting known evidence. 348 tests and hosting build passed. Real-source acceptance from earlier sessions preserved. |
-| Repository cleanup | Verified locally | Five public guides, README workflow diagram, working notes/tooling excluded; 320 tests and hosting build passed from a tracked-file snapshot with a fresh offline dependency installation |
-| Recipes / private pilot | Outside release | No customer-data enablement or validated restaurant pilot |
-| Submission | Ready | Demo video recorded (https://youtu.be/taAjgRuFpV8, < 3 min); public GitHub repository release, social post and submission form entry ready for final submission. |
+Personal sandbox for experimenting with stuff and tokenmaxxing. The existing ingredient-sourcing prototype is kept for further experiments.
 
-The hosted configuration uses `gpt-5.6-luna` with low reasoning. Recurring source watching stays disabled. Test-mail recipients are restricted; no real supplier communication or purchase is implied by the acceptance.
+| Area | Current scope |
+| --- | --- |
+| Prototype | Public-source research, reviewed evidence, saved studies, ingredient-list reading, email workflows, and deterministic order comparison |
+| Stack | React, TypeScript, Vite, Convex, OpenAI, Firecrawl, and AgentMail |
+| Repository | README presents a personal experiment. Public demo/video links and the standalone build log have been removed. Earlier build records remain in Git history and ignored local notes. |
+| CI | Tests and build run on pull requests and pushes to `main`. Development publication requires a manual workflow run on `main`. |
+| Historical acceptance | September development journeys exercised real providers within explicit test boundaries. The September 22 record reports 348 automated tests; see [VERIFICATION](VERIFICATION.md). These are dated results. |
+| Data and integrations | Anonymous session isolation, human evidence review, server-side provider credentials, and restricted test-mail recipients remain the prototype's boundaries. |
+| Further work | Experiments as needed. Private customer data and automatic purchasing remain outside the implemented scope. |
 
-[All Gas](https://www.convex.dev/hackathons/all-gas) requires a public repository with root `hackathon.md`, an accessible accepted-host URL, a video under three minutes and a sponsor-tagged social post. Requirements were re-verified September 22. The submission demo is deployed on https://scrupulous-mandrill-717.convex.site; CI development continues on https://incredible-wolverine-122.convex.site. The repository is prepared for public release.
+The public demo is no longer advertised by this repository. Removing its links does not establish that an existing deployment is offline. Current hosted availability has not been rechecked as part of this presentation change.
 
-Recording/submission drafts and older planning notes are kept locally under ignored `.local/repository-notes/`; they are not required to build or evaluate the source. The overview is published. The presentation/navigation follow-up is published in PR #42; ingredient-list research is published in PR #43, with the continuity corrections published in PR #44. The demo video is recorded and linked above. Repository publication and contest submission are tracked separately.
+Local setup and optional manual hosting are documented in [DEVELOPMENT](DEVELOPMENT.md). Earlier planning, recordings, and build notes are preserved under ignored `.local/repository-notes/`.
