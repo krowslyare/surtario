@@ -14,7 +14,7 @@ Each Surtario study supports one ingredient/market: explore public evidence, sav
 | Components | `convex/convex.config.ts` | Agent, Workflow and Static Hosting |
 | HTTP | `convex/http.ts` | Signed mail webhook and SPA/static asset routing |
 
-A browser holds an anonymous capability; the backend stores its hash and validates ownership. This supports isolated hackathon sessions, not authenticated restaurant accounts. Clearing browser data loses access to that capability's work. Queries update the UI reactively; a pending provider action is not recreated just because the page reloads.
+A browser holds an anonymous capability; the backend stores its hash and validates ownership. This supports isolated experiment sessions, not authenticated restaurant accounts. Clearing browser data loses access to that capability's work. Queries update the UI reactively; a pending provider action is not recreated just because the page reloads.
 
 ## Research and saved evidence
 

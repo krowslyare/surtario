@@ -1,6 +1,6 @@
 # Hosted acceptance · September 20, 2026
 
-This is a bounded, manual acceptance on **development**, not a production certification or a load test. Public app: https://incredible-wolverine-122.convex.site. Deployed baseline: merged PR #38, `e25a058`; GitHub Actions run `35536762688` succeeded. Local development remained on its separate anonymous backend.
+This is a bounded, manual acceptance on **development**, not a production certification or a load test. Target: `dev:incredible-wolverine-122`. Deployed baseline: merged PR #38, `e25a058`; GitHub Actions run `35536762688` succeeded. Local development remained on its separate anonymous backend.
 
 ## Configuration and spending boundary
 
@@ -36,9 +36,9 @@ Local manual checks covered 1920 × 1080, 390 px and 320 px layouts, the source 
 
 Redacted count/acceptance records and screenshots are retained under ignored `.local/hosted-acceptance/`; provider configuration checks are under ignored `.local/provider-checks/`. No credentials, session capabilities, inbox addresses, raw message exports or database rows belong in Git. The visible journey was driven manually; this report does not describe an automated replay of live services.
 
-The earlier local text/image API acceptance and positive selection/partial-confirmation journeys remain dated evidence in `hackathon.md` and Git history. Image extraction and positive selection were not repeated in this hosted pass.
+The earlier local text/image API acceptance and positive selection/partial-confirmation journeys remain dated evidence in Git history and ignored local build notes. Image extraction and positive selection were not repeated in this hosted pass.
 
-The core integrations are exercised. Remaining delivery work is the final narrated recording, authorized public-repository release, public post and contest submission. Recording and submission drafts are preserved in ignored local notes; neither is evidence that a video was exported or an entry submitted. See [delivery status](STATUS.md).
+The core integrations were exercised in this dated acceptance. See [current status](STATUS.md) for the repository's present scope; historical checks do not establish current hosted or provider availability.
 
 ## September 21: recording UX follow-up (local)
 
@@ -185,3 +185,11 @@ The local merge now ignores known source IDs and adds only new reviewed evidence
 Validation: `npm test` passed 348 tests across 53 files; `npm run check:hosting` passed. `E2E_LOCAL_FRONTEND_URL=http://127.0.0.1:5507 npx playwright test tests/sourcing.spec.ts --grep 'reviewed .* evidence returns'` passed both browser journeys on the anonymous local backend. The new journey retained the original offer, added a distinct source to the same comparison ID, saved revision 2, and recovered both offers and quantity after reload. These browser sources were synthetic, with no live-provider calls or outgoing messages.
 
 The fix has not been published or accepted against the hosted real study. Missing commercial terms still block final order totals and selection; this change does not fill unknown data.
+
+## October 4: repository presentation
+
+The README and GitHub description now present a personal sandbox: "experimenting with stuff. tokenmaxxing." Demo/video links and the standalone public build log were removed. Earlier records remain in Git history; an identical copy of the removed log was also preserved in ignored local notes. The prototype and its data/integration boundaries are unchanged.
+
+Development publication now requires a manual workflow run on `main`. Pull requests and pushes retain the existing tests/build job and cannot start the publication job.
+
+Focused verification passed: tracked Markdown links resolve, the public guides contain no event references or former demo/video links, package scripts parse, the local history copy matches the previous tracked file and is ignored, workflow YAML parses, and the tests/build job matches its previous definition. `git diff --check` passed. No hosted availability, provider requests, email delivery, or deployment was exercised by these local checks.

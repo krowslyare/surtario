@@ -100,7 +100,7 @@ Use a separate checkout with a fresh anonymous local backend. `scripts/rehearsal
 
 ## Development hosting
 
-The `Verify` workflow tests/builds pull requests. Only a successful push to `main` proceeds to development publication using `CONVEX_DEV_DEPLOY_KEY`. The guard rejects production, preview, wrong-target and project-wide keys. PR jobs do not receive that secret. Publication is serialized and verifies every uploaded file, SPA routing and missing-asset behavior afterward.
+The `Verify` workflow tests/builds pull requests and pushes to `main`. Development publication is opt-in: run the workflow manually on `main` to publish using `CONVEX_DEV_DEPLOY_KEY` after tests/build pass. The guard rejects production, preview, wrong-target and project-wide keys. PR jobs do not receive that secret. Publication is serialized and verifies every uploaded file, SPA routing and missing-asset behavior afterward.
 
 The checked target is `dev:incredible-wolverine-122` in this repository's Convex project. Backend and frontend publishing are separate operations; a frontend failure can leave a newer backend. Inspect the failure before retrying; there is no automatic rollback.
 
@@ -110,6 +110,6 @@ For an explicitly authorized manual development publication, first confirm the C
 
 ## Agent tooling and local notes
 
-`AGENTS.md` contains project instructions. Read `convex/_generated/ai/guidelines.md` before editing backend code. Optional Convex skills can be installed with `npx convex ai-files install`; the official hackathon skill is linked from [All Gas](https://www.convex.dev/hackathons/all-gas). Installed `.agents/skills/`, `.claude/skills/`, `skills-lock.json` and design-tool output are local tooling, ignored by Git and unnecessary for building the app.
+`AGENTS.md` contains project instructions. Read `convex/_generated/ai/guidelines.md` before editing backend code. Optional Convex skills can be installed with `npx convex ai-files install`. Installed `.agents/skills/`, `.claude/skills/`, `skills-lock.json` and design-tool output are local tooling, ignored by Git and unnecessary for building the app.
 
 The repository cleanup preserved earlier plans, audit dumps and recording drafts under ignored `.local/repository-notes/`. Those notes are not part of a fresh clone; current public instructions live in these five guides. Git history retains earlier tracked versions. Removing a file from the current tree is not erasing its history. Preserve third-party license notices when copying or reinstalling tools.
