@@ -2,6 +2,8 @@
 
 experimenting with stuff. tokenmaxxing.
 
+Started as a Convex All Gas Hackathon project, exploring how AI could help with ingredient sourcing.
+
 A personal sandbox for trying AI agents, web research, email workflows, and reactive state. The current experiment is ingredient sourcing: collect sources, review model output, and compare orders with deterministic calculations.
 
 Built with React, TypeScript, Vite, and Convex. Experiments include OpenAI, Firecrawl, and AgentMail integrations.

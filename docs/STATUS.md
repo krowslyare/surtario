@@ -1,6 +1,6 @@
 # Experiment status
 
-Updated October 4, 2026.
+Updated October 6, 2026.
 
 Personal sandbox for experimenting with stuff and tokenmaxxing. The existing ingredient-sourcing prototype is kept for further experiments.
 
@@ -8,7 +8,7 @@ Personal sandbox for experimenting with stuff and tokenmaxxing. The existing ing
 | --- | --- |
 | Prototype | Public-source research, reviewed evidence, saved studies, ingredient-list reading, email workflows, and deterministic order comparison |
 | Stack | React, TypeScript, Vite, Convex, OpenAI, Firecrawl, and AgentMail |
-| Repository | README presents a personal experiment. Public demo/video links and the standalone build log have been removed. Earlier build records remain in Git history and ignored local notes. |
+| Repository | README presents a personal experiment and notes its hackathon origin. Public demo/video links and the standalone build log have been removed. Earlier build records remain in Git history and ignored local notes. |
 | CI | Tests and build run on pull requests and pushes to `main`. Development publication requires a manual workflow run on `main`. |
 | Historical acceptance | September development journeys exercised real providers within explicit test boundaries. The September 22 record reports 348 automated tests; see [VERIFICATION](VERIFICATION.md). These are dated results. |
 | Data and integrations | Anonymous session isolation, human evidence review, server-side provider credentials, and restricted test-mail recipients remain the prototype's boundaries. |
